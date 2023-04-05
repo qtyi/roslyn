@@ -6,7 +6,7 @@
       <Value Profile="(Default)">17</Value>
     </Setting>
     <Setting Name="VsRootSuffix" Type="System.String" Scope="User">
-      <Value Profile="(Default)">RoslynDev</Value>
+      <Value Profile="(Default)">Qtyi</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -531,7 +531,7 @@ function Deploy-VsixViaTool() {
   $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
   $displayVersion = $vsInfo.catalog.productDisplayVersion
 
-  $hive = "RoslynDev"
+  $hive = "Qtyi"
   Write-Host "Using VS Instance $vsId ($displayVersion) at `"$vsDir`""
   $baseArgs = "/rootSuffix:$hive /vsInstallDir:`"$vsDir`""
 
@@ -763,7 +763,7 @@ try {
     }
 
     $devenvExe = Join-Path $env:VSINSTALLDIR 'Common7\IDE\devenv.exe'
-    &$devenvExe /rootSuffix RoslynDev
+    &$devenvExe /rootSuffix Qtyi
   }
 
   ExitWithExitCode 0

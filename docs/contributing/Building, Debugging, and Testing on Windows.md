@@ -87,7 +87,7 @@ give it a try.
 You can build and deploy with the following command:
 `.\Build.cmd -Configuration Release -deployExtensions -launch`.
 
-Then you can launch the `RoslynDev` hive with `devenv /rootSuffix RoslynDev`.
+Then you can launch the `Qtyi` hive with `devenv /rootSuffix Qtyi`.
 
 ### Deploying with F5
 
@@ -137,7 +137,7 @@ The experimental instance used by Roslyn is an entirely separate instance of
 Visual Studio with it's own settings and installed extensions. It's also, by
 default, a separate instance than the standard "Experimental Instance" used by
 other Visual Studio SDK projects. If you're familiar with the idea of Visual
-Studio hives, we deploy into the RoslynDev root suffix.
+Studio hives, we deploy into the Qtyi root suffix.
 
 ### Deploying with VSIX and Nuget package
 
@@ -180,7 +180,7 @@ and the compiler will produce a diagnostic including its own version as well as 
 version it is operating under.
 
 You can also attach a debugger to Visual Studio and check the loaded modules, looking at the folder
-where the various `CodeAnalysis` modules were loaded from (the `RoslynDev` should load them somewhere
+where the various `CodeAnalysis` modules were loaded from (the `Qtyi` should load them somewhere
 under `AppData`, not from `Program File`).
 
 ### Testing on the [dotnet/runtime](https://github.com/dotnet/runtime) repo

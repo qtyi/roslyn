@@ -22,7 +22,7 @@
   <ItemGroup>
     <!--
       Roslyn dependencies that are installed by other VS components. 
-      This project deploys them to RoslynDev hive to enable F5 scenario, 
+      This project deploys them to Qtyi hive to enable F5 scenario, 
       but the resulting VSIX not inserted into VS.
     -->
     <NuGetPackageToIncludeInVsix Include="Microsoft.Bcl.AsyncInterfaces" PkgDefEntry="BindingRedirect" />
