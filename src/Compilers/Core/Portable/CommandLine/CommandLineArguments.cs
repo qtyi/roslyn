@@ -157,6 +157,11 @@ namespace Microsoft.CodeAnalysis
         public ImmutableArray<CommandLineReference> MetadataReferences { get; internal set; }
 
         /// <summary>
+        /// Assembly identities that are friend accessible supplied on the command line. 
+        /// </summary>
+        public ImmutableArray<CommandLineAssemblyIdentity> FriendAccessibleAssemblies { get; internal set; }
+
+        /// <summary>
         /// References to analyzers supplied on the command line.
         /// </summary>
         public ImmutableArray<CommandLineAnalyzerReference> AnalyzerReferences { get; internal set; }

@@ -168,6 +168,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
             return options.WithSpecificDiagnosticOptions(ImmutableDictionary<string, ReportDiagnostic>.Empty.Add(key1, value).Add(key2, value));
         }
 
+        public static CSharpCompilationOptions WithFriendAccessibleAssemblyPublicKeys(this CSharpCompilationOptions options, string name, ImmutableArray<byte> publicKeys)
+        {
+            return options.WithFriendAccessibleAssemblyPublicKeys(ImmutableDictionary<string, ImmutableHashSet<ImmutableArray<byte>>>.Empty.Add(name, ImmutableHashSet<ImmutableArray<byte>>.Empty.Add(publicKeys)));
+        }
+
+        public static CSharpCompilationOptions WithFriendAccessibleAssemblyPublicKeys(this CSharpCompilationOptions options, params (string name, ImmutableArray<byte> publicKeys)[] identities)
+        {
+            return options.WithFriendAccessibleAssemblyPublicKeys(identities.GroupBy(tuple => tuple.name).ToImmutableDictionary(
+                group => group.Key,
+                group => group.Select(tuple => tuple.publicKeys).ToImmutableHashSet()
+            ));
+        }
+
         /// <summary>
         /// Create <see cref="CSharpCompilationOptions"/> with the maximum warning level.
         /// </summary>

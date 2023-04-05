@@ -212,7 +212,7 @@ namespace Microsoft.CodeAnalysis
             var parts = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
             try
             {
-                ParseSeparatedStrings(arg, s_pathSeparators, removeEmptyEntries: true, parts);
+                ParseSeparatedStringsEx(arg, s_pathSeparators, removeEmptyEntries: true, parts);
                 if (parts.Count == 0 || parts[0].Length == 0)
                 {
                     return null;
@@ -829,7 +829,7 @@ namespace Microsoft.CodeAnalysis
 
             // resource descriptor is: "<filePath>[,<string name>[,public|private]]"
             var parts = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
-            ParseSeparatedStrings(resourceDescriptor, s_resourceSeparators, removeEmptyEntries: false, parts);
+            ParseSeparatedStringsEx(resourceDescriptor, s_resourceSeparators, removeEmptyEntries: false, parts);
 
             int offset = 0;
 
@@ -1024,8 +1024,8 @@ namespace Microsoft.CodeAnalysis
             }
         }
 
-        private static readonly char[] s_pathSeparators = { ';', ',' };
-        private static readonly char[] s_wildcards = new[] { '*', '?' };
+        internal static readonly char[] s_pathSeparators = { ';', ',' };
+        internal static readonly char[] s_wildcards = new[] { '*', '?' };
 
         internal static IEnumerable<string> ParseSeparatedPaths(string arg)
         {
@@ -1036,17 +1036,24 @@ namespace Microsoft.CodeAnalysis
 
         internal static void ParseSeparatedPathsEx(ReadOnlyMemory<char>? str, ArrayBuilder<ReadOnlyMemory<char>> builder)
         {
-            ParseSeparatedStrings(str, s_pathSeparators, removeEmptyEntries: true, builder);
+            ParseSeparatedStringsEx(str, s_pathSeparators, removeEmptyEntries: true, builder);
             for (var i = 0; i < builder.Count; i++)
             {
                 builder[i] = RemoveQuotesAndSlashesEx(builder[i]);
             }
         }
 
+        internal static IEnumerable<string> ParseSeparatedStrings(string arg, char[] separators, bool removeEmptyEntries)
+        {
+            var builder = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
+            ParseSeparatedStringsEx(arg.AsMemory(), separators, removeEmptyEntries, builder);
+            return builder.ToArrayAndFree().Select(static x => x.ToString());
+        }
+
         /// <summary>
         /// Split a string by a set of separators, taking quotes into account.
         /// </summary>
-        internal static void ParseSeparatedStrings(ReadOnlyMemory<char>? strMemory, char[] separators, bool removeEmptyEntries, ArrayBuilder<ReadOnlyMemory<char>> builder)
+        internal static void ParseSeparatedStringsEx(ReadOnlyMemory<char>? strMemory, char[] separators, bool removeEmptyEntries, ArrayBuilder<ReadOnlyMemory<char>> builder)
         {
             if (strMemory is null)
             {

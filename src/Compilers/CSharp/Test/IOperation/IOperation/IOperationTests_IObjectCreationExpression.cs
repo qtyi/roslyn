@@ -7358,11 +7358,7 @@ class C3
     public int P2;
 }
 ";
-            var expectedDiagnostics = new DiagnosticDescription[] {
-                // CS0649: Field 'C2.C32' is never assigned to, and will always have its default value null
-                //     public C3 C32;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "C32").WithArguments("C2.C32", "null").WithLocation(19, 15)
-            };
+            var expectedDiagnostics = new DiagnosticDescription[] {};
 
             string expectedFlowGraph = @"
 Block[B0] - Entry
@@ -8568,11 +8564,7 @@ class C3
     }
 }
 ";
-            var expectedDiagnostics = new DiagnosticDescription[] {
-                // CS0649: Field 'C2.C32' is never assigned to, and will always have its default value null
-                //     public C3 C32;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "C32").WithArguments("C2.C32", "null").WithLocation(21, 15)
-            };
+            var expectedDiagnostics = new DiagnosticDescription[] {};
 
             string expectedFlowGraph = @"
 Block[B0] - Entry
@@ -9208,10 +9200,7 @@ class C1
                 Diagnostic(ErrorCode.ERR_AssgLvalueExpected, "P1 ?? P2").WithLocation(11, 38),
                 // CS0747: Invalid initializer member declarator
                 //         var x = new C1 { P1 = null, (P1 ?? P2) = null };
-                Diagnostic(ErrorCode.ERR_InvalidInitializerElementInitializer, "(P1 ?? P2) = null").WithLocation(11, 37),
-                // CS0649: Field 'C1.P2' is never assigned to, and will always have its default value null
-                //     public object P2;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "P2").WithArguments("C1.P2", "null").WithLocation(7, 19)
+                Diagnostic(ErrorCode.ERR_InvalidInitializerElementInitializer, "(P1 ?? P2) = null").WithLocation(11, 37)
             };
 
             string expectedFlowGraph = @"

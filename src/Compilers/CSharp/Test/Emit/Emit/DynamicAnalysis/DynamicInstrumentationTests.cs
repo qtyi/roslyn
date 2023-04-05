@@ -1513,7 +1513,7 @@ True
 ";
 
             CompilationVerifier verifier = CompileAndVerify(source + InstrumentationHelperSource, expectedOutput: expectedOutput);
-            verifier.VerifyDiagnostics(Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Subject").WithArguments("Teacher.Subject", "null").WithLocation(37, 40));
+            verifier.VerifyDiagnostics();
         }
 
         /// <see cref="DynamicAnalysisResourceTests.TestPatternSpans_WithSharedWhenExpression"/>

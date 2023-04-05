@@ -6211,10 +6211,7 @@ class F
                 Diagnostic(ErrorCode.ERR_ObjectRequired, "ProtectionLevel").WithArguments("F.ProtectionLevel"),
                 // (14,7): warning CS0169: The field 'F.ProtectionLevel' is never used
                 //   int ProtectionLevel;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "ProtectionLevel").WithArguments("F.ProtectionLevel"),
-                // (17,14): warning CS0649: Field 'F.test' is never assigned to, and will always have its default value 0
-                //   public int test;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "test").WithArguments("F.test", "0")
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "ProtectionLevel").WithArguments("F.ProtectionLevel")
                 );
         }
 
@@ -7592,10 +7589,7 @@ class Gen<T>
                 Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "TypeAttribute").WithArguments("TypeAttribute").WithLocation(4, 6),
                 // (4,27): error CS0246: The type or namespace name 'L1' could not be found (are you missing a using directive or an assembly reference?)
                 //     [TypeAttribute(typeof(L1.L2.L3<>.L4<>))] public T Fld6;
-                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "L1").WithArguments("L1").WithLocation(4, 27),
-                // (4,55): warning CS0649: Field 'Gen<T>.Fld6' is never assigned to, and will always have its default value 
-                //     [TypeAttribute(typeof(L1.L2.L3<>.L4<>))] public T Fld6;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Fld6").WithArguments("Gen<T>.Fld6", "").WithLocation(4, 55));
+                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "L1").WithArguments("L1").WithLocation(4, 27));
         }
 
         [WorkItem(543914, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543914")]
@@ -7731,27 +7725,18 @@ using System;
 [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
 class B : Attribute
 {
-    public Type PublicField; // CS0649
+    public Type PublicField;
     private Type PrivateField; // CS0169
-    protected Type ProtectedField; // CS0649
-    internal Type InternalField; // CS0649
+    protected Type ProtectedField;
+    internal Type InternalField;
 }";
 
             var comp = CreateCompilation(source);
 
             comp.VerifyDiagnostics(
-                // (7,17): warning CS0649: Field 'B.PublicField' is never assigned to, and will always have its default value null
-                //     public Type PublicField; // CS0649
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "PublicField").WithArguments("B.PublicField", "null"),
                 // (8,18): warning CS0169: The field 'B.PrivateField' is never used
                 //     private Type PrivateField; // CS0169
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "PrivateField").WithArguments("B.PrivateField"),
-                // (9,20): warning CS0649: Field 'B.ProtectedField' is never assigned to, and will always have its default value null
-                //     protected Type ProtectedField; // CS0649
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "ProtectedField").WithArguments("B.ProtectedField", "null"),
-                // (10,19): warning CS0649: Field 'B.InternalField' is never assigned to, and will always have its default value null
-                //     internal Type InternalField; // CS0649
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "InternalField").WithArguments("B.InternalField", "null"));
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "PrivateField").WithArguments("B.PrivateField"));
         }
 
         [WorkItem(544230, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544230")]

@@ -198,6 +198,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             return _underlyingAssembly.AreInternalsVisibleToThisAssembly(other);
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            return _underlyingAssembly.GetFriendAccessibleAssemblyPublicKeys(simpleName);
+        }
+
         public override ImmutableArray<CSharpAttributeData> GetAttributes()
         {
             return RetargetingTranslator.GetRetargetedAttributes(_underlyingAssembly.GetAttributes(), ref _lazyCustomAttributes);

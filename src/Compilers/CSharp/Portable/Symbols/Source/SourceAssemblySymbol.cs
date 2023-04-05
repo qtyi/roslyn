@@ -584,7 +584,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             ValidateIVTPublicKeys(diagnostics);
-            //diagnostics that result from IVT checks performed while in the process of computing the public key.
+            //diagnostics that result from IVT and IVF checks performed while in the process of computing the public key.
             CheckOptimisticIVTAccessGrants(diagnostics);
 
             DetectAttributeAndOptionConflicts(diagnostics);
@@ -755,7 +755,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get
             {
                 EnsureAttributesAreBound();
-                return _lazyInternalsVisibleToMap != null;
+                return _lazyInternalsVisibleToMap != null ||
+                    // Force to expose all internals in this source assembly in order to emit them to ref assembly.
+                    true;
+            }
+        }
+
+        /// <summary>
+        /// True if this assembly imports internals from other assemblies.
+        /// </summary>
+        internal bool ImportsInternals
+        {
+            get
+            {
+                return _compilation.Options.FriendAccessibleAssemblyPublicKeys.Count > 0;
             }
         }
 
@@ -1996,6 +2009,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 AddSynthesizedAttribute(ref attributes, _compilation.SynthesizeDebuggableAttribute());
             }
 
+            // Synthesize IgnoresAccessChecksToAttribute only if all the following requirements are met:
+            // (a) We are not building a netmodule.
+            // (b) This assembly imports internals from other assembly.
+
+            if (!isBuildingNetModule && moduleBuilder.ShouldEmitIgnoresAccessChecksToAttribute())
+            {
+                foreach (var (name, keys) in _compilation.Options.FriendAccessibleAssemblyPublicKeys)
+                {
+                    foreach (var key in keys)
+                    {
+                        var assemblyName = ImmutableArray.Create(
+                            new TypedConstant(_compilation.GetSpecialType(SpecialType.System_String), TypedConstantKind.Primitive,
+                                key.IsDefaultOrEmpty ? name : name + ", PublicKey=" + AssemblyIdentity.PublicKeyToString(key)));
+                        AddSynthesizedAttribute(ref attributes, moduleBuilder.SynthesizeIgnoresAccessChecksToAttribute(assemblyName));
+                    }
+                }
+            }
+
             if (_compilation.Options.OutputKind == OutputKind.NetModule)
             {
                 // If the attribute is applied in source, do not add synthetic one.
@@ -2104,7 +2135,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override IEnumerable<ImmutableArray<byte>> GetInternalsVisibleToPublicKeys(string simpleName)
         {
             //EDMAURER assume that if EnsureAttributesAreBound() returns, then the internals visible to map has been populated.
-            //Do not optimize by checking if m_lazyInternalsVisibleToMap is Nothing. It may be non-null yet still
+            //Do not optimize by checking if _lazyInternalsVisibleToMap is Nothing. It may be non-null yet still
             //incomplete because another thread is in the process of building it.
 
             EnsureAttributesAreBound();
@@ -2117,6 +2148,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _lazyInternalsVisibleToMap.TryGetValue(simpleName, out result);
 
             return (result != null) ? result.Keys : SpecializedCollections.EmptyEnumerable<ImmutableArray<byte>>();
+        }
+
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            if (_compilation.Options.FriendAccessibleAssemblyPublicKeys.TryGetValue(simpleName, out var result))
+            {
+                return result;
+            }
+
+            return SpecializedCollections.EmptyEnumerable<ImmutableArray<byte>>();
         }
 
         internal override bool AreInternalsVisibleToThisAssembly(AssemblySymbol potentialGiverOfAccess)
@@ -2133,6 +2174,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     //ThrowIfFalse(assemblyWhoseKeysAreBeingComputed Is Me);
                     if (!potentialGiverOfAccess.GetInternalsVisibleToPublicKeys(this.Name).IsEmpty())
+                    {
+                        if (_optimisticallyGrantedInternalsAccess == null)
+                            Interlocked.CompareExchange(ref _optimisticallyGrantedInternalsAccess, new ConcurrentDictionary<AssemblySymbol, bool>(), null);
+
+                        _optimisticallyGrantedInternalsAccess.TryAdd(potentialGiverOfAccess, true);
+                        return true;
+                    }
+                    else if (!this.GetFriendAccessibleAssemblyPublicKeys(potentialGiverOfAccess.Name).IsEmpty())
                     {
                         if (_optimisticallyGrantedInternalsAccess == null)
                             Interlocked.CompareExchange(ref _optimisticallyGrantedInternalsAccess, new ConcurrentDictionary<AssemblySymbol, bool>(), null);

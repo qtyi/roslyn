@@ -36,6 +36,7 @@ namespace Roslyn.Test.Utilities
         internal const string TestContainerName = "RoslynTestContainer";
 
         internal static readonly ImmutableArray<byte> PublicKey = ImmutableArray.Create(TestResources.General.snPublicKey);
+        internal static readonly ImmutableArray<byte> PublicKey2 = ImmutableArray.Create(TestResources.General.snPublicKey2);
 
         internal static object s_keyInstalledLock = new object();
 

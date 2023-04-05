@@ -53,6 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         private static readonly string s_keyPairFile = SigningTestHelpers.KeyPairFile;
         private static readonly string s_publicKeyFile = SigningTestHelpers.PublicKeyFile;
         private static readonly ImmutableArray<byte> s_publicKey = SigningTestHelpers.PublicKey;
+        private static readonly ImmutableArray<byte> s_publicKey2 = SigningTestHelpers.PublicKey2;
 
         private static StrongNameProvider GetProviderWithPath(string keyFilePath) =>
             new DesktopStrongNameProvider(ImmutableArray.Create(keyFilePath), strongNameFileSystem: new VirtualizedStrongNameFileSystem());
@@ -760,9 +761,8 @@ public class C {}",
                 options: TestOptions.SigningReleaseDll,
                 parseOptions: parseOptions);
 
-            //compilation should not succeed, and internals should not be imported.
+            //compilation should not succeed, but internals should be imported.
             c.VerifyDiagnostics(
-
                 // (7,15): error CS0122: 'C.Goo()' is inaccessible due to its protection level
                 //             o.Goo();
                 Diagnostic(ErrorCode.ERR_BadAccess, "Goo").WithArguments("C.Goo()").WithLocation(7, 15)
@@ -812,7 +812,11 @@ public class C {}",
             parseOptions: parseOptions);
 
             //compilation should not succeed, and internals should not be imported.
-            c.VerifyDiagnostics(Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Goo").WithArguments("C", "Goo"));
+            c.VerifyDiagnostics(
+                // (7,15): error CS1061: 'C' does not contain a definition for 'Goo' and no extension method 'Goo' accepting a first argument of type 'C' could be found (are you missing a using directive or an assembly reference?)
+                //             o.Goo();
+                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "Goo").WithArguments("C", "Goo").WithLocation(7, 15)
+                );
 
             otherStream.Position = 0;
 

@@ -96,7 +96,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Optional strongNameProvider As StrongNameProvider = Nothing,
             Optional publicSign As Boolean = False,
             Optional reportSuppressedDiagnostics As Boolean = False,
-            Optional metadataImportOptions As MetadataImportOptions = MetadataImportOptions.Public)
+            Optional metadataImportOptions As MetadataImportOptions = MetadataImportOptions.Public,
+            Optional friendAccessibleAssemblyPublicKeys As IEnumerable(Of KeyValuePair(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte)))) = Nothing)
 
             MyClass.New(
                 outputKind,
@@ -134,6 +135,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 assemblyIdentityComparer:=assemblyIdentityComparer,
                 strongNameProvider:=strongNameProvider,
                 metadataImportOptions:=metadataImportOptions,
+                friendAccessibleAssemblyPublicKeys:=friendAccessibleAssemblyPublicKeys,
                 referencesSupersedeLowerVersions:=False,
                 ignoreCorLibraryDuplicatedTypes:=False)
 
@@ -245,6 +247,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             assemblyIdentityComparer As AssemblyIdentityComparer,
             strongNameProvider As StrongNameProvider,
             metadataImportOptions As MetadataImportOptions,
+            friendAccessibleAssemblyPublicKeys As IEnumerable(Of KeyValuePair(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte)))),
             referencesSupersedeLowerVersions As Boolean,
             ignoreCorLibraryDuplicatedTypes As Boolean)
 
@@ -276,6 +279,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 assemblyIdentityComparer:=assemblyIdentityComparer,
                 strongNameProvider:=strongNameProvider,
                 metadataImportOptions:=metadataImportOptions,
+                friendAccessibleAssemblyPublicKeys:=friendAccessibleAssemblyPublicKeys.ToImmutableDictionaryOrEmpty(CaseInsensitiveComparison.Comparer), ' Assembly public keys must be processed in case-insensitive fashion.
                 referencesSupersedeLowerVersions:=referencesSupersedeLowerVersions)
 
             _globalImports = globalImports.AsImmutableOrEmpty()
@@ -329,6 +333,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 assemblyIdentityComparer:=other.AssemblyIdentityComparer,
                 strongNameProvider:=other.StrongNameProvider,
                 metadataImportOptions:=other.MetadataImportOptions,
+                friendAccessibleAssemblyPublicKeys:=other.FriendAccessibleAssemblyPublicKeys,
                 referencesSupersedeLowerVersions:=other.ReferencesSupersedeLowerVersions,
                 publicSign:=other.PublicSign,
                 ignoreCorLibraryDuplicatedTypes:=other.IgnoreCorLibraryDuplicatedTypes)
@@ -909,6 +914,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return New VisualBasicCompilationOptions(Me) With {.MetadataImportOptions = value}
         End Function
 
+        Friend Function WithFriendAccessibleAssemblyPublicKeys(value As IEnumerable(Of KeyValuePair(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte))))) As VisualBasicCompilationOptions
+            Return New VisualBasicCompilationOptions(Me) With {.FriendAccessibleAssemblyPublicKeys = value.ToImmutableDictionaryOrEmpty()}
+        End Function
+
         Friend Function WithReferencesSupersedeLowerVersions(value As Boolean) As VisualBasicCompilationOptions
             If value = Me.ReferencesSupersedeLowerVersions Then
                 Return Me
@@ -1338,6 +1347,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 assemblyIdentityComparer:=assemblyIdentityComparer,
                 strongNameProvider:=strongNameProvider,
                 metadataImportOptions:=MetadataImportOptions.Public,
+                friendAccessibleAssemblyPublicKeys:=Nothing,
                 referencesSupersedeLowerVersions:=False,
                 ignoreCorLibraryDuplicatedTypes:=False)
 

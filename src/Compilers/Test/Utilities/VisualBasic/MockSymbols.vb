@@ -816,6 +816,10 @@ Friend Class MockAssemblySymbol
         Throw New NotImplementedException()
     End Function
 
+    Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+        Throw New NotImplementedException()
+    End Function
+
     Friend Overrides ReadOnly Property PublicKey As ImmutableArray(Of Byte)
         Get
             Throw New NotImplementedException()

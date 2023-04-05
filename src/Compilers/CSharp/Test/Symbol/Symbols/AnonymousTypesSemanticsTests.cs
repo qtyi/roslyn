@@ -1699,20 +1699,7 @@ IAnonymousObjectCreationOperation (OperationKind.AnonymousObjectCreation, Type: 
                           Instance Receiver: 
                             IParameterReferenceOperation: p (OperationKind.ParameterReference, Type: Product) (Syntax: 'p')
 ";
-            var expectedDiagnostics = new DiagnosticDescription[] {
-                // CS0649: Field 'Product.ProductName' is never assigned to, and will always have its default value null
-                //     public string ProductName;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "ProductName").WithArguments("Product.ProductName", "null").WithLocation(7, 19),
-                // CS0649: Field 'Product.SupplierID' is never assigned to, and will always have its default value 0
-                //     public int SupplierID;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "SupplierID").WithArguments("Product.SupplierID", "0").WithLocation(8, 16),
-                // CS0649: Field 'Product.ProductID' is never assigned to, and will always have its default value 0
-                //     public int ProductID;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "ProductID").WithArguments("Product.ProductID", "0").WithLocation(6, 16),
-                // CS0649: Field 'DB.Products' is never assigned to, and will always have its default value null
-                //     public IQueryable<Product> Products;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Products").WithArguments("DB.Products", "null").WithLocation(12, 32)
-            };
+            var expectedDiagnostics = new DiagnosticDescription[] {};
 
             VerifyOperationTreeAndDiagnosticsForTest<AnonymousObjectCreationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
         }

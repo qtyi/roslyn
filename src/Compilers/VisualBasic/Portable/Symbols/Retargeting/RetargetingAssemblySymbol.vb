@@ -226,6 +226,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols.Retargeting
             Return _underlyingAssembly.AreInternalsVisibleToThisAssembly(potentialGiverOfAccess)
         End Function
 
+        Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+            Return _underlyingAssembly.GetFriendAccessibleAssemblyPublicKeys(simpleName)
+        End Function
+
         Public Overrides ReadOnly Property MightContainExtensionMethods As Boolean
             Get
                 Return _underlyingAssembly.MightContainExtensionMethods

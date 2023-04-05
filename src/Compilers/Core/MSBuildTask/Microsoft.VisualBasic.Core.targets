@@ -64,6 +64,7 @@
          ErrorReport="$(ErrorReport)"
          Features="$(Features)"
          FileAlignment="$(FileAlignment)"
+         FriendAccessibleAssemblies="@(InternalsVisibleFrom)"
          GenerateDocumentation="$(GenerateDocumentation)"
          HighEntropyVA="$(HighEntropyVA)"
          Imports="@(Import)"

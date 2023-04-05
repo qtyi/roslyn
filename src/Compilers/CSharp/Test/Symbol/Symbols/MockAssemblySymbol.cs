@@ -85,6 +85,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             throw new NotImplementedException();
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            throw new NotImplementedException();
+        }
+
         public override ICollection<string> TypeNames
         {
             get

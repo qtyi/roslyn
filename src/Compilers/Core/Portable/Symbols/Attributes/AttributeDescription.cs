@@ -345,6 +345,8 @@ namespace Microsoft.CodeAnalysis
         internal static readonly AttributeDescription CaseSensitiveExtensionAttribute = new AttributeDescription("System.Runtime.CompilerServices", "ExtensionAttribute", s_signatures_HasThis_Void_Only, matchIgnoringCase: false);
 
         internal static readonly AttributeDescription InternalsVisibleToAttribute = new AttributeDescription("System.Runtime.CompilerServices", "InternalsVisibleToAttribute", s_signatures_HasThis_Void_String_Only);
+        internal static readonly AttributeDescription InternalsVisibleFromAttribute = new AttributeDescription("System.Runtime.CompilerServices", "InternalsVisibleFromAttribute", s_signatures_HasThis_Void_String_Only);
+        internal static readonly AttributeDescription IgnoresAccessChecksToAttribute = new AttributeDescription("System.Runtime.CompilerServices", "IgnoresAccessChecksToAttribute", s_signatures_HasThis_Void_String_Only);
         internal static readonly AttributeDescription AssemblySignatureKeyAttribute = new AttributeDescription("System.Reflection", "AssemblySignatureKeyAttribute", s_signaturesOfAssemblySignatureKeyAttribute);
         internal static readonly AttributeDescription AssemblyKeyFileAttribute = new AttributeDescription("System.Reflection", "AssemblyKeyFileAttribute", s_signatures_HasThis_Void_String_Only);
         internal static readonly AttributeDescription AssemblyKeyNameAttribute = new AttributeDescription("System.Reflection", "AssemblyKeyNameAttribute", s_signatures_HasThis_Void_String_Only);

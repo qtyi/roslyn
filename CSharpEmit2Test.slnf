@@ -1,0 +1,24 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Compilers\\CSharp\\CSharpAnalyzerDriver\\CSharpAnalyzerDriver.shproj",
+      "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
+      "src\\Compilers\\CSharp\\Test\\Emit2\\Microsoft.CodeAnalysis.CSharp.Emit2.UnitTests.csproj",
+      "src\\Compilers\\Core\\AnalyzerDriver\\AnalyzerDriver.shproj",
+      "src\\Compilers\\Core\\CodeAnalysisTest\\Microsoft.CodeAnalysis.UnitTests.csproj",
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
+      "src\\Compilers\\Test\\Core\\Microsoft.CodeAnalysis.Test.Utilities.csproj",
+      "src\\Compilers\\Test\\Resources\\Core\\Microsoft.CodeAnalysis.Compiler.Test.Resources.csproj",
+      "src\\Compilers\\Test\\Utilities\\CSharp\\Microsoft.CodeAnalysis.CSharp.Test.Utilities.csproj",
+      "src\\Compilers\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.vbproj",
+      "src\\Dependencies\\Collections\\Microsoft.CodeAnalysis.Collections.shproj",
+      "src\\Dependencies\\PooledObjects\\Microsoft.CodeAnalysis.PooledObjects.shproj",
+      "src\\Test\\PdbUtilities\\Roslyn.Test.PdbUtilities.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\BoundTreeGenerator\\CompilersBoundTreeGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpErrorFactsGenerator\\CSharpErrorFactsGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpSyntaxGenerator\\CSharpSyntaxGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\IOperationGenerator\\CompilersIOperationGenerator.csproj"
+    ]
+  }
+}

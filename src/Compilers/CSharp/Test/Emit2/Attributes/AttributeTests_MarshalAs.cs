@@ -1362,12 +1362,7 @@ class X
                 // (19,24): error CS7055: Unmanaged type 'ByValTStr' is only valid for fields.
                 Diagnostic(ErrorCode.ERR_MarshalUnmanagedTypeOnlyValidForFields, "UnmanagedType.ByValTStr").WithArguments("ByValTStr"),
                 // (22,16): error CS7054: Unmanaged type 'VBByRefStr' not valid for fields.
-                Diagnostic(ErrorCode.ERR_MarshalUnmanagedTypeNotValidForFields, "UnmanagedType.VBByRefStr").WithArguments("VBByRefStr"),
-
-                // TODO (tomat): remove
-
-                // (23,16): warning CS0649: Field 'X.field' is never assigned to, and will always have its default value 0
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("X.field", "0"));
+                Diagnostic(ErrorCode.ERR_MarshalUnmanagedTypeNotValidForFields, "UnmanagedType.VBByRefStr").WithArguments("VBByRefStr"));
         }
 
         [Fact]

@@ -541,23 +541,8 @@ struct A { public B? Field1; public B? Field4; }
 struct B { public C? Field2; }
 struct C { public object Field3; }
 ";
-            var expectedDiagnostics = new[]
-            {
-                // (9,22): warning CS0649: Field 'A.Field1' is never assigned to, and will always have its default value
-                // struct A { public B? Field1; public B? Field4; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field1").WithArguments("A.Field1", "").WithLocation(9, 22),
-                // (9,40): warning CS0649: Field 'A.Field4' is never assigned to, and will always have its default value
-                // struct A { public B? Field1; public B? Field4; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field4").WithArguments("A.Field4", "").WithLocation(9, 40),
-                // (10,22): warning CS0649: Field 'B.Field2' is never assigned to, and will always have its default value
-                // struct B { public C? Field2; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field2").WithArguments("B.Field2", "").WithLocation(10, 22),
-                // (11,26): warning CS0649: Field 'C.Field3' is never assigned to, and will always have its default value null
-                // struct C { public object Field3; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field3").WithArguments("C.Field3", "null").WithLocation(11, 26)
-            };
             var comp = CreateCompilation(src, parseOptions: TestOptions.RegularWithExtendedPropertyPatterns);
-            comp.VerifyDiagnostics(expectedDiagnostics);
+            comp.VerifyDiagnostics();
 
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree, ignoreAccessibility: false);
@@ -685,7 +670,7 @@ Block[B2] - Exit
     Statements (0)
 ";
 
-            VerifyFlowGraphAndDiagnosticsForTest<BlockSyntax>(src, expectedFlowGraph, expectedDiagnostics, parseOptions: TestOptions.Regular10);
+            VerifyFlowGraphAndDiagnosticsForTest<BlockSyntax>(src, expectedFlowGraph, expectedDiagnostics: new DiagnosticDescription[0], parseOptions: TestOptions.Regular10);
         }
 
         [Fact]
@@ -1095,11 +1080,7 @@ class P
 }
 ";
             var compilation = CreatePatternCompilation(source);
-            compilation.VerifyEmitDiagnostics(
-                    // (14,14): warning CS0649: Field 'P.Y' is never assigned to, and will always have its default value null
-                    //     public P Y;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Y").WithArguments("P.Y", "null").WithLocation(14, 14)
-                );
+            compilation.VerifyEmitDiagnostics();
             var tree = compilation.SyntaxTrees[0];
             var model = compilation.GetSemanticModel(tree);
 
@@ -1278,11 +1259,7 @@ struct S
 }
 ";
             var compilation = CreatePatternCompilation(source);
-            compilation.VerifyEmitDiagnostics(
-                    // (17,14): warning CS0649: Field 'S.Y' is never assigned to, and will always have its default value null
-                    //     public C Y;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Y").WithArguments("S.Y", "null").WithLocation(17, 14)
-                );
+            compilation.VerifyEmitDiagnostics();
             var tree = compilation.SyntaxTrees[0];
             var model = compilation.GetSemanticModel(tree);
 

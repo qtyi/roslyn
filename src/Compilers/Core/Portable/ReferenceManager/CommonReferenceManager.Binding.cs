@@ -548,7 +548,7 @@ namespace Microsoft.CodeAnalysis
                 assembly,
                 assemblyMetadata.CachedSymbols,
                 peReference.DocumentationProvider,
-                SimpleAssemblyName,
+                Compilation,
                 importOptions,
                 peReference.Properties.EmbedInteropTypes);
         }
@@ -1008,12 +1008,17 @@ namespace Microsoft.CodeAnalysis
 
         /// <summary>
         /// Determines if it is possible that <paramref name="assembly"/> gives internals
-        /// access to assembly <paramref name="compilationName"/>. It does not make a conclusive
+        /// access to assembly that <paramref name="compilation"/> to built. It does not make a conclusive
         /// determination of visibility because the compilation's strong name key is not supplied.
         /// </summary>
-        internal static bool InternalsMayBeVisibleToAssemblyBeingCompiled(string compilationName, PEAssembly assembly)
+        internal static bool InternalsMayBeVisibleToAssemblyBeingCompiled(TCompilation compilation, PEAssembly assembly)
         {
-            return !assembly.GetInternalsVisibleToPublicKeys(compilationName).IsEmpty();
+            var sourceAssemblyName = compilation.MakeSourceAssemblySimpleName();
+            return
+                !assembly.GetInternalsVisibleToPublicKeys(sourceAssemblyName).IsEmpty()
+                // Force internals in all assemblies may be visible to this compilation since we cannot determine
+                // which assemblies are specified by InternalsVisibleFrom attributes at this period of time.
+                || compilation.Options.FriendAccessibleAssemblyPublicKeys.TryGetValue(assembly.Identity.Name, out var keys) && !keys.IsEmpty;
         }
 
         // https://github.com/dotnet/roslyn/issues/40751 It should not be necessary to annotate this method to annotate overrides

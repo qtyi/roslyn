@@ -299,8 +299,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Friend ReadOnly Property EmbeddedSymbolManager As EmbeddedSymbolManager
             Get
                 If _lazyEmbeddedSymbolManager Is Nothing Then
-                    Dim embedded = If(Options.EmbedVbCoreRuntime, EmbeddedSymbolKind.VbCore, EmbeddedSymbolKind.None) Or
-                                        If(IncludeInternalXmlHelper(), EmbeddedSymbolKind.XmlHelper, EmbeddedSymbolKind.None)
+                    Dim embedded = If(ShouldEmbedVbCoreRuntime(), EmbeddedSymbolKind.VbCore, EmbeddedSymbolKind.None) Or
+                                   If(ShouldEmbedInternalXmlHelper(), EmbeddedSymbolKind.XmlHelper, EmbeddedSymbolKind.None) Or
+                                   If(ShouldEmbedIgnoresAccessToAttribute(), EmbeddedSymbolKind.IgnoresAccessChecksToAttribute, EmbeddedSymbolKind.None)
                     If embedded <> EmbeddedSymbolKind.None Then
                         embedded = embedded Or EmbeddedSymbolKind.EmbeddedAttribute
                     End If
@@ -461,7 +462,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 referenceManager.AssertCanReuseForCompilation(Me)
                 _referenceManager = referenceManager
             Else
-                _referenceManager = New ReferenceManager(MakeSourceAssemblySimpleName(),
+                _referenceManager = New ReferenceManager(Me,
                                                               options.AssemblyIdentityComparer,
                                                               If(referenceManager IsNot Nothing, referenceManager.ObservedMetadata, Nothing))
             End If
@@ -1129,40 +1130,53 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 New EmbeddedTreeAndDeclaration(
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.Options.EmbedVbCoreRuntime Or compilation.IncludeInternalXmlHelper,
+                        Return If(compilation.ShouldEmbedEmbeddedAttribute(),
                                   EmbeddedSymbolManager.EmbeddedSyntax,
                                   Nothing)
                     End Function,
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.Options.EmbedVbCoreRuntime Or compilation.IncludeInternalXmlHelper,
+                        Return If(compilation.ShouldEmbedEmbeddedAttribute(),
                                   ForTree(EmbeddedSymbolManager.EmbeddedSyntax, compilation.Options, isSubmission:=False),
                                   Nothing)
                     End Function),
                 New EmbeddedTreeAndDeclaration(
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.Options.EmbedVbCoreRuntime,
+                        Return If(compilation.ShouldEmbedVbCoreRuntime(),
                                   EmbeddedSymbolManager.VbCoreSyntaxTree,
                                   Nothing)
                     End Function,
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.Options.EmbedVbCoreRuntime,
+                        Return If(compilation.ShouldEmbedVbCoreRuntime(),
                                   ForTree(EmbeddedSymbolManager.VbCoreSyntaxTree, compilation.Options, isSubmission:=False),
                                   Nothing)
                     End Function),
                 New EmbeddedTreeAndDeclaration(
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.IncludeInternalXmlHelper(),
+                        Return If(compilation.ShouldEmbedInternalXmlHelper(),
                                   EmbeddedSymbolManager.InternalXmlHelperSyntax,
                                   Nothing)
                     End Function,
                     Function()
                         Dim compilation = compReference.Value
-                        Return If(compilation.IncludeInternalXmlHelper(),
+                        Return If(compilation.ShouldEmbedInternalXmlHelper(),
                                   ForTree(EmbeddedSymbolManager.InternalXmlHelperSyntax, compilation.Options, isSubmission:=False),
+                                  Nothing)
+                    End Function),
+                New EmbeddedTreeAndDeclaration(
+                    Function()
+                        Dim compilation = compReference.Value
+                        Return If(compilation.ShouldEmbedIgnoresAccessToAttribute(),
+                                  EmbeddedSymbolManager.IgnoresAccessChecksToAttributeSyntax,
+                                  Nothing)
+                    End Function,
+                    Function()
+                        Dim compilation = compReference.Value
+                        Return If(compilation.ShouldEmbedIgnoresAccessToAttribute(),
+                                  ForTree(EmbeddedSymbolManager.IgnoresAccessChecksToAttributeSyntax, compilation.Options, isSubmission:=False),
                                   Nothing)
                     End Function),
                 New EmbeddedTreeAndDeclaration(
@@ -2303,6 +2317,24 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Me.ReportUnusedImports(tree, diagnostics, cancellationToken)
             End If
         End Sub
+
+        Friend Function ShouldEmbedEmbeddedAttribute() As Boolean
+            Return ShouldEmbedVbCoreRuntime() OrElse
+                   ShouldEmbedInternalXmlHelper() OrElse
+                   ShouldEmbedIgnoresAccessToAttribute()
+        End Function
+
+        Friend Function ShouldEmbedVbCoreRuntime() As Boolean
+            Return Me.Options.EmbedVbCoreRuntime
+        End Function
+
+        Friend Function ShouldEmbedInternalXmlHelper() As Boolean
+            Return Me.IncludeInternalXmlHelper()
+        End Function
+
+        Friend Function ShouldEmbedIgnoresAccessToAttribute() As Boolean
+            Return Me.SourceAssembly.ImportsInternals
+        End Function
 
         Friend Overrides Function CreateAnalyzerDriver(analyzers As ImmutableArray(Of DiagnosticAnalyzer), analyzerManager As AnalyzerManager, severityFilter As SeverityFilter) As AnalyzerDriver
             Dim getKind As Func(Of SyntaxNode, SyntaxKind) = Function(node As SyntaxNode) node.Kind

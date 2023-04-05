@@ -488,6 +488,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal abstract IEnumerable<ImmutableArray<byte>> GetInternalsVisibleToPublicKeys(string simpleName);
         internal abstract bool AreInternalsVisibleToThisAssembly(AssemblySymbol other);
 
+        internal abstract IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName);
+
         /// <summary>
         /// Assembly is /l-ed by compilation that is using it as a reference.
         /// </summary>

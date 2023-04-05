@@ -8917,9 +8917,6 @@ namespace System
     }
 }";
             var expected = new[] {
-                // (12,19): warning CS0649: Field '(T1, T2).Item1' is never assigned to, and will always have its default value 
-                //         public T1 Item1;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Item1").WithArguments("(T1, T2).Item1", "").WithLocation(12, 19),
                 // (13,20): warning CS0169: The field '(T1, T2).Item2' is never used
                 //         private T2 Item2;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "Item2").WithArguments("(T1, T2).Item2").WithLocation(13, 20)

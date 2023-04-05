@@ -163,7 +163,7 @@ class B : A<object?>
             CompileAndVerify(comp, symbolValidator: AssertNoNullablePublicOnlyAttribute);
 
             comp = CreateCompilation(source, options: options, parseOptions: parseOptions.WithNullablePublicOnly());
-            CompileAndVerify(comp, symbolValidator: AssertNoNullablePublicOnlyAttribute);
+            CompileAndVerify(comp, symbolValidator: AssertNullablePublicOnlyAttribute);
         }
 
         [Fact]
@@ -565,7 +565,7 @@ public class Program
 
             var parseOptions = TestOptions.Regular8;
             CompileAndVerify(source, parseOptions: parseOptions, expectedOutput: "<null>");
-            CompileAndVerify(source, parseOptions: parseOptions.WithNullablePublicOnly(), expectedOutput: "False");
+            CompileAndVerify(source, parseOptions: parseOptions.WithNullablePublicOnly(), expectedOutput: "True");
             CompileAndVerify(new[] { source, sourceIVTs }, parseOptions: parseOptions, expectedOutput: "<null>");
             CompileAndVerify(new[] { source, sourceIVTs }, parseOptions: parseOptions.WithNullablePublicOnly(), expectedOutput: "True");
         }

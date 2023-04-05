@@ -48,8 +48,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Friend NotInheritable Class ReferenceManager
             Inherits CommonReferenceManager(Of VisualBasicCompilation, AssemblySymbol)
 
-            Public Sub New(simpleAssemblyName As String, identityComparer As AssemblyIdentityComparer, observedMetadata As Dictionary(Of MetadataReference, MetadataOrDiagnostic))
-                MyBase.New(simpleAssemblyName, identityComparer, observedMetadata)
+            Public Sub New(compilation As VisualBasicCompilation, identityComparer As AssemblyIdentityComparer, observedMetadata As Dictionary(Of MetadataReference, MetadataOrDiagnostic))
+                MyBase.New(compilation, identityComparer, observedMetadata)
             End Sub
 
             Protected Overrides Sub GetActualBoundReferencesUsedBy(assemblySymbol As AssemblySymbol, referencedAssemblySymbols As List(Of AssemblySymbol))
@@ -96,14 +96,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Protected Overrides Function CreateAssemblyDataForFile(assembly As PEAssembly,
                                                                    cachedSymbols As WeakList(Of IAssemblySymbolInternal),
                                                                    documentationProvider As DocumentationProvider,
-                                                                   sourceAssemblySimpleName As String,
+                                                                   compilation As VisualBasicCompilation,
                                                                    importOptions As MetadataImportOptions,
                                                                    embedInteropTypes As Boolean) As AssemblyData
                 Return New AssemblyDataForFile(assembly,
                                                cachedSymbols,
                                                embedInteropTypes,
                                                documentationProvider,
-                                               sourceAssemblySimpleName,
+                                               compilation,
                                                importOptions)
             End Function
 
@@ -161,7 +161,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                     ' NOTE: The CreateSourceAssemblyFullBind is going to replace compilation's reference manager with newManager.
 
-                    Dim newManager = New ReferenceManager(Me.SimpleAssemblyName, Me.IdentityComparer, Me.ObservedMetadata)
+                    Dim newManager = New ReferenceManager(Me.Compilation, Me.IdentityComparer, Me.ObservedMetadata)
                     Dim successful = newManager.CreateAndSetSourceAssemblyFullBind(compilation)
 
                     ' The new manager isn't shared with any other compilation so there is no other 
@@ -810,6 +810,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ''' </summary>
                 Private ReadOnly _compilationImportOptions As MetadataImportOptions
 
+                ' This is the compilation that is being built.
+                Private ReadOnly _compilation As VisualBasicCompilation
+
                 ' This is the name of the compilation that is being built. 
                 ' This should be the assembly name w/o the extension. It is
                 ' used to compute whether or not it is possible that this
@@ -823,7 +826,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                cachedSymbols As WeakList(Of IAssemblySymbolInternal),
                                embedInteropTypes As Boolean,
                                documentationProvider As DocumentationProvider,
-                               sourceAssemblySimpleName As String,
+                               compilation As VisualBasicCompilation,
                                compilationImportOptions As MetadataImportOptions)
 
                     MyBase.New(assembly.Identity, assembly.AssemblyReferences, embedInteropTypes)
@@ -835,7 +838,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Me.Assembly = assembly
                     Me.DocumentationProvider = documentationProvider
                     _compilationImportOptions = compilationImportOptions
-                    _sourceAssemblySimpleName = sourceAssemblySimpleName
+                    _compilation = compilation
+                    _sourceAssemblySimpleName = compilation.MakeSourceAssemblySimpleName()
                 End Sub
 
                 Friend Overrides Function CreateAssemblySymbol() As AssemblySymbol
@@ -845,7 +849,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Friend ReadOnly Property InternalsMayBeVisibleToCompilation As Boolean
                     Get
                         If Not _internalsVisibleComputed Then
-                            _internalsPotentiallyVisibleToCompilation = InternalsMayBeVisibleToAssemblyBeingCompiled(_sourceAssemblySimpleName, Assembly)
+                            _internalsPotentiallyVisibleToCompilation = InternalsMayBeVisibleToAssemblyBeingCompiled(_compilation, Assembly)
                             _internalsVisibleComputed = True
                         End If
 

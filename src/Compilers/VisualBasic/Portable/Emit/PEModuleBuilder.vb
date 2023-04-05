@@ -175,6 +175,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Emit
             End If
         End Sub
 
+        Friend Function ShouldEmitIgnoresAccessChecksToAttribute() As Boolean
+            Return Me.Compilation.SourceAssembly.ImportsInternals
+        End Function
+
         Friend NotOverridable Overrides Function SynthesizeAttribute(attributeConstructor As WellKnownMember) As Cci.ICustomAttribute
             Return Me.Compilation.TrySynthesizeAttribute(attributeConstructor)
         End Function

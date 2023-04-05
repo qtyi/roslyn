@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -178,6 +179,11 @@ namespace Microsoft.CodeAnalysis
         public MetadataImportOptions MetadataImportOptions { get; protected set; }
 
         /// <summary>
+        /// Specify which assemblies we can access their internal types and members.
+        /// </summary>
+        public ImmutableDictionary<string, ImmutableHashSet<ImmutableArray<byte>>> FriendAccessibleAssemblyPublicKeys { get; protected set; }
+
+        /// <summary>
         /// Apply additional disambiguation rules during resolution of referenced assemblies.
         /// </summary>
         internal bool ReferencesSupersedeLowerVersions { get; private protected set; }
@@ -292,6 +298,7 @@ namespace Microsoft.CodeAnalysis
             AssemblyIdentityComparer? assemblyIdentityComparer,
             StrongNameProvider? strongNameProvider,
             MetadataImportOptions metadataImportOptions,
+            ImmutableDictionary<string, ImmutableHashSet<ImmutableArray<byte>>> friendAccessibleAssemblyPublicKeys,
             bool referencesSupersedeLowerVersions)
         {
             this.OutputKind = outputKind;
@@ -320,6 +327,7 @@ namespace Microsoft.CodeAnalysis
             this.StrongNameProvider = strongNameProvider;
             this.AssemblyIdentityComparer = assemblyIdentityComparer ?? AssemblyIdentityComparer.Default;
             this.MetadataImportOptions = metadataImportOptions;
+            this.FriendAccessibleAssemblyPublicKeys = friendAccessibleAssemblyPublicKeys;
             this.ReferencesSupersedeLowerVersions = referencesSupersedeLowerVersions;
             this.PublicSign = publicSign;
 
@@ -632,6 +640,7 @@ namespace Microsoft.CodeAnalysis
                    this.GeneralDiagnosticOption == other.GeneralDiagnosticOption &&
                    string.Equals(this.MainTypeName, other.MainTypeName, StringComparison.Ordinal) &&
                    this.MetadataImportOptions == other.MetadataImportOptions &&
+                   this.FriendAccessibleAssemblyPublicKeys.SequenceEqual(other.FriendAccessibleAssemblyPublicKeys, static (left, right) => (left.Key == right.Key) && left.Value.SequenceEqual(right.Value)) &&
                    this.ReferencesSupersedeLowerVersions == other.ReferencesSupersedeLowerVersions &&
                    string.Equals(this.ModuleName, other.ModuleName, StringComparison.Ordinal) &&
                    this.OptimizationLevel == other.OptimizationLevel &&
@@ -639,7 +648,7 @@ namespace Microsoft.CodeAnalysis
                    this.Platform == other.Platform &&
                    this.ReportSuppressedDiagnostics == other.ReportSuppressedDiagnostics &&
                    string.Equals(this.ScriptClassName, other.ScriptClassName, StringComparison.Ordinal) &&
-                   this.SpecificDiagnosticOptions.SequenceEqual(other.SpecificDiagnosticOptions, (left, right) => (left.Key == right.Key) && (left.Value == right.Value)) &&
+                   this.SpecificDiagnosticOptions.SequenceEqual(other.SpecificDiagnosticOptions, static (left, right) => (left.Key == right.Key) && (left.Value == right.Value)) &&
                    this.WarningLevel == other.WarningLevel &&
                    object.Equals(this.MetadataReferenceResolver, other.MetadataReferenceResolver) &&
                    object.Equals(this.XmlReferenceResolver, other.XmlReferenceResolver) &&
@@ -679,6 +688,7 @@ namespace Microsoft.CodeAnalysis
                    Hash.Combine((int)this.GeneralDiagnosticOption,
                    Hash.Combine(this.MainTypeName != null ? StringComparer.Ordinal.GetHashCode(this.MainTypeName) : 0,
                    Hash.Combine((int)this.MetadataImportOptions,
+                   Hash.Combine(Hash.CombineValues(this.FriendAccessibleAssemblyPublicKeys),
                    Hash.Combine(this.ReferencesSupersedeLowerVersions,
                    Hash.Combine(this.ModuleName != null ? StringComparer.Ordinal.GetHashCode(this.ModuleName) : 0,
                    Hash.Combine((int)this.OptimizationLevel,
@@ -695,7 +705,7 @@ namespace Microsoft.CodeAnalysis
                    Hash.Combine(this.StrongNameProvider,
                    Hash.Combine(this.AssemblyIdentityComparer,
                    Hash.Combine(this.PublicSign,
-                   Hash.Combine((int)this.NullableContextOptions, 0))))))))))))))))))))))))))));
+                   Hash.Combine((int)this.NullableContextOptions, 0)))))))))))))))))))))))))))));
         }
 
         public static bool operator ==(CompilationOptions? left, CompilationOptions? right)
