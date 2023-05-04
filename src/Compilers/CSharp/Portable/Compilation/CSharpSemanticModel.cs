@@ -5097,7 +5097,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return this.GetDeclaredSymbol((TypeParameterSyntax)node, cancellationToken);
                 case SyntaxKind.UsingDirective:
                     var usingDirective = (UsingDirectiveSyntax)node;
-                    if (usingDirective.Alias == null)
+                    if (usingDirective.Identifier != default)
                     {
                         break;
                     }

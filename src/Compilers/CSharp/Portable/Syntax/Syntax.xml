@@ -3082,7 +3082,13 @@
         <Field Name="UnsafeKeyword" Type="SyntaxToken" Optional="true">
           <Kind Name="UnsafeKeyword"/>
         </Field>
-        <Field Name="Alias" Type="NameEqualsSyntax"/>
+        <Field Name="Identifier" Type="SyntaxToken" Optional="true">
+          <Kind Name="IdentifierToken"/>
+        </Field>
+        <Field Name="TypeParameterList" Type="TypeParameterListSyntax" Optional="true"/>
+        <Field Name="EqualsToken" Type="SyntaxToken">
+          <Kind Name="EqualsToken"/>
+        </Field>
       </Sequence>
     </Choice>
     <Field Name="NamespaceOrType" Type="TypeSyntax"/>

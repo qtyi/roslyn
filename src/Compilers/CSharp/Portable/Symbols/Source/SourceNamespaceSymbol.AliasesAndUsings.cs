@@ -646,7 +646,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                         compilation.RecordImport(usingDirective);
 
-                        if (usingDirective.Alias != null)
+                        if (usingDirective.Identifier != default)
                         {
                             SyntaxToken identifier = usingDirective.Alias.Name.Identifier;
                             Location location = usingDirective.Alias.Name.Location;

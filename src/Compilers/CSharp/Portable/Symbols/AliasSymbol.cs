@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Roslyn.Utilities;
@@ -105,6 +107,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return SymbolKind.Alias;
             }
         }
+
+        /// <summary>
+        /// Returns the arity of this alias, or the number of type parameters it takes.
+        /// A non-generic alias has zero arity.
+        /// </summary>
+        public abstract int Arity
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Returns the type parameters that this alias has. If this is a non-generic type,
+        /// returns an empty ImmutableArray.  
+        /// </summary>
+        public abstract ImmutableArray<TypeParameterSymbol> TypeParameters { get; }
 
         /// <summary>
         /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
@@ -282,23 +299,185 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private readonly SyntaxReference _directive;
         private SymbolCompletionState _state;
+        private int _aliasArity;
+        private ImmutableArray<TypeParameterSymbol> _lazyTypeParameters;
         private NamespaceOrTypeSymbol? _aliasTarget;
+
+        /// <summary>
+        /// A collection of type parameter constraint types, populated when
+        /// constraint types for the first type parameter are requested.
+        /// </summary>
+        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> _lazyTypeParameterConstraintTypes;
+
+        /// <summary>
+        /// A collection of type parameter constraint kinds, populated when
+        /// constraint kinds for the first type parameter are requested.
+        /// </summary>
+        private ImmutableArray<TypeParameterConstraintKind> _lazyTypeParameterConstraintKinds;
+
 
         // lazy binding
         private BindingDiagnosticBag? _aliasTargetDiagnostics;
 
         internal AliasSymbolFromSyntax(SourceNamespaceSymbol containingSymbol, UsingDirectiveSyntax syntax)
-            : base(syntax.Alias!.Name.Identifier.ValueText, containingSymbol, ImmutableArray.Create(syntax.Alias!.Name.Identifier.GetLocation()), isExtern: false)
+            : base(syntax.Identifier.ValueText, containingSymbol, ImmutableArray.Create(syntax.Identifier.GetLocation()), isExtern: false)
         {
-            Debug.Assert(syntax.Alias is object);
+            Debug.Assert(syntax.Identifier != default);
 
+            _aliasArity = syntax.TypeParameterList != null ? syntax.TypeParameterList.Parameters.Count : 0;
             _directive = syntax.GetReference();
         }
 
         internal AliasSymbolFromSyntax(SourceNamespaceSymbol containingSymbol, ExternAliasDirectiveSyntax syntax)
             : base(syntax.Identifier.ValueText, containingSymbol, ImmutableArray.Create(syntax.Identifier.GetLocation()), isExtern: true)
         {
+            _aliasArity = 0;
             _directive = syntax.GetReference();
+        }
+
+        public override int Arity
+        {
+            get
+            {
+                return _aliasArity;
+            }
+        }
+
+        public override ImmutableArray<TypeParameterSymbol> TypeParameters
+        {
+            get
+            {
+                if (_lazyTypeParameters.IsDefault)
+                {
+                    var diagnostics = BindingDiagnosticBag.GetInstance();
+                    if (ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameters, MakeTypeParameters(diagnostics)))
+                    {
+                        AddDeclarationDiagnostics(diagnostics);
+                    }
+
+                    diagnostics.Free();
+                }
+
+                return _lazyTypeParameters;
+            }
+        }
+
+        private ImmutableArray<TypeParameterSymbol> MakeTypeParameters(BindingDiagnosticBag diagnostics)
+        {
+            if (_aliasArity == 0)
+            {
+                return ImmutableArray<TypeParameterSymbol>.Empty;
+            }
+
+            var typeParameterNames = new string[_aliasArity];
+
+            var decl = (UsingDirectiveSyntax)_directive.GetSyntax();
+            var syntaxTree = decl.SyntaxTree;
+            var tpl = decl.TypeParameterList!;
+
+            MessageID.IDS_FeatureGenerics.CheckFeatureAvailability(diagnostics, tpl.LessThanToken);
+
+            var parameterBuilders = new List<AliasTypeParameterBuilder>();
+            int i = 0;
+            foreach (var tp in tpl.Parameters)
+            {
+                if (tp.VarianceKeyword.Kind() != SyntaxKind.None)
+                {
+                    // cannot use in / out in alias.
+                    diagnostics.Add(ErrorCode.ERR_IllegalVarianceSyntax, tp.VarianceKeyword.GetLocation());
+                }
+
+                var name = typeParameterNames[i] = tp.Identifier.ValueText;
+                var location = new SourceLocation(tp.Identifier);
+
+                SourceMemberContainerTypeSymbol.ReportReservedTypeName(tp.Identifier.Text, this.DeclaringCompilation, diagnostics.DiagnosticBag, location);
+
+                for (int j = 0; j < i; j++)
+                {
+                    if (name == typeParameterNames[j])
+                    {
+                        diagnostics.Add(ErrorCode.ERR_DuplicateTypeParameter, location, name);
+                        goto next;
+                    }
+                }
+next:
+
+                parameterBuilders.Add(new AliasTypeParameterBuilder(syntaxTree.GetReference(tp), this, location));
+                i++;
+            }
+
+            var parameters = parameterBuilders.Select((builder, i) => builder.MakeSymbol(i, diagnostics));
+            return parameters.AsImmutable();
+        }
+
+        /// <summary>
+        /// Returns the constraint types for the given type parameter.
+        /// </summary>
+        internal ImmutableArray<TypeWithAnnotations> GetTypeParameterConstraintTypes(int ordinal)
+        {
+            var constraintTypes = GetTypeParameterConstraintTypes();
+            return (constraintTypes.Length > 0) ? constraintTypes[ordinal] : ImmutableArray<TypeWithAnnotations>.Empty;
+        }
+
+        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
+        {
+            var constraintTypes = _lazyTypeParameterConstraintTypes;
+            if (constraintTypes.IsDefault)
+            {
+                GetTypeParameterConstraintKinds();
+
+                var diagnostics = BindingDiagnosticBag.GetInstance();
+                if (ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintTypes, MakeTypeParameterConstraintTypes(diagnostics)))
+                {
+                    this.AddDeclarationDiagnostics(diagnostics);
+                }
+                diagnostics.Free();
+                constraintTypes = _lazyTypeParameterConstraintTypes;
+            }
+
+            return constraintTypes;
+        }
+
+        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics)
+        {
+#warning 未完成
+            throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns the constraint kind for the given type parameter.
+        /// </summary>
+        internal TypeParameterConstraintKind GetTypeParameterConstraintKind(int ordinal)
+        {
+            var constraintKinds = GetTypeParameterConstraintKinds();
+            return (constraintKinds.Length > 0) ? constraintKinds[ordinal] : TypeParameterConstraintKind.None;
+        }
+
+        private ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
+        {
+            var constraintKinds = _lazyTypeParameterConstraintKinds;
+            if (constraintKinds.IsDefault)
+            {
+                ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintKinds, MakeTypeParameterConstraintKinds());
+                constraintKinds = _lazyTypeParameterConstraintKinds;
+            }
+
+            return constraintKinds;
+        }
+
+        private ImmutableArray<TypeParameterConstraintKind> MakeTypeParameterConstraintKinds()
+        {
+            var typeParameters = this.TypeParameters;
+            var results = ImmutableArray<TypeParameterConstraintClause>.Empty;
+
+            int arity = typeParameters.Length;
+            if (arity > 0)
+            {
+                var targetTypeParameters = ((NamedTypeSymbol)this.Target).TypeParameters;
+            }
+
+#warning 未完成
+            throw new System.NotImplementedException();
         }
 
         /// <summary>
@@ -386,6 +565,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective.NamespaceOrType);
             }
 
+            if (usingDirective.TypeParameterList is object)
+            {
+                MessageID.IDS_FeatureUsingGenericAlias.CheckFeatureAvailability(diagnostics, usingDirective.TypeParameterList);
+            }
+
             var syntax = usingDirective.NamespaceOrType;
             var flags = BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks;
             if (usingDirective.UnsafeKeyword != default)
@@ -442,6 +626,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             : base(aliasName, containingSymbol, locations, isExtern)
         {
             _aliasTarget = target;
+        }
+
+        public override int Arity
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        public override ImmutableArray<TypeParameterSymbol> TypeParameters
+        {
+            get
+            {
+                return ImmutableArray<TypeParameterSymbol>.Empty;
+            }
         }
 
         /// <summary>

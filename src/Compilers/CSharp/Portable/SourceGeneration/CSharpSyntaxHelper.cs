@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             foreach (var usingDirective in usings)
             {
-                if (usingDirective.Alias is null)
+                if (usingDirective.Identifier is null)
                     continue;
 
                 if (global != (usingDirective.GlobalKeyword != null))
@@ -128,7 +128,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             foreach (var directive in compilationUnit.Usings)
             {
                 if (directive.GlobalKeyword != null &&
-                    directive.Alias != null)
+                    directive.Identifier != null)
                 {
                     return true;
                 }

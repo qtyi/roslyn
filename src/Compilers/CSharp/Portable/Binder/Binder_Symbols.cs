@@ -940,7 +940,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return true;
 
                 // using X = dynamic; is legal.
-                if (node.Parent is UsingDirectiveSyntax { Alias: not null })
+                if (node.Parent is UsingDirectiveSyntax usingDirective && usingDirective.Identifier != default)
                     return true;
 
                 return false;
@@ -1000,7 +1000,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case AttributeSyntax parent when parent.Name == node: // [nint]
                     return null;
                 case UsingDirectiveSyntax usingDirective:
-                    if (usingDirective.Alias != null && usingDirective.NamespaceOrType == node)
+                    if (usingDirective.Identifier != default && usingDirective.NamespaceOrType == node)
                     {
                         // legal to write `using A = nuint;` as long as using-alias-to-type is enabled (checked later).
                         break;

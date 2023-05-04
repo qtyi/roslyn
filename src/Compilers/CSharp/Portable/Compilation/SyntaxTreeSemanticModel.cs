@@ -1905,7 +1905,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             CheckSyntaxNode(declarationSyntax);
 
-            if (declarationSyntax.Alias == null)
+            if (declarationSyntax.Identifier == default)
             {
                 return null;
             }

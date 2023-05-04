@@ -139,6 +139,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        /// <summary>
+        /// The alias that declared this type parameter, or null.
+        /// </summary>
+        public AliasSymbol DeclaringAlias
+        {
+            get
+            {
+                return this.ContainingSymbol as AliasSymbol;
+            }
+        }
+
         // Type parameters do not have members
         public sealed override ImmutableArray<Symbol> GetMembers()
         {

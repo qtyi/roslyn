@@ -804,12 +804,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 unsafeToken = AddTrailingSkippedSyntax(unsafeToken, AddError(this.EatToken(), ErrorCode.ERR_BadStaticAfterUnsafe));
             }
 
-            var alias = this.IsNamedAssignment() ? ParseNameEquals() : null;
+            var hasAlias = IsTrueIdentifier() || this.CurrentToken.Kind == SyntaxKind.EqualsToken;
+            // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax.
+            var name = this.ParseIdentifierToken();
+            var typeParameters =  this.ParseTypeParameterList();
+            var equalsToken = this.EatToken(SyntaxKind.EqualsToken);
 
             TypeSyntax type;
             SyntaxToken semicolon;
 
-            var isAliasToFunctionPointer = alias != null && this.CurrentToken.Kind == SyntaxKind.DelegateKeyword;
+            var isAliasToFunctionPointer = hasAlias && this.CurrentToken.Kind == SyntaxKind.DelegateKeyword;
             if (!isAliasToFunctionPointer && IsPossibleNamespaceMemberDeclaration())
             {
                 //We're worried about the case where someone already has a correct program
@@ -837,7 +841,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 // worse for error recovery, but it means all code that consumes a using-directive can keep on assuming
                 // it has a name when there is no alias.  Only code that specifically has to process aliases then has to
                 // deal with getting arbitrary types back.
-                type = alias == null ? this.ParseQualifiedName() : this.ParseType();
+                type = !hasAlias ? this.ParseQualifiedName() : this.ParseType();
 
                 // If we can see a semicolon ahead, then the current token was probably supposed to be an identifier
                 if (type.IsMissing && this.PeekToken(1).Kind == SyntaxKind.SemicolonToken)
@@ -846,7 +850,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 semicolon = this.EatToken(SyntaxKind.SemicolonToken);
             }
 
-            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, alias, type, semicolon);
+            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, name, typeParameters, equalsToken, type, semicolon);
         }
 
         private bool IsPossibleGlobalAttributeDeclaration()
