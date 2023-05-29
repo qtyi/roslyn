@@ -63,7 +63,7 @@ class Program
 
             File.Delete(logFileName);
 
-            var commandLine = $"\"{pathToSolution}\" /Rebuild Debug /Out \"{logFileName}\" /rootsuffix RoslynDev /log";
+            var commandLine = $"\"{pathToSolution}\" /Rebuild Debug /Out \"{logFileName}\" /rootsuffix Qtyi /log";
 
             var process = Process.Start(pathToDevenv, commandLine);
             Assert.Equal(0, await process.WaitForExitAsync(HangMitigatingCancellationToken));

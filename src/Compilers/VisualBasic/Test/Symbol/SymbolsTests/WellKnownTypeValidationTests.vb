@@ -555,7 +555,8 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_RefSafetyRulesAttribute,
                          WellKnownType.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute,
                          WellKnownType.System_MemoryExtensions,
-                         WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute
+                         WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute,
+                         WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute
                         ' Not available on all platforms.
                         Continue For
                     Case WellKnownType.ExtSentinel
@@ -630,7 +631,8 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_ScopedRefAttribute,
                          WellKnownType.System_Runtime_CompilerServices_RefSafetyRulesAttribute,
                          WellKnownType.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute,
-                         WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute
+                         WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute,
+                         WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute
                         ' Not available on all platforms.
                         Continue For
                     Case WellKnownType.ExtSentinel
@@ -731,6 +733,7 @@ End Namespace
                          WellKnownMember.System_Runtime_CompilerServices_CompilerFeatureRequiredAttribute__ctor,
                          WellKnownMember.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute__ctor,
+                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle
                         ' Not available yet, but will be in upcoming release.
                         Continue For
@@ -920,6 +923,7 @@ End Namespace
                          WellKnownMember.System_Runtime_CompilerServices_CompilerFeatureRequiredAttribute__ctor,
                          WellKnownMember.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute__ctor,
+                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle
                         ' Not available yet, but will be in upcoming release.
                         Continue For

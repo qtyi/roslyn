@@ -72,10 +72,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M(System.Int32 x)",
-                // (10,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M(System.Int32 x)"
             );
         }
 
@@ -193,10 +190,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Property, "System.Int32 E.P { get; set; }",
-                // (9,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Property, "System.Int32 E.P { get; set; }"
             );
         }
 
@@ -221,13 +215,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Field, "System.Int32 E.F",
-                // (4,16): warning CS0649: Field 'E.F' is never assigned to, and will always have its default value 0
-                //     public int F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("E.F", "0"),
-                // (9,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Field, "System.Int32 E.F"
             );
         }
 
@@ -255,10 +243,7 @@ class F
                 SymbolKind.Event, "event System.Action E.Event",
                 // (4,32): warning CS0067: The event 'E.Event' is never used
                 //     public event System.Action Event;
-                Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("E.Event"),
-                // (9,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("E.Event")
             );
         }
 
@@ -283,10 +268,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.NamedType, "E",
-                SymbolKind.Field, "E.Element",
-                // (9,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value 
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "")
+                SymbolKind.Field, "E.Element"
             );
         }
 
@@ -315,10 +297,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.NamedType, "C",
-                SymbolKind.NamedType, "C.Inner",
-                // (12,14): warning CS0649: Field 'F.C' is never assigned to, and will always have its default value null
-                //     public C C;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "C").WithArguments("F.C", "null")
+                SymbolKind.NamedType, "C.Inner"
             );
         }
 
@@ -344,10 +323,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M(System.Int32 x)",
-                // (10,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M(System.Int32 x)"
                 );
         }
 
@@ -373,10 +349,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M<System.Int32>(System.Int32 x)",
-                // (10,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M<System.Int32>(System.Int32 x)"
             );
         }
 
@@ -402,10 +375,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M<System.Boolean>(System.Boolean x)",
-                // (10,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M<System.Boolean>(System.Boolean x)"
             );
         }
 
@@ -435,10 +405,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M(System.Int32 x)",
-                // (14,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M(System.Int32 x)"
             );
         }
 
@@ -468,10 +435,7 @@ class F
 ";
             CheckExpressionAndParent(text,
                 SymbolKind.Field, "E F.E",
-                SymbolKind.Method, "void E.M(System.Int32 x)",
-                // (14,14): warning CS0649: Field 'F.E' is never assigned to, and will always have its default value null
-                //     public E E;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "E").WithArguments("F.E", "null")
+                SymbolKind.Method, "void E.M(System.Int32 x)"
             );
         }
 
@@ -975,10 +939,7 @@ class Program
             CreateCompilation(text).VerifyDiagnostics(
                 // (9,13): warning CS0219: The variable 'var' is assigned but its value is never used
                 //         var var = "A";
-                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "var").WithArguments("var"),
-                // (3,21): warning CS0649: Field 'var<T>.field' is never assigned to, and will always have its default value 
-                //     public static T field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("var<T>.field", "")
+                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "var").WithArguments("var")
                 );
         }
 

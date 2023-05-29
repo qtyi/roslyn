@@ -1308,10 +1308,7 @@ class A : Attribute
                 Diagnostic(ErrorCode.ERR_ThisInStaticMeth, "this"),
                 // (9,37): error CS0026: Keyword 'this' is not valid in a static property, static method, or static field initializer
                 //     static object METHOD() { return this.ToString(); }
-                Diagnostic(ErrorCode.ERR_ThisInStaticMeth, "this"),
-                // (14,19): warning CS0649: Field 'A.P' is never assigned to, and will always have its default value null
-                //     public object P;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "P").WithArguments("A.P", "null")
+                Diagnostic(ErrorCode.ERR_ThisInStaticMeth, "this")
                 );
         }
 
@@ -2571,10 +2568,7 @@ class B<T, U> where T : A
                 Diagnostic(ErrorCode.ERR_LookupInTypeVariable, "T").WithArguments("T").WithLocation(10, 27),
                 // (11,9): error CS0704: Cannot do non-virtual member lookup in 'T' because it is a type parameter
                 //         T.M();
-                Diagnostic(ErrorCode.ERR_LookupInTypeVariable, "T").WithArguments("T").WithLocation(11, 9),
-                // (3,28): warning CS0649: Field 'A.F' is never assigned to, and will always have its default value null
-                //     internal static object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("A.F", "null")
+                Diagnostic(ErrorCode.ERR_LookupInTypeVariable, "T").WithArguments("T").WithLocation(11, 9)
                 );
         }
 
@@ -6469,20 +6463,14 @@ class MyClass
                 Diagnostic(ErrorCode.ERR_UnassignedThisUnsupportedVersion, "MyStruct").WithArguments("MyStruct.i", "11.0").WithLocation(4, 4),
                 // (15,16): warning CS0219: The variable 'aStruct' is assigned but its value is never used
                 //       MyStruct aStruct = new MyStruct();
-                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "aStruct").WithArguments("aStruct").WithLocation(15, 16),
-                // (8,15): warning CS0649: Field 'MyStruct.i' is never assigned to, and will always have its default value 0
-                //    public int i;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "i").WithArguments("MyStruct.i", "0").WithLocation(8, 15)
+                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "aStruct").WithArguments("aStruct").WithLocation(15, 16)
                 );
 
             var verifier = CompileAndVerify(text, parseOptions: TestOptions.Regular11);
             verifier.VerifyDiagnostics(
                 // (15,16): warning CS0219: The variable 'aStruct' is assigned but its value is never used
                 //       MyStruct aStruct = new MyStruct();
-                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "aStruct").WithArguments("aStruct"),
-                // (8,15): warning CS0649: Field 'MyStruct.i' is never assigned to, and will always have its default value 0
-                //    public int i;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "i").WithArguments("MyStruct.i", "0")
+                Diagnostic(ErrorCode.WRN_UnreferencedVarAssg, "aStruct").WithArguments("aStruct")
                 );
             verifier.VerifyIL("MyStruct..ctor", @"
 {
@@ -6787,10 +6775,7 @@ class B<T> where T : A
                 Diagnostic(ErrorCode.ERR_ObjectProhibited, "t.F").WithArguments("A.F").WithLocation(9, 20),
                 // (10,9): error CS0176: Member 'object.ReferenceEquals(object, object)' cannot be accessed with an instance reference; qualify it with a type name instead
                 //         t.ReferenceEquals(q, null);
-                Diagnostic(ErrorCode.ERR_ObjectProhibited, "t.ReferenceEquals").WithArguments("object.ReferenceEquals(object, object)").WithLocation(10, 9),
-                // (3,28): warning CS0649: Field 'A.F' is never assigned to, and will always have its default value null
-                //     internal static object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("A.F", "null").WithLocation(3, 28));
+                Diagnostic(ErrorCode.ERR_ObjectProhibited, "t.ReferenceEquals").WithArguments("object.ReferenceEquals(object, object)").WithLocation(10, 9));
         }
 
         [WorkItem(543361, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543361")]
@@ -6833,11 +6818,7 @@ class Test
     }
 }
 ";
-            CreateCompilation(source).VerifyDiagnostics(
-                // (5,14): warning CS0649: Field 'Test.D' is never assigned to, and will always have its default value null
-                //     public D D;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "D").WithArguments("Test.D", "null")
-            );
+            CreateCompilation(source).VerifyDiagnostics();
         }
 
         [Fact]
@@ -8236,14 +8217,7 @@ public class MyClass
                 Diagnostic(ErrorCode.ERR_BadFixedInitType, "i"),
                 // (13,18): error CS0210: You must provide an initializer in a fixed or using statement declaration
                 //       fixed (int i)    // CS0209
-                Diagnostic(ErrorCode.ERR_FixedMustInit, "i"),
-
-                // (4,15): warning CS0649: Field 'Point.x' is never assigned to, and will always have its default value 0
-                //    public int x, y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("Point.x", "0"),
-                // (4,18): warning CS0649: Field 'Point.y' is never assigned to, and will always have its default value 0
-                //    public int x, y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "y").WithArguments("Point.y", "0"));
+                Diagnostic(ErrorCode.ERR_FixedMustInit, "i"));
         }
 
         [Fact]
@@ -14229,10 +14203,7 @@ class A : Attribute
                 Diagnostic(ErrorCode.ERR_BaseInStaticMeth, "base"),
                 // (9,37): error CS1511: Keyword 'base' is not available in a static method
                 //     static object METHOD() { return base.ToString(); }
-                Diagnostic(ErrorCode.ERR_BaseInStaticMeth, "base"),
-                // (14,19): warning CS0649: Field 'A.P' is never assigned to, and will always have its default value null
-                //     public object P;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "P").WithArguments("A.P", "null")
+                Diagnostic(ErrorCode.ERR_BaseInStaticMeth, "base")
                 );
         }
 
@@ -14571,10 +14542,7 @@ class B : A
                 Diagnostic(ErrorCode.ERR_BadProtectedAccess, "((A)this).R").WithArguments("A.R", "A", "B"),
                 // (52,11): error CS0271: The property or indexer 'A.S' cannot be used in this context because the get accessor is inaccessible
                 //         M(((A)this).S);
-                Diagnostic(ErrorCode.ERR_InaccessibleGetter, "((A)this).S").WithArguments("A.S"),
-                // (3,22): warning CS0649: Field 'A.F' is never assigned to, and will always have its default value null
-                //     protected object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("A.F", "null")
+                Diagnostic(ErrorCode.ERR_InaccessibleGetter, "((A)this).S").WithArguments("A.S")
                 );
         }
 
@@ -19166,18 +19134,12 @@ internal class InternalClass
 }";
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics(
-                // (3,18): warning CS0649: Field 'InternalClass.ActuallyInternal' is never assigned to, and will always have its default value 0
-                //     internal int ActuallyInternal;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "ActuallyInternal").WithArguments("InternalClass.ActuallyInternal", "0"),
                 // (5,17): warning CS0169: The field 'InternalClass.ActuallyPrivate' is never used
                 //     private int ActuallyPrivate;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "ActuallyPrivate").WithArguments("InternalClass.ActuallyPrivate"),
                 // (6,17): warning CS0414: The field 'InternalClass.ActuallyPrivateAssigned' is assigned but its value is never used
                 //     private int ActuallyPrivateAssigned = 0;
                 Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "ActuallyPrivateAssigned").WithArguments("InternalClass.ActuallyPrivateAssigned"),
-                // (7,16): warning CS0649: Field 'InternalClass.EffectivelyInternal' is never assigned to, and will always have its default value 0
-                //     public int EffectivelyInternal;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "EffectivelyInternal").WithArguments("InternalClass.EffectivelyInternal", "0"),
                 // (12,20): warning CS0649: Field 'InternalClass.PrivateClass.EffectivelyPrivate' is never assigned to, and will always have its default value 0
                 //         public int EffectivelyPrivate;
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "EffectivelyPrivate").WithArguments("InternalClass.PrivateClass.EffectivelyPrivate", "0")
@@ -19845,10 +19807,7 @@ public class Test
             CreateCompilation(text).VerifyDiagnostics(
                 // (27,25): warning CS0280: 'Derived' does not implement the 'collection' pattern. 'Derived.GetEnumerator' has the wrong signature.
                 //       foreach (int i in new Derived()) {}   // CS0280
-                Diagnostic(ErrorCode.WRN_PatternBadSignature, "new Derived()").WithArguments("Derived", "collection", "Derived.GetEnumerator"),
-                // (20,19): warning CS0649: Field 'Derived.GetEnumerator' is never assigned to, and will always have its default value 0
-                //    new public int GetEnumerator;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "GetEnumerator").WithArguments("Derived.GetEnumerator", "0")
+                Diagnostic(ErrorCode.WRN_PatternBadSignature, "new Derived()").WithArguments("Derived", "collection", "Derived.GetEnumerator")
                 );
         }
 
@@ -21040,8 +20999,7 @@ public class Outer
     }
     public static int Main() { return 0; }
 }";
-            CreateCompilation(text).VerifyDiagnostics(
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Fld").WithArguments("Outer.Test.Fld", "null"));
+            CreateCompilation(text).VerifyDiagnostics();
         }
 
         [WorkItem(546449, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/546449")]
@@ -21924,9 +21882,6 @@ struct S
                 //             Action a = w.s.M;
                 Diagnostic(ErrorCode.WRN_CallOnNonAgileField, "w.s").WithArguments("S.WarningCS1690.s"),
 
-                // (7,16): warning CS0649: Field 'S.Field' is never assigned to, and will always have its default value 0
-                //     public int Field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("S.Field", "0"),
                 // (6,25): warning CS0414: The field 'S.Event' is assigned but its value is never used
                 //     public event Action Event;
                 Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "Event").WithArguments("S.Event"));
@@ -21967,9 +21922,6 @@ class S
                 // (14,11): warning CS0649: Field 'S.WarningCS1690.s' is never assigned to, and will always have its default value null
                 //         S s;
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "s").WithArguments("S.WarningCS1690.s", "null"),
-                // (7,16): warning CS0649: Field 'S.Field' is never assigned to, and will always have its default value 0
-                //     public int Field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("S.Field", "0"),
                 // (6,25): warning CS0414: The field 'S.Event' is assigned but its value is never used
                 //     public event Action Event;
                 Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "Event").WithArguments("S.Event"));

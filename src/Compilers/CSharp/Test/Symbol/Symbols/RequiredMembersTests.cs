@@ -196,9 +196,6 @@ class C2 : I2
             // (21,18): error CS0525: Interfaces cannot contain instance fields
             //     required int Field;
             Diagnostic(ErrorCode.ERR_InterfacesCantContainFields, "Field").WithLocation(21, 18),
-            // (21,18): warning CS0649: Field 'I1.Field' is never assigned to, and will always have its default value 0
-            //     required int Field;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("I1.Field", "0").WithLocation(21, 18),
             // (29,21): error CS0106: The modifier 'required' is not valid for this item
             //     required int I2.Prop4 => 0;
             Diagnostic(ErrorCode.ERR_BadMemberFlag, "Prop4").WithArguments("required").WithLocation(29, 21)
@@ -278,9 +275,6 @@ class C
             // (4,23): error CS1004: Duplicate 'required' modifier
             //     internal required required int Field;
             Diagnostic(ErrorCode.ERR_DuplicateModifier, "required").WithArguments("required").WithLocation(4, 23),
-            // (4,36): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value 0
-            //     internal required required int Field;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "0").WithLocation(4, 36),
             // (5,23): error CS1004: Duplicate 'required' modifier
             //     internal required required int Prop { get; set; }
             Diagnostic(ErrorCode.ERR_DuplicateModifier, "required").WithArguments("required").WithLocation(5, 23)
@@ -489,11 +483,7 @@ class C
 
         var symbolValidator = ValidateRequiredMembersInModule(expectedRequiredMembers, expectedAttributeLayout);
         var verifier = CompileAndVerify(comp, sourceSymbolValidator: symbolValidator, symbolValidator: symbolValidator);
-        verifier.VerifyDiagnostics(
-            // (5,25): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value 0
-            //     public required int Field;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "0").WithLocation(5, 25)
-        );
+        verifier.VerifyDiagnostics();
     }
 
     [Theory]
@@ -1286,10 +1276,7 @@ class C
             Diagnostic(ErrorCode.ERR_ExplicitRequiredMember, "RequiredMember").WithLocation(6, 6),
             // (8,6): error CS9033: Do not use 'System.Runtime.CompilerServices.RequiredMemberAttribute'. Use the 'required' keyword on required fields and properties instead.
             //     [RequiredMember]
-            Diagnostic(ErrorCode.ERR_ExplicitRequiredMember, "RequiredMember").WithLocation(8, 6),
-            // (9,16): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value 0
-            //     public int Field;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "0").WithLocation(9, 16)
+            Diagnostic(ErrorCode.ERR_ExplicitRequiredMember, "RequiredMember").WithLocation(8, 6)
         );
 
         var prop = comp.SourceModule.GlobalNamespace.GetMember<PropertySymbol>("C.Prop");
@@ -5651,10 +5638,7 @@ public class Derived : Base
         comp.VerifyDiagnostics(
             // (4,25): error CS0102: The type 'C' already contains a definition for 'Test'
             //     public required int Test;
-            Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "Test").WithArguments("C", "Test").WithLocation(4, 25),
-            // (4,25): warning CS0649: Field 'C.Test' is never assigned to, and will always have its default value 0
-            //     public required int Test;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Test").WithArguments("C.Test", "0").WithLocation(4, 25)
+            Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "Test").WithArguments("C", "Test").WithLocation(4, 25)
         );
     }
 
@@ -5670,11 +5654,8 @@ public class Derived : Base
             """);
 
         comp.VerifyDiagnostics(
-            // (3,25): warning CS0649: Field 'C.Test' is never assigned to, and will always have its default value 0
-            //     public required int Test;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Test").WithArguments("C.Test", "0").WithLocation(3, 25),
             // (4,25): error CS0102: The type 'C' already contains a definition for 'Test'
-            //     public required int Test { get; set; }
+            //     public required int Test;
             Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "Test").WithArguments("C", "Test").WithLocation(4, 25)
         );
     }

@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Serialization
                 out var outputKind, out var reportSuppressedDiagnostics, out var moduleName, out var mainTypeName, out var scriptClassName,
                 out var optimizationLevel, out var checkOverflow, out var cryptoKeyContainer, out var cryptoKeyFile, out var cryptoPublicKey,
                 out var delaySign, out var platform, out var generalDiagnosticOption, out var warningLevel, out var specificDiagnosticOptions,
-                out var concurrentBuild, out var deterministic, out var publicSign, out var metadataImportOptions,
+                out var concurrentBuild, out var deterministic, out var publicSign, out var metadataImportOptions, out var friendAccessibleAssemblyPublicKeys,
                 out var xmlReferenceResolver, out var sourceReferenceResolver, out var metadataReferenceResolver, out var assemblyIdentityComparer,
                 out var strongNameProvider, cancellationToken);
 
@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Serialization
                 outputKind, reportSuppressedDiagnostics, moduleName, mainTypeName, scriptClassName, usings, optimizationLevel, checkOverflow, allowUnsafe,
                 cryptoKeyContainer, cryptoKeyFile, cryptoPublicKey, delaySign, platform, generalDiagnosticOption, warningLevel, specificDiagnosticOptions, concurrentBuild,
                 deterministic, xmlReferenceResolver, sourceReferenceResolver, metadataReferenceResolver, assemblyIdentityComparer, strongNameProvider, publicSign,
-                metadataImportOptions, nullableContextOptions);
+                metadataImportOptions, friendAccessibleAssemblyPublicKeys, nullableContextOptions);
         }
 
         public override ParseOptions ReadParseOptionsFrom(ObjectReader reader, CancellationToken cancellationToken)

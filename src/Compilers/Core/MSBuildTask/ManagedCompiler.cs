@@ -202,6 +202,12 @@ namespace Microsoft.CodeAnalysis.BuildTasks
             get { return (string?)_store[nameof(GeneratedFilesOutputPath)]; }
         }
 
+        public ITaskItem[]? FriendAccessibleAssemblies
+        {
+            set { _store[nameof(FriendAccessibleAssemblies)] = value; }
+            get { return (ITaskItem[]?)_store[nameof(FriendAccessibleAssemblies)]; }
+        }
+
         public bool HighEntropyVA
         {
             set { _store[nameof(HighEntropyVA)] = value; }
@@ -930,12 +936,31 @@ namespace Microsoft.CodeAnalysis.BuildTasks
             commandLine.AppendSwitchIfNotNull("/win32icon:", Win32Icon);
             commandLine.AppendSwitchIfNotNull("/win32manifest:", Win32Manifest);
 
+            AddFriendAccessibleAssembliesToCommandLine(commandLine, FriendAccessibleAssemblies);
             AddResponseFileCommandsForSwitchesSinceInitialReleaseThatAreNeededByTheHost(commandLine);
             AddAnalyzersToCommandLine(commandLine, Analyzers);
             AddAdditionalFilesToCommandLine(commandLine);
 
             // Append the sources.
             commandLine.AppendFileNamesIfNotNull(Sources, " ");
+        }
+
+        /// <summary>
+        /// Adds a "/friendaccessto:" switch to the command line for each provided assembly.
+        /// </summary>
+        internal void AddFriendAccessibleAssembliesToCommandLine(CommandLineBuilderExtension commandLine, ITaskItem[]? friendAccessibleAssemblies)
+        {
+            // If there were no assemblies passed in, don't add any /friendaccessto: switches
+            // on the command-line.
+            if (friendAccessibleAssemblies == null)
+            {
+                return;
+            }
+
+            foreach (ITaskItem assembly in friendAccessibleAssemblies)
+            {
+                commandLine.AppendSwitchIfNotNull("/friendaccessto:", assembly.ItemSpec);
+            }
         }
 
         internal void AddResponseFileCommandsForSwitchesSinceInitialReleaseThatAreNeededByTheHost(CommandLineBuilderExtension commandLine)

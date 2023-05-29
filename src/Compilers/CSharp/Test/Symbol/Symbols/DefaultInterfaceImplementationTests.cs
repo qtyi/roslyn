@@ -18188,7 +18188,7 @@ set_P6
             if (m1 is null)
             {
                 Assert.Equal(Accessibility.Private, access);
-                Assert.Equal(MetadataImportOptions.Public, ((PEModuleSymbol)p1.ContainingModule).ImportOptions);
+                Assert.NotEqual(MetadataImportOptions.All, ((PEModuleSymbol)p1.ContainingModule).ImportOptions);
                 return;
             }
 

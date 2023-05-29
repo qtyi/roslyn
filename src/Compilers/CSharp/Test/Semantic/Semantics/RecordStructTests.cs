@@ -782,9 +782,6 @@ record struct S
                 // (5,31): error CS0666: 'S.field': new protected member declared in struct
                 //     internal protected string field; // 2, 3
                 Diagnostic(ErrorCode.ERR_ProtectedInStruct, "field").WithArguments("S.field").WithLocation(5, 31),
-                // (5,31): warning CS0649: Field 'S.field' is never assigned to, and will always have its default value null
-                //     internal protected string field; // 2, 3
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("S.field", "null").WithLocation(5, 31),
                 // (6,19): error CS0621: 'S.M()': virtual or abstract members cannot be private
                 //     abstract void M(); // 4
                 Diagnostic(ErrorCode.ERR_VirtualPrivate, "M").WithArguments("S.M()").WithLocation(6, 19),

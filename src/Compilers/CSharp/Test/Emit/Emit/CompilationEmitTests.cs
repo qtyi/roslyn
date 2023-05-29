@@ -171,10 +171,7 @@ namespace N.;
                     Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "Blah").WithArguments("Blah").WithLocation(4, 16),
                     // (8,13): error CS0198: A static readonly field cannot be assigned to (except in a static constructor or a variable initializer)
                     //             ro = 4;
-                    Diagnostic(ErrorCode.ERR_AssgReadonlyStatic, "ro").WithLocation(8, 13),
-                    // (4,21): warning CS0649: Field 'X.field' is never assigned to, and will always have its default value null
-                    //         public Blah field;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("N.X.field", "null").WithLocation(4, 21));
+                    Diagnostic(ErrorCode.ERR_AssgReadonlyStatic, "ro").WithLocation(8, 13));
         }
 
         [Fact]
@@ -575,7 +572,7 @@ public class C
                 VerifyMvid(output, hasMvidSection: false);
 
                 verifyEntryPoint(metadataOutput, expectZero: true);
-                VerifyMethods(metadataOutput, "C", new[] { "C..ctor()" });
+                VerifyMethods(metadataOutput, "C", new[] { "void C.Main()", "C..ctor()" });
                 VerifyMvid(metadataOutput, hasMvidSection: true);
             }
 
@@ -884,7 +881,7 @@ public class C
                 VerifyMethods(output, "C", new[] { "C..ctor()" });
                 VerifyMethods(metadataOutput, "C", new[] { "C..ctor()" });
                 VerifyMethods(output, "SomeAttribute", new[] { "SomeAttribute..ctor()", "SomeAttribute..cctor()", "void SomeAttribute.F()" });
-                VerifyMethods(metadataOutput, "SomeAttribute", new[] { "SomeAttribute..ctor()" });
+                VerifyMethods(metadataOutput, "SomeAttribute", new[] { "SomeAttribute..ctor()", "void SomeAttribute.F()" });
             }
         }
 
@@ -969,17 +966,17 @@ public class C
         [InlineData("public int M() { return 1; }", "public int M() { return 2; }", Match.BothMetadataAndRefOut)]
         [InlineData("public int M() { return 1; }", "public int M() { error(); }", Match.BothMetadataAndRefOut)]
         [InlineData("private void M() { }", "", Match.RefOut)]
-        [InlineData("internal void M() { }", "", Match.RefOut)]
-        [InlineData("private protected void M() { }", "", Match.RefOut)]
+        [InlineData("internal void M() { return; }", "internal void M() { error(); }", Match.BothMetadataAndRefOut)]
+        [InlineData("private protected void M() { return; }", "private protected void M() { error(); }", Match.BothMetadataAndRefOut)]
         [InlineData("private void M() { dynamic x = 1; }", "", Match.RefOut)] // no reference added from method bodies
         [InlineData(@"private void M() { var x = new { id = 1 }; }", "", Match.RefOut)]
         [InlineData("private int P { get { Error(); } set { Error(); } }", "", Match.RefOut)] // errors in methods bodies don't matter
         [InlineData("public int P { get; set; }", "", Match.Different)]
         [InlineData("protected int P { get; set; }", "", Match.Different)]
         [InlineData("private int P { get; set; }", "", Match.RefOut)] // private auto-property and underlying field are removed
-        [InlineData("internal int P { get; set; }", "", Match.RefOut)]
+        [InlineData("internal int P { get; set; }", "", Match.Different)]
         [InlineData("private event Action E { add { Error(); } remove { Error(); } }", "", Match.RefOut)]
-        [InlineData("internal event Action E { add { Error(); } remove { Error(); } }", "", Match.RefOut)]
+        [InlineData("internal event Action E { add { Error(); } remove { Error(); } }", "", Match.Different)]
         [InlineData("private class C2 { }", "", Match.Different)] // all types are included
         [InlineData("private struct S { }", "", Match.Different)]
         [InlineData("public struct S { private int i; }", "public struct S { }", Match.Different)]
@@ -2225,9 +2222,12 @@ public class PublicClass
 
             AssertEx.Equal(
                 new[] { "void PublicClass.PublicMethod()", "void PublicClass.ProtectedMethod()",
-                    "void PublicClass.ProtectedInternalMethod()",
+                    "void PublicClass.InternalMethod()", "void PublicClass.ProtectedInternalMethod()",
+                    "void PublicClass.PrivateProtectedMethod()",
                     "void PublicClass.PublicEvent.add", "void PublicClass.PublicEvent.remove",
-                    "PublicClass..ctor()", "event System.Action PublicClass.PublicEvent"},
+                    "void PublicClass.InternalEvent.add", "void PublicClass.InternalEvent.remove",
+                    "PublicClass..ctor()", "event System.Action PublicClass.PublicEvent",
+                    "event System.Action PublicClass.InternalEvent"},
                 compWithRef.GetMember<NamedTypeSymbol>("PublicClass").GetMembers().Select(m => m.ToTestDisplayString()));
 
             AssertEx.Equal(
@@ -2483,7 +2483,9 @@ internal struct InternalStruct
                 globalNamespace.GetMember<NamespaceSymbol>("System.Runtime.CompilerServices").GetMembers().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
-                new[] { "System.Int32 InternalStruct.<P>k__BackingField", "InternalStruct..ctor()" },
+                new[] { "System.Int32 InternalStruct.<P>k__BackingField", "InternalStruct..ctor()",
+                    "readonly System.Int32 InternalStruct.P.get", "void InternalStruct.P.set",
+                    "System.Int32 InternalStruct.P { readonly get; set; }" },
                 compWithRef.GetMember<NamedTypeSymbol>("InternalStruct").GetMembers().Select(m => m.ToTestDisplayString()));
         }
 

@@ -1501,10 +1501,7 @@ IInvalidOperation (OperationKind.Invalid, Type: ?, IsInvalid) (Syntax: 'M(d)')
                 Diagnostic(ErrorCode.ERR_ObjectRequired, "P").WithArguments("A.P").WithLocation(16, 13),
                 // file.cs(17,23): error CS0120: An object reference is required for the non-static field, method, or property 'A.M(int)'
                 //             /*<bind>*/M(d);/*</bind>*/
-                Diagnostic(ErrorCode.ERR_ObjectRequired, "M(d)").WithArguments("A.M(int)").WithLocation(17, 23),
-                // file.cs(6,27): warning CS0649: Field 'A.F' is never assigned to, and will always have its default value null
-                //     public Action<object> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("A.F", "null").WithLocation(6, 27)
+                Diagnostic(ErrorCode.ERR_ObjectRequired, "M(d)").WithArguments("A.M(int)").WithLocation(17, 23)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<InvocationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);

@@ -247,6 +247,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return Assembly.GetInternalsVisibleToPublicKeys(simpleName);
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            // TODO: We propably should return public keys in IgnoresAccessChecksTo attribute.
+            return SpecializedCollections.EmptyEnumerable<ImmutableArray<byte>>();
+        }
+
         internal DocumentationProvider DocumentationProvider
         {
             get

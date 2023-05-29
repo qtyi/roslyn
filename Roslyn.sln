@@ -528,6 +528,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Compilers.Toolset.Framework.Package", "src\NuGet\Microsoft.Net.Compilers.Toolset\Framework\Microsoft.Net.Compilers.Toolset.Framework.Package.csproj", "{521ADC3E-CC15-414B-9356-D87C5BCF3A24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LanguageServer", "LanguageServer", "{D449D505-CC6A-4E0B-AF1B-976E2D0AE67A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Package", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\AnyCpu\Qtyi.Net.Compilers.Toolset.DevEnv.Package.csproj", "{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Package.Arm64", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\arm64\Qtyi.Net.Compilers.Toolset.DevEnv.Package.Arm64.csproj", "{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1291,6 +1294,14 @@ Global
 		{521ADC3E-CC15-414B-9356-D87C5BCF3A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{521ADC3E-CC15-414B-9356-D87C5BCF3A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{521ADC3E-CC15-414B-9356-D87C5BCF3A24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1531,6 +1542,8 @@ Global
 		{E5E0BF73-95F7-4BC3-8443-2336C4FF4297} = {8977A560-45C2-4EC2-A849-97335B382C74}
 		{828FD0DB-9927-42AC-B6C2-D1514965D6C3} = {8977A560-45C2-4EC2-A849-97335B382C74}
 		{521ADC3E-CC15-414B-9356-D87C5BCF3A24} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
+		{2F6AC2FB-00E0-4472-B0DA-CAC4802F1B23} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
+		{8C2C1D2D-8290-4747-BF4C-10695ABA6BD7} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {604E6B91-7BC0-4126-AE07-D4D2FEFC3D29}

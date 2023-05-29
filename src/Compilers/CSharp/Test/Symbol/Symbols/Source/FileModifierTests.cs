@@ -2420,9 +2420,6 @@ public class FileModifierTests : CSharpTestBase
 
         var comp = CreateCompilation(source, options: TestOptions.UnsafeDebugDll);
         comp.VerifyDiagnostics(
-                // (1,28): warning CS0649: Field 'S.X' is never assigned to, and will always have its default value 0
-                // file struct S { public int X; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "X").WithArguments("S.X", "0").WithLocation(1, 28),
                 // (5,18): error CS9051: File-local type 'Container<S>' cannot be used in a member signature in non-file-local type 'Program'.
                 //     Container<S> M1() => new Container<S>(); // 1
                 Diagnostic(ErrorCode.ERR_FileTypeDisallowedInSignature, "M1").WithArguments("Container<S>", "Program").WithLocation(5, 18),

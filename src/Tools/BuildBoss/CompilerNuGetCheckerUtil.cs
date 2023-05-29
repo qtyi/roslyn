@@ -149,6 +149,29 @@ namespace BuildBoss
                 (@"tasks\net6.0\bincore", GetProjectPublishDirectory("VBCSCompiler", "net6.0")),
                 (@"tasks\net6.0", GetProjectPublishDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net6.0")));
 
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv.Arm64"),
+                (@"tasks\net472", GetProjectOutputDirectory("csc-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("vbc-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("csi", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("VBCSCompiler-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net472"))); ;
+
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv"),
+                excludeFunc: relativeFileName => relativeFileName.StartsWith(@"tasks\net6.0\bincore\Microsoft.DiaSymReader.Native", PathComparison),
+                (@"tasks\net472", GetProjectOutputDirectory("csc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("vbc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("csi", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("VBCSCompiler", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net472")),
+                (@"tasks\net6.0\bincore", GetProjectPublishDirectory("csc", "net6.0")),
+                (@"tasks\net6.0\bincore", GetProjectPublishDirectory("vbc", "net6.0")),
+                (@"tasks\net6.0\bincore", GetProjectPublishDirectory("VBCSCompiler", "net6.0")),
+                (@"tasks\net6.0", GetProjectPublishDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net6.0")));
+
             foreach (var arch in new[] { "x86", "x64", "arm64" })
             {
                 var suffix = arch == "arm64" ? "-arm64" : "";

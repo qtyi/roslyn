@@ -25,10 +25,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Symbols\EmbeddedSymbols\Embedded.vb" />
     <EmbeddedResource Include="Symbols\EmbeddedSymbols\InternalXmlHelper.vb" />
+    <EmbeddedResource Include="Symbols\EmbeddedSymbols\IgnoresAccessChecksToAttribute.vb" />
     <EmbeddedResource Include="Symbols\EmbeddedSymbols\VbCoreSourceText.vb" />
     <EmbeddedResource Include="Symbols\EmbeddedSymbols\VbMyTemplateText.vb" />
     <Compile Remove="Symbols\EmbeddedSymbols\Embedded.vb" />
     <Compile Remove="Symbols\EmbeddedSymbols\InternalXmlHelper.vb" />
+    <Compile Remove="Symbols\EmbeddedSymbols\IgnoresAccessChecksToAttribute.vb" />
     <Compile Remove="Symbols\EmbeddedSymbols\VbCoreSourceText.vb" />
     <Compile Remove="Symbols\EmbeddedSymbols\VbMyTemplateText.vb" />
   </ItemGroup>

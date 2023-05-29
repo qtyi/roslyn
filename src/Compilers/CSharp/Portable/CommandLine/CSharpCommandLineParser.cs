@@ -109,6 +109,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var checksumAlgorithm = SourceHashAlgorithms.Default;
             var defines = ArrayBuilder<string>.GetInstance();
             List<CommandLineReference> metadataReferences = new List<CommandLineReference>();
+            List<CommandLineAssemblyIdentity> friendAccessibleAssemblies = new List<CommandLineAssemblyIdentity>();
             List<CommandLineAnalyzerReference> analyzers = new List<CommandLineAnalyzerReference>();
             List<string> libPaths = new List<string>();
             List<string> sourcePaths = new List<string>();
@@ -220,6 +221,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         AddDiagnostic(diagnostics, ErrorCode.ERR_BadCompatMode, value);
                     }
+                    continue;
+                }
+                else if (IsOptionName("friendaccessto", nameMemory))
+                {
+                    ParseAssemblyIdentities(arg, valueMemory, diagnostics, friendAccessibleAssemblies);
                     continue;
                 }
                 else if (!IsScriptCommandLineParser && IsOptionName("a", "analyzer", nameMemory))
@@ -1410,6 +1416,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             ValidateWin32Settings(win32ResourceFile, win32IconFile, win32ManifestFile, outputKind, diagnostics);
 
+            // resolve public keys of assemblies that we have friend access to.
+            ImmutableDictionary<string, ImmutableHashSet<ImmutableArray<byte>>> friendAccessibleAssemblyPublicKeys = ResolveFriendAccessibleAssemblyPublicKeys(friendAccessibleAssemblies);
+
             // Dev11 searches for the key file in the current directory and assembly output directory.
             // We always look to base directory and then examine the search paths.
             if (!RoslynString.IsNullOrEmpty(baseDirectory))
@@ -1488,7 +1497,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 warningLevel: warningLevel,
                 specificDiagnosticOptions: diagnosticOptions,
                 reportSuppressedDiagnostics: reportSuppressedDiagnostics,
-                publicSign: publicSign
+                publicSign: publicSign,
+                friendAccessibleAssemblyPublicKeys: friendAccessibleAssemblyPublicKeys
             );
 
             if (debugPlus)
@@ -1551,6 +1561,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 Encoding = codepage,
                 ChecksumAlgorithm = checksumAlgorithm,
                 MetadataReferences = metadataReferences.AsImmutable(),
+                FriendAccessibleAssemblies = friendAccessibleAssemblies.AsImmutable(),
                 AnalyzerReferences = analyzers.AsImmutable(),
                 AnalyzerConfigPaths = analyzerConfigPaths.ToImmutableAndFree(),
                 AdditionalFiles = additionalFiles.AsImmutable(),
@@ -1958,6 +1969,83 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        private static void ParseAssemblyIdentities(string arg, ReadOnlyMemory<char>? valueMemory, IList<Diagnostic> diagnostics, List<CommandLineAssemblyIdentity> commandLineAssemblyIdentities)
+        {
+            if (valueMemory is null)
+            {
+                AddDiagnostic(diagnostics, ErrorCode.ERR_SwitchNeedsString, MessageID.IDS_Text.Localize(), arg);
+                return;
+            }
+
+            var value = valueMemory.Value;
+            if (value.Length == 0)
+            {
+                AddDiagnostic(diagnostics, ErrorCode.ERR_NoFileSpec, arg);
+                return;
+            }
+
+            // /r:"assemblyname"
+            // /r:assemblyname;assemblyname
+            // /r:"assemblyname";"assemblyname"
+            // /r:"unterminated_quotes
+            // /r:"quotes"in"the"middle
+
+            var builder = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
+
+            ParseSeparatedStringsEx(value, s_pathSeparators, removeEmptyEntries: true, builder);
+
+            foreach (var path in builder)
+            {
+                if (path.IsWhiteSpace())
+                {
+                    continue;
+                }
+
+                var displayName = path.Span.ToString();
+                AssemblyIdentity? identity;
+                AssemblyIdentityParts parts;
+                if (!AssemblyIdentity.TryParseDisplayName(displayName, out identity, out parts))
+                {
+                    AddDiagnostic(diagnostics, ErrorCode.WRN_InvalidAssemblyName, displayName);
+                    continue;
+                }
+
+                // Allow public key token due to compatibility reasons, but we are not going to use its value.
+                const AssemblyIdentityParts allowedParts = AssemblyIdentityParts.Name | AssemblyIdentityParts.PublicKey | AssemblyIdentityParts.PublicKeyToken;
+
+                if ((parts & ~allowedParts) != 0)
+                {
+                    AddDiagnostic(diagnostics, ErrorCode.ERR_FriendAssemblyBadArgs, displayName);
+                    continue;
+                }
+
+                commandLineAssemblyIdentities.Add(new CommandLineAssemblyIdentity(identity.Name, identity.PublicKey));
+            }
+            builder.Free();
+
+        }
+
+        private static ImmutableDictionary<string, ImmutableHashSet<ImmutableArray<byte>>> ResolveFriendAccessibleAssemblyPublicKeys(List<CommandLineAssemblyIdentity> assemblyIdentities)
+        {
+            var dic = new Dictionary<string, HashSet<ImmutableArray<byte>>>();
+            foreach (var assemblyIdentity in assemblyIdentities)
+            {
+                if (!dic.TryGetValue(assemblyIdentity.Name, out var keys))
+                {
+                    keys = new HashSet<ImmutableArray<byte>>();
+                    dic.Add(assemblyIdentity.Name, keys);
+                }
+                keys.Add(assemblyIdentity.PublicKey);
+            }
+
+            var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<ImmutableArray<byte>>>();
+            foreach (var (name, keys) in dic)
+            {
+                builder.Add(name, keys.ToImmutableHashSet());
+            }
+            return builder.ToImmutable();
+        }
+
         private static void ValidateWin32Settings(string? win32ResourceFile, string? win32IconResourceFile, string? win32ManifestFile, OutputKind outputKind, IList<Diagnostic> diagnostics)
         {
             if (win32ResourceFile != null)
@@ -2077,7 +2165,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var parts = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
 
             var nullableSpan = "nullable".AsSpan();
-            ParseSeparatedStrings(value, s_warningSeparators, removeEmptyEntries: true, parts);
+            ParseSeparatedStringsEx(value, s_warningSeparators, removeEmptyEntries: true, parts);
             foreach (ReadOnlyMemory<char> part in parts)
             {
                 if (part.Span.Equals(nullableSpan, StringComparison.OrdinalIgnoreCase))

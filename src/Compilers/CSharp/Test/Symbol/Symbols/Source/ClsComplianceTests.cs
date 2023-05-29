@@ -244,9 +244,6 @@ public class Levels
                 //     [CLSCompliant(true)] internal int F2;
                 Diagnostic(ErrorCode.WRN_CLS_MeaninglessOnPrivateType, "F2").WithArguments("Levels.F2"),
 
-                // (32,39): warning CS0649: Field 'Levels.F2' is never assigned to, and will always have its default value 0
-                //     [CLSCompliant(true)] internal int F2;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F2").WithArguments("Levels.F2", "0"),
                 // (31,38): warning CS0169: The field 'Levels.F1' is never used
                 //     [CLSCompliant(true)] private int F1;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "F1").WithArguments("Levels.F1"),

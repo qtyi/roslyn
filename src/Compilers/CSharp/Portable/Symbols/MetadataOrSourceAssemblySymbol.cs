@@ -229,29 +229,54 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             result = IVTConclusion.NoRelationshipClaimed;
 
-            // returns an empty list if there was no IVT attribute at all for the given name
-            // A name w/o a key is represented by a list with an entry that is empty
-            IEnumerable<ImmutableArray<byte>> publicKeys = potentialGiverOfAccess.GetInternalsVisibleToPublicKeys(this.Name);
-
-            // We have an easy out here. Suppose the assembly wanting access is 
-            // being compiled as a module. You can only strong-name an assembly. So we are going to optimistically 
-            // assume that it is going to be compiled into an assembly with a matching strong name, if necessary.
-            if (publicKeys.Any() && this.IsNetModule())
+            // NOTE: Check if any [InternalsVisibleTo] attribute in potentialGiverOfAccess matches this assembly.
+            if (result == IVTConclusion.NoRelationshipClaimed)
             {
-                return IVTConclusion.Match;
+                // returns an empty list if there was no IVT attribute at all for the given name
+                // A name w/o a key is represented by a list with an entry that is empty
+                IEnumerable<ImmutableArray<byte>> publicKeys = potentialGiverOfAccess.GetInternalsVisibleToPublicKeys(this.Name);
+
+                // We have an easy out here. Suppose the assembly wanting access is 
+                // being compiled as a module. You can only strong-name an assembly. So we are going to optimistically 
+                // assume that it is going to be compiled into an assembly with a matching strong name, if necessary.
+                if (publicKeys.Any() && this.IsNetModule())
+                {
+                    return IVTConclusion.Match;
+                }
+
+                // look for one that works, if none work, then return the failure for the last one examined.
+                foreach (var key in publicKeys)
+                {
+                    // We pass the public key of this assembly explicitly so PerformIVTCheck does not need
+                    // to get it from this.Identity, which would trigger an infinite recursion.
+                    result = potentialGiverOfAccess.Identity.PerformIVTCheck(this.PublicKey, key);
+                    Debug.Assert(result != IVTConclusion.NoRelationshipClaimed);
+
+                    if (result == IVTConclusion.Match || result == IVTConclusion.OneSignedOneNot)
+                    {
+                        break;
+                    }
+                }
             }
 
-            // look for one that works, if none work, then return the failure for the last one examined.
-            foreach (var key in publicKeys)
+            // NOTE: Check if any friend accessible assembly matches potentialGiverOfAccess.
+            if (result == IVTConclusion.NoRelationshipClaimed || result == IVTConclusion.PublicKeyDoesntMatch)
             {
-                // We pass the public key of this assembly explicitly so PerformIVTCheck does not need
-                // to get it from this.Identity, which would trigger an infinite recursion.
-                result = potentialGiverOfAccess.Identity.PerformIVTCheck(this.PublicKey, key);
-                Debug.Assert(result != IVTConclusion.NoRelationshipClaimed);
+                // returns an empty list if there was no IVF attribute at all for the given name
+                // A name w/o a key is represented by a list with an entry that is empty
+                IEnumerable<ImmutableArray<byte>> publicKeys = this.GetFriendAccessibleAssemblyPublicKeys(potentialGiverOfAccess.Name);
 
-                if (result == IVTConclusion.Match || result == IVTConclusion.OneSignedOneNot)
+                foreach (var key in publicKeys)
                 {
-                    break;
+                    // We pass the public key of this assembly explicitly so PerformIVFCheck does not need
+                    // to get it from this.Identity, which would trigger an infinite recursion.
+                    result = potentialGiverOfAccess.Identity.PerformIVFCheck(this.PublicKey, key);
+                    Debug.Assert(result != IVTConclusion.NoRelationshipClaimed);
+
+                    if (result == IVTConclusion.Match || result == IVTConclusion.OneSignedOneNot)
+                    {
+                        break;
+                    }
                 }
             }
 

@@ -4556,10 +4556,7 @@ Diagnostic(ErrorCode.WRN_ComparisonToSelf, "v == v"),
 Diagnostic(ErrorCode.WRN_ComparisonToSelf, "p == p"),
 // (13,35): warning CS1718: Comparison made to same variable; did you mean to compare something else?
 //             if (v == v | p == p | t == t) {}
-Diagnostic(ErrorCode.WRN_ComparisonToSelf, "t == t"),
-// (5,25): warning CS0649: Field 'NS.Test<T>.field' is never assigned to, and will always have its default value null
-//         internal object field;
-Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("NS.Test<T>.field", "null")
+Diagnostic(ErrorCode.WRN_ComparisonToSelf, "t == t")
                 );
         }
 
@@ -8874,19 +8871,7 @@ struct Z {
                 Diagnostic(ErrorCode.ERR_StructLayoutCycle, "xz").WithArguments("Y.xz", "X<Z>").WithLocation(9, 17),
                 // (14,17): error CS0523: Struct member 'Z.xy' of type 'X<Y>' causes a cycle in the struct layout
                 //     public X<Y> xy;
-                Diagnostic(ErrorCode.ERR_StructLayoutCycle, "xy").WithArguments("Z.xy", "X<Y>").WithLocation(14, 17),
-                // (9,17): warning CS0649: Field 'Y.xz' is never assigned to, and will always have its default value 
-                //     public X<Z> xz;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "xz").WithArguments("Y.xz", "").WithLocation(9, 17),
-                // (14,17): warning CS0649: Field 'Z.xy' is never assigned to, and will always have its default value 
-                //     public X<Y> xy;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "xy").WithArguments("Z.xy", "").WithLocation(14, 17),
-                // (5,14): warning CS0649: Field 'X<T>.t' is never assigned to, and will always have its default value 
-                //     public T t;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "t").WithArguments("X<T>.t", "").WithLocation(5, 14),
-                // (13,17): warning CS0649: Field 'Z.xe' is never assigned to, and will always have its default value 
-                //     public X<E> xe;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "xe").WithArguments("Z.xe", "").WithLocation(13, 17)
+                Diagnostic(ErrorCode.ERR_StructLayoutCycle, "xy").WithArguments("Z.xy", "X<Y>").WithLocation(14, 17)
                 );
         }
 
@@ -8908,9 +8893,6 @@ struct W<T>
                 // (8,16): error CS0523: Struct member 'W<T>.x' of type 'X<W<W<T>>>' causes a cycle in the struct layout
                 //     X<W<W<T>>> x;
                 Diagnostic(ErrorCode.ERR_StructLayoutCycle, "x").WithArguments("W<T>.x", "X<W<W<T>>>"),
-                // (3,14): warning CS0649: Field 'X<T>.t' is never assigned to, and will always have its default value 
-                //     public T t;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "t").WithArguments("X<T>.t", ""),
                 // (8,16): warning CS0169: The field 'W<T>.x' is never used
                 //     X<W<W<T>>> x;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x").WithArguments("W<T>.x")
@@ -9367,10 +9349,7 @@ namespace NS
                 Diagnostic(ErrorCode.ERR_HidingAbstractMethod, "@goo").WithArguments("A1.goo", "B1.goo").WithLocation(9, 24),
                 // (18,36): error CS0533: 'A1.A2.goo' hides inherited abstract member 'A1.B2.goo()'
                 //         new public delegate object @goo(); // CS0533
-                Diagnostic(ErrorCode.ERR_HidingAbstractMethod, "@goo").WithArguments("A1.A2.goo", "A1.B2.goo()").WithLocation(18, 36),
-                // (31,32): warning CS0649: Field 'A3.goo' is never assigned to, and will always have its default value null
-                //         new protected double[] goo;  // CS0533
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "goo").WithArguments("NS.A3.goo", "null").WithLocation(31, 32));
+                Diagnostic(ErrorCode.ERR_HidingAbstractMethod, "@goo").WithArguments("A1.A2.goo", "A1.B2.goo()").WithLocation(18, 36));
         }
 
         [WorkItem(540464, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/540464")]
@@ -12000,9 +11979,6 @@ public class A4 : Attribute
                 // (13,34): error CS0666: 'NS.S1<T, V>.S2.M2<X, R>(ref X, R)': new protected member declared in struct
                 //             protected internal R M2<X, R>(ref X p, R r) { return r; }
                 Diagnostic(ErrorCode.ERR_ProtectedInStruct, "M2").WithArguments("NS.S1<T, V>.S2.M2<X, R>(ref X, R)"),
-                // (5,21): warning CS0649: Field 'NS.S1<T, V>.field' is never assigned to, and will always have its default value 
-                //         protected T field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("NS.S1<T, V>.field", ""),
                 // (8,39): warning CS0067: The event 'NS.S1<T, V>.E' is never used
                 //         protected event System.Action E;
                 Diagnostic(ErrorCode.WRN_UnreferencedEvent, "E").WithArguments("NS.S1<T, V>.E"),
@@ -12247,10 +12223,7 @@ class TestClass
                 Diagnostic(ErrorCode.ERR_NoImplicitConv, "0").WithArguments("int", "void"),
                 // (10,18): warning CS0169: The field 'NS.Goo.SGoo.Field1' is never used
                 //             void Field1;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "Field1").WithArguments("NS.Goo.SGoo.Field1"),
-                // (11,27): warning CS0649: Field 'NS.Goo.SGoo.Field2' is never assigned to, and will always have its default value 
-                //             internal void Field2;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field2").WithArguments("NS.Goo.SGoo.Field2", "")
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "Field1").WithArguments("NS.Goo.SGoo.Field1")
                 );
 
             var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
@@ -12421,9 +12394,6 @@ class C5<T> where T : I
                 // (10,43): error CS0681: The modifier 'abstract' is not valid on fields. Try using a property instead.
                 //             abstract internal Goo<object> field;
                 Diagnostic(ErrorCode.ERR_AbstractField, "field"),
-                // (6,27): warning CS0649: Field 'NS.Goo<T>.field' is never assigned to, and will always have its default value 
-                //         public abstract T field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("NS.Goo<T>.field", ""),
                 // (10,43): warning CS0649: Field 'NS.Goo<T>.SGoo.field' is never assigned to, and will always have its default value null
                 //             abstract internal Goo<object> field;
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("NS.Goo<T>.SGoo.field", "null")
@@ -15591,10 +15561,7 @@ class AAttribute : Attribute { }
                 Diagnostic(ErrorCode.ERR_IllegalFixedType, "goo"),
                 // (4,22): error CS1663: Fixed size buffer type must be one of the following: bool, byte, short, int, long, char, sbyte, ushort, uint, ulong, float or double
                 //         public fixed bar _bufferBar[10]; // error CS1663: Fixed size buffer type must be one of the following: bool, byte, short, int, long, char, sbyte, ushort, uint, ulong, float or double
-                Diagnostic(ErrorCode.ERR_IllegalFixedType, "bar"),
-                // (9,20): warning CS0649: Field 'goo.ABC' is never assigned to, and will always have its default value 0
-                //         public int ABC;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "ABC").WithArguments("goo.ABC", "0"));
+                Diagnostic(ErrorCode.ERR_IllegalFixedType, "bar"));
         }
 
         [Fact]
@@ -19352,10 +19319,7 @@ namespace NS
                 Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "MyMeth").WithArguments("NS.MyType", "MyMeth"),
                 // (9,20): error CS0102: The type 'NS.MyType' already contains a definition for 'MyMeth'
                 //         public int MyMeth;
-                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "MyMeth").WithArguments("NS.MyType", "MyMeth"),
-                // (9,20): warning CS0649: Field 'NS.MyType.MyMeth' is never assigned to, and will always have its default value 0
-                //         public int MyMeth;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "MyMeth").WithArguments("NS.MyType.MyMeth", "0")
+                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "MyMeth").WithArguments("NS.MyType", "MyMeth")
                 );
 
             var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
@@ -19762,13 +19726,7 @@ class B2 : A2
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "get_Item").WithArguments("B.get_Item"),
                 // (25,12): warning CS0169: The field 'B.get_P' is never used
                 //     object get_P;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "get_P").WithArguments("B.get_P"),
-                // (33,21): warning CS0649: Field 'A2.Item' is never assigned to, and will always have its default value null
-                //     internal object Item; // no error
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Item").WithArguments("A2.Item", "null"),
-                // (37,21): warning CS0649: Field 'B1.Item' is never assigned to, and will always have its default value null
-                //     internal object Item;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Item").WithArguments("B1.Item", "null")
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "get_P").WithArguments("B.get_P")
                 );
         }
 

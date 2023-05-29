@@ -460,6 +460,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
         Friend MustOverride Function AreInternalsVisibleToThisAssembly(other As AssemblySymbol) As Boolean
 
+        Friend MustOverride Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+
         ''' <summary>
         ''' Get symbol for predefined type from Cor Library used by this assembly.
         ''' </summary>
@@ -726,23 +728,42 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Return True
             End If
 
+            ' NOTE: Check if any [InternalsVisibleTo] attribute in this assembly matches wantingAssembly.
             Dim myKeys = Me.GetInternalsVisibleToPublicKeys(assemblyWantingAccess.Name)
 
-            ' We have an easy out here. Suppose the assembly wanting access is
-            ' being compiled as a module. You can only strong-name an assembly. So we are going to optimistically
-            ' assume that it Is going to be compiled into an assembly with a matching strong name, if necessary
-            If myKeys.Any() AndAlso assemblyWantingAccess.IsNetModule() Then
-                Return True
-            End If
-
-            For Each key In myKeys
-                Dim conclusion As IVTConclusion = Me.Identity.PerformIVTCheck(assemblyWantingAccess.Identity.PublicKey, key)
-                Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
-                If conclusion = IVTConclusion.Match Then
-                    ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+            If myKeys.Any() Then
+                ' We have an easy out here. Suppose the assembly wanting access is
+                ' being compiled as a module. You can only strong-name an assembly. So we are going to optimistically
+                ' assume that it Is going to be compiled into an assembly with a matching strong name, if necessary
+                If assemblyWantingAccess.IsNetModule() Then
                     Return True
                 End If
-            Next
+
+                For Each key In myKeys
+                    Dim conclusion As IVTConclusion = Me.Identity.PerformIVTCheck(assemblyWantingAccess.Identity.PublicKey, key)
+                    Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
+                    If conclusion = IVTConclusion.Match Then
+                        ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+                        Return True
+                    End If
+                Next
+            End If
+
+            ' NOTE: Check if any friend accessible assembly, if wantingAssembly is a source assembly, matches this assembly.
+            If TypeOf assemblyWantingAccess Is AssemblySymbol Then
+                Dim keys = DirectCast(assemblyWantingAccess, AssemblySymbol).GetFriendAccessibleAssemblyPublicKeys(Me.Name)
+
+                If keys.Any() Then
+                    For Each key In keys
+                        Dim conclusion As IVTConclusion = Me.Identity.PerformIVFCheck(assemblyWantingAccess.Identity.PublicKey, key)
+                        Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
+                        If conclusion = IVTConclusion.Match Then
+                            ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+                            Return True
+                        End If
+                    Next
+                End If
+            End If
 
             Return False
         End Function

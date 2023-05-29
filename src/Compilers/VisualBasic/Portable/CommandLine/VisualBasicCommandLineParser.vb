@@ -126,6 +126,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim checksumAlgorithm = SourceHashAlgorithms.Default
             Dim defines As IReadOnlyDictionary(Of String, Object) = Nothing
             Dim metadataReferences = New List(Of CommandLineReference)()
+            Dim friendAccessibleAssemblies = New List(Of CommandLineAssemblyIdentity)()
             Dim analyzers = New List(Of CommandLineAnalyzerReference)()
             Dim sdkPaths As New List(Of String)()
             Dim libPaths As New List(Of String)()
@@ -223,6 +224,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                     Case "r", "reference"
                         metadataReferences.AddRange(ParseAssemblyReferences(name, value, diagnostics, embedInteropTypes:=False))
+                        Continue For
+
+                    Case "friendaccessto"
+                        friendAccessibleAssemblies.AddRange(ParseAssemblyIdentities(arg, value, diagnostics))
                         Continue For
 
                     Case "a", "analyzer"
@@ -1343,6 +1348,9 @@ lVbRuntimePlus:
 
             ValidateWin32Settings(noWin32Manifest, win32ResourceFile, win32IconFile, win32ManifestFile, outputKind, diagnostics)
 
+            ' resolve public keys of assemblies that we have friend access to.
+            Dim friendAccessibleAssemblyPublicKeys As ImmutableDictionary(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte))) = ResolveFriendAccessibleAssemblyPublicKeys(friendAccessibleAssemblies)
+
             If sourceLink IsNot Nothing And Not emitPdb Then
                 AddDiagnostic(diagnostics, ERRID.ERR_SourceLinkRequiresPdb)
             End If
@@ -1422,6 +1430,7 @@ lVbRuntimePlus:
                 cryptoKeyFile:=keyFileSetting,
                 delaySign:=delaySignSetting,
                 publicSign:=publicSign,
+                friendAccessibleAssemblyPublicKeys:=friendAccessibleAssemblyPublicKeys,
                 platform:=platform,
                 generalDiagnosticOption:=generalDiagnosticOption,
                 specificDiagnosticOptions:=specificDiagnosticOptions,
@@ -1475,6 +1484,7 @@ lVbRuntimePlus:
                 .Encoding = codepage,
                 .ChecksumAlgorithm = checksumAlgorithm,
                 .MetadataReferences = metadataReferences.AsImmutable(),
+                .FriendAccessibleAssemblies = friendAccessibleAssemblies.AsImmutable(),
                 .AnalyzerReferences = analyzers.AsImmutable(),
                 .AdditionalFiles = additionalFiles.AsImmutable(),
                 .AnalyzerConfigPaths = analyzerConfigPaths.ToImmutableAndFree(),
@@ -1668,6 +1678,56 @@ lVbRuntimePlus:
 
             Return ParseSeparatedPaths(value).
                    Select(Function(path) New CommandLineReference(path, New MetadataReferenceProperties(MetadataImageKind.Assembly, embedInteropTypes:=embedInteropTypes)))
+        End Function
+
+        Private Shared Function ParseAssemblyIdentities(name As String, value As String, diagnostics As IList(Of Diagnostic)) As IEnumerable(Of CommandLineAssemblyIdentity)
+            If String.IsNullOrEmpty(value) Then
+                ' TODO: localize <assemblyname_list>?
+                AddDiagnostic(diagnostics, ERRID.ERR_ArgumentRequired, name, ":<assemblyname_list>")
+                Return SpecializedCollections.EmptyEnumerable(Of CommandLineAssemblyIdentity)()
+            End If
+
+            Dim builder As ImmutableArray(Of CommandLineAssemblyIdentity).Builder = ImmutableArray.CreateBuilder(Of CommandLineAssemblyIdentity)()
+            For Each displayName In ParseSeparatedStrings(value, s_pathSeparators, True)
+                Dim identity As AssemblyIdentity = Nothing
+                Dim parts As AssemblyIdentityParts
+                If Not AssemblyIdentity.TryParseDisplayName(displayName, identity, parts) Then
+                    AddDiagnostic(diagnostics, ERRID.WRN_InvalidAssemblyName, displayName)
+                    Continue For
+                End If
+
+                ' Allow public key token due to compatibility reasons, but we are not going to use its value.
+                Const allowedParts As AssemblyIdentityParts = AssemblyIdentityParts.Name Or AssemblyIdentityParts.PublicKey Or AssemblyIdentityParts.PublicKeyToken
+
+                If (parts And Not allowedParts) <> 0 Then
+                    AddDiagnostic(diagnostics, ERRID.ERR_FriendAssemblyBadArguments, displayName)
+                    Continue For
+                End If
+
+                builder.Add(New CommandLineAssemblyIdentity(identity.Name, identity.PublicKey))
+            Next
+
+            Return builder.ToImmutable()
+        End Function
+
+        Private Shared Function ResolveFriendAccessibleAssemblyPublicKeys(assemblyIdentities As IList(Of CommandLineAssemblyIdentity)) As ImmutableDictionary(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte)))
+            Dim dic As Dictionary(Of String, HashSet(Of ImmutableArray(Of Byte))) = New Dictionary(Of String, HashSet(Of ImmutableArray(Of Byte)))()
+            For Each assemblyIdentity In assemblyIdentities
+                Dim keys As HashSet(Of ImmutableArray(Of Byte)) = Nothing
+                If Not dic.TryGetValue(assemblyIdentity.Name, keys) Then
+                    keys = New HashSet(Of ImmutableArray(Of Byte))()
+                    dic.Add(assemblyIdentity.Name, keys)
+                End If
+                keys.Add(assemblyIdentity.PublicKey)
+            Next
+
+            Dim builder As ImmutableDictionary(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte))).Builder = ImmutableDictionary.CreateBuilder(Of String, ImmutableHashSet(Of ImmutableArray(Of Byte)))()
+            For Each pair In dic
+                Dim name As String = pair.Key
+                Dim keys As HashSet(Of ImmutableArray(Of Byte)) = pair.Value
+                builder.Add(name, keys.ToImmutableHashSet())
+            Next
+            Return builder.ToImmutable()
         End Function
 
         Private Shared Function ParseAnalyzers(name As String, value As String, diagnostics As IList(Of Diagnostic)) As IEnumerable(Of CommandLineAnalyzerReference)

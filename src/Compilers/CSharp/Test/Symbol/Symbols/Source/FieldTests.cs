@@ -318,10 +318,7 @@ class A
                 Diagnostic(ErrorCode.ERR_FieldCantHaveVoidType, "void").WithLocation(5, 23),
                 // (5,46): error CS0102: The type 'A' already contains a definition for ''
                 //     protected virtual void Finalize const () { }
-                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "").WithArguments("A", "").WithLocation(5, 46),
-                // (5,28): warning CS0649: Field 'A.Finalize' is never assigned to, and will always have its default value 
-                //     protected virtual void Finalize const () { }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Finalize").WithArguments("A.Finalize", "").WithLocation(5, 28)
+                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "").WithArguments("A", "").WithLocation(5, 46)
                 );
         }
 
@@ -386,10 +383,7 @@ class A
                 Diagnostic(ErrorCode.ERR_FieldCantHaveVoidType, "void").WithLocation(5, 23),
                 // (5,46): error CS0102: The type 'A' already contains a definition for ''
                 //     protected virtual void Finalize const () { }
-                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "").WithArguments("A", "").WithLocation(5, 46),
-                // (5,28): warning CS0649: Field 'A.Finalize' is never assigned to, and will always have its default value 
-                //     protected virtual void Finalize const () { }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Finalize").WithArguments("A.Finalize", "").WithLocation(5, 28)
+                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "").WithArguments("A", "").WithLocation(5, 46)
                 );
         }
 

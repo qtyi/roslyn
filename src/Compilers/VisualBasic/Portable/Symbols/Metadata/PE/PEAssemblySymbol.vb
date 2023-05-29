@@ -122,6 +122,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols.Metadata.PE
             Return Assembly.GetInternalsVisibleToPublicKeys(simpleName)
         End Function
 
+        Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+            ' TODO: We propably should return public keys in IgnoresAccessChecksTo attribute.
+            Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()
+        End Function
+
         Public Overloads Overrides Function GetAttributes() As ImmutableArray(Of VisualBasicAttributeData)
             If _lazyCustomAttributes.IsDefault Then
                 PrimaryModule.LoadCustomAttributes(Me.Assembly.Handle, _lazyCustomAttributes)

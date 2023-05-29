@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.IntegrationTest.Utilities {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("RoslynDev")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Qtyi")]
         public string VsRootSuffix {
             get {
                 return ((string)(this["VsRootSuffix"]));

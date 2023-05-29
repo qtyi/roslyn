@@ -888,7 +888,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Friend Overrides Function GetInternalsVisibleToPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
 
             'EDMAURER assume that if EnsureAttributesAreBound() returns, then the internals visible to map has been populated.
-            'Do not optimize by checking if m_lazyInternalsVisibleToMap is Nothing. It may be non-null yet still
+            'Do not optimize by checking if _lazyInternalsVisibleToMap is Nothing. It may be non-null yet still
             'incomplete because another thread is in the process of building it.
             EnsureAttributesAreBound()
 
@@ -1198,6 +1198,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 End If
 
                 ValidateIVTPublicKeys(diagnostics)
+                'diagnostics that result from IVT and IVF checks performed while in the process of computing the public key.
                 CheckOptimisticIVTAccessGrants(diagnostics)
 
                 DetectAttributeAndOptionConflicts(diagnostics)
@@ -1410,7 +1411,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Public ReadOnly Property InternalsAreVisible As Boolean Implements ISourceAssemblySymbolInternal.InternalsAreVisible
             Get
                 EnsureAttributesAreBound()
-                Return _lazyInternalsVisibleToMap IsNot Nothing
+                ' Force to expose all internals in this source assembly in order to emit them to ref assembly.
+                Return _lazyInternalsVisibleToMap IsNot Nothing OrElse True
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' True if this assembly imports internals from other assemblies.
+        ''' </summary>
+        Public ReadOnly Property ImportsInternals As Boolean
+            Get
+                Return _compilation.Options.FriendAccessibleAssemblyPublicKeys.Count > 0
             End Get
         End Property
 
@@ -1564,6 +1575,25 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 End If
             End If
 
+            ' Synthesize IgnoresAccessChecksToAttribute only if all the following requirements are met
+            ' (a) We are not building a netmodule.
+            ' (b) This assembly imports internals from other assembly.
+
+            If Not isBuildingNetModule AndAlso moduleBuilder.ShouldEmitIgnoresAccessChecksToAttribute() Then
+                For Each pair In _compilation.Options.FriendAccessibleAssemblyPublicKeys
+                    Dim name As String = pair.Key
+                    For Each key In pair.Value
+                        If Not key.IsDefaultOrEmpty Then
+                            name += ", PublicKey=" + AssemblyIdentity.PublicKeyToString(key)
+                        End If
+                        Dim assemblyName = New TypedConstant(_compilation.GetSpecialType(SpecialType.System_String), TypedConstantKind.Primitive, name)
+                        AddSynthesizedAttribute(attributes, DeclaringCompilation.TrySynthesizeAttribute(
+                            WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
+                            ImmutableArray.Create(assemblyName)))
+                    Next
+                Next
+            End If
+
             If _compilation.Options.OutputKind = OutputKind.NetModule Then
                 ' If the attribute is applied in source, do not add synthetic one.
                 ' If its value is different from the supplied through options, an error should have been reported by now.
@@ -1594,6 +1624,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End Get
         End Property
 
+        Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+            Dim result As ImmutableHashSet(Of ImmutableArray(Of Byte)) = Nothing
+            If _compilation.Options.FriendAccessibleAssemblyPublicKeys.TryGetValue(simpleName, result) Then
+                Return result
+            End If
+
+            Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()
+        End Function
+
         Friend Overrides Function AreInternalsVisibleToThisAssembly(potentialGiverOfAccess As AssemblySymbol) As Boolean
             ' Ensure that optimistic IVT access is only granted to requests that originated on the thread
             ' that is trying to compute the assembly identity. This gives us deterministic behavior when
@@ -1605,6 +1644,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 If assemblyWhoseKeysAreBeingComputed IsNot Nothing Then
                     Debug.Assert(assemblyWhoseKeysAreBeingComputed Is Me)
                     If Not potentialGiverOfAccess.GetInternalsVisibleToPublicKeys(Me.Name).IsEmpty() Then
+                        If _optimisticallyGrantedInternalsAccess Is Nothing Then
+                            Interlocked.CompareExchange(_optimisticallyGrantedInternalsAccess, New ConcurrentDictionary(Of AssemblySymbol, Boolean), Nothing)
+                        End If
+
+                        _optimisticallyGrantedInternalsAccess.TryAdd(potentialGiverOfAccess, True)
+                        Return True
+                    ElseIf Not Me.GetFriendAccessibleAssemblyPublicKeys(potentialGiverOfAccess.Name).IsEmpty() Then
                         If _optimisticallyGrantedInternalsAccess Is Nothing Then
                             Interlocked.CompareExchange(_optimisticallyGrantedInternalsAccess, New ConcurrentDictionary(Of AssemblySymbol, Boolean), Nothing)
                         End If

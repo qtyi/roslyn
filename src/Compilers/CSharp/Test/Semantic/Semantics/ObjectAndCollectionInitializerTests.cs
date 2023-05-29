@@ -933,10 +933,7 @@ IObjectCreationOperation (Constructor: A..ctor()) (OperationKind.ObjectCreation,
             var expectedDiagnostics = new DiagnosticDescription[] {
                 // CS0118: 'Add' is a field but is used like a method
                 //         /*<bind>*/new A { "" }/*</bind>*/;
-                Diagnostic(ErrorCode.ERR_BadSKknown, @"""""").WithArguments("Add", "field", "method").WithLocation(12, 27),
-                // CS0649: Field 'A.Add' is never assigned to, and will always have its default value null
-                //     public Action<string> Add;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Add").WithArguments("A.Add", "null").WithLocation(8, 27)
+                Diagnostic(ErrorCode.ERR_BadSKknown, @"""""").WithArguments("Add", "field", "method").WithLocation(12, 27)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<ObjectCreationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
@@ -1168,10 +1165,7 @@ IObjectCreationOperation (Constructor: MemberInitializerTest..ctor()) (Operation
                 Diagnostic(ErrorCode.ERR_BadAccess, "x").WithArguments("MemberInitializerTest.x").WithLocation(13, 57),
                 // CS0122: 'MemberInitializerTest.y' is inaccessible due to its protection level
                 //         var i = /*<bind>*/new MemberInitializerTest() { x = 1, y = 2, z = 3 }/*</bind>*/;
-                Diagnostic(ErrorCode.ERR_BadAccess, "y").WithArguments("MemberInitializerTest.y").WithLocation(13, 64),
-                // CS0649: Field 'MemberInitializerTest.x' is never assigned to, and will always have its default value 0
-                //     protected int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("MemberInitializerTest.x", "0").WithLocation(4, 19)
+                Diagnostic(ErrorCode.ERR_BadAccess, "y").WithArguments("MemberInitializerTest.y").WithLocation(13, 64)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<ObjectCreationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
@@ -1383,10 +1377,7 @@ IObjectCreationOperation (Constructor: MemberInitializerTest..ctor()) (Operation
             var expectedDiagnostics = new DiagnosticDescription[] {
                 // CS0200: Property or indexer 'MemberInitializerTest.y' cannot be assigned to -- it is read only
                 //         var i = /*<bind>*/new MemberInitializerTest() { y = 2 }/*</bind>*/;
-                Diagnostic(ErrorCode.ERR_AssgReadonlyProp, "y").WithArguments("MemberInitializerTest.y").WithLocation(12, 57),
-                // CS0649: Field 'MemberInitializerTest.x' is never assigned to, and will always have its default value 0
-                //     public readonly int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("MemberInitializerTest.x", "0").WithLocation(4, 25)
+                Diagnostic(ErrorCode.ERR_AssgReadonlyProp, "y").WithArguments("MemberInitializerTest.y").WithLocation(12, 57)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<ObjectCreationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
@@ -3075,12 +3066,6 @@ IObjectCreationOperation (Constructor: N.C..ctor()) (OperationKind.ObjectCreatio
                 // CS1918: Members of property 'C.StructProp' of type 'Struct' cannot be assigned with an object initializer because it is of a value type
                 //                 StructProp = { },       // CS1918
                 Diagnostic(ErrorCode.ERR_ValueTypePropertyInObjectInitializer, "StructProp").WithArguments("N.C.StructProp", "N.Struct").WithLocation(20, 17),
-                // CS0649: Field 'Struct.x' is never assigned to, and will always have its default value 0
-                //     struct Struct { public int x; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("N.Struct.x", "0").WithLocation(4, 32),
-                // CS0649: Field 'Class.x' is never assigned to, and will always have its default value 0
-                //     class Class { public int x; }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("N.Class.x", "0").WithLocation(5, 30)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<ObjectCreationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);

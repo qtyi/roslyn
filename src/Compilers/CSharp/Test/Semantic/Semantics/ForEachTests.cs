@@ -484,10 +484,7 @@ class Enumerator
             CreateCompilation(text).VerifyDiagnostics(
                 // (6,27): error CS0202: foreach requires that the return type 'Enumerator' of 'Enumerable.GetEnumerator()' must have a suitable public MoveNext method and public Current property
                 //         foreach (int x in new Enumerable())
-                Diagnostic(ErrorCode.ERR_BadGetEnumerator, "new Enumerable()").WithArguments("Enumerator", "Enumerable.GetEnumerator()"),
-                // (19,16): warning CS0649: Field 'Enumerator.Current' is never assigned to, and will always have its default value 0
-                //     public int Current;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Current").WithArguments("Enumerator.Current", "0")
+                Diagnostic(ErrorCode.ERR_BadGetEnumerator, "new Enumerable()").WithArguments("Enumerator", "Enumerable.GetEnumerator()")
                 );
         }
 
@@ -650,10 +647,7 @@ class Enumerator
             CreateCompilation(text).VerifyDiagnostics(
                 // (6,27): error CS0202: foreach requires that the return type 'Enumerator' of 'Enumerable.GetEnumerator()' must have a suitable public MoveNext method and public Current property
                 //         foreach (int x in new Enumerable())
-                Diagnostic(ErrorCode.ERR_BadGetEnumerator, "new Enumerable()").WithArguments("Enumerator", "Enumerable.GetEnumerator()"),
-                // (20,17): warning CS0649: Field 'Enumerator.MoveNext' is never assigned to, and will always have its default value false
-                //     public bool MoveNext;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "MoveNext").WithArguments("Enumerator.MoveNext", "false")
+                Diagnostic(ErrorCode.ERR_BadGetEnumerator, "new Enumerable()").WithArguments("Enumerator", "Enumerable.GetEnumerator()")
                 );
         }
 

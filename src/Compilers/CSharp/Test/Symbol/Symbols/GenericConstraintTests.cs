@@ -2220,16 +2220,7 @@ class D<T> where T : B
             CreateCompilation(source).VerifyDiagnostics(
                 // (23,15): error CS1061: 'X' does not contain a definition for 'H' and no extension method 'H' accepting a first argument of type 'X' could be found (are you missing a using directive or an assembly reference?)
                 //         o = x.H;
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "H").WithArguments("X", "H"),
-                // (3,21): warning CS0649: Field 'A.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("A.F", "null"),
-                // (7,21): warning CS0649: Field 'B.G' is never assigned to, and will always have its default value null
-                //     internal object G;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "G").WithArguments("B.G", "null"),
-                // (11,21): warning CS0649: Field 'C.H' is never assigned to, and will always have its default value null
-                //     internal object H;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "H").WithArguments("C.H", "null")
+                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "H").WithArguments("X", "H")
                 );
         }
 
@@ -2301,13 +2292,7 @@ class B : A<S, C>
             CreateCompilation(source).VerifyDiagnostics(
                 // (17,12): error CS1061: 'U1' does not contain a definition for 'F' and no extension method 'F' accepting a first argument of type 'U1' could be found (are you missing a using directive or an assembly reference?)
                 //         u1.F = u2.F;
-                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "F").WithArguments("U1", "F"),
-                // (3,21): warning CS0649: Field 'S.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("S.F", "null"),
-                // (7,21): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "null")
+                Diagnostic(ErrorCode.ERR_NoSuchMemberOrExtension, "F").WithArguments("U1", "F")
                 );
         }
 

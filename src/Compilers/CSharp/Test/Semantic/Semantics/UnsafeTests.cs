@@ -4459,10 +4459,7 @@ unsafe struct S
             model.GetSpeculativeTypeInfo(syntax.SpanStart, SyntaxFactory.ParseTypeName("S*"), SpeculativeBindingOption.BindAsTypeOrNamespace);
 
             // Specifically don't see diagnostic from speculative binding.
-            compilation.VerifyDiagnostics(
-                // (4,19): warning CS0649: Field 'S.o' is never assigned to, and will always have its default value null
-                //     public object o;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "o").WithArguments("S.o", "null"));
+            compilation.VerifyDiagnostics();
         }
 
         [WorkItem(544346, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544346")]
@@ -6812,10 +6809,7 @@ class NotString
     }
 }
 ";
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics(
-                // (4,22): warning CS0649: Field 'C.n' is never assigned to, and will always have its default value null
-                //     public NotString n;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "n").WithArguments("C.n", "null"));
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics();
         }
 
         [Fact]
@@ -6846,10 +6840,7 @@ class NotArray
     }
 }
 ";
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics(
-                // (4,21): warning CS0649: Field 'C.n' is never assigned to, and will always have its default value null
-                //     public NotArray n;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "n").WithArguments("C.n", "null"));
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics();
         }
 
         [Fact]
@@ -6894,10 +6885,7 @@ class NotPointer
                 Diagnostic(ErrorCode.ERR_ExprCannotBeFixed, "n").WithLocation(13, 25),
                 // (17,25): error CS9385: The given expression cannot be used in a fixed statement
                 //         fixed (int* p = (int*)n)
-                Diagnostic(ErrorCode.ERR_ExprCannotBeFixed, "(int*)n").WithLocation(17, 25),
-                // (5,23): warning CS0649: Field 'C.n' is never assigned to, and will always have its default value null
-                //     public NotPointer n;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "n").WithArguments("C.n", "null").WithLocation(5, 23)
+                Diagnostic(ErrorCode.ERR_ExprCannotBeFixed, "(int*)n").WithLocation(17, 25)
             );
         }
 

@@ -1751,10 +1751,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             return Compilation.GetUsesNullableAttributes() && Compilation.EmitNullablePublicOnly;
         }
 
+        internal bool ShouldEmitIgnoresAccessChecksToAttribute()
+        {
+            return Compilation.SourceAssembly.ImportsInternals;
+        }
+
         internal virtual SynthesizedAttributeData SynthesizeNullablePublicOnlyAttribute(ImmutableArray<TypedConstant> arguments)
         {
             // For modules, this attribute should be present. Only assemblies generate and embed this type.
             return Compilation.TrySynthesizeAttribute(WellKnownMember.System_Runtime_CompilerServices_NullablePublicOnlyAttribute__ctor, arguments);
+        }
+
+        internal virtual SynthesizedAttributeData SynthesizeIgnoresAccessChecksToAttribute(ImmutableArray<TypedConstant> arguments)
+        {
+            return Compilation.TrySynthesizeAttribute(WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor, arguments);
         }
 
         protected virtual SynthesizedAttributeData TrySynthesizeIsReadOnlyAttribute()

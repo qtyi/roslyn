@@ -63,6 +63,30 @@ namespace Microsoft.CodeAnalysis.Serialization
 
             writer.WriteByte((byte)options.MetadataImportOptions);
 
+            // REVIEW: I don't think there is a guarantee on ordering of elements in the immutable dictionary.
+            //         unfortunately, we need to sort them to make it deterministic
+            writer.WriteInt32(options.FriendAccessibleAssemblyPublicKeys.Count);
+            foreach (var kv in options.FriendAccessibleAssemblyPublicKeys.OrderBy(o => o.Key))
+            {
+                writer.WriteString(kv.Key);
+                writer.WriteInt32(kv.Value.Count);
+                foreach (var k in kv.Value)
+                {
+                    if (k.IsDefault)
+                    {
+                        writer.WriteInt32(-1);
+                    }
+                    else
+                    {
+                        writer.WriteInt32(k.Length);
+                        foreach (var b in k)
+                        {
+                            writer.WriteByte(b);
+                        }
+                    }
+                }
+            }
+
             // REVIEW: What should I do with these. we probably need to implement either out own one
             //         or somehow share these as service....
             //
@@ -94,6 +118,7 @@ namespace Microsoft.CodeAnalysis.Serialization
             out bool deterministic,
             out bool publicSign,
             out MetadataImportOptions metadataImportOptions,
+            out IEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>> friendAccessibleAssemblyPublicKeys,
             out XmlReferenceResolver xmlReferenceResolver,
             out SourceReferenceResolver sourceReferenceResolver,
             out MetadataReferenceResolver metadataReferenceResolver,
@@ -152,6 +177,56 @@ namespace Microsoft.CodeAnalysis.Serialization
             publicSign = reader.ReadBoolean();
 
             metadataImportOptions = (MetadataImportOptions)reader.ReadByte();
+
+            // REVIEW: I don't think there is a guarantee on ordering of elements in the immutable dictionary.
+            //         unfortunately, we need to sort them to make it deterministic
+            //         not sure why CompilationOptions uses SequencialEqual to check options equality
+            //         when ordering can change result of it even if contents are same.
+            count = reader.ReadInt32();
+            List<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>> friendAccessibleAssemblyPublicKeyList = null;
+
+            if (count > 0)
+            {
+                friendAccessibleAssemblyPublicKeyList = new List<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>>();
+
+                for (var i = 0; i < count; i++)
+                {
+                    var name = reader.ReadString();
+                    var keysCount = reader.ReadInt32();
+                    if (keysCount > 0)
+                    {
+                        var keysBuilder = ImmutableHashSet.CreateBuilder<ImmutableArray<byte>>();
+                        for (var j = 0; j < keysCount; j++)
+                        {
+                            var keyLength = reader.ReadInt32();
+                            if (keyLength > 0)
+                            {
+                                var keyBuilder = ImmutableArray.CreateBuilder<byte>(keyLength);
+                                for (var k = 0; k < keyLength; k++)
+                                {
+                                    keyBuilder.Add(reader.ReadByte());
+                                }
+                                keysBuilder.Add(keyBuilder.ToImmutable());
+                            }
+                            else if (keyLength < 0)
+                            {
+                                keysBuilder.Add(default);
+                            }
+                            else
+                            {
+                                keysBuilder.Add(ImmutableArray<byte>.Empty);
+                            }
+                        }
+                        friendAccessibleAssemblyPublicKeyList.Add(new KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>(name, keysBuilder.ToImmutable()));
+                    }
+                    else
+                    {
+                        friendAccessibleAssemblyPublicKeyList.Add(new KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>(name, ImmutableHashSet<ImmutableArray<byte>>.Empty));
+                    }
+                }
+            }
+
+            friendAccessibleAssemblyPublicKeys = friendAccessibleAssemblyPublicKeyList ?? SpecializedCollections.EmptyEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>>();
 
             // REVIEW: What should I do with these. are these service required when compilation is built ourselves, not through
             //         compiler.

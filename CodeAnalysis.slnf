@@ -1,0 +1,22 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Compilers\\CSharp\\CSharpAnalyzerDriver\\CSharpAnalyzerDriver.shproj",
+      "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
+      "src\\Compilers\\Core\\AnalyzerDriver\\AnalyzerDriver.shproj",
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
+      "src\\Compilers\\VisualBasic\\BasicAnalyzerDriver\\BasicAnalyzerDriver.shproj",
+      "src\\Compilers\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.vbproj",
+      "src\\Dependencies\\CodeAnalysis.Debugging\\Microsoft.CodeAnalysis.Debugging.shproj",
+      "src\\Dependencies\\Collections\\Microsoft.CodeAnalysis.Collections.shproj",
+      "src\\Dependencies\\PooledObjects\\Microsoft.CodeAnalysis.PooledObjects.shproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\BoundTreeGenerator\\CompilersBoundTreeGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpErrorFactsGenerator\\CSharpErrorFactsGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpSyntaxGenerator\\CSharpSyntaxGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\IOperationGenerator\\CompilersIOperationGenerator.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\VisualBasicErrorFactsGenerator\\VisualBasicErrorFactsGenerator.vbproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\VisualBasicSyntaxGenerator\\VisualBasicSyntaxGenerator.vbproj"
+    ]
+  }
+}
