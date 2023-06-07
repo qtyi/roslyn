@@ -23,7 +23,7 @@ public sealed class UsingDirectiveParsingTests : ParsingTests
     {
         UsingTree(
 @"using A*;",
-            // (1,8): error CS1002: ; expected
+            // (1,8): error CS1002: Synta
             // using A*;
             Diagnostic(ErrorCode.ERR_SemicolonExpected, "*").WithLocation(1, 8),
             // (1,9): error CS1525: Invalid expression term ';'
@@ -377,14 +377,8 @@ public sealed class UsingDirectiveParsingTests : ParsingTests
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.StaticKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.RefType);
                 {
                     N(SyntaxKind.RefKeyword);
@@ -628,14 +622,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -680,14 +668,8 @@ struct A { }";
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -732,14 +714,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.FunctionPointerType);
                 {
                     N(SyntaxKind.DelegateKeyword);
@@ -792,14 +768,8 @@ struct A { }";
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.FunctionPointerType);
                 {
                     N(SyntaxKind.DelegateKeyword);
@@ -884,14 +854,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.IntKeyword);
@@ -921,14 +885,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.IntKeyword);
@@ -958,14 +916,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.IntKeyword);
@@ -998,14 +950,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.RefType);
                 {
                     N(SyntaxKind.RefKeyword);
@@ -1042,14 +988,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.RefType);
                 {
                     N(SyntaxKind.RefKeyword);
@@ -1087,14 +1027,8 @@ struct A { }";
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1129,14 +1063,8 @@ struct A { }";
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1177,14 +1105,8 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1206,14 +1128,8 @@ namespace N
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "X");
@@ -1249,14 +1165,8 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1279,14 +1189,8 @@ namespace N
                 {
                     N(SyntaxKind.UsingKeyword);
                     N(SyntaxKind.UnsafeKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "X");
@@ -1324,14 +1228,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1354,14 +1252,8 @@ namespace N
                 {
                     N(SyntaxKind.UsingKeyword);
                     N(SyntaxKind.UnsafeKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "X");
@@ -1400,14 +1292,8 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1429,14 +1315,8 @@ namespace N
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.ArrayType);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -1484,14 +1364,8 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1514,14 +1388,8 @@ namespace N
                 {
                     N(SyntaxKind.UsingKeyword);
                     N(SyntaxKind.UnsafeKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.ArrayType);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -1565,14 +1433,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
@@ -1622,14 +1484,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
@@ -1728,14 +1584,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
@@ -1827,14 +1677,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1874,14 +1718,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "x");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1918,14 +1756,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -1968,14 +1800,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.StringKeyword);
@@ -1993,14 +1819,8 @@ namespace N
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.NullableType);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -2043,14 +1863,8 @@ namespace N
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.StringKeyword);
@@ -2068,14 +1882,8 @@ namespace N
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "Y");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.NullableType);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -2114,14 +1922,8 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "VP");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -2188,14 +1990,8 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "VP");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -2265,14 +2061,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "VP");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -2346,14 +2136,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "V");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "V");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.VoidKeyword);
@@ -2422,14 +2206,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "V");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "V");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.VoidKeyword);
@@ -2493,14 +2271,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "V");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "V");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.ArrayType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -2600,14 +2372,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "D");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "dynamic");
@@ -2697,14 +2463,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "D");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.QualifiedName);
@@ -2842,14 +2602,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "D");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.ArrayType);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -2972,14 +2726,8 @@ class dynamic
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "D");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "dynamic");
@@ -3070,14 +2818,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "D");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "@dynamic");
@@ -3170,14 +2912,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -3191,14 +2927,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "System");
@@ -3234,14 +2964,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -3255,14 +2979,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PredefinedType);
                 {
                     N(SyntaxKind.IntKeyword);
@@ -3298,14 +3016,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -3319,14 +3031,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -3368,14 +3074,8 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.NullableType);
                 {
                     N(SyntaxKind.PredefinedType);
@@ -3397,14 +3097,8 @@ class C
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "X");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "X");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.PredefinedType);
                     {
                         N(SyntaxKind.IntKeyword);
@@ -3486,14 +3180,8 @@ using X = scoped int;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "scoped");
@@ -3539,14 +3227,8 @@ using X = scoped System;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "scoped");
@@ -3586,14 +3268,8 @@ using X = scoped System.AppDomain;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "scoped");
@@ -3671,14 +3347,8 @@ using X = scoped System.AppDomain;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
                     N(SyntaxKind.IdentifierToken, "C");
@@ -3821,14 +3491,8 @@ using X = scoped System.AppDomain;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.ArrayType);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -3974,14 +3638,8 @@ using X = __arglist;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 M(SyntaxKind.IdentifierName);
                 {
                     M(SyntaxKind.IdentifierToken);
@@ -4019,14 +3677,8 @@ using X = __makeref;
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 M(SyntaxKind.IdentifierName);
                 {
                     M(SyntaxKind.IdentifierToken);
@@ -4260,14 +3912,8 @@ using X = __makeref;
                 N(SyntaxKind.UsingKeyword);
                 M(SyntaxKind.StaticKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -4318,14 +3964,8 @@ using X = __makeref;
                 N(SyntaxKind.UsingKeyword);
                 M(SyntaxKind.StaticKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -4376,14 +4016,8 @@ using X = __makeref;
                 N(SyntaxKind.UsingKeyword);
                 M(SyntaxKind.StaticKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.IdentifierName);
@@ -4431,14 +4065,8 @@ using X = __makeref;
                 N(SyntaxKind.UsingKeyword);
                 M(SyntaxKind.StaticKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.NameEquals);
-                {
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.EqualsToken);
-                }
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
                     N(SyntaxKind.IdentifierName);

@@ -10,16 +10,15 @@ extern_alias_directive
   ;
 
 using_directive
-  : 'global'? 'using' ('static' | ('unsafe'? name_equals))? type ';'
+  : 'global'? 'using' ('static' | ('unsafe'? identifier_token? type_parameter_list? '='))? type ';'
   ;
 
-name_equals
-  : identifier_name '='
+type_parameter_list
+  : '<' type_parameter (',' type_parameter)* '>'
   ;
 
-identifier_name
-  : 'global'
-  | identifier_token
+type_parameter
+  : attribute_list* ('in' | 'out')? identifier_token
   ;
 
 attribute_list
@@ -42,6 +41,11 @@ name
 
 alias_qualified_name
   : identifier_name '::' simple_name
+  ;
+
+identifier_name
+  : 'global'
+  | identifier_token
   ;
 
 simple_name
@@ -67,6 +71,10 @@ attribute_argument_list
 
 attribute_argument
   : (name_equals? | name_colon?) expression
+  ;
+
+name_equals
+  : identifier_name '='
   ;
 
 name_colon
@@ -193,14 +201,6 @@ destructor_declaration
 
 method_declaration
   : attribute_list* modifier* type explicit_interface_specifier? identifier_token type_parameter_list? parameter_list type_parameter_constraint_clause* (block | (arrow_expression_clause ';'))
-  ;
-
-type_parameter_list
-  : '<' type_parameter (',' type_parameter)* '>'
-  ;
-
-type_parameter
-  : attribute_list* ('in' | 'out')? identifier_token
   ;
 
 type_parameter_constraint_clause

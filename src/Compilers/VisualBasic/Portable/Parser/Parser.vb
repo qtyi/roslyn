@@ -4788,6 +4788,8 @@ checkNullable:
                         aliasIdentifier = ReportSyntaxError(aliasIdentifier, ERRID.ERR_NoTypecharInAlias)
                     End If
 
+                    Dim typeParameterList = ParseGenericParameters()
+
                     Dim equalsToken As PunctuationSyntax = DirectCast(CurrentToken, PunctuationSyntax)
 
                     GetNextToken() ' Get off the '='
@@ -4798,7 +4800,7 @@ checkNullable:
                         allowGlobalNameSpace:=False,
                         allowGenericArguments:=True,
                         allowGenericsWithoutOf:=True)
-                    importsClause = SyntaxFactory.SimpleImportsClause(SyntaxFactory.ImportAliasClause(aliasIdentifier, equalsToken), name)
+                    importsClause = SyntaxFactory.SimpleImportsClause(SyntaxFactory.ImportAliasClause(aliasIdentifier, typeParameterList, equalsToken), name)
                 Else
                     Dim name = ParseName(
                         requireQualification:=False,

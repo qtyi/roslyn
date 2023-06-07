@@ -97,7 +97,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (usingDirective.NamespaceOrType is not Syntax.InternalSyntax.NameSyntax name)
                     continue;
 
-                var aliasName = usingDirective.Alias.Name.Identifier.ValueText;
+                var aliasName = usingDirective.Identifier.ValueText;
                 var symbolName = GetUnqualifiedName(name).Identifier.ValueText;
                 aliases.Add((aliasName, symbolName));
             }

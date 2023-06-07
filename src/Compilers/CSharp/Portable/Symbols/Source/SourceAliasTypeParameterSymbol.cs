@@ -44,8 +44,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override VarianceKind Variance
         {
-#warning 未完成
-            get { return VarianceKind.None; }
+            get { throw new System.NotImplementedException(); }
         }
 
         public override bool HasConstructorConstraint

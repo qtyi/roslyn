@@ -440,7 +440,6 @@ next:
 
         private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics)
         {
-#warning 未完成
             throw new System.NotImplementedException();
         }
 
@@ -476,7 +475,6 @@ next:
                 var targetTypeParameters = ((NamedTypeSymbol)this.Target).TypeParameters;
             }
 
-#warning 未完成
             throw new System.NotImplementedException();
         }
 

@@ -804,11 +804,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 unsafeToken = AddTrailingSkippedSyntax(unsafeToken, AddError(this.EatToken(), ErrorCode.ERR_BadStaticAfterUnsafe));
             }
 
-            var hasAlias = IsTrueIdentifier() || this.CurrentToken.Kind == SyntaxKind.EqualsToken;
+            SyntaxToken? name = null;
+            TypeParameterListSyntax? typeParameters = null;
+            SyntaxToken? equalsToken = null;
+
             // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax.
-            var name = this.ParseIdentifierToken();
-            var typeParameters =  this.ParseTypeParameterList();
-            var equalsToken = this.EatToken(SyntaxKind.EqualsToken);
+            var hasAlias = this.CurrentToken.Kind == SyntaxKind.EqualsToken || (IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.EqualsToken or SyntaxKind.LessThanToken);
+            if (hasAlias)
+            {
+                name = this.ParseIdentifierToken();
+                typeParameters = this.ParseTypeParameterList();
+                equalsToken = this.EatToken(SyntaxKind.EqualsToken);
+            }
 
             TypeSyntax type;
             SyntaxToken semicolon;

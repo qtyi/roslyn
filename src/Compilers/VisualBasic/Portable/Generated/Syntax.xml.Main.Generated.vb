@@ -1584,11 +1584,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             Dim newIdentifier = DirectCast(VisitToken(node.Identifier).Node, InternalSyntax.IdentifierTokenSyntax)
             If node.Identifier.Node IsNot newIdentifier Then anyChanges = True
+            Dim newTypeParameterList = DirectCast(Visit(node.TypeParameterList), TypeParameterListSyntax)
+            If node.TypeParameterList IsNot newTypeParameterList Then anyChanges = True
             Dim newEqualsToken = DirectCast(VisitToken(node.EqualsToken).Node, InternalSyntax.PunctuationSyntax)
             If node.EqualsToken.Node IsNot newEqualsToken Then anyChanges = True
 
             If anyChanges Then
-                Return New ImportAliasClauseSyntax(node.Kind, node.Green.GetDiagnostics, node.Green.GetAnnotations, newIdentifier, newEqualsToken)
+                Return New ImportAliasClauseSyntax(node.Kind, node.Green.GetDiagnostics, node.Green.GetAnnotations, newIdentifier, newTypeParameterList, newEqualsToken)
             Else
                 Return node
             End If
@@ -6858,10 +6860,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' <param name="identifier">
         ''' The identifier being introduced.
         ''' </param>
+        ''' <param name="typeParameterList">
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </param>
         ''' <param name="equalsToken">
         ''' The "=" token.
         ''' </param>
-        Public Shared Function ImportAliasClause(identifier As SyntaxToken, equalsToken As SyntaxToken) As ImportAliasClauseSyntax
+        Public Shared Function ImportAliasClause(identifier As SyntaxToken, typeParameterList As TypeParameterListSyntax, equalsToken As SyntaxToken) As ImportAliasClauseSyntax
             Select Case identifier.Kind()
                 Case SyntaxKind.IdentifierToken
                 Case Else
@@ -6872,7 +6878,22 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Case Else
                     Throw new ArgumentException("equalsToken")
             End Select
-            Return New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, Nothing, Nothing, DirectCast(identifier.Node, InternalSyntax.IdentifierTokenSyntax), DirectCast(equalsToken.Node, InternalSyntax.PunctuationSyntax))
+            Return New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, Nothing, Nothing, DirectCast(identifier.Node, InternalSyntax.IdentifierTokenSyntax), typeParameterList, DirectCast(equalsToken.Node, InternalSyntax.PunctuationSyntax))
+        End Function
+
+
+        ''' <summary>
+        ''' Represents an alias identifier followed by an "=" token in an Imports clause.
+        ''' </summary>
+        ''' <param name="identifier">
+        ''' The identifier being introduced.
+        ''' </param>
+        ''' <param name="typeParameterList">
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </param>
+        Public Shared Function ImportAliasClause(identifier As SyntaxToken, typeParameterList As TypeParameterListSyntax) As ImportAliasClauseSyntax
+            Return SyntaxFactory.ImportAliasClause(identifier, typeParameterList, SyntaxFactory.Token(SyntaxKind.EqualsToken))
         End Function
 
 
@@ -6883,7 +6904,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' The identifier being introduced.
         ''' </param>
         Public Shared Function ImportAliasClause(identifier As SyntaxToken) As ImportAliasClauseSyntax
-            Return SyntaxFactory.ImportAliasClause(identifier, SyntaxFactory.Token(SyntaxKind.EqualsToken))
+            Return SyntaxFactory.ImportAliasClause(identifier, Nothing, SyntaxFactory.Token(SyntaxKind.EqualsToken))
         End Function
 
 
@@ -6894,7 +6915,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' The identifier being introduced.
         ''' </param>
         Public Shared Function ImportAliasClause(identifier As String) As ImportAliasClauseSyntax
-            Return SyntaxFactory.ImportAliasClause(SyntaxFactory.Identifier(identifier), SyntaxFactory.Token(SyntaxKind.EqualsToken))
+            Return SyntaxFactory.ImportAliasClause(SyntaxFactory.Identifier(identifier), Nothing, SyntaxFactory.Token(SyntaxKind.EqualsToken))
         End Function
 
 

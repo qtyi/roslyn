@@ -648,8 +648,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                         if (usingDirective.Identifier != default)
                         {
-                            SyntaxToken identifier = usingDirective.Alias.Name.Identifier;
-                            Location location = usingDirective.Alias.Name.Location;
+                            SyntaxToken identifier = usingDirective.Identifier;
+                            Location location = usingDirective.Identifier.GetLocation();
 
                             if (identifier.ContextualKind() == SyntaxKind.GlobalKeyword)
                             {

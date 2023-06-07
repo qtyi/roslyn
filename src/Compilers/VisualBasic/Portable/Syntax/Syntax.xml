@@ -489,7 +489,7 @@ Unify Enum declarations with other block type declarations.
         <description>The identifier being introduced.</description>
       </child>
 
-      <child name="TypeParameterList" optional="true" kind="TypeParameterList" order="50">
+      <child name="TypeParameterList" optional="true" kind="TypeParameterList">
         <!-- REVIEW: Add constraint that this can't be present for a Module. -->
         <description>
           If present, a type parameter list with generic parameters for this type alias. If no generic parameters were
