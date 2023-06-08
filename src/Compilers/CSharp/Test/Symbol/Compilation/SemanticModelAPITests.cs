@@ -1732,7 +1732,7 @@ class Q
             Assert.Equal(classQ, aliasSymbol.Target);
             Assert.Equal("var", aliasSymbol.Name);
 
-            var aliasDeclInfo = model.GetSymbolInfo(aliasDecl.Alias.Name);
+            var aliasDeclInfo = model.GetSymbolInfo(aliasDecl);
             Assert.Null(aliasDeclInfo.Symbol);
             Assert.Equal(CandidateReason.None, aliasDeclInfo.CandidateReason);
 

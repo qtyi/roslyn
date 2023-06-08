@@ -1162,17 +1162,17 @@ namespace Microsoft.CodeAnalysis.CSharp
         public abstract QueryClauseInfo GetQueryClauseInfo(QueryClauseSyntax node, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// If <paramref name="nameSyntax"/> resolves to an alias name, return the AliasSymbol corresponding
+        /// If <paramref name="usingDirectiveSyntax"/> resolves to an alias, return the AliasSymbol corresponding
         /// to A. Otherwise return null.
         /// </summary>
-        public IAliasSymbol GetAliasInfo(IdentifierNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        public IAliasSymbol GetAliasInfo(UsingDirectiveSyntax usingDirectiveSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
-            CheckSyntaxNode(nameSyntax);
+            CheckSyntaxNode(usingDirectiveSyntax);
 
-            if (!CanGetSemanticInfo(nameSyntax))
+            if (!CanGetSemanticInfo(usingDirectiveSyntax))
                 return null;
 
-            SymbolInfo info = GetSymbolInfoWorker(nameSyntax, SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases, cancellationToken);
+            SymbolInfo info = GetSymbolInfoWorker(usingDirectiveSyntax, SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases, cancellationToken);
             return info.Symbol as IAliasSymbol;
         }
 
@@ -1194,6 +1194,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
         public IAliasSymbol GetSpeculativeAliasInfo(int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
         {
+#warning 未完成
             Binder binder;
             ImmutableArray<Symbol> crefSymbols;
             BoundNode boundNode = GetSpeculativelyBoundExpression(position, nameSyntax, bindingOption, out binder, out crefSymbols); //calls CheckAndAdjustPosition
@@ -5038,7 +5039,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         protected sealed override IAliasSymbol GetAliasInfoCore(SyntaxNode node, CancellationToken cancellationToken)
         {
-            return node is IdentifierNameSyntax nameSyntax ? GetAliasInfo(nameSyntax, cancellationToken) : null;
+            return node is UsingDirectiveSyntax usingDirectiveSyntax ? GetAliasInfo(usingDirectiveSyntax, cancellationToken) : null;
         }
 
         protected sealed override PreprocessingSymbolInfo GetPreprocessingSymbolInfoCore(SyntaxNode node)

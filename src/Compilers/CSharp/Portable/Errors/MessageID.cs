@@ -454,6 +454,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case MessageID.IDS_FeaturePrimaryConstructors: // declaration table check
                 case MessageID.IDS_FeatureUsingTypeAlias: // semantic check
                 case MessageID.IDS_FeatureInstanceMemberInNameof: // semantic check
+                case MessageID.IDS_FeatureUsingGenericAlias: // semantic check
                     return LanguageVersion.Preview;
 
                 // C# 11.0 features.
