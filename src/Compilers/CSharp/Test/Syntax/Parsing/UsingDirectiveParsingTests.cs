@@ -23,7 +23,7 @@ public sealed class UsingDirectiveParsingTests : ParsingTests
     {
         UsingTree(
 @"using A*;",
-            // (1,8): error CS1002: Synta
+            // (1,8): error CS1002: ; expected
             // using A*;
             Diagnostic(ErrorCode.ERR_SemicolonExpected, "*").WithLocation(1, 8),
             // (1,9): error CS1525: Invalid expression term ';'

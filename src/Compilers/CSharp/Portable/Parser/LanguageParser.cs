@@ -809,12 +809,30 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             SyntaxToken? equalsToken = null;
 
             // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax.
-            var hasAlias = this.CurrentToken.Kind == SyntaxKind.EqualsToken || (IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.EqualsToken or SyntaxKind.LessThanToken);
+            var hasAlias = this.CurrentToken.Kind == SyntaxKind.EqualsToken ||
+                (IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.EqualsToken or SyntaxKind.LessThanToken);
             if (hasAlias)
             {
+                //We may fall into the case where someone just using a generic type without an alias, that may become a problem because generic alias has the similar syntax as generic type.  e.g.
+                //
+                //    using GenericType<TypeParameter>;
+                //
+                //If we first see an identifier followed with a '<' token, then we parse them as a generic alias.  Then
+                //we check the next token if it is '=' token, if it is then we have done right, otherwise we go back to
+                //the token after "using" and parse as a generic type without alias.
+                var resetPoint = this.GetResetPoint();
                 name = this.ParseIdentifierToken();
                 typeParameters = this.ParseTypeParameterList();
-                equalsToken = this.EatToken(SyntaxKind.EqualsToken);
+                equalsToken = this.TryEatToken(SyntaxKind.EqualsToken);
+
+                if (equalsToken is null)
+                {
+                    hasAlias = false;
+                    name = null;
+                    typeParameters = null;
+                    this.Reset(ref resetPoint);
+                    this.Release(ref resetPoint);
+                }
             }
 
             TypeSyntax type;
