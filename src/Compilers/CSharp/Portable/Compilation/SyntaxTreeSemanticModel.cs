@@ -2139,6 +2139,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                     case LocalFunctionStatementSyntax localDecl:
                         parameterizedSymbol = GetDeclaredSymbol(localDecl, cancellationToken);
                         break;
+                    case UsingDirectiveSyntax aliasDecl:
+                        parameterizedSymbol = GetDeclaredSymbol(aliasDecl, cancellationToken);
+                        break;
                     default:
                         throw ExceptionUtilities.UnexpectedValue(typeParameter.Parent.Kind());
                 }
@@ -2153,6 +2156,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                             ((object)methodSymbol.PartialDefinitionPart == null
                                 ? null
                                 : this.GetTypeParameterSymbol(methodSymbol.PartialDefinitionPart.TypeParameters, typeParameter))).GetPublicSymbol();
+
+                    case AliasSymbol aliasSymbol:
+                        return this.GetTypeParameterSymbol(aliasSymbol.TypeParameters, typeParameter).GetPublicSymbol();
                 }
             }
 

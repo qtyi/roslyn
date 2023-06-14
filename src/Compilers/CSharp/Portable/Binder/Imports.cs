@@ -25,16 +25,16 @@ namespace Microsoft.CodeAnalysis.CSharp
     internal sealed class Imports
     {
         internal static readonly Imports Empty = new Imports(
-            ImmutableDictionary<string, AliasAndUsingDirective>.Empty,
+            ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty,
             ImmutableArray<NamespaceOrTypeAndUsingDirective>.Empty,
             ImmutableArray<AliasAndExternAliasDirective>.Empty);
 
-        public readonly ImmutableDictionary<string, AliasAndUsingDirective> UsingAliases;
+        public readonly ImmutableDictionary<AliasKey, AliasAndUsingDirective> UsingAliases;
         public readonly ImmutableArray<NamespaceOrTypeAndUsingDirective> Usings;
         public readonly ImmutableArray<AliasAndExternAliasDirective> ExternAliases;
 
         private Imports(
-            ImmutableDictionary<string, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<AliasKey, AliasAndUsingDirective> usingAliases,
             ImmutableArray<NamespaceOrTypeAndUsingDirective> usings,
             ImmutableArray<AliasAndExternAliasDirective> externs)
         {
@@ -67,10 +67,10 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(previousSubmissionImports != null);
             Debug.Assert(newSubmission.IsSubmission);
 
-            var expandedAliases = ImmutableDictionary<string, AliasAndUsingDirective>.Empty;
+            var expandedAliases = ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty;
             if (!previousSubmissionImports.UsingAliases.IsEmpty)
             {
-                var expandedAliasesBuilder = ImmutableDictionary.CreateBuilder<string, AliasAndUsingDirective>();
+                var expandedAliasesBuilder = ImmutableDictionary.CreateBuilder<AliasKey, AliasAndUsingDirective>();
                 foreach (var pair in previousSubmissionImports.UsingAliases)
                 {
                     var name = pair.Key;
@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         public bool IsEmpty => UsingAliases.IsEmpty && Usings.IsEmpty && ExternAliases.IsEmpty;
 
         public static Imports Create(
-            ImmutableDictionary<string, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<AliasKey, AliasAndUsingDirective> usingAliases,
             ImmutableArray<NamespaceOrTypeAndUsingDirective> usings,
             ImmutableArray<AliasAndExternAliasDirective> externs)
         {

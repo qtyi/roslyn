@@ -631,14 +631,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 {
                     N(SyntaxKind.GlobalKeyword);
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "ns1");
@@ -677,14 +671,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 {
                     N(SyntaxKind.GlobalKeyword);
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "ns1");
@@ -717,14 +705,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     {
                         N(SyntaxKind.GlobalKeyword);
                         N(SyntaxKind.UsingKeyword);
-                        N(SyntaxKind.NameEquals);
-                        {
-                            N(SyntaxKind.IdentifierName);
-                            {
-                                N(SyntaxKind.IdentifierToken, "alias");
-                            }
-                            N(SyntaxKind.EqualsToken);
-                        }
+                        N(SyntaxKind.IdentifierToken, "alias");
+                        N(SyntaxKind.EqualsToken);
                         N(SyntaxKind.IdentifierName);
                         {
                             N(SyntaxKind.IdentifierToken, "ns1");
@@ -776,14 +758,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     {
                         N(SyntaxKind.GlobalKeyword);
                         N(SyntaxKind.UsingKeyword);
-                        N(SyntaxKind.NameEquals);
-                        {
-                            N(SyntaxKind.IdentifierName);
-                            {
-                                N(SyntaxKind.IdentifierToken, "alias");
-                            }
-                            N(SyntaxKind.EqualsToken);
-                        }
+                        N(SyntaxKind.IdentifierToken, "alias");
+                        N(SyntaxKind.EqualsToken);
                         N(SyntaxKind.IdentifierName);
                         {
                             N(SyntaxKind.IdentifierToken, "ns1");
@@ -1182,14 +1158,8 @@ M();
                 {
                     N(SyntaxKind.GlobalKeyword);
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias1");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias1");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "ns1");
@@ -1199,14 +1169,8 @@ M();
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias2");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias2");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "ns2");

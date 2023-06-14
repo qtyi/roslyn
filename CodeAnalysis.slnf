@@ -3,14 +3,7 @@
     "path": "Roslyn.sln",
     "projects": [
       "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
-      "src\\Compilers\\CSharp\\Test\\Symbol\\Microsoft.CodeAnalysis.CSharp.Symbol.UnitTests.csproj",
-      "src\\Compilers\\CSharp\\Test\\Syntax\\Microsoft.CodeAnalysis.CSharp.Syntax.UnitTests.csproj",
-      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
-      "src\\Compilers\\Test\\Core\\Microsoft.CodeAnalysis.Test.Utilities.csproj",
-      "src\\Compilers\\Test\\Resources\\Core\\Microsoft.CodeAnalysis.Compiler.Test.Resources.csproj",
-      "src\\Compilers\\Test\\Utilities\\CSharp\\Microsoft.CodeAnalysis.CSharp.Test.Utilities.csproj",
-      "src\\Compilers\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.vbproj",
-      "src\\Test\\PdbUtilities\\Roslyn.Test.PdbUtilities.csproj"
+      "src\\Compilers\\CSharp\\Test\\Syntax\\Microsoft.CodeAnalysis.CSharp.Syntax.UnitTests.csproj"
     ]
   }
 }

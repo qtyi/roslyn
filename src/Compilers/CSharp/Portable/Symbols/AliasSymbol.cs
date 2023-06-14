@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         /// <summary>
-        /// Returns the type parameters that this alias has. If this is a non-generic type,
+        /// Returns the type parameters that this alias has. If this is a non-generic alias,
         /// returns an empty ImmutableArray.  
         /// </summary>
         public abstract ImmutableArray<TypeParameterSymbol> TypeParameters { get; }
@@ -397,10 +397,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     if (name == typeParameterNames[j])
                     {
                         diagnostics.Add(ErrorCode.ERR_DuplicateTypeParameter, location, name);
-                        goto next;
+                        break;
                     }
                 }
-next:
 
                 parameterBuilders.Add(new AliasTypeParameterBuilder(syntaxTree.GetReference(tp), this, location));
                 i++;
@@ -440,7 +439,9 @@ next:
 
         private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics)
         {
-            throw new System.NotImplementedException();
+            var results = MakeTypeParameterConstraintClauses(diagnostics);
+
+            return results.SelectAsArray(clause => clause.ConstraintTypes);
         }
 
         /// <summary>
@@ -466,16 +467,40 @@ next:
 
         private ImmutableArray<TypeParameterConstraintKind> MakeTypeParameterConstraintKinds()
         {
+            var results = MakeTypeParameterConstraintClauses();
+
+            return results.SelectAsArray(clause => clause.Constraints);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private ImmutableArray<TypeParameterConstraintClause> MakeTypeParameterConstraintClauses(BindingDiagnosticBag? diagnostics = null)
+        {
+            diagnostics ??= BindingDiagnosticBag.GetInstance();
             var typeParameters = this.TypeParameters;
             var results = ImmutableArray<TypeParameterConstraintClause>.Empty;
 
             int arity = typeParameters.Length;
             if (arity > 0)
             {
-                var targetTypeParameters = ((NamedTypeSymbol)this.Target).TypeParameters;
+                var typeParameterList = ((UsingDirectiveSyntax)_directive.GetSyntax()).TypeParameterList!;
+                var binderFactory = this.DeclaringCompilation.GetBinderFactory(_directive.SyntaxTree);
+                Binder binder;
+                ImmutableArray<TypeParameterConstraintClause> constraints;
+
+                binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
+                constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+
+                Debug.Assert(constraints.Length == arity);
+
+                constraints = ConstraintsHelper.AdjustConstraintKindsBasedOnConstraintTypes(typeParameters, constraints);
+
+                if (constraints.Any(clause => clause.Constraints != TypeParameterConstraintKind.None))
+                {
+                    results = constraints;
+                }
             }
 
-            throw new System.NotImplementedException();
+            return results;
         }
 
         /// <summary>
@@ -563,7 +588,7 @@ next:
                 MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective.NamespaceOrType);
             }
 
-            if (usingDirective.TypeParameterList is object)
+            if (usingDirective.TypeParameterList is not null)
             {
                 MessageID.IDS_FeatureUsingGenericAlias.CheckFeatureAvailability(diagnostics, usingDirective.TypeParameterList);
             }

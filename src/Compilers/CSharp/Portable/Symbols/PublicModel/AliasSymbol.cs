@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         bool IAliasSymbol.IsUnboundGenericAlias => throw new System.NotImplementedException();
 
-        ImmutableArray<ITypeParameterSymbol> IAliasSymbol.TypeParameters => throw new System.NotImplementedException();
+        ImmutableArray<ITypeParameterSymbol> IAliasSymbol.TypeParameters => _underlying.TypeParameters.GetPublicSymbols();
 
         ImmutableArray<ITypeSymbol> IAliasSymbol.TypeArguments => throw new System.NotImplementedException();
 

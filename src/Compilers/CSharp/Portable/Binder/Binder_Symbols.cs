@@ -1254,7 +1254,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken), resultType);
         }
 
-        private NamedTypeSymbol LookupGenericTypeName(
+        private TypeSymbol LookupGenericTypeName(
             BindingDiagnosticBag diagnostics,
             ConsList<TypeSymbol> basesBeingResolved,
             NamespaceOrTypeSymbol qualifierOpt,
@@ -1277,29 +1277,30 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool wasError;
             Symbol lookupResultSymbol = ResultSymbol(lookupResult, plainName, arity, node, diagnostics, (basesBeingResolved != null), out wasError, qualifierOpt, options);
 
-            // As we said in the method above, there are three cases here:
+            // As we said in the method above, there are four cases here:
             //
             // * Lookup could fail to find anything at all.
             // * Lookup could find a type of the wrong arity
-            // * Lookup could find something but it is not a type.
+            // * Lookup could find an alias of the wrong arity
+            // * Lookup could find something but it is neither a type nor an alias.
             //
-            // In the first two cases we will be given back an error type symbol of the appropriate arity.
-            // In the third case we will be given back the symbol -- say, a local variable symbol.
+            // In the first three cases we will be given back an error type symbol of the appropriate arity.
+            // In the forth case we will be given back the symbol -- say, a local variable symbol.
             //
-            // In all three cases the appropriate error has already been reported. (That the
-            // type was not found, that the generic type found does not have that arity, that
-            // the non-generic type found cannot be used with a type argument list, or that
+            // In all four cases the appropriate error has already been reported. (That the
+            // type or alias was not found, that the generic type or alias found does not have that arity, that
+            // the non-generic type or alias found cannot be used with a type argument list, or that
             // the symbol found is not something that takes type arguments. )
 
-            // The first thing to do is to make sure that we have some sort of generic type in hand.
+            // The first thing to do is to make sure that we have some sort of generic type or alias in hand.
             // (Note that an error type symbol is always a generic type.)
 
-            NamedTypeSymbol type = lookupResultSymbol as NamedTypeSymbol;
+            TypeSymbol type = (lookupResultSymbol is AliasSymbol alias ? alias.Target : lookupResultSymbol) as TypeSymbol;
 
             if ((object)type == null)
             {
                 // We did a lookup with a generic arity, filtered to types and namespaces. If
-                // we got back something other than a type, there had better be an error info
+                // we got back something other than a type or an alias, there had better be an error info
                 // for us.
                 Debug.Assert(lookupResult.Error != null);
                 type = new ExtendedErrorTypeSymbol(

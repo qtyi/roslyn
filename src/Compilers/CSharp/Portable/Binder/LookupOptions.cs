@@ -110,6 +110,11 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// Do not consider symbols that are parameters.
         /// </summary>
         MustNotBeParameter = 1 << 16,
+
+        /// <summary>
+        /// Consider aliases of any arity when arity zero is specified.
+        /// </summary>
+        AllAliasOnArityZero = 1 << 17,
     }
 
     internal static class LookupOptionExtensions

@@ -4133,14 +4133,8 @@ void C()
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "t");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "t");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.FunctionPointerType);
                     {
                         N(SyntaxKind.DelegateKeyword);

@@ -213,24 +213,25 @@ namespace Microsoft.CodeAnalysis
         protected abstract TypeInfo GetTypeInfoCore(SyntaxNode node, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// If "node" resolves to an alias, return the IAliasSymbol corresponding
+        /// If "nameSyntax" resolves to an alias name, return the IAliasSymbol corresponding
         /// to A. Otherwise return null.
         /// </summary>
+        /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
-        internal IAliasSymbol? GetAliasInfo(SyntaxNode node, CancellationToken cancellationToken = default(CancellationToken))
+        internal IAliasSymbol? GetAliasInfo(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return GetAliasInfoCore(node, cancellationToken);
+            return GetAliasInfoCore(nameSyntax, cancellationToken);
         }
 
         /// <summary>
-        /// If "node" resolves to an alias, return the IAliasSymbol corresponding
+        /// If "nameSyntax" resolves to an alias name, return the IAliasSymbol corresponding
         /// to A. Otherwise return null.
         /// </summary>
-        /// <param name="node">The syntax node to get alias info for.</param>
+        /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
-        protected abstract IAliasSymbol? GetAliasInfoCore(SyntaxNode node, CancellationToken cancellationToken = default(CancellationToken));
+        protected abstract IAliasSymbol? GetAliasInfoCore(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns true if this is a speculative semantic model created with any of the TryGetSpeculativeSemanticModel methods.
