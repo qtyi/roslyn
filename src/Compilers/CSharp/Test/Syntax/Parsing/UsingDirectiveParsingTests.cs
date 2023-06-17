@@ -3132,18 +3132,24 @@ unsafe struct A {
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
             // using x<a> = A*;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
+            // (1,9): warning CS8981: The type name 'a' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using x<a> = A*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "a").WithArguments("a").WithLocation(1, 9),
             // (1,14): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
             // using x<a> = A*;
             Diagnostic(ErrorCode.ERR_UnsafeNeeded, "A*").WithLocation(1, 14),
-            // (2,1): hidden CS8019: Unnecessary using directive.
-            // using y<b> = b*;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using y<b> = b*;").WithLocation(2, 1),
             // (2,7): warning CS8981: The type name 'y' only contains lower-cased ascii characters. Such names may become reserved for the language.
             // using y<b> = b*;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "y").WithArguments("y").WithLocation(2, 7),
+            // (2,9): warning CS8981: The type name 'b' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using y<b> = b*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "b").WithArguments("b").WithLocation(2, 9),
             // (2,14): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
             // using y<b> = b*;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "b*").WithLocation(2, 14));
+            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "b*").WithLocation(2, 14),
+            // (5,10): warning CS0169: The field 'ptA' is never used
+            //     y<A> ptA;
+            Diagnostic(ErrorCode.WRN_UnreferencedField, "ptA").WithArguments("A.ptA").WithLocation(5, 10));
 
         N(SyntaxKind.CompilationUnit);
         {

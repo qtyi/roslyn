@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
-        <source>Cannot create constructed generic type from non-generic type.</source>
-        <target state="translated">无法从非泛型类型创建构造泛型类型。</target>
+        <source>Cannot create constructed type from non-generic type or alias.</source>
+        <target state="needs-review-translation">无法从非泛型类型创建构造泛型类型。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">

@@ -704,7 +704,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // C# does not let you declare a type in which it would be possible for distinct base interfaces
         // to unify under some instantiations.  But such ill-formed classes can come in through
         // metadata and be instantiated in C#.  We check to see if that's happened.
-        private static bool HasDuplicateInterfaces(NamedTypeSymbol type, ConsList<TypeSymbol> basesBeingResolved)
+        private static bool HasDuplicateInterfaces(TypeSymbol type, ConsList<TypeSymbol> basesBeingResolved)
         {
             // PERF: avoid instantiating all interfaces here
             //       Ex: if class implements just IEnumerable<> and IComparable<> it cannot have conflicting implementations
@@ -777,6 +777,34 @@ hasRelatedInterfaces:
             return result;
         }
 
+        public static bool CheckConstraints(
+            this AliasSymbol alias,
+            in CheckConstraintsArgs args)
+        {
+            if (!RequiresChecking(alias))
+            {
+                return true;
+            }
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = CheckAliasConstraints(alias, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: null,
+                                                ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                args.Diagnostics.Add(pair.UseSiteInfo, args.Location);
+            }
+
+            diagnosticsBuilder.Free();
+            return result;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckTypeConstraints(
             NamedTypeSymbol type,
@@ -814,6 +842,24 @@ hasRelatedInterfaces:
                 nullabilityDiagnosticsBuilderOpt,
                 ref useSiteDiagnosticsBuilder,
                 skipParameters);
+        }
+
+        public static bool CheckAliasConstraints(
+            AliasSymbol alias,
+            in CheckConstraintsArgs args,
+            ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
+            ArrayBuilder<TypeParameterDiagnosticInfo> nullabilityDiagnosticsBuilderOpt,
+            ref ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder)
+        {
+            return CheckConstraints(
+                alias,
+                in args,
+                alias.TypeSubstitution,
+                alias.OriginalDefinition.TypeParameters,
+                alias.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics,
+                diagnosticsBuilder,
+                nullabilityDiagnosticsBuilderOpt,
+                ref useSiteDiagnosticsBuilder);
         }
 
         /// <summary>
@@ -1501,6 +1547,16 @@ hasRelatedInterfaces:
             }
 
             Debug.Assert(method.ConstructedFrom != method);
+            return true;
+        }
+
+        public static bool RequiresChecking(AliasSymbol alias)
+        {
+            if (alias.Arity == 0)
+            {
+                return false;
+            }
+
             return true;
         }
 

@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
-        <source>Cannot create constructed generic type from non-generic type.</source>
-        <target state="translated">Oluşturulmuş genel tür, genel olmayan türden oluşturulamaz.</target>
+        <source>Cannot create constructed type from non-generic type or alias.</source>
+        <target state="needs-review-translation">Oluşturulmuş genel tür, genel olmayan türden oluşturulamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">

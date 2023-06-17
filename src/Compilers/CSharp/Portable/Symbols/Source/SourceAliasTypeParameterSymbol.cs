@@ -17,7 +17,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
     /// <summary>
-    /// Base class for alias type parameters.
+    /// Class for alias type parameters.
     /// </summary>
     internal sealed class SourceAliasTypeParameterSymbol : SourceTypeParameterSymbolBase
     {
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override VarianceKind Variance
         {
-            get { throw new System.NotImplementedException(); }
+            get { return VarianceKind.None; }
         }
 
         public override bool HasConstructorConstraint

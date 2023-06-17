@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
-        <source>Cannot create constructed generic type from non-generic type.</source>
-        <target state="translated">Не удается создать сконструированный универсальный тип из неуниверсального типа.</target>
+        <source>Cannot create constructed type from non-generic type or alias.</source>
+        <target state="needs-review-translation">Не удается создать сконструированный универсальный тип из неуниверсального типа.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">

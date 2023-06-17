@@ -6059,7 +6059,7 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>Cannot create constructed generic type from another constructed generic type.</value>
   </data>
   <data name="CannotCreateConstructedFromNongeneric" xml:space="preserve">
-    <value>Cannot create constructed generic type from non-generic type.</value>
+    <value>Cannot create constructed type from non-generic type or alias.</value>
   </data>
   <data name="IDS_FeatureUnconstrainedTypeParameterInNullCoalescingOperator" xml:space="preserve">
     <value>unconstrained type parameters in null coalescing operator</value>

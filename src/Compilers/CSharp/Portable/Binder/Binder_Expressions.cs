@@ -3896,8 +3896,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 CheckFeatureAvailability(node, MessageID.IDS_FeatureRefStructs, diagnostics);
 
                 var spanType = GetWellKnownType(WellKnownType.System_Span_T, diagnostics, node);
-                return ConstructNamedType(
-                    type: spanType,
+                return ConstructNamedTypeOrAlias(
+                    namedTypeOrAlias: spanType,
                     typeSyntax: node.Kind() == SyntaxKind.StackAllocArrayCreationExpression
                         ? ((StackAllocArrayCreationExpressionSyntax)node).Type
                         : node,

@@ -36,6 +36,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return type.TypeParameters.IsEmpty ? type : type.Construct(typeArguments, unbound: false);
         }
 
+        public static AliasSymbol ConstructIfGeneric(this AliasSymbol alias, ImmutableArray<TypeWithAnnotations> typeArguments)
+        {
+            Debug.Assert(alias.TypeParameters.IsEmpty == (typeArguments.Length == 0));
+            Debug.Assert(alias.Target is TypeSymbol);
+            return alias.TypeParameters.IsEmpty ? alias : alias.Construct(typeArguments, unbound: false);
+        }
+
         public static bool IsNestedType([NotNullWhen(true)] this Symbol? symbol)
         {
             return symbol is NamedTypeSymbol && (object?)symbol.ContainingType != null;
@@ -206,6 +213,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 case SymbolKind.Method:
                     return ((MethodSymbol)symbol).ConstructedFrom;
 
+                case SymbolKind.Alias:
+                    return ((AliasSymbol)symbol).ConstructedFrom;
+
                 default:
                     throw ExceptionUtilities.UnexpectedValue(symbol.Kind);
             }
@@ -349,6 +359,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         return ((NamedTypeSymbol)symbol).Arity;
                     case SymbolKind.Method:
                         return ((MethodSymbol)symbol).Arity;
+                    case SymbolKind.Alias:
+                        return ((AliasSymbol)symbol).Arity;
                 }
             }
 
