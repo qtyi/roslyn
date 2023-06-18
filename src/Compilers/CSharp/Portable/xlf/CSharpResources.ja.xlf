@@ -1987,6 +1987,11 @@
         <target state="translated">符号なし右シフト</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">UTF-8 文字列リテラル</target>
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">using namespace' ディレクティブは名前空間に対してのみ適用できます。'{0}' は名前空間ではなく型です。代わりに 'using static' ディレクティブを使用することを検討してください。</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">using namespace' ディレクティブは名前空間に対してのみ適用できます。'{0}' は名前空間ではなく型です。代わりに 'using static' ディレクティブを使用することを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">using static' ディレクティブは型に対してのみ適用できます。'{0}' は型ではなく名前空間です。代わりに 'using namespace' ディレクティブを使用することを検討してください。</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">using static' ディレクティブは型に対してのみ適用できます。'{0}' は型ではなく名前空間です。代わりに 'using namespace' ディレクティブを使用することを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

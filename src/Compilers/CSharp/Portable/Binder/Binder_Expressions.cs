@@ -1415,13 +1415,18 @@ namespace Microsoft.CodeAnalysis.CSharp
             switch (managedKind)
             {
                 case ManagedKind.Managed:
-                    if (errorForManaged)
+                    // We do not report use-site diagnostic about ManagedAddr if 'type' is an alias type parameter.
+                    // We add 'unmanaged' type constraint and check later, that is, at the alias use-site.
+                    if (!isAliasTypeParameter())
                     {
-                        diagnostics.Add(ErrorCode.ERR_ManagedAddr, location, type);
-                        return true;
-                    }
+                        if (errorForManaged)
+                        {
+                            diagnostics.Add(ErrorCode.ERR_ManagedAddr, location, type);
+                            return true;
+                        }
 
-                    diagnostics.Add(ErrorCode.WRN_ManagedAddr, location, type);
+                        diagnostics.Add(ErrorCode.WRN_ManagedAddr, location, type);
+                    }
                     return false;
                 case ManagedKind.UnmanagedWithGenerics when MessageID.IDS_FeatureUnmanagedConstructedTypes.GetFeatureAvailabilityDiagnosticInfo(compilation) is CSDiagnosticInfo diagnosticInfo:
                     diagnostics.Add(diagnosticInfo, location);
@@ -1430,6 +1435,24 @@ namespace Microsoft.CodeAnalysis.CSharp
                     throw ExceptionUtilities.UnexpectedValue(managedKind);
                 default:
                     return false;
+            }
+
+            bool isAliasTypeParameter()
+            {
+                if (type.Kind != SymbolKind.TypeParameter)
+                {
+                    return false;
+                }
+
+                for (var symbol = type.ContainingSymbol; (object)symbol != null; symbol = symbol.ContainingSymbol)
+                {
+                    if (symbol.Kind == SymbolKind.Alias)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         }
 #nullable disable

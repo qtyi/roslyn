@@ -1987,6 +1987,11 @@
         <target state="translated">deslocamento direito não atribuído</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">Cadeia de caracteres UTF-8 literais</target>
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">Uma diretiva de 'usando namespace' pode apenas ser aplicada a namespaces; '{0}' é um tipo, não um namespace. Considere uma diretiva 'usando estático'</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">Uma diretiva de 'usando namespace' pode apenas ser aplicada a namespaces; '{0}' é um tipo, não um namespace. Considere uma diretiva 'usando estático'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">Uma diretiva de 'usando estático' pode apenas ser aplicada a tipos; '{0}' é um namespace, não um tipo. Considere uma diretiva 'usando namespace'</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">Uma diretiva de 'usando estático' pode apenas ser aplicada a tipos; '{0}' é um namespace, não um tipo. Considere uma diretiva 'usando namespace'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

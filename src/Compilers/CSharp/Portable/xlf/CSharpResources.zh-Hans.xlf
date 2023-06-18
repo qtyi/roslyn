@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
         <source>Cannot create constructed type from non-generic type or alias.</source>
-        <target state="needs-review-translation">无法从非泛型类型创建构造泛型类型。</target>
+        <target state="translated">无法从非泛型类型或别名创建构造类型。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">
@@ -1985,6 +1985,11 @@
       <trans-unit id="IDS_FeatureUnsignedRightShift">
         <source>unsigned right shift</source>
         <target state="translated">未签名的右移位</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="translated">使用泛型别名</target>
         <note />
       </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
@@ -5127,13 +5132,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">“using namespace”指令只能应用于命名空间；“{0}”是一个类型而不是命名空间。请考虑改用“using static”指令</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="translated">“using namespace”指令只能应用于命名空间；“{0}”是一个类型而不是命名空间。请考虑改用“using static”或“using generic”指令</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">“using static” 指令只能应用于类型；“{0}”是一个命名空间而不是类型。请考虑改用“using namespace”指令</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="translated">“using static”或“using generic”指令只能应用于类型；“{0}”是一个命名空间而不是类型。请考虑改用“using namespace”指令</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

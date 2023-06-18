@@ -1987,6 +1987,11 @@
         <target state="translated">부호 없는 오른쪽 시프트</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">UTF-8 문자열 리터럴</target>
@@ -5121,13 +5126,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">using namespace' 지시문은 네임스페이스에만 적용할 수 있습니다. '{0}'은(는) 네임스페이스가 아니라 형식입니다. 대신 'using static' 지시문을 사용하세요.</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">using namespace' 지시문은 네임스페이스에만 적용할 수 있습니다. '{0}'은(는) 네임스페이스가 아니라 형식입니다. 대신 'using static' 지시문을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">using static' 지시문은 형식에만 적용할 수 있습니다. '{0}'은(는) 형식이 아니라 네임스페이스입니다. 대신 'using namespace' 지시문을 사용하세요.</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">using static' 지시문은 형식에만 적용할 수 있습니다. '{0}'은(는) 형식이 아니라 네임스페이스입니다. 대신 'using namespace' 지시문을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

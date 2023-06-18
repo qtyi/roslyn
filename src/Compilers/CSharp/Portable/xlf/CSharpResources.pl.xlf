@@ -1987,6 +1987,11 @@
         <target state="translated">niepodpisane przesunięcie w prawo</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">Literały ciągu UTF-8</target>
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">Dyrektywa „using namespace” może być stosowana tylko do przestrzeni nazw. Element „{0}” to typ, a nie przestrzeń nazw. Zamiast tego rozważ użycie dyrektywy „using static”</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">Dyrektywa „using namespace” może być stosowana tylko do przestrzeni nazw. Element „{0}” to typ, a nie przestrzeń nazw. Zamiast tego rozważ użycie dyrektywy „using static”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">Dyrektywa „using static” może być stosowana tylko do typów. Element „{0}” to przestrzeń nazw, a nie typ. Zamiast tego rozważ użycie dyrektywy „using namespace”</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">Dyrektywa „using static” może być stosowana tylko do typów. Element „{0}” to przestrzeń nazw, a nie typ. Zamiast tego rozważ użycie dyrektywy „using namespace”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

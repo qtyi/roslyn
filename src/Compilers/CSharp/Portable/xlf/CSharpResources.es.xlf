@@ -1987,6 +1987,11 @@
         <target state="translated">cambio derecho sin firmar</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">Literales de cadena UTF-8</target>
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">Las directivas de uso de espacio de nombres solo se pueden aplicar a espacios de nombres. '{0}' es un tipo, no un espacio de nombres. Puede que deba utilizar una directiva de uso de versión estática en su lugar</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">Las directivas de uso de espacio de nombres solo se pueden aplicar a espacios de nombres. '{0}' es un tipo, no un espacio de nombres. Puede que deba utilizar una directiva de uso de versión estática en su lugar</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">Las directivas de uso de versión estática solo se pueden aplicar a tipos. '{0}' es un espacio de nombres, no un tipo. Puede que deba utilizar una directiva de uso de espacio de nombres en su lugar</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">Las directivas de uso de versión estática solo se pueden aplicar a tipos. '{0}' es un espacio de nombres, no un tipo. Puede que deba utilizar una directiva de uso de espacio de nombres en su lugar</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

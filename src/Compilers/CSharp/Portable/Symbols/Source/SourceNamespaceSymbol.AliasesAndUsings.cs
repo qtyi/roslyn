@@ -676,7 +676,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             SourceMemberContainerTypeSymbol.ReportReservedTypeName(identifier.Text, compilation, diagnostics, location);
 
                             string identifierValueText = identifier.ValueText;
-                            int typeParameterListCount = usingDirective.TypeParameterList?.Parameters.Count ?? 0;
+                            int typeParameterListCount = usingDirective.TypeParameterList == null ? 0 : usingDirective.TypeParameterList.Parameters.Count;
                             bool skipInLookup = false;
 
                             if (usingAliasesMap?.ContainsKey(new AliasKey(identifierValueText, typeParameterListCount)) ?? globalUsingAliasesMap.ContainsKey(new AliasKey(identifierValueText, 0)))
@@ -706,7 +706,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                             // construct the alias sym with the binder for which we are building imports. That
                             // way the alias target can make use of extern alias definitions.
-                            var aliasAndDirective = new AliasAndUsingDirective(new AliasSymbolFromSyntax(declaringSymbol, usingDirective), usingDirective);
+                            var alias = new AliasSymbolFromSyntax(declaringSymbol, usingDirective);
+                            if (typeParameterListCount != 0 && alias.Target.IsNamespace)
+                            {
+                                diagnostics.Add(ErrorCode.ERR_BadUsingType, usingDirective.NamespaceOrType.Location, alias.Target);
+                            }
+                            var aliasAndDirective = new AliasAndUsingDirective(alias, usingDirective);
 
                             if (usingAliases is null)
                             {

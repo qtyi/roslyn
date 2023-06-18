@@ -1987,6 +1987,11 @@
         <target state="translated">işaretsiz sağ kaydırma</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">UTF-8 sabit değerli dizeleri</target>
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">using namespace' yönergesi yalnızca ad alanlarına uygulanabilir; '{0}', bir ad alanı değil, türdür. Bunun yerine 'using static' yönergesi uygulayabilirsiniz</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">using namespace' yönergesi yalnızca ad alanlarına uygulanabilir; '{0}', bir ad alanı değil, türdür. Bunun yerine 'using static' yönergesi uygulayabilirsiniz</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">using static' yönergesi yalnızca türlere uygulanabilir; '{0}', bir tür değil, alan adıdır. Bunun yerine 'using namespace' yönergesi uygulayabilirsiniz</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">using static' yönergesi yalnızca türlere uygulanabilir; '{0}', bir tür değil, alan adıdır. Bunun yerine 'using namespace' yönergesi uygulayabilirsiniz</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">

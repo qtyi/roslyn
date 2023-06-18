@@ -3114,6 +3114,65 @@ class C
     #region
 #warning 待移除
 
+
+    [Fact]
+    public void GenericAliasUsingDirective_CSharp11()
+    {
+        var text = @"using x<T> = System.Object;";
+        CreateCompilation(text, parseOptions: TestOptions.Regular11).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = System.Object;").WithLocation(1, 1),
+            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
+            // (1,8): error CS8652: The feature 'using generic alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.ERR_FeatureInPreview, "<T>").WithArguments("using generic alias").WithLocation(1, 8));
+    }
+
+    [Fact]
+    public void GenericAliasUsingDirective_CSharp12()
+    {
+        var text = @"using x<T> = System.Object;";
+        CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = System.Object;").WithLocation(1, 1),
+            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
+    }
+
+    [Fact]
+    public void GenericAliasUsingDirective_Preview()
+    {
+        var text = @"using x<T> = System.Object;";
+        CreateCompilation(text, parseOptions: TestOptions.RegularPreview).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = System.Object;").WithLocation(1, 1),
+            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using x<T> = System.Object;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
+    }
+
+    [Fact]
+    public void GenericAliasUsingDirectiveNamespace()
+    {
+        var text = @"using x<T> = System;";
+        CreateCompilation(text, parseOptions: TestOptions.RegularPreview).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using x<T> = System;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = System;").WithLocation(1, 1),
+            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using x<T> = System;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
+            // (1,14): warning CS8981: A 'using static' or a 'using generic' directive can only be applied to types; 'System' is a namespace not a type. Consider a 'using namespace' directive instead
+            // System;
+            Diagnostic(ErrorCode.ERR_BadUsingType, "System").WithArguments("System").WithLocation(1, 14));
+    }
+
     [Fact]
     public void GenericAliasUsingDirectiveNamePointer1()
     {
@@ -3157,6 +3216,15 @@ unsafe struct A {
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "a");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
@@ -3168,11 +3236,60 @@ unsafe struct A {
                 }
                 N(SyntaxKind.SemicolonToken);
             }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "y");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "b");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.PointerType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "b");
+                    }
+                    N(SyntaxKind.AsteriskToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
             N(SyntaxKind.StructDeclaration);
             {
+                N(SyntaxKind.UnsafeKeyword);
                 N(SyntaxKind.StructKeyword);
                 N(SyntaxKind.IdentifierToken, "A");
                 N(SyntaxKind.OpenBraceToken);
+                N(SyntaxKind.FieldDeclaration);
+                {
+                    N(SyntaxKind.VariableDeclaration);
+                    {
+                        N(SyntaxKind.GenericName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "y");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.IdentifierName);
+                                {
+                                    N(SyntaxKind.IdentifierToken, "A");
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
+                        }
+                        N(SyntaxKind.VariableDeclarator);
+                        {
+                            N(SyntaxKind.IdentifierToken, "ptA");
+                        }
+                    }
+                    N(SyntaxKind.SemicolonToken);
+                }
                 N(SyntaxKind.CloseBraceToken);
             }
             N(SyntaxKind.EndOfFileToken);
@@ -3184,17 +3301,32 @@ unsafe struct A {
     public void GenericAliasUsingDirectiveNamePointer2()
     {
         var text =
-@"using unsafe x = A*;
+@"using unsafe x<a> = A*;
+using unsafe y<b> = b*;
 
-struct A { }";
+unsafe struct A {
+    y<A> ptA;
+}";
         UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+        CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using unsafe x = A*;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe x = A*;").WithLocation(1, 1),
+            // using unsafe x<a> = A*;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe x<a> = A*;").WithLocation(1, 1),
             // (1,14): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using unsafe x = A*;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 14));
+            // using unsafe x<a> = A*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 14),
+            // (1,16): warning CS8981: The type name 'a' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using unsafe x<a> = A*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "a").WithArguments("a").WithLocation(1, 16),
+            // (2,14): warning CS8981: The type name 'y' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using unsafe y<b> = b*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "y").WithArguments("y").WithLocation(2, 14),
+            // (2,16): warning CS8981: The type name 'b' only contains lower-cased ascii characters. Such names may become reserved for the language.
+            // using unsafe y<b> = b*;
+            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "b").WithArguments("b").WithLocation(2, 16),
+            // (5,10): warning CS0169: The field 'ptA' is never used
+            //     y<A> ptA;
+            Diagnostic(ErrorCode.WRN_UnreferencedField, "ptA").WithArguments("A.ptA").WithLocation(5, 10));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3203,6 +3335,15 @@ struct A { }";
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "a");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
@@ -3214,11 +3355,61 @@ struct A { }";
                 }
                 N(SyntaxKind.SemicolonToken);
             }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.UnsafeKeyword);
+                N(SyntaxKind.IdentifierToken, "y");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "b");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.PointerType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "b");
+                    }
+                    N(SyntaxKind.AsteriskToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
             N(SyntaxKind.StructDeclaration);
             {
+                N(SyntaxKind.UnsafeKeyword);
                 N(SyntaxKind.StructKeyword);
                 N(SyntaxKind.IdentifierToken, "A");
                 N(SyntaxKind.OpenBraceToken);
+                N(SyntaxKind.FieldDeclaration);
+                {
+                    N(SyntaxKind.VariableDeclaration);
+                    {
+                        N(SyntaxKind.GenericName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "y");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.IdentifierName);
+                                {
+                                    N(SyntaxKind.IdentifierToken, "A");
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
+                        }
+                        N(SyntaxKind.VariableDeclarator);
+                        {
+                            N(SyntaxKind.IdentifierToken, "ptA");
+                        }
+                    }
+                    N(SyntaxKind.SemicolonToken);
+                }
                 N(SyntaxKind.CloseBraceToken);
             }
             N(SyntaxKind.EndOfFileToken);
@@ -3229,19 +3420,19 @@ struct A { }";
     [Fact]
     public void GenericAliasUsingDirectiveFunctionPointer1()
     {
-        var text = @"using x = delegate*<int, void>;";
+        var text = @"using x<T1, T2> = delegate*<T1, T2>;";
 
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = delegate*<int, void>;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = delegate*<int, void>;").WithLocation(1, 1),
+            // using x<T1, T2> = delegate*<T1, T2>;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T1, T2> = delegate*<T1, T2>;").WithLocation(1, 1),
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = delegate*<int, void>;
+            // using x<T1, T2> = delegate*<T1, T2>;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,11): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            // using x = delegate*<int, void>;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "delegate*").WithLocation(1, 11));
+            // (1,19): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
+            // using x<T1, T2> = delegate*<T1, T2>;
+            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "delegate*").WithLocation(1, 19));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3249,6 +3440,20 @@ struct A { }";
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T1");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T2");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.FunctionPointerType);
                 {
@@ -3259,17 +3464,17 @@ struct A { }";
                         N(SyntaxKind.LessThanToken);
                         N(SyntaxKind.FunctionPointerParameter);
                         {
-                            N(SyntaxKind.PredefinedType);
+                            N(SyntaxKind.IdentifierName);
                             {
-                                N(SyntaxKind.IntKeyword);
+                                N(SyntaxKind.IdentifierToken, "T1");
                             }
                         }
                         N(SyntaxKind.CommaToken);
                         N(SyntaxKind.FunctionPointerParameter);
                         {
-                            N(SyntaxKind.PredefinedType);
+                            N(SyntaxKind.IdentifierName);
                             {
-                                N(SyntaxKind.VoidKeyword);
+                                N(SyntaxKind.IdentifierToken, "T2");
                             }
                         }
                         N(SyntaxKind.GreaterThanToken);
@@ -3285,15 +3490,15 @@ struct A { }";
     [Fact]
     public void GenericAliasUsingDirectiveFunctionPointer2()
     {
-        var text = @"using unsafe x = delegate*<int, void>;";
+        var text = @"using unsafe x<T1, T2> = delegate*<T1, T2>;";
 
         UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+        CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using unsafe x = delegate*<int, void>;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe x = delegate*<int, void>;").WithLocation(1, 1),
+            // using unsafe x<T1, T2> = delegate*<T1, T2>;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe x<T1, T2> = delegate*<T1, T2>;").WithLocation(1, 1),
             // (1,14): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using unsafe x = delegate*<int, void>;
+            // using unsafe x<T1, T2> = delegate*<T1, T2>;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 14));
 
         N(SyntaxKind.CompilationUnit);
@@ -3303,6 +3508,20 @@ struct A { }";
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T1");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T2");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.FunctionPointerType);
                 {
@@ -3313,17 +3532,17 @@ struct A { }";
                         N(SyntaxKind.LessThanToken);
                         N(SyntaxKind.FunctionPointerParameter);
                         {
-                            N(SyntaxKind.PredefinedType);
+                            N(SyntaxKind.IdentifierName);
                             {
-                                N(SyntaxKind.IntKeyword);
+                                N(SyntaxKind.IdentifierToken, "T1");
                             }
                         }
                         N(SyntaxKind.CommaToken);
                         N(SyntaxKind.FunctionPointerParameter);
                         {
-                            N(SyntaxKind.PredefinedType);
+                            N(SyntaxKind.IdentifierName);
                             {
-                                N(SyntaxKind.VoidKeyword);
+                                N(SyntaxKind.IdentifierToken, "T2");
                             }
                         }
                         N(SyntaxKind.GreaterThanToken);
@@ -3337,81 +3556,16 @@ struct A { }";
     }
 
     [Fact]
-    public void GenericAliasUsingDirectivePredefinedType_CSharp11()
+    public void GenericAliasUsingDirectiveSelf()
     {
-        var text = @"using x = int;";
-        UsingTree(text, options: TestOptions.Regular11);
-        CreateCompilation(text, parseOptions: TestOptions.Regular11).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = int;").WithLocation(1, 1),
-            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = int;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,11): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
-            // using x = int;
-            Diagnostic(ErrorCode.ERR_FeatureInPreview, "int").WithArguments("using type alias").WithLocation(1, 11));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
-                {
-                    N(SyntaxKind.IntKeyword);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedType_CSharp12()
-    {
-        var text = @"using x = int;";
-        UsingTree(text);
-        CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = int;").WithLocation(1, 1),
-            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = int;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
-                {
-                    N(SyntaxKind.IntKeyword);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedType_Preview()
-    {
-        var text = @"using x = int;";
+        var text = @"using x<T> = T;";
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = int;").WithLocation(1, 1),
+            // using x<T> = T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = T;").WithLocation(1, 1),
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = int;
+            // using x<T> = T;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
 
         N(SyntaxKind.CompilationUnit);
@@ -3420,10 +3574,19 @@ struct A { }";
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.IntKeyword);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -3510,267 +3673,6 @@ struct A { }";
     }
 
     [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer1()
-    {
-        var text = @"using x = int*;";
-        UsingTree(text);
-        CreateCompilation(text).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = int*;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = int*;").WithLocation(1, 1),
-            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = int*;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,11): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            // using x = int*;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "int*").WithLocation(1, 11));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer2()
-    {
-        var text = @"using unsafe x = int*;";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using unsafe x = int*;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe x = int*;").WithLocation(1, 1),
-            // (1,14): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using unsafe x = int*;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 14));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer3()
-    {
-        var text = @"
-using unsafe X = int*;
-
-namespace N
-{
-    using Y = X;
-}";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (6,5): hidden CS8019: Unnecessary using directive.
-            //     using Y = X;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X;").WithLocation(6, 5),
-            // (6,15): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            //     using Y = X;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "X").WithLocation(6, 15));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.NamespaceDeclaration);
-            {
-                N(SyntaxKind.NamespaceKeyword);
-                N(SyntaxKind.IdentifierName);
-                {
-                    N(SyntaxKind.IdentifierToken, "N");
-                }
-                N(SyntaxKind.OpenBraceToken);
-                N(SyntaxKind.UsingDirective);
-                {
-                    N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.IdentifierToken, "Y");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.SemicolonToken);
-                }
-                N(SyntaxKind.CloseBraceToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer4()
-    {
-        var text = @"
-using unsafe X = int*;
-
-namespace N
-{
-    using unsafe Y = X;
-}";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (6,5): hidden CS8019: Unnecessary using directive.
-            //     using unsafe Y = X;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe Y = X;").WithLocation(6, 5));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.NamespaceDeclaration);
-            {
-                N(SyntaxKind.NamespaceKeyword);
-                N(SyntaxKind.IdentifierName);
-                {
-                    N(SyntaxKind.IdentifierToken, "N");
-                }
-                N(SyntaxKind.OpenBraceToken);
-                N(SyntaxKind.UsingDirective);
-                {
-                    N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.UnsafeKeyword);
-                    N(SyntaxKind.IdentifierToken, "Y");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.SemicolonToken);
-                }
-                N(SyntaxKind.CloseBraceToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer5()
-    {
-        var text = @"
-using X = int*;
-
-namespace N
-{
-    using unsafe Y = X;
-}";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (2,11): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            // using X = int*;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "int*").WithLocation(2, 11),
-            // (6,5): hidden CS8019: Unnecessary using directive.
-            //     using unsafe Y = X;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe Y = X;").WithLocation(6, 5));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.NamespaceDeclaration);
-            {
-                N(SyntaxKind.NamespaceKeyword);
-                N(SyntaxKind.IdentifierName);
-                {
-                    N(SyntaxKind.IdentifierToken, "N");
-                }
-                N(SyntaxKind.OpenBraceToken);
-                N(SyntaxKind.UsingDirective);
-                {
-                    N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.UnsafeKeyword);
-                    N(SyntaxKind.IdentifierToken, "Y");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.IdentifierName);
-                    {
-                        N(SyntaxKind.IdentifierToken, "X");
-                    }
-                    N(SyntaxKind.SemicolonToken);
-                }
-                N(SyntaxKind.CloseBraceToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
     public void GenericAliasUsingDirectivePredefinedTypePointer6()
     {
         var text = @"
@@ -3818,79 +3720,6 @@ namespace N
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.IdentifierToken, "Y");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.ArrayType);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "X");
-                        }
-                        N(SyntaxKind.ArrayRankSpecifier);
-                        {
-                            N(SyntaxKind.OpenBracketToken);
-                            N(SyntaxKind.OmittedArraySizeExpression);
-                            {
-                                N(SyntaxKind.OmittedArraySizeExpressionToken);
-                            }
-                            N(SyntaxKind.CloseBracketToken);
-                        }
-                    }
-                    N(SyntaxKind.SemicolonToken);
-                }
-                N(SyntaxKind.CloseBraceToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer7()
-    {
-        var text = @"
-using unsafe X = int*;
-
-namespace N
-{
-    using unsafe Y = X[];
-}";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (6,5): hidden CS8019: Unnecessary using directive.
-            //     using unsafe Y = X[];
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe Y = X[];").WithLocation(6, 5));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.NamespaceDeclaration);
-            {
-                N(SyntaxKind.NamespaceKeyword);
-                N(SyntaxKind.IdentifierName);
-                {
-                    N(SyntaxKind.IdentifierToken, "N");
-                }
-                N(SyntaxKind.OpenBraceToken);
-                N(SyntaxKind.UsingDirective);
-                {
-                    N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.UnsafeKeyword);
                     N(SyntaxKind.IdentifierToken, "Y");
                     N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.ArrayType);
