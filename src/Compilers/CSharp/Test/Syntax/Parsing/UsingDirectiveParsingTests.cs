@@ -3111,10 +3111,6 @@ class C
         EOF();
     }
 
-    #region
-#warning 待移除
-
-
     [Fact]
     public void GenericAliasUsingDirective_CSharp11()
     {
@@ -3598,18 +3594,18 @@ unsafe struct A {
     [Fact]
     public void GenericAliasUsingDirectiveRefType()
     {
-        var text = @"using x = ref int;";
+        var text = @"using x<T> = ref T;";
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = ref int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = ref int;").WithLocation(1, 1),
+            // using x<T> = ref T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = ref T;").WithLocation(1, 1),
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = ref int;
+            // using x<T> = ref T;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,11): error CS9105: Using alias cannot be a 'ref' type.
-            // using x = ref int;
-            Diagnostic(ErrorCode.ERR_BadRefInUsingAlias, "ref").WithLocation(1, 11));
+            // (1,14): error CS9105: Using alias cannot be a 'ref' type.
+            // using x<T> = ref T;
+            Diagnostic(ErrorCode.ERR_BadRefInUsingAlias, "ref").WithLocation(1, 14));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3617,13 +3613,22 @@ unsafe struct A {
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.RefType);
                 {
                     N(SyntaxKind.RefKeyword);
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                 }
                 N(SyntaxKind.SemicolonToken);
@@ -3636,18 +3641,18 @@ unsafe struct A {
     [Fact]
     public void GenericAliasUsingDirectiveRefReadonlyType()
     {
-        var text = @"using x = ref readonly int;";
+        var text = @"using x<T> = ref readonly T;";
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = ref readonly int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = ref readonly int;").WithLocation(1, 1),
+            // using x<T> = ref readonly T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = ref readonly T;").WithLocation(1, 1),
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = ref readonly int;
+            // using x<T> = ref readonly T;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,11): error CS9105: Using alias cannot be a 'ref' type.
-            // using x = ref readonly int;
-            Diagnostic(ErrorCode.ERR_BadRefInUsingAlias, "ref").WithLocation(1, 11));
+            // (1,14): error CS9105: Using alias cannot be a 'ref' type.
+            // using x<T> = ref readonly T;
+            Diagnostic(ErrorCode.ERR_BadRefInUsingAlias, "ref").WithLocation(1, 14));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3655,92 +3660,26 @@ unsafe struct A {
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.RefType);
                 {
                     N(SyntaxKind.RefKeyword);
                     N(SyntaxKind.ReadOnlyKeyword);
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                 }
                 N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDirectivePredefinedTypePointer6()
-    {
-        var text = @"
-using unsafe X = int*;
-
-namespace N
-{
-    using Y = X[];
-}";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (6,5): hidden CS8019: Unnecessary using directive.
-            //     using Y = X[];
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X[];").WithLocation(6, 5),
-            // (6,15): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            //     using Y = X[];
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "X").WithLocation(6, 15));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PointerType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.AsteriskToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.NamespaceDeclaration);
-            {
-                N(SyntaxKind.NamespaceKeyword);
-                N(SyntaxKind.IdentifierName);
-                {
-                    N(SyntaxKind.IdentifierToken, "N");
-                }
-                N(SyntaxKind.OpenBraceToken);
-                N(SyntaxKind.UsingDirective);
-                {
-                    N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.IdentifierToken, "Y");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.ArrayType);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "X");
-                        }
-                        N(SyntaxKind.ArrayRankSpecifier);
-                        {
-                            N(SyntaxKind.OpenBracketToken);
-                            N(SyntaxKind.OmittedArraySizeExpression);
-                            {
-                                N(SyntaxKind.OmittedArraySizeExpressionToken);
-                            }
-                            N(SyntaxKind.CloseBracketToken);
-                        }
-                    }
-                    N(SyntaxKind.SemicolonToken);
-                }
-                N(SyntaxKind.CloseBraceToken);
             }
             N(SyntaxKind.EndOfFileToken);
         }
@@ -3750,14 +3689,14 @@ namespace N
     [Fact]
     public void GenericAliasUsingDirectiveTuple1()
     {
-        var text = @"using x = (int, int);";
+        var text = @"using x<T> = (T, T);";
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = (int, int);
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = (int, int);").WithLocation(1, 1),
+            // using x<T> = (T, T);
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x<T> = (T, T);").WithLocation(1, 1),
             // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = (int, int);
+            // using x<T> = (T, T);
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
 
         N(SyntaxKind.CompilationUnit);
@@ -3766,23 +3705,32 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "x");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CommaToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CloseParenToken);
@@ -3798,18 +3746,18 @@ namespace N
     public void GenericAliasUsingDirectiveTuple2()
     {
         var text = """
-            using X = (int, int);
+            using X<T> = (T, T);
 
             class C
             {
-                X x = (0, 0);
+                X<int> x = (0, 0);
             }
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
-            // (5,7): warning CS0414: The field 'C.x' is assigned but its value is never used
-            //     X x = (0, 0);
-            Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "x").WithArguments("C.x").WithLocation(5, 7));
+            // (5,12): warning CS0414: The field 'C.x' is assigned but its value is never used
+            //     X<T> x = (0, 0);
+            Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "x").WithArguments("C.x").WithLocation(5, 12));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3817,23 +3765,32 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CommaToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CloseParenToken);
@@ -3849,9 +3806,18 @@ namespace N
                 {
                     N(SyntaxKind.VariableDeclaration);
                     {
-                        N(SyntaxKind.IdentifierName);
+                        N(SyntaxKind.GenericName);
                         {
                             N(SyntaxKind.IdentifierToken, "X");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.PredefinedType);
+                                {
+                                    N(SyntaxKind.IntKeyword);
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
                         }
                         N(SyntaxKind.VariableDeclarator);
                         {
@@ -3895,21 +3861,21 @@ namespace N
     public void GenericAliasUsingDirectiveTuple3()
     {
         var text = """
-            using X = (int, int);
+            using X<T> = (T, T);
 
             class C
             {
-                X x = (true, false);
+                X<int> x = (true, false);
             }
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
-            // (5,12): error CS0029: Cannot implicitly convert type 'bool' to 'int'
-            //     X x = (true, false);
-            Diagnostic(ErrorCode.ERR_NoImplicitConv, "true").WithArguments("bool", "int").WithLocation(5, 12),
-            // (5,18): error CS0029: Cannot implicitly convert type 'bool' to 'int'
-            //     X x = (true, false);
-            Diagnostic(ErrorCode.ERR_NoImplicitConv, "false").WithArguments("bool", "int").WithLocation(5, 18));
+            // (5,17): error CS0029: Cannot implicitly convert type 'bool' to 'int'
+            //     X<int> x = (true, false);
+            Diagnostic(ErrorCode.ERR_NoImplicitConv, "true").WithArguments("bool", "int").WithLocation(5, 17),
+            // (5,23): error CS0029: Cannot implicitly convert type 'bool' to 'int'
+            //     X<int> x = (true, false);
+            Diagnostic(ErrorCode.ERR_NoImplicitConv, "false").WithArguments("bool", "int").WithLocation(5, 23));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -3917,23 +3883,32 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.TupleType);
                 {
                     N(SyntaxKind.OpenParenToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CommaToken);
                     N(SyntaxKind.TupleElement);
                     {
-                        N(SyntaxKind.PredefinedType);
+                        N(SyntaxKind.IdentifierName);
                         {
-                            N(SyntaxKind.IntKeyword);
+                            N(SyntaxKind.IdentifierToken, "T");
                         }
                     }
                     N(SyntaxKind.CloseParenToken);
@@ -3949,9 +3924,18 @@ namespace N
                 {
                     N(SyntaxKind.VariableDeclaration);
                     {
-                        N(SyntaxKind.IdentifierName);
+                        N(SyntaxKind.GenericName);
                         {
                             N(SyntaxKind.IdentifierToken, "X");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.PredefinedType);
+                                {
+                                    N(SyntaxKind.IntKeyword);
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
                         }
                         N(SyntaxKind.VariableDeclarator);
                         {
@@ -3994,138 +3978,18 @@ namespace N
     [Fact]
     public void GenericAliasUsingNullableValueType()
     {
-        var text = @"using x = int?;";
-        UsingTree(text);
-        CreateCompilation(text).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = int?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = int?;").WithLocation(1, 1),
-            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = int?;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.IntKeyword);
-                    }
-                    N(SyntaxKind.QuestionToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingNullableReferenceType1()
-    {
-        var text = @"using x = string?;";
-        UsingTree(text);
-        CreateCompilation(text).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using x = string?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using x = string?;").WithLocation(1, 1),
-            // (1,7): warning CS8981: The type name 'x' only contains lower-cased ascii characters. Such names may become reserved for the language.
-            // using x = string?;
-            Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "x").WithArguments("x").WithLocation(1, 7),
-            // (1,17): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
-            // using x = string?;
-            Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(1, 17),
-            // (1,17): error CS9107: Using alias cannot be a nullable reference type.
-            // using x = string?;
-            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(1, 17));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "x");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.StringKeyword);
-                    }
-                    N(SyntaxKind.QuestionToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingNullableReferenceType2()
-    {
         var text = """
-            #nullable enable
-            using X = string?;
-            """;
-        UsingTree(text);
-        CreateCompilation(text).VerifyDiagnostics(
-            // (2,1): hidden CS8019: Unnecessary using directive.
-            // using X = string?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = string?;").WithLocation(2, 1),
-            // (2,17): error CS9107: Using alias cannot be a nullable reference type.
-            // using X = string?;
-            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(2, 17));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
-                {
-                    N(SyntaxKind.PredefinedType);
-                    {
-                        N(SyntaxKind.StringKeyword);
-                    }
-                    N(SyntaxKind.QuestionToken);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingNullableReferenceType3()
-    {
-        var text = """
-            using X = string;
+            using X<T> = T;
             namespace N
             {
-                using Y = X?;
+                using Y = X<int>?;
             }
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (4,5): hidden CS8019: Unnecessary using directive.
-            //     using Y = X?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X?;").WithLocation(4, 5),
-            // (4,16): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
-            //     using Y = X?;
-            Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(4, 16),
-            // (4,16): error CS9107: Using alias cannot be a nullable reference type.
-            //     using Y = X?;
-            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(4, 16));
+            //     using Y = X<int>?;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X<int>?;").WithLocation(4, 5));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4133,10 +3997,19 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.StringKeyword);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -4155,9 +4028,101 @@ namespace N
                     N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.NullableType);
                     {
-                        N(SyntaxKind.IdentifierName);
+                        N(SyntaxKind.GenericName);
                         {
                             N(SyntaxKind.IdentifierToken, "X");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.PredefinedType);
+                                {
+                                    N(SyntaxKind.IntKeyword);
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
+                        }
+                        N(SyntaxKind.QuestionToken);
+                    }
+                    N(SyntaxKind.SemicolonToken);
+                }
+                N(SyntaxKind.CloseBraceToken);
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
+
+    [Fact]
+    public void GenericAliasUsingNullableReferenceType3()
+    {
+        var text = """
+            using X<T> = T;
+            namespace N
+            {
+                using Y = X<string>?;
+            }
+            """;
+        UsingTree(text);
+        CreateCompilation(text).VerifyDiagnostics(
+            // (4,5): hidden CS8019: Unnecessary using directive.
+            //     using Y = X<string>?;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X<string>?;").WithLocation(4, 5),
+            // (4,24): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+            //     using Y = X<string>?;
+            Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(4, 24),
+            // (4,24): error CS9107: Using alias cannot be a nullable reference type.
+            //     using Y = X<string>?;
+            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(4, 24));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.NamespaceDeclaration);
+            {
+                N(SyntaxKind.NamespaceKeyword);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "N");
+                }
+                N(SyntaxKind.OpenBraceToken);
+                N(SyntaxKind.UsingDirective);
+                {
+                    N(SyntaxKind.UsingKeyword);
+                    N(SyntaxKind.IdentifierToken, "Y");
+                    N(SyntaxKind.EqualsToken);
+                    N(SyntaxKind.NullableType);
+                    {
+                        N(SyntaxKind.GenericName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "X");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.PredefinedType);
+                                {
+                                    N(SyntaxKind.StringKeyword);
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
                         }
                         N(SyntaxKind.QuestionToken);
                     }
@@ -4175,20 +4140,20 @@ namespace N
     {
         var text = """
             #nullable enable
-            using X = string;
+            using X<T> = T;
             namespace N
             {
-                using Y = X?;
+                using Y = X<string>?;
             }
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (5,5): hidden CS8019: Unnecessary using directive.
-            //     using Y = X?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X?;").WithLocation(5, 5),
-            // (5,16): error CS9107: Using alias cannot be a nullable reference type.
-            //     using Y = X?;
-            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(5, 16));
+            //     using Y = X<string>?;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Y = X<string>?;").WithLocation(5, 5),
+            // (5,24): error CS9107: Using alias cannot be a nullable reference type.
+            //     using Y = X<string>?;
+            Diagnostic(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, "?").WithLocation(5, 24));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4196,10 +4161,19 @@ namespace N
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.StringKeyword);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -4218,9 +4192,18 @@ namespace N
                     N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.NullableType);
                     {
-                        N(SyntaxKind.IdentifierName);
+                        N(SyntaxKind.GenericName);
                         {
                             N(SyntaxKind.IdentifierToken, "X");
+                            N(SyntaxKind.TypeArgumentList);
+                            {
+                                N(SyntaxKind.LessThanToken);
+                                N(SyntaxKind.PredefinedType);
+                                {
+                                    N(SyntaxKind.StringKeyword);
+                                }
+                                N(SyntaxKind.GreaterThanToken);
+                            }
                         }
                         N(SyntaxKind.QuestionToken);
                     }
@@ -4236,17 +4219,23 @@ namespace N
     [Fact]
     public void GenericAliasUsingVoidPointer1()
     {
-        var text = @"using unsafe VP = void*;
+        var text = @"using unsafe P<T> = T*;
 
 class C
 {
-    void M(VP vp) { }
+    void M(P<void> vp) { }
 }";
-        UsingTree(text);
+        UsingTree(text,
+            // (5,14): error CS1547: Keyword 'void' cannot be used in this context
+            //     void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,12): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            //     void M(VP vp) { }
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "VP").WithLocation(5, 12));
+            //     void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "P<void>").WithLocation(5, 12),
+            // (5,14): error CS1547: Keyword 'void' cannot be used in this context
+            //     void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4254,13 +4243,22 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.IdentifierToken, "P");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.VoidKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.AsteriskToken);
                 }
@@ -4283,9 +4281,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "VP");
+                                N(SyntaxKind.IdentifierToken, "P");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.PredefinedType);
+                                    {
+                                        N(SyntaxKind.VoidKeyword);
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "vp");
                         }
@@ -4307,14 +4314,20 @@ class C
     [Fact]
     public void GenericAliasUsingVoidPointer2()
     {
-        var text = @"using unsafe VP = void*;
+        var text = @"using unsafe P<T> = T*;
 
 class C
 {
-    unsafe void M(VP vp) { }
+    unsafe void M(P<void> vp) { }
 }";
-        UsingTree(text);
-        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics();
+        UsingTree(text,
+            // (5,21): error CS1547: Keyword 'void' cannot be used in this context
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
+        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+            // (5,21): error CS1547: Keyword 'void' cannot be used in this context
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4322,13 +4335,22 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.UnsafeKeyword);
-                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.IdentifierToken, "P");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.VoidKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.AsteriskToken);
                 }
@@ -4352,9 +4374,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "VP");
+                                N(SyntaxKind.IdentifierToken, "P");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.PredefinedType);
+                                    {
+                                        N(SyntaxKind.VoidKeyword);
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "vp");
                         }
@@ -4376,30 +4407,45 @@ class C
     [Fact]
     public void GenericAliasUsingVoidPointer3()
     {
-        var text = @"using VP = void*;
+        var text = @"using P<T> = T*;
 
 class C
 {
-    unsafe void M(VP vp) { }
+    unsafe void M(P<void> vp) { }
 }";
-        UsingTree(text);
+        UsingTree(text,
+            // (5,21): error CS1547: Keyword 'void' cannot be used in this context
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (1,12): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-            // using VP = void*;
-            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "void*").WithLocation(1, 12));
+            // (1,14): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
+            // using P<T> = T*;
+            Diagnostic(ErrorCode.ERR_UnsafeNeeded, "T*").WithLocation(1, 14),
+            // (5,21): error CS1547: Keyword 'void' cannot be used in this context
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
 
         N(SyntaxKind.CompilationUnit);
         {
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "VP");
+                N(SyntaxKind.IdentifierToken, "P");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.PointerType);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.VoidKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.AsteriskToken);
                 }
@@ -4423,9 +4469,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "VP");
+                                N(SyntaxKind.IdentifierToken, "P");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.PredefinedType);
+                                    {
+                                        N(SyntaxKind.VoidKeyword);
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "vp");
                         }
@@ -4447,32 +4502,41 @@ class C
     [Fact]
     public void GenericAliasUsingVoid1()
     {
-        var text = @"using V = void;
+        var text = @"using X<T> = T;
 
 class C
 {
-    void M(V v) { }
+    void M(X<void> x) { }
 }";
         UsingTree(text,
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void;
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11));
+            // (5,14): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void;
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11));
+            // (5,14): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
 
         N(SyntaxKind.CompilationUnit);
         {
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "V");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.VoidKeyword);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -4493,11 +4557,20 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "V");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.PredefinedType);
+                                    {
+                                        N(SyntaxKind.VoidKeyword);
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
-                            N(SyntaxKind.IdentifierToken, "v");
+                            N(SyntaxKind.IdentifierToken, "x");
                         }
                         N(SyntaxKind.CloseParenToken);
                     }
@@ -4517,32 +4590,41 @@ class C
     [Fact]
     public void GenericAliasUsingVoid2()
     {
-        var text = @"using V = void;
+        var text = @"using X<T> = T;
 
 class C
 {
-    V M() { }
+    X<void> M() { }
 }";
         UsingTree(text,
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void;
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11));
+            // (5,7): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7));
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void;
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11));
+            // (5,7): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7));
 
         N(SyntaxKind.CompilationUnit);
         {
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "V");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.VoidKeyword);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -4553,9 +4635,18 @@ class C
                 N(SyntaxKind.OpenBraceToken);
                 N(SyntaxKind.MethodDeclaration);
                 {
-                    N(SyntaxKind.IdentifierName);
+                    N(SyntaxKind.GenericName);
                     {
-                        N(SyntaxKind.IdentifierToken, "V");
+                        N(SyntaxKind.IdentifierToken, "X");
+                        N(SyntaxKind.TypeArgumentList);
+                        {
+                            N(SyntaxKind.LessThanToken);
+                            N(SyntaxKind.PredefinedType);
+                            {
+                                N(SyntaxKind.VoidKeyword);
+                            }
+                            N(SyntaxKind.GreaterThanToken);
+                        }
                     }
                     N(SyntaxKind.IdentifierToken, "M");
                     N(SyntaxKind.ParameterList);
@@ -4579,37 +4670,46 @@ class C
     [Fact]
     public void GenericAliasUsingVoid3()
     {
-        var text = @"using V = void[];
+        var text = @"using X<T> = T[];
 
 class C
 {
-    V M() { }
+    X<void> M() { }
 }";
         UsingTree(text,
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void;
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11));
+            // (5,7): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7));
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
-            // (1,11): error CS1547: Keyword 'void' cannot be used in this context
-            // using V = void[];
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(1, 11),
-            // (5,7): error CS0161: 'C.M()': not all code paths return a value
-            //     V M() { }
-            Diagnostic(ErrorCode.ERR_ReturnExpected, "M").WithArguments("C.M()").WithLocation(5, 7));
+            // (5,7): error CS1547: Keyword 'void' cannot be used in this context
+            // X<void>
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7),
+            // (5,13): error CS0161: 'C.M()': not all code paths return a value
+            //     X<void> M() { }
+            Diagnostic(ErrorCode.ERR_ReturnExpected, "M").WithArguments("C.M()").WithLocation(5, 13));
 
         N(SyntaxKind.CompilationUnit);
         {
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "V");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.ArrayType);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.VoidKeyword);
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.ArrayRankSpecifier);
                     {
@@ -4630,9 +4730,18 @@ class C
                 N(SyntaxKind.OpenBraceToken);
                 N(SyntaxKind.MethodDeclaration);
                 {
-                    N(SyntaxKind.IdentifierName);
+                    N(SyntaxKind.GenericName);
                     {
-                        N(SyntaxKind.IdentifierToken, "V");
+                        N(SyntaxKind.IdentifierToken, "X");
+                        N(SyntaxKind.TypeArgumentList);
+                        {
+                            N(SyntaxKind.LessThanToken);
+                            N(SyntaxKind.PredefinedType);
+                            {
+                                N(SyntaxKind.VoidKeyword);
+                            }
+                            N(SyntaxKind.GreaterThanToken);
+                        }
                     }
                     N(SyntaxKind.IdentifierToken, "M");
                     N(SyntaxKind.ParameterList);
@@ -4657,11 +4766,11 @@ class C
     public void GenericAliasUsingDirectiveDynamic1()
     {
         var text = @"
-using D = dynamic;
+using X<T> = T;
 
 class C
 {
-    void M(D d)
+    void M(X<dynamic> d)
     {
         d.Goo();
     }
@@ -4674,11 +4783,20 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
-                    N(SyntaxKind.IdentifierToken, "dynamic");
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -4699,9 +4817,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "D");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "dynamic");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "d");
                         }
@@ -4748,11 +4875,11 @@ class C
     public void GenericAliasUsingDirectiveDynamic2()
     {
         var text = @"
-using D = System.Collections.Generic.List<dynamic>;
+using X<T> = System.Collections.Generic.List<T>;
 
 class C
 {
-    void M(D d)
+    void M(X<dynamic> d)
     {
         d[0].Goo();
     }
@@ -4765,7 +4892,16 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.QualifiedName);
                 {
@@ -4798,7 +4934,7 @@ class C
                             N(SyntaxKind.LessThanToken);
                             N(SyntaxKind.IdentifierName);
                             {
-                                N(SyntaxKind.IdentifierToken, "dynamic");
+                                N(SyntaxKind.IdentifierToken, "T");
                             }
                             N(SyntaxKind.GreaterThanToken);
                         }
@@ -4823,9 +4959,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "D");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "dynamic");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "d");
                         }
@@ -4887,11 +5032,11 @@ class C
     public void GenericAliasUsingDirectiveDynamic3()
     {
         var text = @"
-using D = dynamic[];
+using X<T> = T[];
 
 class C
 {
-    void M(D d)
+    void M(X<dynamic> d)
     {
         d[0].Goo();
     }
@@ -4899,18 +5044,28 @@ class C
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics();
 
+
         N(SyntaxKind.CompilationUnit);
         {
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.ArrayType);
                 {
                     N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.IdentifierToken, "dynamic");
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.ArrayRankSpecifier);
                     {
@@ -4941,9 +5096,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "D");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "dynamic");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "d");
                         }
@@ -5005,11 +5169,11 @@ class C
     public void GenericAliasUsingDirectiveDynamic4()
     {
         var text = @"
-using D = dynamic;
+using X<T> = T;
 
 class dynamic
 {
-    void M(D d)
+    void M(X<dynamic> d)
     {
         d.Goo();
     }
@@ -5028,11 +5192,20 @@ class dynamic
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
-                    N(SyntaxKind.IdentifierToken, "dynamic");
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -5053,9 +5226,18 @@ class dynamic
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "D");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "dynamic");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "d");
                         }
@@ -5102,12 +5284,12 @@ class dynamic
     public void GenericAliasUsingDirectiveDynamic5()
     {
         var text = @"
-// Note: this is weird, but is supported by language.  It checks just that the ValueText is `dynamic`, not the raw text.
-using D = @dynamic;
+using X<T> = T;
 
 class C
 {
-    void M(D d)
+// Note: this is weird, but is supported by language.  It checks just that the ValueText is `dynamic`, not the raw text.
+    void M(X<@dynamic> d)
     {
         d.Goo();
     }
@@ -5120,11 +5302,20 @@ class C
             N(SyntaxKind.UsingDirective);
             {
                 N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "D");
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
                 N(SyntaxKind.EqualsToken);
                 N(SyntaxKind.IdentifierName);
                 {
-                    N(SyntaxKind.IdentifierToken, "@dynamic");
+                    N(SyntaxKind.IdentifierToken, "T");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -5145,9 +5336,18 @@ class C
                         N(SyntaxKind.OpenParenToken);
                         N(SyntaxKind.Parameter);
                         {
-                            N(SyntaxKind.IdentifierName);
+                            N(SyntaxKind.GenericName);
                             {
-                                N(SyntaxKind.IdentifierToken, "D");
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "@dynamic");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
                             }
                             N(SyntaxKind.IdentifierToken, "d");
                         }
@@ -5194,19 +5394,19 @@ class C
     public void GenericAliasUsingDuplicate1()
     {
         var text = """
-            using X = int?;
-            using X = System;
+            using X<A> = A;
+            using X<A> = A[];
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using X = int?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int?;").WithLocation(1, 1),
+            // using X<A> = A;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<A> = A;").WithLocation(1, 1),
             // (2,1): hidden CS8019: Unnecessary using directive.
-            // using X = System;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = System;").WithLocation(2, 1),
+            // using X<A> = A[];
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<A> = A[];").WithLocation(2, 1),
             // (2,7): error CS1537: The using alias 'X' appeared previously in this namespace
-            // using X = System;
+            // using X<A> = A[];
             Diagnostic(ErrorCode.ERR_DuplicateAlias, "X").WithArguments("X").WithLocation(2, 7));
 
         N(SyntaxKind.CompilationUnit);
@@ -5215,14 +5415,19 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.IdentifierToken, "A");
                     }
-                    N(SyntaxKind.QuestionToken);
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "A");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -5230,10 +5435,31 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.IdentifierName);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.IdentifierToken, "System");
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "A");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.ArrayType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "A");
+                    }
+                    N(SyntaxKind.ArrayRankSpecifier);
+                    {
+                        N(SyntaxKind.OpenBracketToken);
+                        N(SyntaxKind.OmittedArraySizeExpression);
+                        {
+                            N(SyntaxKind.OmittedArraySizeExpressionToken);
+                        }
+                        N(SyntaxKind.CloseBracketToken);
+                    }
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -5246,19 +5472,19 @@ class C
     public void GenericAliasUsingDuplicate2()
     {
         var text = """
-            using X = int?;
-            using X = int;
+            using X<A> = A;
+            using X<B> = B[];
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
-            // using X = int?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int?;").WithLocation(1, 1),
+            // using X<A> = A;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<A> = A;").WithLocation(1, 1),
             // (2,1): hidden CS8019: Unnecessary using directive.
-            // using X = int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int;").WithLocation(2, 1),
+            // using X<B> = B[];
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<B> = B[];").WithLocation(2, 1),
             // (2,7): error CS1537: The using alias 'X' appeared previously in this namespace
-            // using X = int;
+            // using X<B> = B[];
             Diagnostic(ErrorCode.ERR_DuplicateAlias, "X").WithArguments("X").WithLocation(2, 7));
 
         N(SyntaxKind.CompilationUnit);
@@ -5267,14 +5493,19 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.IdentifierToken, "A");
                     }
-                    N(SyntaxKind.QuestionToken);
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "A");
                 }
                 N(SyntaxKind.SemicolonToken);
             }
@@ -5282,69 +5513,30 @@ class C
             {
                 N(SyntaxKind.UsingKeyword);
                 N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.PredefinedType);
+                N(SyntaxKind.TypeParameterList);
                 {
-                    N(SyntaxKind.IntKeyword);
-                }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.EndOfFileToken);
-        }
-        EOF();
-    }
-
-    [Fact]
-    public void GenericAliasUsingDuplicate3()
-    {
-        var text = """
-            using X = int?;
-            using X = System.Int32;
-            """;
-        UsingTree(text);
-        CreateCompilation(text).VerifyDiagnostics(
-            // (1,1): hidden CS8019: Unnecessary using directive.
-            // using X = int?;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int?;").WithLocation(1, 1),
-            // (2,1): hidden CS8019: Unnecessary using directive.
-            // using X = System.Int32;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = System.Int32;").WithLocation(2, 1),
-            // (2,7): error CS1537: The using alias 'X' appeared previously in this namespace
-            // using X = System.Int32;
-            Diagnostic(ErrorCode.ERR_DuplicateAlias, "X").WithArguments("X").WithLocation(2, 7));
-
-        N(SyntaxKind.CompilationUnit);
-        {
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
-                N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.NullableType);
-                {
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.IdentifierToken, "B");
                     }
-                    N(SyntaxKind.QuestionToken);
+                    N(SyntaxKind.GreaterThanToken);
                 }
-                N(SyntaxKind.SemicolonToken);
-            }
-            N(SyntaxKind.UsingDirective);
-            {
-                N(SyntaxKind.UsingKeyword);
-                N(SyntaxKind.IdentifierToken, "X");
                 N(SyntaxKind.EqualsToken);
-                N(SyntaxKind.QualifiedName);
+                N(SyntaxKind.ArrayType);
                 {
                     N(SyntaxKind.IdentifierName);
                     {
-                        N(SyntaxKind.IdentifierToken, "System");
+                        N(SyntaxKind.IdentifierToken, "B");
                     }
-                    N(SyntaxKind.DotToken);
-                    N(SyntaxKind.IdentifierName);
+                    N(SyntaxKind.ArrayRankSpecifier);
                     {
-                        N(SyntaxKind.IdentifierToken, "Int32");
+                        N(SyntaxKind.OpenBracketToken);
+                        N(SyntaxKind.OmittedArraySizeExpression);
+                        {
+                            N(SyntaxKind.OmittedArraySizeExpressionToken);
+                        }
+                        N(SyntaxKind.CloseBracketToken);
                     }
                 }
                 N(SyntaxKind.SemicolonToken);
@@ -5359,17 +5551,16 @@ class C
     {
         var text = """
             using X = int?;
-            namespace N;
-            using X = int;
+            using X<T> = T;
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
             // (1,1): hidden CS8019: Unnecessary using directive.
             // using X = int?;
             Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int?;").WithLocation(1, 1),
-            // (3,1): hidden CS8019: Unnecessary using directive.
-            // using X = int;
-            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int;").WithLocation(3, 1));
+            // (2,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T;").WithLocation(2, 1));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -5383,6 +5574,366 @@ class C
                     N(SyntaxKind.PredefinedType);
                     {
                         N(SyntaxKind.IntKeyword);
+                    }
+                    N(SyntaxKind.QuestionToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
+
+    [Fact]
+    public void GenericAliasUsingNotDuplicate2()
+    {
+        var text = """
+            using X = System;
+            using X<T> = T;
+            """;
+        UsingTree(text);
+        CreateCompilation(text).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using X = System;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = System;").WithLocation(1, 1),
+            // (2,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T;").WithLocation(2, 1));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "System");
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
+
+    [Fact]
+    public void GenericAliasUsingNotDuplicate3()
+    {
+        var text = """
+            using X = int?;
+            using X<T> = T;
+            using X<TKey, TValue> = System.Collections.Generic.Dictionary<TKey, TValue>;
+            using X<T1, T2, T3, T4, T5, T6, T7> = (T1, T2, T3, T4, T5, T6, T7);
+            """;
+        UsingTree(text);
+        CreateCompilation(text).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using X = int?;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X = int?;").WithLocation(1, 1),
+            // (2,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T;").WithLocation(2, 1),
+            // (3,1): hidden CS8019: Unnecessary using directive.
+            // using X<TKey, TValue> = System.Collections.Generic.Dictionary<TKey, TValue>;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<TKey, TValue> = System.Collections.Generic.Dictionary<TKey, TValue>;").WithLocation(3, 1),
+            // (4,1): hidden CS8019: Unnecessary using directive.
+            // using X<T1, T2, T3, T4, T5, T6, T7> = (T1, T2, T3, T4, T5, T6, T7);
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T1, T2, T3, T4, T5, T6, T7> = (T1, T2, T3, T4, T5, T6, T7);").WithLocation(4, 1));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.NullableType);
+                {
+                    N(SyntaxKind.PredefinedType);
+                    {
+                        N(SyntaxKind.IntKeyword);
+                    }
+                    N(SyntaxKind.QuestionToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "T");
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "TKey");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "TValue");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.QualifiedName);
+                {
+                    N(SyntaxKind.QualifiedName);
+                    {
+                        N(SyntaxKind.QualifiedName);
+                        {
+                            N(SyntaxKind.IdentifierName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "System");
+                            }
+                            N(SyntaxKind.DotToken);
+                            N(SyntaxKind.IdentifierName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "Collections");
+                            }
+                        }
+                        N(SyntaxKind.DotToken);
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "Generic");
+                        }
+                    }
+                    N(SyntaxKind.DotToken);
+                    N(SyntaxKind.GenericName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "Dictionary");
+                        N(SyntaxKind.TypeArgumentList);
+                        {
+                            N(SyntaxKind.LessThanToken);
+                            N(SyntaxKind.IdentifierName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "TKey");
+                            }
+                            N(SyntaxKind.CommaToken);
+                            N(SyntaxKind.IdentifierName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "TValue");
+                            }
+                            N(SyntaxKind.GreaterThanToken);
+                        }
+                    }
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T1");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T2");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T3");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T4");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T5");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T6");
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T7");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.TupleType);
+                {
+                    N(SyntaxKind.OpenParenToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T1");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T2");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T3");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T4");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T5");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T6");
+                        }
+                    }
+                    N(SyntaxKind.CommaToken);
+                    N(SyntaxKind.TupleElement);
+                    {
+                        N(SyntaxKind.IdentifierName);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T7");
+                        }
+                    }
+                    N(SyntaxKind.CloseParenToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
+
+    [Fact]
+    public void GenericAliasUsingNotDuplicate4()
+    {
+        var text = """
+            using X<T> = T?;
+            namespace N;
+            using X<T> = T;
+            """;
+        UsingTree(text);
+        CreateCompilation(text).VerifyDiagnostics(
+            // (1,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = T?;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T?;").WithLocation(1, 1),
+            // (1,15): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+            // using X<T> = T?;
+            Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(1, 15),
+            // (3,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = T;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T;").WithLocation(3, 1));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.NullableType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.QuestionToken);
                 }
@@ -5400,10 +5951,19 @@ class C
                 {
                     N(SyntaxKind.UsingKeyword);
                     N(SyntaxKind.IdentifierToken, "X");
-                    N(SyntaxKind.EqualsToken);
-                    N(SyntaxKind.PredefinedType);
+                    N(SyntaxKind.TypeParameterList);
                     {
-                        N(SyntaxKind.IntKeyword);
+                        N(SyntaxKind.LessThanToken);
+                        N(SyntaxKind.TypeParameter);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T");
+                        }
+                        N(SyntaxKind.GreaterThanToken);
+                    }
+                    N(SyntaxKind.EqualsToken);
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
                     }
                     N(SyntaxKind.SemicolonToken);
                 }
@@ -5413,8 +5973,107 @@ class C
         EOF();
     }
 
-#warning 待移除
-    #endregion
+    [Fact]
+    public void GenericAliasUsingNotDuplicate5()
+    {
+        var text = """
+            using X<T> = T?;
+            namespace N;
+            using X<T> = X<(T, T)>;
+            """;
+        UsingTree(text);
+        CreateCompilation(text).VerifyDiagnostics(
+            // (1,15): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+            // using X<T> = T?;
+            Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(1, 15),
+            // (3,1): hidden CS8019: Unnecessary using directive.
+            // using X<T> = X<(T, T)>;
+            Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = X<(T, T)>;").WithLocation(3, 1));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.NullableType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.QuestionToken);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.FileScopedNamespaceDeclaration);
+            {
+                N(SyntaxKind.NamespaceKeyword);
+                N(SyntaxKind.IdentifierName);
+                {
+                    N(SyntaxKind.IdentifierToken, "N");
+                }
+                N(SyntaxKind.SemicolonToken);
+                N(SyntaxKind.UsingDirective);
+                {
+                    N(SyntaxKind.UsingKeyword);
+                    N(SyntaxKind.IdentifierToken, "X");
+                    N(SyntaxKind.TypeParameterList);
+                    {
+                        N(SyntaxKind.LessThanToken);
+                        N(SyntaxKind.TypeParameter);
+                        {
+                            N(SyntaxKind.IdentifierToken, "T");
+                        }
+                        N(SyntaxKind.GreaterThanToken);
+                    }
+                    N(SyntaxKind.EqualsToken);
+                    N(SyntaxKind.GenericName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "X");
+                        N(SyntaxKind.TypeArgumentList);
+                        {
+                            N(SyntaxKind.LessThanToken);
+                            N(SyntaxKind.TupleType);
+                            {
+                                N(SyntaxKind.OpenParenToken);
+                                N(SyntaxKind.TupleElement);
+                                {
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "T");
+                                    }
+                                }
+                                N(SyntaxKind.CommaToken);
+                                N(SyntaxKind.TupleElement);
+                                {
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "T");
+                                    }
+                                }
+                                N(SyntaxKind.CloseParenToken);
+                            }
+                            N(SyntaxKind.GreaterThanToken);
+                        }
+                    }
+                    N(SyntaxKind.SemicolonToken);
+                }
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
 
     [Fact]
     public void TestScopedType1()

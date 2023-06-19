@@ -50,28 +50,28 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             get
             {
-                var target = _lazyTarget;
-                if ((object)target == null)
-                {
-                    Interlocked.Exchange(ref _lazyTarget, GetAliasTarget(basesBeingResolved: null));
-                    target = _lazyTarget;
-                }
-
-                return target;
+                return GetAliasTarget(basesBeingResolved: null);
             }
         }
 
         internal override NamespaceOrTypeSymbol GetAliasTarget(ConsList<TypeSymbol> basesBeingResolved)
         {
-            var underlyingTarget = base.GetAliasTarget(basesBeingResolved);
-            if (underlyingTarget.IsNamespace)
+            var target = _lazyTarget;
+            if ((object)target == null)
             {
-                return underlyingTarget;
+                var underlyingTarget = base.GetAliasTarget(basesBeingResolved);
+                if (underlyingTarget.IsNamespace)
+                {
+                    Interlocked.Exchange(ref _lazyTarget, underlyingTarget);
+                }
+                else
+                {
+                    Interlocked.Exchange(ref _lazyTarget, _inputMap.SubstituteType(underlyingTarget as TypeSymbol).Type);
+                }
+                target = _lazyTarget;
             }
-            else
-            {
-                return _inputMap.SubstituteType(underlyingTarget as TypeSymbol).Type;
-            }
+
+            return target;
         }
     }
 }

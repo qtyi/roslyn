@@ -1262,6 +1262,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                     diagnostics);
             }
 
+            if (unconstructedTypeOrAlias.IsAlias)
+            {
+                if (Compilation.IsFeatureEnabled(MessageID.IDS_FeatureUsingTypeAlias) ? resultType.ContainsPointer() : resultType.IsUnsafe())
+                {
+                    ReportUnsafeIfNotAllowed(node, diagnostics);
+                }
+            }
+
             return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken), resultType);
         }
 
