@@ -46,17 +46,17 @@ using D = System.IO;
             Assert.Equal(new[] { "A", "B" }, concat1.ExternAliases.Select(e => e.Alias.Name));
             Assert.Equal(new[] { "System", "System.IO" }, concat1.Usings.Select(u => u.NamespaceOrType.ToTestDisplayString()));
             var usingAliases1 = concat1.UsingAliases;
-            AssertEx.SetEqual(new[] { "C", "D" }, usingAliases1.Select(a => a.Key));
-            Assert.Equal("System", usingAliases1["C"].Alias.Target.ToTestDisplayString());
-            Assert.Equal("System.IO", usingAliases1["D"].Alias.Target.ToTestDisplayString());
+            AssertEx.SetEqual(new[] { new AliasKey("C", 0), new AliasKey("D", 0) }, usingAliases1.Select(a => a.Key));
+            Assert.Equal("System", usingAliases1[new AliasKey("C", 0)].Alias.Target.ToTestDisplayString());
+            Assert.Equal("System.IO", usingAliases1[new AliasKey("D", 0)].Alias.Target.ToTestDisplayString());
 
             var concat2 = imports[1].Concat(imports[0]);
             Assert.Equal(new[] { "B", "A" }, concat2.ExternAliases.Select(e => e.Alias.Name));
             Assert.Equal(new[] { "System.IO", "System" }, concat2.Usings.Select(u => u.NamespaceOrType.ToTestDisplayString()));
             var usingAliases2 = concat2.UsingAliases;
-            AssertEx.SetEqual(new[] { "C", "D" }, usingAliases2.Select(a => a.Key));
-            Assert.Equal("System", usingAliases2["C"].Alias.Target.ToTestDisplayString());
-            Assert.Equal("System.IO", usingAliases2["D"].Alias.Target.ToTestDisplayString());
+            AssertEx.SetEqual(new[] { new AliasKey("C", 0), new AliasKey("D", 0) }, usingAliases2.Select(a => a.Key));
+            Assert.Equal("System", usingAliases2[new AliasKey("C", 0)].Alias.Target.ToTestDisplayString());
+            Assert.Equal("System.IO", usingAliases2[new AliasKey("D", 0)].Alias.Target.ToTestDisplayString());
         }
 
         [Fact]
@@ -82,19 +82,19 @@ using F = System.IO;
             Assert.Equal(new[] { "B", "A", "C" }, concat1.ExternAliases.Select(e => e.Alias.Name));
             Assert.Equal(new[] { "System", "System.Collections", "System.IO" }, concat1.Usings.Select(u => u.NamespaceOrType.ToTestDisplayString()));
             var usingAliases1 = concat1.UsingAliases;
-            AssertEx.SetEqual(new[] { "D", "E", "F" }, usingAliases1.Select(a => a.Key));
-            Assert.Equal("System.IO", usingAliases1["D"].Alias.Target.ToTestDisplayString()); // Last one wins
-            Assert.Equal("System", usingAliases1["E"].Alias.Target.ToTestDisplayString());
-            Assert.Equal("System.IO", usingAliases1["F"].Alias.Target.ToTestDisplayString());
+            AssertEx.SetEqual(new[] { new AliasKey("D", 0), new AliasKey("E", 0), new AliasKey("F", 0) }, usingAliases1.Select(a => a.Key));
+            Assert.Equal("System.IO", usingAliases1[new AliasKey("D", 0)].Alias.Target.ToTestDisplayString()); // Last one wins
+            Assert.Equal("System", usingAliases1[new AliasKey("E", 0)].Alias.Target.ToTestDisplayString());
+            Assert.Equal("System.IO", usingAliases1[new AliasKey("F", 0)].Alias.Target.ToTestDisplayString());
 
             var concat2 = imports[1].Concat(imports[0]);
             Assert.Equal(new[] { "C", "A", "B" }, concat2.ExternAliases.Select(e => e.Alias.Name));
             Assert.Equal(new[] { "System", "System.IO", "System.Collections" }, concat2.Usings.Select(u => u.NamespaceOrType.ToTestDisplayString()));
             var usingAliases2 = concat2.UsingAliases;
-            AssertEx.SetEqual(new[] { "D", "E", "F" }, usingAliases2.Select(a => a.Key));
-            Assert.Equal("System", usingAliases2["D"].Alias.Target.ToTestDisplayString()); // Last one wins
-            Assert.Equal("System", usingAliases2["E"].Alias.Target.ToTestDisplayString());
-            Assert.Equal("System.IO", usingAliases2["F"].Alias.Target.ToTestDisplayString());
+            AssertEx.SetEqual(new[] { new AliasKey("D", 0), new AliasKey("E", 0), new AliasKey("F", 0) }, usingAliases2.Select(a => a.Key));
+            Assert.Equal("System", usingAliases2[new AliasKey("D", 0)].Alias.Target.ToTestDisplayString()); // Last one wins
+            Assert.Equal("System", usingAliases2[new AliasKey("E", 0)].Alias.Target.ToTestDisplayString());
+            Assert.Equal("System.IO", usingAliases2[new AliasKey("F", 0)].Alias.Target.ToTestDisplayString());
         }
 
         [Fact]
@@ -121,12 +121,12 @@ using F = System.IO;
                  externAlias1.ExternAliasDirective, skipInLookup: false);
 
             var imports1 = Imports.Create(
-                ImmutableDictionary<string, AliasAndUsingDirective>.Empty,
+                ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty,
                 ImmutableArray<NamespaceOrTypeAndUsingDirective>.Empty,
                 ImmutableArray.Create(externAlias1));
 
             var imports2 = Imports.Create(
-                ImmutableDictionary<string, AliasAndUsingDirective>.Empty,
+                ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty,
                 ImmutableArray<NamespaceOrTypeAndUsingDirective>.Empty,
                 ImmutableArray.Create(externAlias2));
 

@@ -299,7 +299,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                             if (builder.ContainsKey(pair.Key))
                                             {
                                                 // The using alias '{0}' appeared previously in this namespace
-                                                diagnostics.Add(ErrorCode.ERR_DuplicateAlias, pair.Value.Alias.GetFirstLocation(), pair.Key);
+                                                diagnostics.Add(ErrorCode.ERR_DuplicateAlias, pair.Value.Alias.GetFirstLocation(), pair.Key.Name);
                                             }
                                             else
                                             {
