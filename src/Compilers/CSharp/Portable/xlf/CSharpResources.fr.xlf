@@ -1093,8 +1093,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintCannotHaveRequiredMembers">
-        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</source>
-        <target state="translated">'{2}' ne peut pas satisfaire la contrainte 'new()' sur le paramètre '{1}' dans le type générique ou la méthode '{0}', car '{2}' a des membres obligatoires.</target>
+        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</source>
+        <target state="needs-review-translation">'{2}' ne peut pas satisfaire la contrainte 'new()' sur le paramètre '{1}' dans le type générique ou la méthode '{0}', car '{2}' a des membres obligatoires.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlinesAreNotAllowedInsideANonVerbatimInterpolatedString">
@@ -2578,8 +2578,8 @@
         <note>UnmanagedCallersOnly is not localizable.</note>
       </trans-unit>
       <trans-unit id="ERR_UnmanagedConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Le type '{2}' doit être un type valeur non-nullable, ainsi que l'ensemble des champs à tous les niveaux d'imbrication, pour pouvoir être utilisé en tant que paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
+        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Le type '{2}' doit être un type valeur non-nullable, ainsi que l'ensemble des champs à tous les niveaux d'imbrication, pour pouvoir être utilisé en tant que paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedCallingConvention">
@@ -4097,33 +4097,33 @@
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' en tant que paramètre de type '{2}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{3}' ne correspond pas au type de contrainte '{1}'.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' en tant que paramètre de type '{2}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{3}' ne correspond pas au type de contrainte '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</source>
-        <target state="translated">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas au type de contrainte.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas au type de contrainte.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
-        <target state="translated">Impossible d'utiliser le type '{2}' en tant que paramètre de type '{1}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{2}' ne correspond pas à la contrainte 'notnull'.</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{2}' en tant que paramètre de type '{1}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{2}' ne correspond pas à la contrainte 'notnull'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</source>
-        <target state="translated">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas à la contrainte 'notnull'.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas à la contrainte 'notnull'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
-        <target state="translated">Impossible d'utiliser le type '{2}' en tant que paramètre de type '{1}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{2}' ne correspond pas à la contrainte 'class'.</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{2}' en tant que paramètre de type '{1}' dans le type ou la méthode générique '{0}'. La nullabilité de l'argument de type '{2}' ne correspond pas à la contrainte 'class'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</source>
-        <target state="translated">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas à la contrainte 'class'.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type en tant que paramètre de type dans le type ou la méthode générique. La nullabilité de l'argument de type ne correspond pas à la contrainte 'class'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullableValueTypeMayBeNull">
@@ -5862,33 +5862,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintNotSatisfied">
-        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">'{2}' doit être un type non abstrait avec un constructeur sans paramètre public afin de l'utiliser comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
+        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">'{2}' doit être un type non abstrait avec un constructeur sans paramètre public afin de l'utiliser comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedRefType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion de référence implicite de '{3}' en '{1}'.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion de référence implicite de '{3}' en '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableEnum">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Le type Nullable '{3}' ne satisfait pas la contrainte de '{1}'.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Le type Nullable '{3}' ne satisfait pas la contrainte de '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableInterface">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Le type Nullable '{3}' ne satisfait pas la contrainte de '{1}'. Les types Nullable ne peuvent pas satisfaire les contraintes d'interface.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Le type Nullable '{3}' ne satisfait pas la contrainte de '{1}'. Les types Nullable ne peuvent pas satisfaire les contraintes d'interface.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedTyVar">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion boxing ou de conversion de paramètre de type de '{3}' en '{1}'.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion boxing ou de conversion de paramètre de type de '{3}' en '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedValType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion boxing de '{3}' en '{1}'.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Impossible d'utiliser le type '{3}' comme paramètre de type '{2}' dans le type ou la méthode générique '{0}'. Il n'y a pas de conversion boxing de '{3}' en '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_DuplicateGeneratedName">
@@ -6162,13 +6162,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_RefConstraintNotSatisfied">
-        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Le type '{2}' doit être un type référence afin d'être utilisé comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
+        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Le type '{2}' doit être un type référence afin d'être utilisé comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_ValConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Le type '{2}' doit être un type valeur non-nullable afin d'être utilisé comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
+        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Le type '{2}' doit être un type valeur non-nullable afin d'être utilisé comme paramètre '{1}' dans le type ou la méthode générique '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_CircularConstraint">

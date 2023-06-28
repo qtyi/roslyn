@@ -8,12 +8,14 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
-    internal sealed class AliasSymbolFromSyntax : AliasSymbol
+    internal sealed partial class AliasSymbolFromSyntax : AliasSymbol
     {
         private readonly SyntaxReference _directive;
         private SymbolCompletionState _state;
@@ -198,19 +200,35 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (_aliasArity > 0)
             {
-                var typeParameterList = ((UsingDirectiveSyntax)_directive.GetSyntax()).TypeParameterList!;
+                var node = (UsingDirectiveSyntax)_directive.GetSyntax();
+                var constraintClauses = node.ConstraintClauses;
+                var typeParameterList = node.TypeParameterList!;
+
                 var binderFactory = this.DeclaringCompilation.GetBinderFactory(_directive.SyntaxTree);
                 Binder binder;
                 ImmutableArray<TypeParameterConstraintClause> constraints;
 
-                binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
-                constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+                if (constraintClauses.Count == 0)
+                {
+                    binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
+
+                    constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+                }
+                else
+                {
+                    binder = binderFactory.GetBinder(constraintClauses[0]);
+
+                    // Wrap binder from factory in a generic constraints specific binder 
+                    // to avoid checking constraints when binding type names.
+                    Debug.Assert(!binder.Flags.Includes(BinderFlags.GenericConstraintsClause));
+                    binder = binder.WithContainingMemberOrLambda(this).WithAdditionalFlags(BinderFlags.GenericConstraintsClause | BinderFlags.SuppressConstraintChecks);
+
+                    constraints = binder.BindTypeParameterConstraintClauses(this, typeParameters, typeParameterList, constraintClauses, diagnostics, performOnlyCycleSafeValidation: false);
+                }
 
                 Debug.Assert(constraints.Length == _aliasArity);
 
-                constraints = ConstraintsHelper.AdjustConstraintKindsBasedOnConstraintTypes(typeParameters, constraints);
-
-                if (constraints.Any(clause => clause.Constraints != TypeParameterConstraintKind.None))
+                if (constraints.Any(clause => clause.Constraints != TypeParameterConstraintKind.None || !clause.ConstraintTypes.IsEmpty))
                 {
                     results = constraints;
                 }
@@ -218,20 +236,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             return results;
         }
-
-        internal sealed override ImmutableArray<TypeWithAnnotations> TypeArgumentsWithAnnotationsNoUseSiteDiagnostics
-        {
-            get
-            {
-                return GetTypeParametersAsTypeArguments();
-            }
-        }
-
-        internal ImmutableArray<TypeWithAnnotations> GetTypeParametersAsTypeArguments()
-        {
-            return TypeMap.TypeParametersAsTypeSymbolsWithAnnotations(this.TypeParameters);
-        }
-
         /// <summary>
         /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
         /// namespace or type referenced by the alias.
@@ -344,15 +348,29 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     .GetBinder(syntax))
                 .WithAdditionalFlags(flags);
 
-            var annotatedNamespaceOrType = declarationBinder.BindNamespaceOrTypeSymbol(syntax, diagnostics, basesBeingResolved);
-
             // `using X = RefType?;` is not legal.
-            if (usingDirective.NamespaceOrType is NullableTypeSyntax nullableType &&
-                annotatedNamespaceOrType.TypeWithAnnotations.NullableAnnotation == NullableAnnotation.Annotated &&
-                annotatedNamespaceOrType.TypeWithAnnotations.Type?.IsReferenceType is true)
+            if (syntax is NullableTypeSyntax nullableTypeSyntax)
             {
-                diagnostics.Add(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, nullableType.QuestionToken.GetLocation());
+                var annotatedElementType = declarationBinder.BindType(nullableTypeSyntax.ElementType, BindingDiagnosticBag.Discarded, basesBeingResolved);
+                if (annotatedElementType.Type?.IsValueType is false)
+                {
+                    if (annotatedElementType.Type?.IsReferenceType is true)
+                    {
+                        diagnostics.Add(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, nullableTypeSyntax.QuestionToken.GetLocation());
+                    }
+
+                    if (annotatedElementType.TypeKind == TypeKind.TypeParameter)
+                    {
+                        // Used in lowering to construct the nullable
+                        declarationBinder.GetSpecialTypeMember(SpecialMember.System_Nullable_T__ctor, diagnostics, nullableTypeSyntax);
+                        NamedTypeSymbol nullableTypeSymbol = declarationBinder.GetSpecialType(SpecialType.System_Nullable_T, diagnostics, nullableTypeSyntax);
+                        // "The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'"
+                        diagnostics.Add(ErrorCode.ERR_ValConstraintNotSatisfied, nullableTypeSyntax, nullableTypeSymbol, nullableTypeSymbol.TypeParameters.Single(), annotatedElementType.Type!);
+                    }
+                }
             }
+
+            var annotatedNamespaceOrType = declarationBinder.BindNamespaceOrTypeSymbol(syntax, diagnostics, basesBeingResolved);
 
             var namespaceOrType = annotatedNamespaceOrType.NamespaceOrTypeSymbol;
             if (namespaceOrType is TypeSymbol { IsNativeIntegerWrapperType: true } &&
@@ -370,6 +388,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return true; }
         }
 
-        public override AliasSymbol ConstructedFrom => this;
+        protected override AliasTargetTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
+        {
+            return new AliasTargetTypeSymbol(this, typeArguments);
+        }
     }
 }

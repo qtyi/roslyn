@@ -15,6 +15,7 @@ using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
 {
+    using System.Data;
     using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
     internal partial class LanguageParser : SyntaxParser
@@ -501,7 +502,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                             }
 
                         case SyntaxKind.UsingKeyword:
-                            if (isGlobal && (this.PeekToken(1).Kind == SyntaxKind.OpenParenToken || (!IsScript && IsPossibleTopLevelUsingLocalDeclarationStatement())))
+                            if (isGlobal && (this.PeekToken(1).Kind == SyntaxKind.OpenParenToken || (!IsScript && IsPossibleTopLevelUsingLocalDeclarationStatement(out var isPossibleUsingDirective) && !isPossibleUsingDirective)))
                             {
                                 // Top-level using statement or using local declaration
                                 goto default;
@@ -806,9 +807,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
 
             SyntaxToken? name = null;
             TypeParameterListSyntax? typeParameters = null;
+            SyntaxListBuilder<TypeParameterConstraintClauseSyntax> constraints = default;
             SyntaxToken? equalsToken = null;
 
-            // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax.
+            // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax and TypeParameterConstraintClauseSyntax list.
             var hasAlias = this.CurrentToken.Kind == SyntaxKind.EqualsToken ||
                 (IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.EqualsToken or SyntaxKind.LessThanToken);
             if (hasAlias)
@@ -817,12 +819,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 //
                 //    using GenericType<TypeParameter>;
                 //
-                //If we first see an identifier followed with a '<' token, then we parse them as a generic alias.  Then
-                //we check the next token if it is '=' token, if it is then we have done right, otherwise we go back to
+                //If we first see an identifier followed with a '<' token, then we parse them greedily as a generic alias.
+                //Then we check the next token if it is '=' token, if it is then we have done right, otherwise we go back to
                 //the token after "using" and parse as a generic type without alias.
                 var resetPoint = this.GetResetPoint();
                 name = this.ParseIdentifierToken();
                 typeParameters = this.ParseTypeParameterList();
+
+                if (this.CurrentToken.ContextualKind == SyntaxKind.WhereKeyword)
+                {
+                    constraints = _pool.Allocate<TypeParameterConstraintClauseSyntax>();
+                    this.ParseTypeParameterConstraintClauses(constraints);
+                }
+
                 equalsToken = this.TryEatToken(SyntaxKind.EqualsToken);
 
                 if (equalsToken is null)
@@ -830,6 +839,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                     hasAlias = false;
                     name = null;
                     typeParameters = null;
+                    constraints = default;
                     this.Reset(ref resetPoint);
                     this.Release(ref resetPoint);
                 }
@@ -875,7 +885,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 semicolon = this.EatToken(SyntaxKind.SemicolonToken);
             }
 
-            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, name, typeParameters, equalsToken, type, semicolon);
+            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, name, typeParameters, constraints, equalsToken, type, semicolon);
         }
 
         private bool IsPossibleGlobalAttributeDeclaration()
@@ -1896,7 +1906,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             var bounds = _pool.AllocateSeparated<TypeParameterConstraintSyntax>();
 
             // first bound
-            if (this.CurrentToken.Kind == SyntaxKind.OpenBraceToken || this.IsCurrentTokenWhereOfConstraintClause())
+            if (this.CurrentToken.Kind == SyntaxKind.OpenBraceToken || this.CurrentToken.Kind == SyntaxKind.EqualsToken || this.IsCurrentTokenWhereOfConstraintClause())
             {
                 bounds.Add(_syntaxFactory.TypeConstraint(this.AddError(this.CreateMissingIdentifierName(), ErrorCode.ERR_TypeExpected)));
             }
@@ -1908,6 +1918,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 while (true)
                 {
                     if (this.CurrentToken.Kind == SyntaxKind.OpenBraceToken
+                        || this.CurrentToken.Kind == SyntaxKind.EqualsToken
                         || ((_termState & TerminatorState.IsEndOfRecordOrClassOrStructOrInterfaceSignature) != 0 && this.CurrentToken.Kind == SyntaxKind.SemicolonToken)
                         || this.CurrentToken.Kind == SyntaxKind.EqualsGreaterThanToken
                         || this.CurrentToken.ContextualKind == SyntaxKind.WhereKeyword)
@@ -1946,7 +1957,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 Debug.Assert(list.Count > 0);
                 return this.SkipBadSeparatedListTokensWithExpectedKind(ref tmp, list,
                     static p => p.CurrentToken.Kind != SyntaxKind.CommaToken && !p.IsPossibleTypeParameterConstraint(),
-                    static (p, _) => p.CurrentToken.Kind == SyntaxKind.OpenBraceToken || p.IsCurrentTokenWhereOfConstraintClause(),
+                    static (p, _) => p.CurrentToken.Kind is SyntaxKind.OpenBraceToken or SyntaxKind.EqualsToken || p.IsCurrentTokenWhereOfConstraintClause(),
                     expected);
             }
         }
@@ -2601,7 +2612,7 @@ parse_member_name:;
             {
                 if (CurrentToken.Kind == SyntaxKind.UsingKeyword)
                 {
-                    return !IsPossibleTopLevelUsingLocalDeclarationStatement();
+                    return !IsPossibleTopLevelUsingLocalDeclarationStatement(out var _);
                 }
 
                 if (CurrentToken.ContextualKind == SyntaxKind.GlobalKeyword && this.PeekToken(1).Kind == SyntaxKind.UsingKeyword)
@@ -2610,7 +2621,7 @@ parse_member_name:;
 
                     // Skip 'global' keyword
                     EatToken();
-                    return !IsPossibleTopLevelUsingLocalDeclarationStatement();
+                    return !IsPossibleTopLevelUsingLocalDeclarationStatement(out var _);
                 }
 
                 return false;
@@ -3283,7 +3294,7 @@ parse_member_name:;
 
                                 int lastTokenPosition = -1;
                                 IsMakingProgress(ref lastTokenPosition, assertIfFalse: true);
-                                ScanNamedTypePart();
+                                ScanNamedTypeOrAliasPart();
 
                                 if (IsDotOrColonColonOrDotDot() ||
                                     (IsMakingProgress(ref lastTokenPosition, assertIfFalse: false) && this.CurrentToken.Kind != SyntaxKind.OpenParenToken))
@@ -3439,7 +3450,7 @@ parse_member_name:;
                         {
                             int lastTokenPosition = -1;
                             IsMakingProgress(ref lastTokenPosition, assertIfFalse: true);
-                            ScanNamedTypePart();
+                            ScanNamedTypeOrAliasPart();
                             isPartOfInterfaceName = IsDotOrColonColonOrDotDot() ||
                                                     (IsMakingProgress(ref lastTokenPosition, assertIfFalse: false) && this.CurrentToken.Kind != SyntaxKind.OpenParenToken);
                         }
@@ -6072,7 +6083,7 @@ parse_member_name:;
                     bool isMemberName;
                     using (GetDisposableResetPoint(resetOnDispose: true))
                     {
-                        ScanNamedTypePart();
+                        ScanNamedTypeOrAliasPart();
                         isMemberName = !IsDotOrColonColonOrDotDot();
                     }
 
@@ -6260,7 +6271,7 @@ parse_member_name:;
                     }
                     else
                     {
-                        ScanNamedTypePart();
+                        ScanNamedTypeOrAliasPart();
 
                         // If we have part of the interface name, but no dot before the operator token, then
                         // for the purpose of error recovery, treat this as an operator start with a
@@ -6474,12 +6485,12 @@ parse_member_name:;
             return ScanType(forPattern ? ParseTypeMode.DefinitePattern : ParseTypeMode.Normal, out lastTokenOfType);
         }
 
-        private void ScanNamedTypePart()
+        private void ScanNamedTypeOrAliasPart()
         {
-            ScanNamedTypePart(out _);
+            ScanNamedTypeOrAliasPart(out _);
         }
 
-        private ScanTypeFlags ScanNamedTypePart(out SyntaxToken lastTokenOfType)
+        private ScanTypeFlags ScanNamedTypeOrAliasPart(out SyntaxToken lastTokenOfType)
         {
             if (this.CurrentToken.Kind != SyntaxKind.IdentifierToken || !this.IsTrueIdentifier())
             {
@@ -6537,7 +6548,7 @@ parse_member_name:;
                     // We're an alias if we start with an: id::
                     isAlias = this.PeekToken(1).Kind == SyntaxKind.ColonColonToken;
 
-                    result = this.ScanNamedTypePart(out lastTokenOfType);
+                    result = this.ScanNamedTypeOrAliasPart(out lastTokenOfType);
                     if (result == ScanTypeFlags.NotType)
                     {
                         return ScanTypeFlags.NotType;
@@ -6558,7 +6569,7 @@ parse_member_name:;
                     }
 
                     this.EatToken();
-                    result = this.ScanNamedTypePart(out lastTokenOfType);
+                    result = this.ScanNamedTypeOrAliasPart(out lastTokenOfType);
                     if (result == ScanTypeFlags.NotType)
                     {
                         return ScanTypeFlags.NotType;
@@ -7643,7 +7654,7 @@ done:;
                 return true;
             }
 
-            return IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(isGlobalScriptLevel);
+            return IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(isGlobalScriptLevel, out var _);
         }
 
         private bool IsPossibleScopedKeyword(bool isFunctionPointerParameter)
@@ -7652,8 +7663,11 @@ done:;
             return ParsePossibleScopedKeyword(isFunctionPointerParameter) != null;
         }
 
-        private bool IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(bool isGlobalScriptLevel)
+        private bool IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(bool isGlobalScriptLevel, out bool isGenericNameWithoutIdentifier)
         {
+            // Set by default.
+            isGenericNameWithoutIdentifier = false;
+
             bool? typedIdentifier = IsPossibleTypedIdentifierStart(this.CurrentToken, this.PeekToken(1), allowThisKeyword: false);
             if (typedIdentifier != null)
             {
@@ -7712,41 +7726,66 @@ done:;
                 }
             }
 
-            using var _ = this.GetDisposableResetPoint(resetOnDispose: true);
-
-            ScanTypeFlags st = this.ScanType();
-
-            // We could always return true for st == AliasQualName in addition to MustBeType on the first line, however, we want it to return false in the case where
-            // CurrentToken.Kind != SyntaxKind.Identifier so that error cases, like: A::N(), are not parsed as variable declarations and instead are parsed as A.N() where we can give
-            // a better error message saying "did you meant to use a '.'?"
-            if (st == ScanTypeFlags.MustBeType && this.CurrentToken.Kind is not SyntaxKind.DotToken and not SyntaxKind.OpenParenToken)
+            ScanTypeFlags st;
+            using (var _ = this.GetDisposableResetPoint(resetOnDispose: true))
             {
-                return true;
-            }
+                st = this.ScanType();
 
-            if (st == ScanTypeFlags.NotType || this.CurrentToken.Kind != SyntaxKind.IdentifierToken)
-            {
-                return false;
-            }
+                // We could always return true for st == AliasQualName in addition to MustBeType on the first line, however, we want it to return false in the case where
+                // CurrentToken.Kind != SyntaxKind.Identifier so that error cases, like: A::N(), are not parsed as variable declarations and instead are parsed as A.N() where we can give
+                // a better error message saying "did you meant to use a '.'?"
+                if (st == ScanTypeFlags.MustBeType && this.CurrentToken.Kind is not SyntaxKind.DotToken and not SyntaxKind.OpenParenToken)
+                {
+                    return true;
+                }
 
-            // T? and T* might start an expression, we need to parse further to disambiguate:
-            if (isGlobalScriptLevel)
-            {
-                if (st == ScanTypeFlags.PointerOrMultiplication)
+                if (st == ScanTypeFlags.NotType || this.CurrentToken.Kind != SyntaxKind.IdentifierToken)
                 {
                     return false;
                 }
-                else if (st == ScanTypeFlags.NullableType)
+
+                // T? and T* might start an expression, we need to parse further to disambiguate:
+                if (isGlobalScriptLevel)
                 {
-                    return IsPossibleDeclarationStatementFollowingNullableType(isGlobalScriptLevel);
+                    if (st == ScanTypeFlags.PointerOrMultiplication)
+                    {
+                        return false;
+                    }
+                    else if (st == ScanTypeFlags.NullableType)
+                    {
+                        return IsPossibleDeclarationStatementFollowingNullableType(isGlobalScriptLevel);
+                    }
+                }
+            }
+
+            // Scan again to check if it is a generic named type or alias without valid identifier followed,
+            // in order to resolve the conflict between using directive and using statement like:
+            //      1) using X = type-or-namespace;
+            //      2) using X<T> = type;
+            //      3) using X x = expr;
+            //      4) using X<T> x = expr;
+            // We want to treate 1) and 2) as using directives and 3) and 4) as using statement.
+            // The reason why we do not finish checking during the preview scan is that GenericTypeOrExpression
+            // may contains unexpected tokens (like 'ref', 'readonly' etc.) that we would rather prefer to treate
+            // it as using statement.
+            if (st == ScanTypeFlags.GenericTypeOrExpression)
+            {
+                using var _ = this.GetDisposableResetPoint(resetOnDispose: true);
+                st = this.ScanNamedTypeOrAliasPart(out var _);
+
+                if (st == ScanTypeFlags.GenericTypeOrExpression)
+                {
+                    isGenericNameWithoutIdentifier = !IsTrueIdentifier();
                 }
             }
 
             return true;
         }
 
-        private bool IsPossibleTopLevelUsingLocalDeclarationStatement()
+        private bool IsPossibleTopLevelUsingLocalDeclarationStatement(out bool isPossibleUsingDirective)
         {
+            isPossibleUsingDirective = false;
+
             if (this.CurrentToken.Kind != SyntaxKind.UsingKeyword)
             {
                 return false;
@@ -7787,7 +7826,7 @@ done:;
                 EatToken();
             }
 
-            return IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(isGlobalScriptLevel: false);
+            return IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(isGlobalScriptLevel: false, out isPossibleUsingDirective);
         }
 
         // Looks ahead for a declaration of a field, property or method declaration following a nullable type T?.

@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected sealed override Symbol OriginalSymbolDefinition
+        protected override Symbol OriginalSymbolDefinition
         {
             get
             {

@@ -1219,7 +1219,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             unconstructedTypeOrAlias.AliasSymbol.TypeParameters,
                             node.Arity,
                             errorInfo: null),
-                        unbound: false).Target as TypeSymbol;
+                        unbound: false);
                 }
                 else if (!IsUnboundTypeAllowed(node))
                 {
@@ -1244,7 +1244,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             else if ((Flags & BinderFlags.SuppressTypeArgumentBinding) != 0)
             {
-                resultType = unconstructedTypeOrAlias.ConstructIfGeneric(PlaceholderTypeArgumentSymbol.CreateTypeArguments(unconstructedTypeOrAlias.TypeParameters)).SelfOrTarget;
+                resultType = unconstructedTypeOrAlias.ConstructIfGeneric(PlaceholderTypeArgumentSymbol.CreateTypeArguments(unconstructedTypeOrAlias.TypeParameters));
             }
             else
             {
@@ -1316,13 +1316,13 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             NamedTypeOrAliasSymbol namedTypeOrAlias;
 
-            if (lookupResultSymbol is NamedTypeSymbol)
+            if (lookupResultSymbol is NamedTypeSymbol namedType)
             {
-                namedTypeOrAlias = (NamedTypeSymbol)lookupResultSymbol;
+                namedTypeOrAlias = namedType;
             }
-            else if (lookupResultSymbol is AliasSymbol alias && alias.Target is TypeSymbol)
+            else if (lookupResultSymbol is AliasSymbolFromSyntax alias && alias.Target is TypeSymbol)
             {
-                namedTypeOrAlias = (AliasSymbol)lookupResultSymbol;
+                namedTypeOrAlias = alias;
             }
             else
             {
@@ -1585,23 +1585,28 @@ namespace Microsoft.CodeAnalysis.CSharp
             BindingDiagnosticBag diagnostics)
         {
             Debug.Assert(!typeArguments.IsEmpty);
-            NamedTypeOrAliasSymbol type = namedTypeOrAlias.ConstructIfGeneric(typeArguments);
+            TypeSymbol type = namedTypeOrAlias.ConstructIfGeneric(typeArguments);
 
             if (ShouldCheckConstraints)
             {
+                Debug.Assert(type is AliasTargetTypeSymbol or NamedTypeSymbol);
+
                 bool includeNullability = Compilation.IsFeatureEnabled(MessageID.IDS_FeatureNullableReferenceTypes);
-                if (type.IsNamedType && ConstraintsHelper.RequiresChecking(type.NamedTypeSymbol))
+                switch (type)
                 {
-                    type.NamedTypeSymbol.CheckConstraintsForNamedType(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics),
+                    case AliasTargetTypeSymbol aliasTargetType when ConstraintsHelper.RequiresChecking(aliasTargetType):
+                        aliasTargetType.CheckConstraintsForAliasTargetType(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics),
+                                                  typeSyntax, typeArgumentsSyntax);
+                        break;
+
+                    case NamedTypeSymbol namedType when ConstraintsHelper.RequiresChecking(namedType):
+                        namedType.CheckConstraintsForNamedType(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics),
                                                   typeSyntax, typeArgumentsSyntax, basesBeingResolved);
-                }
-                else if (type.IsAlias && ConstraintsHelper.RequiresChecking(type.AliasSymbol))
-                {
-                    type.AliasSymbol.CheckConstraints(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics));
+                        break;
                 }
             }
 
-            return type.SelfOrTarget;
+            return type;
         }
 
         /// <summary>

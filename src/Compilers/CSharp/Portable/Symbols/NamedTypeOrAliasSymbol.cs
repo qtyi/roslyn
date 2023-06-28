@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal readonly struct NamedTypeOrAliasSymbol
     {
         public readonly NamedTypeSymbol NamedTypeSymbol;
-        public readonly AliasSymbol AliasSymbol;
+        public readonly AliasSymbolFromSyntax AliasSymbol;
 
         public bool IsDefault => !IsNamedType && !IsAlias;
         public bool IsNamedType => NamedTypeSymbol is not null;
@@ -37,17 +37,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
         }
-        internal TypeSymbol SelfOrTarget => (NamedTypeSymbol ?? AliasSymbol.Target as TypeSymbol)!;
 
         public NamedTypeOrAliasSymbol(NamedTypeSymbol namedTypeSymbol) => NamedTypeSymbol = namedTypeSymbol;
 
-        public NamedTypeOrAliasSymbol(AliasSymbol aliasSymbol)
+        public NamedTypeOrAliasSymbol(AliasSymbolFromSyntax aliasSymbol)
         {
             Debug.Assert(aliasSymbol.Target is TypeSymbol);
             AliasSymbol = aliasSymbol;
         }
 
-        public NamedTypeOrAliasSymbol ConstructIfGeneric(ImmutableArray<TypeWithAnnotations> typeArguments)
+        public TypeSymbol ConstructIfGeneric(ImmutableArray<TypeWithAnnotations> typeArguments)
         {
             if (IsNamedType)
             {
@@ -60,6 +59,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         public static implicit operator NamedTypeOrAliasSymbol(NamedTypeSymbol namedTypeSymbol) => new(namedTypeSymbol);
-        public static implicit operator NamedTypeOrAliasSymbol(AliasSymbol aliasSymbol) => new(aliasSymbol);
+        public static implicit operator NamedTypeOrAliasSymbol(AliasSymbolFromSyntax aliasSymbol) => new(aliasSymbol);
     }
 }

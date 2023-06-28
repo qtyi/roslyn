@@ -1894,7 +1894,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             => node.Update(VisitToken(node.ExternKeyword), VisitToken(node.AliasKeyword), VisitToken(node.Identifier), VisitToken(node.SemicolonToken));
 
         public override SyntaxNode? VisitUsingDirective(UsingDirectiveSyntax node)
-            => node.Update(VisitToken(node.GlobalKeyword), VisitToken(node.UsingKeyword), VisitToken(node.StaticKeyword), VisitToken(node.UnsafeKeyword), VisitToken(node.Identifier), (TypeParameterListSyntax?)Visit(node.TypeParameterList), VisitToken(node.EqualsToken), (TypeSyntax?)Visit(node.NamespaceOrType) ?? throw new ArgumentNullException("namespaceOrType"), VisitToken(node.SemicolonToken));
+            => node.Update(VisitToken(node.GlobalKeyword), VisitToken(node.UsingKeyword), VisitToken(node.StaticKeyword), VisitToken(node.UnsafeKeyword), VisitToken(node.Identifier), (TypeParameterListSyntax?)Visit(node.TypeParameterList), VisitList(node.ConstraintClauses), VisitToken(node.EqualsToken), (TypeSyntax?)Visit(node.NamespaceOrType) ?? throw new ArgumentNullException("namespaceOrType"), VisitToken(node.SemicolonToken));
 
         public override SyntaxNode? VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
             => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), VisitToken(node.NamespaceKeyword), (NameSyntax?)Visit(node.Name) ?? throw new ArgumentNullException("name"), VisitToken(node.OpenBraceToken), VisitList(node.Externs), VisitList(node.Usings), VisitList(node.Members), VisitToken(node.CloseBraceToken), VisitToken(node.SemicolonToken));
@@ -4664,7 +4664,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             => SyntaxFactory.ExternAliasDirective(SyntaxFactory.Token(SyntaxKind.ExternKeyword), SyntaxFactory.Token(SyntaxKind.AliasKeyword), SyntaxFactory.Identifier(identifier), SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken equalsToken, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
         {
             switch (globalKeyword.Kind())
             {
@@ -4699,16 +4699,16 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             if (namespaceOrType == null) throw new ArgumentNullException(nameof(namespaceOrType));
             if (semicolonToken.Kind() != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-            return (UsingDirectiveSyntax)Syntax.InternalSyntax.SyntaxFactory.UsingDirective((Syntax.InternalSyntax.SyntaxToken?)globalKeyword.Node, (Syntax.InternalSyntax.SyntaxToken)usingKeyword.Node!, (Syntax.InternalSyntax.SyntaxToken?)staticKeyword.Node, (Syntax.InternalSyntax.SyntaxToken?)unsafeKeyword.Node, (Syntax.InternalSyntax.SyntaxToken?)identifier.Node, typeParameterList == null ? null : (Syntax.InternalSyntax.TypeParameterListSyntax)typeParameterList.Green, (Syntax.InternalSyntax.SyntaxToken?)equalsToken.Node, (Syntax.InternalSyntax.TypeSyntax)namespaceOrType.Green, (Syntax.InternalSyntax.SyntaxToken)semicolonToken.Node!).CreateRed();
+            return (UsingDirectiveSyntax)Syntax.InternalSyntax.SyntaxFactory.UsingDirective((Syntax.InternalSyntax.SyntaxToken?)globalKeyword.Node, (Syntax.InternalSyntax.SyntaxToken)usingKeyword.Node!, (Syntax.InternalSyntax.SyntaxToken?)staticKeyword.Node, (Syntax.InternalSyntax.SyntaxToken?)unsafeKeyword.Node, (Syntax.InternalSyntax.SyntaxToken?)identifier.Node, typeParameterList == null ? null : (Syntax.InternalSyntax.TypeParameterListSyntax)typeParameterList.Green, constraintClauses.Node.ToGreenList<Syntax.InternalSyntax.TypeParameterConstraintClauseSyntax>(), (Syntax.InternalSyntax.SyntaxToken?)equalsToken.Node, (Syntax.InternalSyntax.TypeSyntax)namespaceOrType.Green, (Syntax.InternalSyntax.SyntaxToken)semicolonToken.Node!).CreateRed();
         }
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, TypeSyntax namespaceOrType)
-            => SyntaxFactory.UsingDirective(default, SyntaxFactory.Token(SyntaxKind.UsingKeyword), default, default, identifier, typeParameterList, default, namespaceOrType, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, TypeSyntax namespaceOrType)
+            => SyntaxFactory.UsingDirective(default, SyntaxFactory.Token(SyntaxKind.UsingKeyword), default, default, identifier, typeParameterList, constraintClauses, default, namespaceOrType, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
         public static UsingDirectiveSyntax UsingDirective(TypeSyntax namespaceOrType)
-            => SyntaxFactory.UsingDirective(default, SyntaxFactory.Token(SyntaxKind.UsingKeyword), default, default, default, default, default, namespaceOrType, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+            => SyntaxFactory.UsingDirective(default, SyntaxFactory.Token(SyntaxKind.UsingKeyword), default, default, default, default, default, default, namespaceOrType, SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
         /// <summary>Creates a new NamespaceDeclarationSyntax instance.</summary>
         public static NamespaceDeclarationSyntax NamespaceDeclaration(SyntaxList<AttributeListSyntax> attributeLists, SyntaxTokenList modifiers, SyntaxToken namespaceKeyword, NameSyntax name, SyntaxToken openBraceToken, SyntaxList<ExternAliasDirectiveSyntax> externs, SyntaxList<UsingDirectiveSyntax> usings, SyntaxList<MemberDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken semicolonToken)

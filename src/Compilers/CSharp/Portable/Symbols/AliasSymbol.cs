@@ -125,37 +125,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public abstract ImmutableArray<TypeParameterSymbol> TypeParameters { get; }
 
         /// <summary>
-        /// Returns the type arguments that have been substituted for the type parameters. 
-        /// If nothing has been substituted for a give type parameters,
-        /// then the type parameter itself is consider the type argument.
-        /// </summary>
-        internal abstract ImmutableArray<TypeWithAnnotations> TypeArgumentsWithAnnotationsNoUseSiteDiagnostics { get; }
-
-        internal ImmutableArray<TypeWithAnnotations> TypeArgumentsWithDefinitionUseSiteDiagnostics(ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
-        {
-            var result = TypeArgumentsWithAnnotationsNoUseSiteDiagnostics;
-
-            foreach (var typeArgument in result)
-            {
-                typeArgument.Type.OriginalDefinition.AddUseSiteInfo(ref useSiteInfo);
-            }
-
-            return result;
-        }
-
-        internal TypeWithAnnotations TypeArgumentWithDefinitionUseSiteDiagnostics(int index, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
-        {
-            var result = TypeArgumentsWithAnnotationsNoUseSiteDiagnostics[index];
-            result.Type.OriginalDefinition.AddUseSiteInfo(ref useSiteInfo);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns the alias symbol that this alias was constructed from.
-        /// </summary>
-        public abstract AliasSymbol ConstructedFrom { get; }
-
-        /// <summary>
         /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
         /// namespace or type referenced by the alias.
         /// </summary>
@@ -340,7 +309,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <param name="typeArguments">The immediate type arguments to be replaced for type
         /// parameters in the alias target.</param>
-        public AliasSymbol Construct(params TypeSymbol[] typeArguments)
+        public AliasTargetTypeSymbol Construct(params TypeSymbol[] typeArguments)
         {
             // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass TypeWithAnnotations[] instead of TypeSymbol[].
             return ConstructWithoutModifiers(typeArguments.AsImmutableOrNull(), false);
@@ -351,7 +320,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <param name="typeArguments">The immediate type arguments to be replaced for type
         /// parameters in the alias target.</param>
-        public AliasSymbol Construct(ImmutableArray<TypeSymbol> typeArguments)
+        public AliasTargetTypeSymbol Construct(ImmutableArray<TypeSymbol> typeArguments)
         {
             // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass ImmutableArray<TypeWithAnnotations> instead of ImmutableArray<TypeSymbol>.
             return ConstructWithoutModifiers(typeArguments, false);
@@ -361,13 +330,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Returns a constructed alias given a list of type arguments.
         /// </summary>
         /// <param name="typeArguments"></param>
-        public AliasSymbol Construct(IEnumerable<TypeSymbol> typeArguments)
+        public AliasTargetTypeSymbol Construct(IEnumerable<TypeSymbol> typeArguments)
         {
             // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass IEnumerable<TypeWithAnnotations> instead of IEnumerable<TypeSymbol>.
             return ConstructWithoutModifiers(typeArguments.AsImmutableOrNull(), false);
         }
 
-        private AliasSymbol ConstructWithoutModifiers(ImmutableArray<TypeSymbol> typeArguments, bool unbound)
+        private AliasTargetTypeSymbol ConstructWithoutModifiers(ImmutableArray<TypeSymbol> typeArguments, bool unbound)
         {
             ImmutableArray<TypeWithAnnotations> modifiedArguments;
 
@@ -383,12 +352,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return Construct(modifiedArguments, unbound);
         }
 
-        internal AliasSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments)
+        internal AliasTargetTypeSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments)
         {
             return Construct(typeArguments, unbound: false);
         }
 
-        internal AliasSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
+        internal AliasTargetTypeSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
         {
             if (this.Arity == 0)
             {
@@ -415,10 +384,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return this.ConstructCore(typeArguments, unbound);
         }
 
-        protected virtual AliasSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
-        {
-            return new ConstructedAliasSymbol(this, typeArguments);
-        }
+        protected abstract AliasTargetTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound);
 
         #endregion
 
@@ -454,14 +420,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override ImmutableArray<TypeWithAnnotations> TypeArgumentsWithAnnotationsNoUseSiteDiagnostics
-        {
-            get
-            {
-                return ImmutableArray<TypeWithAnnotations>.Empty;
-            }
-        }
-
         /// <summary>
         /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
         /// namespace or type referenced by the alias.
@@ -479,9 +437,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _aliasTarget;
         }
 
-        public override AliasSymbol ConstructedFrom => this;
-
-        protected override AliasSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
+        protected override AliasTargetTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
         {
             throw ExceptionUtilities.Unreachable();
         }

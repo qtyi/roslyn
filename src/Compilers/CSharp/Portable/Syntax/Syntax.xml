@@ -3086,6 +3086,11 @@
           <Kind Name="IdentifierToken"/>
         </Field>
         <Field Name="TypeParameterList" Type="TypeParameterListSyntax" Optional="true"/>
+        <Field Name="ConstraintClauses" Type="SyntaxList&lt;TypeParameterConstraintClauseSyntax&gt;">
+          <PropertyComment>
+            <summary>Gets the type constraint list.</summary>
+          </PropertyComment>
+        </Field>
         <Field Name="EqualsToken" Type="SyntaxToken">
           <Kind Name="EqualsToken"/>
         </Field>

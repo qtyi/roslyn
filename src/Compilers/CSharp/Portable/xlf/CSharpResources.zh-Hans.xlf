@@ -1093,8 +1093,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintCannotHaveRequiredMembers">
-        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</source>
-        <target state="translated">'{2}' 无法满足泛型类型或方法 '{1}'中参数 '{0}'的 'new()' 约束，因为 '{2}'具有必需的成员。</target>
+        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</source>
+        <target state="needs-review-translation">'{2}' 无法满足泛型类型、方法或别名 '{1}'中参数 '{0}'的 'new()' 约束，因为 '{2}'具有必需的成员。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlinesAreNotAllowedInsideANonVerbatimInterpolatedString">
@@ -2578,8 +2578,8 @@
         <note>UnmanagedCallersOnly is not localizable.</note>
       </trans-unit>
       <trans-unit id="ERR_UnmanagedConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">类型“{2}”必须是不可为 null 值的类型，且包括任何嵌套级别的所有字段，才能用作泛型类型或方法“{0}”中的参数“{1}”</target>
+        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">类型“{2}”必须是不可为 null 值的类型，且包括任何嵌套级别的所有字段，才能用作泛型类型、方法或别名“{0}”中的参数“{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedCallingConvention">
@@ -4102,33 +4102,33 @@
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。类型参数“{3}”的为 Null 性与约束类型“{1}”不匹配。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。类型参数“{3}”的为 Null 性与约束类型“{1}”不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</source>
-        <target state="translated">类型不能用作泛型类型或方法中的类型参数。类型参数的为 Null 性与约束类型不匹配。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</source>
+        <target state="needs-review-translation">类型不能用作泛型类型、方法或别名中的类型参数。类型参数的为 Null 性与约束类型不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
-        <target state="translated">类型“{2}”不能用作泛型类型或方法“{0}”中的类型参数“{1}”。类型参数“{2}”的为 Null 性与 "notnull" 约束不匹配。</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">类型“{2}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{1}”。类型参数“{2}”的为 Null 性与 "notnull" 约束不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</source>
-        <target state="translated">类型不能用作泛型类型或方法中的类型参数。类型参数的为 Null 性与 "notnull" 约束不匹配。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">类型不能用作泛型类型、方法或别名中的类型参数。类型参数的为 Null 性与 "notnull" 约束不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
-        <target state="translated">类型“{2}”不能用作泛型类型或方法“{0}”中的类型参数“{1}”。类型参数“{2}”的为 Null 性与 “class” 约束不匹配。</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">类型“{2}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{1}”。类型参数“{2}”的为 Null 性与 “class” 约束不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</source>
-        <target state="translated">类型不能用作泛型类型或方法中的类型参数。类型参数的为 Null 性与 “class” 约束不匹配。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">类型不能用作泛型类型、方法或别名中的类型参数。类型参数的为 Null 性与 “class” 约束不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullableValueTypeMayBeNull">
@@ -5867,33 +5867,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintNotSatisfied">
-        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">“{2}”必须是具有公共的无参数构造函数的非抽象类型，才能用作泛型类型或方法“{0}”中的参数“{1}”</target>
+        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">“{2}”必须是具有公共的无参数构造函数的非抽象类型，才能用作泛型类型、方法或别名“{0}”中的参数“{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedRefType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的隐式引用转换。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的隐式引用转换。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableEnum">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。可以为 null 的类型“{3}”不满足“{1}”的约束。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。可以为 null 的类型“{3}”不满足“{1}”的约束。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableInterface">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。可以为 null 的类型“{3}”不满足“{1}”的约束。可以为 null 的类型不能满足任何接口约束。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。可以为 null 的类型“{3}”不满足“{1}”的约束。可以为 null 的类型不能满足任何接口约束。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedTyVar">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的装箱转换或类型参数转换。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的装箱转换或类型参数转换。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedValType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
-        <target state="translated">类型“{3}”不能用作泛型类型或方法“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的装箱转换。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">类型“{3}”不能用作泛型类型、方法或别名“{0}”中的类型参数“{2}”。没有从“{3}”到“{1}”的装箱转换。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_DuplicateGeneratedName">
@@ -6167,13 +6167,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_RefConstraintNotSatisfied">
-        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">类型“{2}”必须是引用类型才能用作泛型类型或方法“{0}”中的参数“{1}”</target>
+        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">类型“{2}”必须是引用类型才能用作泛型类型、方法或别名“{0}”中的参数“{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_ValConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">类型“{2}”必须是不可为 null 值的类型，才能用作泛型类型或方法“{0}”中的参数“{1}”</target>
+        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">类型“{2}”必须是不可为 null 值的类型，才能用作泛型类型、方法或别名“{0}”中的参数“{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_CircularConstraint">

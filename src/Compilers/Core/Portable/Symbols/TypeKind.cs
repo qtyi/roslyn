@@ -91,6 +91,12 @@ namespace Microsoft.CodeAnalysis
     internal static class TypeKindInternal
     {
         /// <summary>
+        /// Internal Symbol representing the constructed type of
+        /// an alias target.
+        /// </summary>
+        internal const TypeKind AliasTargetType = (TypeKind)254;
+
+        /// <summary>
         /// Internal Symbol representing the inferred signature of
         /// a lambda expression or method group.
         /// </summary>
@@ -99,6 +105,7 @@ namespace Microsoft.CodeAnalysis
 #if DEBUG
         static TypeKindInternal()
         {
+            Debug.Assert(!EnumUtilities.ContainsValue(AliasTargetType));
             Debug.Assert(!EnumUtilities.ContainsValue(FunctionType));
         }
 #endif

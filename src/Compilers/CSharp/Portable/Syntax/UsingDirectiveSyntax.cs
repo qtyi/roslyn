@@ -18,11 +18,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax
         /// </summary>
         public NameSyntax? Name => this.NamespaceOrType as NameSyntax;
 
-        public UsingDirectiveSyntax Update(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
-            => this.Update(this.GlobalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, equalsToken, namespaceOrType: name, semicolonToken);
+        public UsingDirectiveSyntax Update(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
+            => this.Update(this.GlobalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, constraintClauses, equalsToken, namespaceOrType: name, semicolonToken);
 
-        public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
-            => this.Update(globalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, equalsToken, namespaceOrType: name, semicolonToken);
+        public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
+            => this.Update(globalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, constraintClauses, equalsToken, namespaceOrType: name, semicolonToken);
 
         public UsingDirectiveSyntax WithName(NameSyntax name)
             => WithNamespaceOrType(name);
@@ -34,12 +34,12 @@ namespace Microsoft.CodeAnalysis.CSharp
     public partial class SyntaxFactory
     {
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxToken equalsToken, NameSyntax name)
-            => UsingDirective(globalKeyword: default, usingKeyword: default, staticKeyword, unsafeKeyword: default, identifier, typeParameters, equalsToken, namespaceOrType: name, semicolonToken: default);
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name)
+            => UsingDirective(globalKeyword: default, usingKeyword: default, staticKeyword, unsafeKeyword: default, identifier, typeParameters, constraintClauses, equalsToken, namespaceOrType: name, semicolonToken: default);
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
-            => UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword: default, identifier, typeParameters, equalsToken, namespaceOrType: name, semicolonToken);
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
+            => UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword: default, identifier, typeParameters, constraintClauses, equalsToken, namespaceOrType: name, semicolonToken);
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
         public static UsingDirectiveSyntax UsingDirective(NameSyntax name)

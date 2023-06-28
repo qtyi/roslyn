@@ -287,6 +287,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     modifyCompilation = true;
                     break;
                 case LocalFunctionSymbol _:
+                case AliasSymbolFromSyntax _:
                     modifyCompilation = false;
                     break;
                 default:

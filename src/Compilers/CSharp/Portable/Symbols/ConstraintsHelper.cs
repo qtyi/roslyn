@@ -539,7 +539,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private static bool CheckConstraintsSingleType(TypeSymbol type, in CheckConstraintsArgs args)
         {
-            if (type.Kind == SymbolKind.NamedType)
+            if (type.TypeKind == TypeKindInternal.AliasTargetType)
+            {
+                ((AliasTargetTypeSymbol)type).CheckConstraints(args);
+                return true; // do not dive into underlying type.
+            }
+            else if (type.Kind == SymbolKind.NamedType)
             {
                 ((NamedTypeSymbol)type).CheckConstraints(args);
             }
@@ -701,6 +706,70 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return result;
         }
 
+        public static bool CheckConstraintsForAliasTargetType(
+            this AliasTargetTypeSymbol type,
+            in CheckConstraintsArgs args,
+            SyntaxNode typeSyntax,
+            SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax) // may be omitted in synthesized invocations
+        {
+            Debug.Assert(typeArgumentsSyntax.Count == 0 /*omitted*/ || typeArgumentsSyntax.Count == type.Arity);
+
+            if (!RequiresChecking(type))
+            {
+                return true;
+            }
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = !typeSyntax.HasErrors && CheckAliasConstraints(type, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: args.IncludeNullability ? diagnosticsBuilder : null,
+                                                                       ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                int ordinal = pair.TypeParameter.Ordinal;
+                var location = ordinal < typeArgumentsSyntax.Count ? typeArgumentsSyntax[ordinal].Location : args.Location;
+                args.Diagnostics.Add(pair.UseSiteInfo, location);
+            }
+
+            diagnosticsBuilder.Free();
+
+            return result;
+        }
+
+        public static bool CheckConstraints(this AliasTargetTypeSymbol type, in CheckConstraintsArgs args)
+        {
+            Debug.Assert(args.CurrentCompilation is object);
+
+            if (!RequiresChecking(type))
+            {
+                return true;
+            }
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = CheckAliasConstraints(type, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: args.IncludeNullability ? diagnosticsBuilder : null,
+                                              ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                args.Diagnostics.Add(pair.UseSiteInfo, args.Location);
+            }
+
+            diagnosticsBuilder.Free();
+
+            return result;
+        }
+
         // C# does not let you declare a type in which it would be possible for distinct base interfaces
         // to unify under some instantiations.  But such ill-formed classes can come in through
         // metadata and be instantiated in C#.  We check to see if that's happened.
@@ -777,34 +846,6 @@ hasRelatedInterfaces:
             return result;
         }
 
-        public static bool CheckConstraints(
-            this AliasSymbol alias,
-            in CheckConstraintsArgs args)
-        {
-            if (!RequiresChecking(alias))
-            {
-                return true;
-            }
-
-            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
-            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
-            var result = CheckAliasConstraints(alias, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: null,
-                                                ref useSiteDiagnosticsBuilder);
-
-            if (useSiteDiagnosticsBuilder != null)
-            {
-                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
-            }
-
-            foreach (var pair in diagnosticsBuilder)
-            {
-                args.Diagnostics.Add(pair.UseSiteInfo, args.Location);
-            }
-
-            diagnosticsBuilder.Free();
-            return result;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckTypeConstraints(
             NamedTypeSymbol type,
@@ -844,8 +885,9 @@ hasRelatedInterfaces:
                 skipParameters);
         }
 
-        public static bool CheckAliasConstraints(
-            AliasSymbol alias,
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CheckAliasConstraints(
+            AliasTargetTypeSymbol alias,
             in CheckConstraintsArgs args,
             ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
             ArrayBuilder<TypeParameterDiagnosticInfo> nullabilityDiagnosticsBuilderOpt,
@@ -856,7 +898,7 @@ hasRelatedInterfaces:
                 in args,
                 alias.TypeSubstitution,
                 alias.OriginalDefinition.TypeParameters,
-                alias.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics,
+                alias.TypeArgumentsWithAnnotations,
                 diagnosticsBuilder,
                 nullabilityDiagnosticsBuilderOpt,
                 ref useSiteDiagnosticsBuilder);
@@ -1550,9 +1592,9 @@ hasRelatedInterfaces:
             return true;
         }
 
-        public static bool RequiresChecking(AliasSymbol alias)
+        public static bool RequiresChecking(AliasTargetTypeSymbol type)
         {
-            if (alias.Arity == 0)
+            if (type.Arity == 0)
             {
                 return false;
             }

@@ -849,6 +849,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             break;
                         }
 
+                    case TypeKindInternal.AliasTargetType:
+                        next = TypeWithAnnotations.Create(((AliasTargetTypeSymbol)current).UnderlyingType);
+                        break;
+
                     default:
                         throw ExceptionUtilities.UnexpectedValue(current.TypeKind);
                 }

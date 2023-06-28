@@ -1093,8 +1093,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintCannotHaveRequiredMembers">
-        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</source>
-        <target state="translated">'{2}'에 필수 구성원이 있으므로 '{2}'은(는) 제네릭 형식 또는 메서드 '{0}'의 '{1}' 매개 변수에 대한 'new()' 제약 조건을 충족할 수 없습니다.</target>
+        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</source>
+        <target state="needs-review-translation">'{2}'에 필수 구성원이 있으므로 '{2}'은(는) 제네릭 형식 또는 메서드 '{0}'의 '{1}' 매개 변수에 대한 'new()' 제약 조건을 충족할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlinesAreNotAllowedInsideANonVerbatimInterpolatedString">
@@ -2578,8 +2578,8 @@
         <note>UnmanagedCallersOnly is not localizable.</note>
       </trans-unit>
       <trans-unit id="ERR_UnmanagedConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">제네릭 형식 또는 메서드 '{0}'에서 모든 중첩 수준의 모든 필드와 함께 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 null을 허용하지 않는 값 형식이어야 합니다.</target>
+        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">제네릭 형식 또는 메서드 '{0}'에서 모든 중첩 수준의 모든 필드와 함께 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 null을 허용하지 않는 값 형식이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedCallingConvention">
@@ -4096,33 +4096,33 @@
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' 형식 인수의 Null 허용 여부가 '{1}' 제약 조건 형식과 일치하지 않습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' 형식 인수의 Null 허용 여부가 '{1}' 제약 조건 형식과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</source>
-        <target state="translated">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 제약 조건 형식과 일치하지 않습니다.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</source>
+        <target state="needs-review-translation">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 제약 조건 형식과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
-        <target state="translated">'{2}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{1}' 형식 매개 변수로 사용할 수 없습니다. '{2}' 형식 인수의 Null 허용 여부가 'notnull' 제약 조건과 일치하지 않습니다.</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">'{2}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{1}' 형식 매개 변수로 사용할 수 없습니다. '{2}' 형식 인수의 Null 허용 여부가 'notnull' 제약 조건과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</source>
-        <target state="translated">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 'notnull' 제약 조건과 일치하지 않습니다.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 'notnull' 제약 조건과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
-        <target state="translated">'{2}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{1}' 형식 매개 변수로 사용할 수 없습니다. '{2}' 형식 인수의 Null 허용 여부가 'class' 제약 조건과 일치하지 않습니다.</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">'{2}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{1}' 형식 매개 변수로 사용할 수 없습니다. '{2}' 형식 인수의 Null 허용 여부가 'class' 제약 조건과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</source>
-        <target state="translated">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 'class' 제약 조건과 일치하지 않습니다.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">형식은 제네릭 형식 또는 메서드에서 형식 매개 변수로 사용할 수 없습니다. 형식 인수의 Null 허용 여부가 'class' 제약 조건과 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullableValueTypeMayBeNull">
@@ -5861,33 +5861,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintNotSatisfied">
-        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">'제네릭 형식 또는 메서드 '{0}'에서 '{1}' 매개 변수로 사용하려면 '{2}'이(가) 매개 변수가 없는 public 생성자를 사용하는 비추상 형식이어야 합니다.</target>
+        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">'제네릭 형식 또는 메서드 '{0}'에서 '{1}' 매개 변수로 사용하려면 '{2}'이(가) 매개 변수가 없는 public 생성자를 사용하는 비추상 형식이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedRefType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 암시적 참조 변환이 없습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 암시적 참조 변환이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableEnum">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' null 허용 형식이 '{1}' 제약 조건을 충족하지 않습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' null 허용 형식이 '{1}' 제약 조건을 충족하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableInterface">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' null 허용 형식이 '{1}' 제약 조건을 충족하지 않습니다. null 허용 형식은 어떠한 인터페이스 제약 조건도 만족할 수 없습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}' null 허용 형식이 '{1}' 제약 조건을 충족하지 않습니다. null 허용 형식은 어떠한 인터페이스 제약 조건도 만족할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedTyVar">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 boxing 변환 또는 형식 매개 변수 변환이 없습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 boxing 변환 또는 형식 매개 변수 변환이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedValType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
-        <target state="translated">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 boxing 변환이 없습니다.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">'{3}' 형식은 제네릭 형식 또는 '{0}' 메서드에서 '{2}' 형식 매개 변수로 사용할 수 없습니다. '{3}'에서 '{1}'(으)로의 boxing 변환이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_DuplicateGeneratedName">
@@ -6161,13 +6161,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_RefConstraintNotSatisfied">
-        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">제네릭 형식 또는 메서드 '{0}'에서 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 참조 형식이어야 합니다.</target>
+        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">제네릭 형식 또는 메서드 '{0}'에서 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 참조 형식이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_ValConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">제네릭 형식 또는 메서드 '{0}'에서 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 null을 허용하지 않는 값 형식이어야 합니다.</target>
+        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">제네릭 형식 또는 메서드 '{0}'에서 '{2}' 형식을 '{1}' 매개 변수로 사용하려면 해당 형식이 null을 허용하지 않는 값 형식이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_CircularConstraint">
