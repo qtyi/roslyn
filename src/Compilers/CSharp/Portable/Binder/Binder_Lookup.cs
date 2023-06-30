@@ -370,10 +370,10 @@ namespace Microsoft.CodeAnalysis.CSharp
             nonViable.Free();
         }
 
-        protected bool IsUsingAlias(ImmutableDictionary<AliasKey, AliasAndUsingDirective> usingAliases, string name, int arity, bool callerIsSemanticModel)
+        protected bool IsUsingAlias(ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases, string name, int arity, bool callerIsSemanticModel)
         {
             AliasAndUsingDirective node;
-            if (usingAliases.TryGetValue(new AliasKey(name, arity), out node))
+            if (usingAliases.TryGetValue(new NameWithArity(name, arity), out node))
             {
                 // This method is called by InContainerBinder.LookupSymbolsInSingleBinder to see if
                 // there's a conflict between an alias and a member.  As a conflict may cause a
@@ -395,7 +395,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         protected void LookupSymbolInAliases(
-            ImmutableDictionary<AliasKey, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases,
             ImmutableArray<AliasAndExternAliasDirective> externAliases,
             Binder originalBinder,
             LookupResult result,
@@ -409,7 +409,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool callerIsSemanticModel = originalBinder.IsSemanticModelBinder;
 
             AliasAndUsingDirective alias;
-            if (usingAliases.TryGetValue(new AliasKey(name, arity), out alias))
+            if (usingAliases.TryGetValue(new NameWithArity(name, arity), out alias))
             {
                 // Found a match in our list of normal aliases.  Mark the alias as being seen so that
                 // it won't be reported to the user as something that can be removed.
@@ -1935,7 +1935,7 @@ symIsHidden:;
         }
 
         protected void AddLookupSymbolsInfoInAliases(
-            ImmutableDictionary<AliasKey, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases,
             ImmutableArray<AliasAndExternAliasDirective> externAliases,
             LookupSymbolsInfo result, LookupOptions options, Binder originalBinder)
         {

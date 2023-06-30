@@ -44,14 +44,14 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
         {
         }
 
-        private static ImmutableArray<string> GetInheritanceNames(StringTable stringTable, BaseListSyntax baseList)
+        private static ImmutableArray<NameWithArity> GetInheritanceNames(StringTable stringTable, BaseListSyntax baseList)
         {
             if (baseList == null)
             {
-                return ImmutableArray<string>.Empty;
+                return ImmutableArray<NameWithArity>.Empty;
             }
 
-            var builder = ArrayBuilder<string>.GetInstance(baseList.Types.Count);
+            var builder = ArrayBuilder<NameWithArity>.GetInstance(baseList.Types.Count);
 
             // It's not sufficient to just store the textual names we see in the inheritance list
             // of a type.  For example if we have:
@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             }
         }
 
-        private static void AddAliasMaps(SyntaxNode node, List<Dictionary<string, string>> aliasMaps)
+        private static void AddAliasMaps(SyntaxNode node, List<Dictionary<NameWithArity, NameWithArity>> aliasMaps)
         {
             for (var current = node; current != null; current = current.Parent)
             {
@@ -105,23 +105,23 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             }
         }
 
-        private static void ProcessUsings(List<Dictionary<string, string>> aliasMaps, SyntaxList<UsingDirectiveSyntax> usings)
+        private static void ProcessUsings(List<Dictionary<NameWithArity, NameWithArity>> aliasMaps, SyntaxList<UsingDirectiveSyntax> usings)
         {
-            Dictionary<string, string> aliasMap = null;
+            Dictionary<NameWithArity, NameWithArity> aliasMap = null;
 
             foreach (var usingDecl in usings)
             {
-                if (usingDecl.Alias != null)
+                if (usingDecl.Identifier != default)
                 {
                     var mappedName = GetTypeName(usingDecl.Name);
-                    if (mappedName != null)
+                    if (!mappedName.IsDefault)
                     {
                         aliasMap ??= AllocateAliasMap();
 
-                        // If we have:  using X = Goo, then we store a mapping from X -> Goo
-                        // here.  That way if we see a class that inherits from X we also state
+                        // If we have:  using X<T> = Goo, then we store a mapping from X -> Goo
+                        // here.  That way if we see a class that inherits from X<?> we also state
                         // that it inherits from Goo as well.
-                        aliasMap[usingDecl.Alias.Name.Identifier.ValueText] = mappedName;
+                        aliasMap[new NameWithArity(usingDecl.Identifier.ValueText, usingDecl.TypeParameterList == null ? 0 : usingDecl.TypeParameterList.Parameters.Count)] = mappedName;
                     }
                 }
             }
@@ -133,11 +133,11 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
         }
 
         private static void AddInheritanceName(
-            ArrayBuilder<string> builder, TypeSyntax type,
-            List<Dictionary<string, string>> aliasMaps)
+            ArrayBuilder<NameWithArity> builder, TypeSyntax type,
+            List<Dictionary<NameWithArity, NameWithArity>> aliasMaps)
         {
             var name = GetTypeName(type);
-            if (name != null)
+            if (!name.IsDefault)
             {
                 // First, add the name that the typename that the type directly says it inherits from.
                 builder.Add(name);
@@ -194,7 +194,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Method,
                         Accessibility.Private,
                         localFunction.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty,
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty,
                         parameterCount: localFunction.ParameterList.Parameters.Count,
                         typeParameterCount: localFunction.TypeParameterList?.Parameters.Count ?? 0));
                 }
@@ -260,7 +260,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                 DeclaredSymbolInfoKind.Enum,
                 GetAccessibility(container, enumDeclaration.Modifiers),
                 enumDeclaration.Identifier.Span,
-                inheritanceNames: ImmutableArray<string>.Empty,
+                inheritanceNames: ImmutableArray<NameWithArity>.Empty,
                 isNestedType: IsNestedType(enumDeclaration));
         }
 
@@ -288,7 +288,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Constructor,
                         GetAccessibility(container, ctorDecl.Modifiers),
                         ctorDecl.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty,
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty,
                         parameterCount: ctorDecl.ParameterList?.Parameters.Count ?? 0));
                     return;
                 case SyntaxKind.DelegateDeclaration:
@@ -304,7 +304,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Delegate,
                         GetAccessibility(container, delegateDecl.Modifiers),
                         delegateDecl.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     return;
                 case SyntaxKind.EnumMemberDeclaration:
                     var enumMember = (EnumMemberDeclarationSyntax)node;
@@ -318,7 +318,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.EnumMember,
                         Accessibility.Public,
                         enumMember.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     return;
                 case SyntaxKind.EventDeclaration:
                     var eventDecl = (EventDeclarationSyntax)node;
@@ -332,7 +332,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Event,
                         GetAccessibility(container, eventDecl.Modifiers),
                         eventDecl.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     return;
                 case SyntaxKind.IndexerDeclaration:
                     var indexerDecl = (IndexerDeclarationSyntax)node;
@@ -346,7 +346,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Indexer,
                         GetAccessibility(container, indexerDecl.Modifiers),
                         indexerDecl.ThisKeyword.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     return;
                 case SyntaxKind.MethodDeclaration:
                     var method = (MethodDeclarationSyntax)node;
@@ -361,7 +361,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         isExtensionMethod ? DeclaredSymbolInfoKind.ExtensionMethod : DeclaredSymbolInfoKind.Method,
                         GetAccessibility(container, method.Modifiers),
                         method.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty,
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty,
                         parameterCount: method.ParameterList?.Parameters.Count ?? 0,
                         typeParameterCount: method.TypeParameterList?.Parameters.Count ?? 0));
                     return;
@@ -377,7 +377,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                         DeclaredSymbolInfoKind.Property,
                         GetAccessibility(container, property.Modifiers),
                         property.Identifier.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     return;
                 case SyntaxKind.FieldDeclaration:
                 case SyntaxKind.EventFieldDeclaration:
@@ -400,7 +400,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                             kind,
                             GetAccessibility(container, fieldDeclaration.Modifiers),
                             variableDeclarator.Identifier.Span,
-                            inheritanceNames: ImmutableArray<string>.Empty));
+                            inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     }
 
                     return;
@@ -450,7 +450,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                             DeclaredSymbolInfoKind.Property,
                             Accessibility.Public,
                             parameter.Identifier.Span,
-                            inheritanceNames: ImmutableArray<string>.Empty));
+                            inheritanceNames: ImmutableArray<NameWithArity>.Empty));
                     }
                 }
             }
@@ -639,7 +639,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             }
         }
 
-        private static string GetTypeName(TypeSyntax type)
+        private static NameWithArity GetTypeName(TypeSyntax type)
         {
             if (type is SimpleNameSyntax simpleName)
             {
@@ -653,8 +653,12 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             {
                 return GetSimpleTypeName(aliasName.Name);
             }
+            else if (type is GenericNameSyntax genericName)
+            {
+                return new NameWithArity(genericName.Identifier.ValueText, genericName.Arity);
+            }
 
-            return null;
+            return default;
         }
 
         private static string GetSimpleTypeName(SimpleNameSyntax name)
@@ -668,14 +672,14 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             => string.Empty;
 
         protected override bool TryGetAliasesFromUsingDirective(
-            UsingDirectiveSyntax usingDirectiveNode, out ImmutableArray<(string aliasName, string name)> aliases)
+            UsingDirectiveSyntax usingDirectiveNode, out ImmutableArray<(NameWithArity aliasName, NameWithArity name)> aliases)
         {
-            if (usingDirectiveNode.Alias != null)
+            if (usingDirectiveNode.Identifier != default)
             {
-                if (TryGetSimpleTypeName(usingDirectiveNode.Alias.Name, typeParameterNames: null, out var aliasName, out _) &&
+                if (TryGetSimpleTypeName(usingDirectiveNode.Identifier, typeParameterNames: null, out var aliasName, out _) &&
                     TryGetSimpleTypeName(usingDirectiveNode.NamespaceOrType, typeParameterNames: null, out var name, out _))
                 {
-                    aliases = ImmutableArray.Create<(string, string)>((aliasName, name));
+                    aliases = ImmutableArray.Create<(NameWithArity, NameWithArity)>((aliasName, name));
                     return true;
                 }
             }
@@ -690,22 +694,24 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
             var typeParameterNames = methodDeclaration.TypeParameterList?.Parameters.SelectAsArray(p => p.Identifier.Text);
             TryGetSimpleTypeName(methodDeclaration.ParameterList.Parameters[0].Type, typeParameterNames, out var targetTypeName, out var isArray);
-            return CreateReceiverTypeString(targetTypeName, isArray);
+            return CreateReceiverTypeString(targetTypeName.Name, isArray);
         }
 
-        private static bool TryGetSimpleTypeName(SyntaxNode node, ImmutableArray<string>? typeParameterNames, out string simpleTypeName, out bool isArray)
+        private static bool TryGetSimpleTypeName(SyntaxNodeOrToken nodeOrToken, ImmutableArray<string>? typeParameterNames, out NameWithArity simpleTypeName, out bool isArray)
         {
             isArray = false;
 
-            if (node is TypeSyntax typeNode)
+            if (nodeOrToken.IsToken)
+            {
+                return getFromIdentifierToken(nodeOrToken.AsToken(), out simpleTypeName);
+            }
+            if (nodeOrToken.AsNode() is TypeSyntax typeNode)
             {
                 switch (typeNode)
                 {
                     case IdentifierNameSyntax identifierNameNode:
-                        // We consider it a complex method if the receiver type is a type parameter.
-                        var text = identifierNameNode.Identifier.Text;
-                        simpleTypeName = typeParameterNames?.Contains(text) == true ? null : text;
-                        return simpleTypeName != null;
+                        var identifier = identifierNameNode.Identifier;
+                        return getFromIdentifierToken(identifier, out simpleTypeName);
 
                     case ArrayTypeSyntax arrayTypeNode:
                         isArray = true;
@@ -719,7 +725,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
                     case PredefinedTypeSyntax predefinedTypeNode:
                         simpleTypeName = GetSpecialTypeName(predefinedTypeNode);
-                        return simpleTypeName != null;
+                        return !simpleTypeName.IsDefault;
 
                     case AliasQualifiedNameSyntax aliasQualifiedNameNode:
                         return TryGetSimpleTypeName(aliasQualifiedNameNode.Name, typeParameterNames, out simpleTypeName, out _);
@@ -742,6 +748,22 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
             simpleTypeName = null;
             return false;
+
+            bool getFromIdentifierToken(SyntaxToken identifier, out NameWithArity simpleTypeName)
+            {
+                // We consider it a complex method if the receiver type is a type parameter.
+                var text = identifier.Text;
+                if (typeParameterNames?.Contains(text) == true)
+                {
+                    simpleTypeName = default;
+                    return false;
+                }
+                else
+                {
+                    simpleTypeName = text;
+                    return true;
+                }
+            }
         }
 
         private static string GetSpecialTypeName(PredefinedTypeSyntax predefinedTypeNode)

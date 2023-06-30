@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Completion.Providers
 
         protected override ImmutableArray<UsingDirectiveSyntax> GetAliasDeclarationNodes(SyntaxNode node)
             => node.GetEnclosingUsingDirectives()
-                .Where(n => n.Alias != null)
+                .Where(n => n.Identifier != default)
                 .ToImmutableArray();
     }
 }

@@ -159,8 +159,8 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGeneration
         public override SyntaxNode NamespaceImportDeclaration(SyntaxNode name)
             => SyntaxFactory.UsingDirective((NameSyntax)name);
 
-        public override SyntaxNode AliasImportDeclaration(string aliasIdentifierName, SyntaxNode name)
-            => SyntaxFactory.UsingDirective(SyntaxFactory.NameEquals(aliasIdentifierName), (NameSyntax)name);
+        public override SyntaxNode AliasImportDeclaration(string aliasIdentifierName, IEnumerable<SyntaxNode>? aliasTypeParameters, SyntaxNode name)
+            => SyntaxFactory.UsingDirective(Identifier(aliasIdentifierName), AsTypeParameterList(aliasTypeParameters), default, SyntaxFactory.Token(SyntaxKind.EqualsToken), (NameSyntax)name);
 
         public override SyntaxNode NamespaceDeclaration(SyntaxNode name, IEnumerable<SyntaxNode> declarations)
         {
@@ -1826,6 +1826,7 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGeneration
                 MethodDeclarationSyntax method => method.WithConstraintClauses(WithTypeConstraints(method.ConstraintClauses, typeParameterName, kinds, types)),
                 TypeDeclarationSyntax type => type.WithConstraintClauses(WithTypeConstraints(type.ConstraintClauses, typeParameterName, kinds, types)),
                 DelegateDeclarationSyntax @delegate => @delegate.WithConstraintClauses(WithTypeConstraints(@delegate.ConstraintClauses, typeParameterName, kinds, types)),
+                UsingDirectiveSyntax @using => @using.WithConstraintClauses(WithTypeConstraints(@using.ConstraintClauses, typeParameterName, kinds, types)),
                 _ => declaration,
             };
 

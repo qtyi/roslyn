@@ -1050,7 +1050,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                     WithExternAliasesBinder.Create(externs, binder));
             }
 
-            var usingAliases = ImmutableDictionary.CreateBuilder<string, AliasAndUsingDirective>();
+            var usingAliases = ImmutableDictionary.CreateBuilder<NameWithArity, AliasAndUsingDirective>();
             var usingsBuilder = ArrayBuilder<NamespaceOrTypeAndUsingDirective>.GetInstance();
 
             foreach (var importRecord in importRecords)
@@ -1074,7 +1074,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                                 continue;
                             }
 
-                            if (!TryAddImport(importRecord.Alias, typeSymbol, usingsBuilder, usingAliases, binder, importRecord))
+                            if (!TryAddImport(importRecord.Alias, importRecord.TypeParameters.Length, typeSymbol, usingsBuilder, usingAliases, binder, importRecord))
                             {
                                 continue;
                             }
@@ -1141,7 +1141,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                                 continue; // Don't add anything for this import.
                             }
 
-                            if (!TryAddImport(importRecord.Alias, namespaceSymbol, usingsBuilder, usingAliases, binder, importRecord))
+                            if (!TryAddImport(importRecord.Alias, 0, namespaceSymbol, usingsBuilder, usingAliases, binder, importRecord))
                             {
                                 continue;
                             }
@@ -1180,9 +1180,10 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
 
         private static bool TryAddImport(
             string? alias,
+            int arity,
             NamespaceOrTypeSymbol targetSymbol,
             ArrayBuilder<NamespaceOrTypeAndUsingDirective> usingsBuilder,
-            ImmutableDictionary<string, AliasAndUsingDirective>.Builder usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Builder usingAliases,
             InContainerBinder binder,
             ImportRecord importRecord)
         {
@@ -1199,7 +1200,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                 }
 
                 var aliasSymbol = AliasSymbol.CreateCustomDebugInfoAlias(targetSymbol, aliasSyntax.Identifier, binder.ContainingMemberOrLambda, isExtern: false);
-                usingAliases.Add(alias, new AliasAndUsingDirective(aliasSymbol, usingDirective: null));
+                usingAliases.Add(new NameWithArity(alias, arity), new AliasAndUsingDirective(aliasSymbol, usingDirective: null));
             }
 
             return true;

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Roslyn.Utilities;
 
@@ -14,6 +15,7 @@ namespace Microsoft.Cci
     internal readonly struct UsedNamespaceOrType : IEquatable<UsedNamespaceOrType>
     {
         public readonly string? AliasOpt;
+        public readonly ImmutableArray<string> TypeParametersOpt;
         public readonly IAssemblyReference? TargetAssemblyOpt;
         public readonly INamespace? TargetNamespaceOpt;
         public readonly ITypeReference? TargetTypeOpt;
@@ -21,22 +23,24 @@ namespace Microsoft.Cci
 
         private UsedNamespaceOrType(
             string? alias = null,
+            ImmutableArray<string> typeParameters = default,
             IAssemblyReference? targetAssembly = null,
             INamespace? targetNamespace = null,
             ITypeReference? targetType = null,
             string? targetXmlNamespace = null)
         {
             AliasOpt = alias;
+            TypeParametersOpt = typeParameters;
             TargetAssemblyOpt = targetAssembly;
             TargetNamespaceOpt = targetNamespace;
             TargetTypeOpt = targetType;
             TargetXmlNamespaceOpt = targetXmlNamespace;
         }
 
-        internal static UsedNamespaceOrType CreateType(ITypeReference type, string? aliasOpt = null)
+        internal static UsedNamespaceOrType CreateType(ITypeReference type, string? aliasOpt = null, ImmutableArray<string> typeParameters = default)
         {
             RoslynDebug.Assert(type != null);
-            return new UsedNamespaceOrType(alias: aliasOpt, targetType: type);
+            return new UsedNamespaceOrType(alias: aliasOpt, typeParameters: typeParameters, targetType: type);
         }
 
         internal static UsedNamespaceOrType CreateNamespace(INamespace @namespace, IAssemblyReference? assemblyOpt = null, string? aliasOpt = null)
@@ -66,6 +70,7 @@ namespace Microsoft.Cci
         public bool Equals(UsedNamespaceOrType other)
         {
             return AliasOpt == other.AliasOpt
+                && TypeParametersOpt == other.TypeParametersOpt
                 && object.Equals(TargetAssemblyOpt, other.TargetAssemblyOpt)
                 && Equals(TargetNamespaceOpt, other.TargetNamespaceOpt)
                 && Equals(TargetTypeOpt, other.TargetTypeOpt)
@@ -75,10 +80,11 @@ namespace Microsoft.Cci
         public override int GetHashCode()
         {
             return Hash.Combine(AliasOpt,
+                   Hash.Combine(TypeParametersOpt.GetHashCode(),
                    Hash.Combine((object?)TargetAssemblyOpt,
                    Hash.Combine(GetHashCode(TargetNamespaceOpt),
                    Hash.Combine(GetHashCode(TargetTypeOpt),
-                   Hash.Combine(TargetXmlNamespaceOpt, 0)))));
+                   Hash.Combine(TargetXmlNamespaceOpt, 0))))));
         }
 
         private static bool Equals(ITypeReference? x, ITypeReference? y)

@@ -2643,7 +2643,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name)
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax? typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name)
         {
             return UsingDirective(
                 usingKeyword: Token(SyntaxKind.UsingKeyword),
@@ -2656,7 +2656,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
 
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
         {
             return UsingDirective(
                 globalKeyword: default,

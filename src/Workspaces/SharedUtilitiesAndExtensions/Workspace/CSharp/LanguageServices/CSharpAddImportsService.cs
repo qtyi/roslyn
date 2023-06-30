@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.AddImport
             => ImmutableArray<SyntaxNode>.Empty;
 
         protected override SyntaxNode? GetAlias(UsingDirectiveSyntax usingOrAlias)
-            => usingOrAlias.Alias;
+            => usingOrAlias.Identifier == default ? null : usingOrAlias;
 
         protected override bool IsStaticUsing(UsingDirectiveSyntax usingOrAlias)
             => usingOrAlias.StaticKeyword != default;

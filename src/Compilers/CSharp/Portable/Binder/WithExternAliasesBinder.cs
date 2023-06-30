@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(result.IsClear);
 
             LookupSymbolInAliases(
-                ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty,
+                ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Empty,
                 this.ExternAliases,
                 originalBinder,
                 result,
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             if ((options & LookupOptions.LabelsOnly) == 0)
             {
                 AddLookupSymbolsInfoInAliases(
-                    ImmutableDictionary<AliasKey, AliasAndUsingDirective>.Empty,
+                    ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Empty,
                     this.ExternAliases,
                     result, options, originalBinder);
             }

@@ -1,3 +1,5 @@
+*REMOVED*static Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode>.implicit operator Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>(Microsoft.CodeAnalysis.SeparatedSyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>
+*REMOVED*static Microsoft.CodeAnalysis.SyntaxList<TNode>.implicit operator Microsoft.CodeAnalysis.SyntaxList<TNode!>(Microsoft.CodeAnalysis.SyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SyntaxList<TNode!>
 Microsoft.CodeAnalysis.Compilation.SupportsRuntimeCapability(Microsoft.CodeAnalysis.RuntimeCapability capability) -> bool
 Microsoft.CodeAnalysis.Emit.MethodInstrumentation
 Microsoft.CodeAnalysis.Emit.MethodInstrumentation.Kinds.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Emit.InstrumentationKind>
@@ -16,6 +18,17 @@ Microsoft.CodeAnalysis.IAliasSymbol.IsUnboundGenericAlias.get -> bool
 Microsoft.CodeAnalysis.IAliasSymbol.TypeArgumentNullableAnnotations.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.NullableAnnotation>
 Microsoft.CodeAnalysis.IAliasSymbol.TypeArguments.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ITypeSymbol!>
 Microsoft.CodeAnalysis.IAliasSymbol.TypeParameters.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ITypeParameterSymbol!>
+Microsoft.CodeAnalysis.ITypeParameterSymbol.DeclaringAlias.get -> Microsoft.CodeAnalysis.IAliasSymbol?
+Microsoft.CodeAnalysis.NameWithArity
+Microsoft.CodeAnalysis.NameWithArity.HasArity.get -> bool
+Microsoft.CodeAnalysis.NameWithArity.IsDefault.get -> bool
+Microsoft.CodeAnalysis.NameWithArity.NameWithArity() -> void
+Microsoft.CodeAnalysis.NameWithArity.NameWithArity(string! name, int arity) -> void
+Microsoft.CodeAnalysis.NameWithArityComparer
+Microsoft.CodeAnalysis.NameWithArityComparer.Compare(Microsoft.CodeAnalysis.NameWithArity x, Microsoft.CodeAnalysis.NameWithArity y) -> int
+Microsoft.CodeAnalysis.NameWithArityComparer.Equals(Microsoft.CodeAnalysis.NameWithArity x, Microsoft.CodeAnalysis.NameWithArity y) -> bool
+Microsoft.CodeAnalysis.NameWithArityComparer.GetHashCode(Microsoft.CodeAnalysis.NameWithArity obj) -> int
+Microsoft.CodeAnalysis.NameWithArityComparer.NameWithArityComparer(System.StringComparer! nameComparer) -> void
 Microsoft.CodeAnalysis.OperationKind.Attribute = 125 -> Microsoft.CodeAnalysis.OperationKind
 Microsoft.CodeAnalysis.Operations.IAttributeOperation
 Microsoft.CodeAnalysis.Operations.IAttributeOperation.Operation.get -> Microsoft.CodeAnalysis.IOperation!
@@ -29,8 +42,25 @@ Microsoft.CodeAnalysis.RuntimeCapability.VirtualStaticsInInterfaces = 6 -> Micro
 Microsoft.CodeAnalysis.SymbolDisplayLocalOptions.IncludeModifiers = 4 -> Microsoft.CodeAnalysis.SymbolDisplayLocalOptions
 Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.ExpandValueTuple = 1024 -> Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions
 Microsoft.CodeAnalysis.SymbolDisplayParameterOptions.IncludeModifiers = 2 -> Microsoft.CodeAnalysis.SymbolDisplayParameterOptions
+Microsoft.CodeAnalysis.Symbols.AliasKeyComparer
+Microsoft.CodeAnalysis.Symbols.AliasKeyComparer.AliasKeyComparer(System.Collections.Generic.IComparer<string!>! nameComparer) -> void
+Microsoft.CodeAnalysis.Symbols.AliasKeyComparer.Compare(Microsoft.CodeAnalysis.NameWithArity x, Microsoft.CodeAnalysis.NameWithArity y) -> int
 Microsoft.CodeAnalysis.SyntaxNode.ContainsDirective(int rawKind) -> bool
+Microsoft.CodeAnalysis.TypeParameterKind.Alias = 3 -> Microsoft.CodeAnalysis.TypeParameterKind
+override Microsoft.CodeAnalysis.NameWithArity.GetHashCode() -> int
+override Microsoft.CodeAnalysis.NameWithArity.ToString() -> string!
+readonly Microsoft.CodeAnalysis.NameWithArity.Arity -> int
+readonly Microsoft.CodeAnalysis.NameWithArity.Name -> string!
 static Microsoft.CodeAnalysis.FlowAnalysis.ControlFlowGraph.Create(Microsoft.CodeAnalysis.Operations.IAttributeOperation! attribute, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.FlowAnalysis.ControlFlowGraph!
 static Microsoft.CodeAnalysis.Location.Create(string! filePath, Microsoft.CodeAnalysis.Text.TextSpan textSpan, Microsoft.CodeAnalysis.Text.LinePositionSpan lineSpan, string! mappedFilePath, Microsoft.CodeAnalysis.Text.LinePositionSpan mappedLineSpan) -> Microsoft.CodeAnalysis.Location!
+static Microsoft.CodeAnalysis.NameWithArity.implicit operator Microsoft.CodeAnalysis.NameWithArity(string? name) -> Microsoft.CodeAnalysis.NameWithArity
+static Microsoft.CodeAnalysis.NameWithArityComparer.Default.get -> Microsoft.CodeAnalysis.NameWithArityComparer!
+static Microsoft.CodeAnalysis.NameWithArityComparer.IgnoreCase.get -> Microsoft.CodeAnalysis.NameWithArityComparer!
+static Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode>.explicit operator Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>(Microsoft.CodeAnalysis.SeparatedSyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>
+static Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode>.op_Implicit(Microsoft.CodeAnalysis.SeparatedSyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>
+static Microsoft.CodeAnalysis.Symbols.AliasKeyComparer.Default -> Microsoft.CodeAnalysis.Symbols.AliasKeyComparer!
+static Microsoft.CodeAnalysis.Symbols.AliasKeyComparer.IgnoreCase -> Microsoft.CodeAnalysis.Symbols.AliasKeyComparer!
+static Microsoft.CodeAnalysis.SyntaxList<TNode>.explicit operator Microsoft.CodeAnalysis.SyntaxList<TNode!>(Microsoft.CodeAnalysis.SyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SyntaxList<TNode!>
+static Microsoft.CodeAnalysis.SyntaxList<TNode>.op_Implicit(Microsoft.CodeAnalysis.SyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SyntaxList<TNode!>
 virtual Microsoft.CodeAnalysis.Operations.OperationVisitor.VisitAttribute(Microsoft.CodeAnalysis.Operations.IAttributeOperation! operation) -> void
 virtual Microsoft.CodeAnalysis.Operations.OperationVisitor<TArgument, TResult>.VisitAttribute(Microsoft.CodeAnalysis.Operations.IAttributeOperation! operation, TArgument argument) -> TResult?

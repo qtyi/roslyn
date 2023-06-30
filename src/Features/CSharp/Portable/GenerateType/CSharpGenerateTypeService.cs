@@ -787,7 +787,7 @@ namespace Microsoft.CodeAnalysis.CSharp.GenerateType
                 var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(includeUsingsOrImports));
 
                 // Check if the usings is already present
-                if (compilationRoot.Usings.Where(n => n != null && n.Alias == null)
+                if (compilationRoot.Usings.Where(n => n != null && n.Identifier == default)
                                           .Select(n => n.Name.ToString())
                                           .Any(n => n.Equals(includeUsingsOrImports)))
                 {

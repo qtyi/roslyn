@@ -6,16 +6,29 @@ using System;
 using System.Diagnostics;
 using Roslyn.Utilities;
 
-namespace Microsoft.CodeAnalysis.CSharp
+namespace Microsoft.CodeAnalysis
 {
     [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-    internal readonly struct AliasKey : IComparable<AliasKey>
+    public readonly struct NameWithArity : IComparable<NameWithArity>
     {
         public readonly string Name;
         public readonly int Arity;
 
-        public AliasKey(string name, int arity)
+        public bool IsDefault => this.Name is null;
+        public bool HasArity => this.Arity > 0;
+
+        public NameWithArity(string name, int arity)
         {
+            if (name is null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (arity < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(arity), arity, "arity must not less than zero");
+            }
+
             this.Name = name;
             this.Arity = arity;
         }
@@ -40,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return $"{this.Name}`{this.Arity}";
         }
 
-        int IComparable<AliasKey>.CompareTo(AliasKey other)
+        int IComparable<NameWithArity>.CompareTo(NameWithArity other)
         {
             int result = this.Name.CompareTo(other.Name);
             if (result != 0)
@@ -51,9 +64,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             return this.Arity.CompareTo(other.Arity);
         }
 
-        public static implicit operator AliasKey(string name)
+        public static implicit operator NameWithArity(string? name)
         {
-            return new AliasKey(name, 0);
+            if (name is null)
+            {
+                return default;
+            }
+
+            return new NameWithArity(name, 0);
         }
     }
 }

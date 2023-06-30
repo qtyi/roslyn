@@ -165,7 +165,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions
 
             foreach (var @using in location.GetEnclosingUsingDirectives())
             {
-                if (@using.Alias == null)
+                if (@using.Identifier == default)
                 {
                     Contract.ThrowIfNull(@using.NamespaceOrType);
                     var symbolInfo = semanticModel.GetSymbolInfo(@using.NamespaceOrType);

@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -265,6 +266,14 @@ namespace Microsoft.Cci
 
                     if (import.AliasOpt != null)
                     {
+                        Debug.Assert(!import.TypeParametersOpt.IsDefault);
+
+                        // Native compiler doesn't write imports with generic alias to PDB.
+                        if (import.TypeParametersOpt.Length > 0)
+                        {
+                            return null;
+                        }
+
                         return (isProjectLevel ? "@PA:" : "@FA:") + import.AliasOpt + "=" + typeName;
                     }
                     else
@@ -303,7 +312,7 @@ namespace Microsoft.Cci
                 string typeName = GetOrCreateSerializedTypeName(import.TargetTypeOpt);
 
                 return (import.AliasOpt != null) ?
-                    "A" + import.AliasOpt + " T" + typeName :
+                    "A" + SerializeAlias(import.AliasOpt, import.TypeParametersOpt) + " T" + typeName :
                     "T" + typeName;
             }
 
@@ -360,6 +369,41 @@ namespace Microsoft.Cci
             }
 
             return result;
+        }
+
+        internal string SerializeAlias(string alias, ImmutableArray<string> typeParameters)
+        {
+            Debug.Assert(alias is not null);
+            Debug.Assert(!typeParameters.IsDefault);
+
+            int arity = typeParameters.Length;
+            if (arity == 0)
+            {
+                return alias;
+            }
+
+            var result = PooledStringBuilder.GetInstance();
+            StringBuilder aliasName = result.Builder;
+
+            aliasName.Append(alias);
+            aliasName.Append(MetadataHelpers.GetAritySuffix(arity));
+
+            aliasName.Append('[');
+            bool first = true;
+            foreach (var parameter in typeParameters)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    aliasName.Append(parameter);
+                }
+            }
+            aliasName.Append(']');
+
+            return result.ToStringAndFree();
         }
 
         private string SerializeVisualBasicImportTypeReference(ITypeReference typeReference)

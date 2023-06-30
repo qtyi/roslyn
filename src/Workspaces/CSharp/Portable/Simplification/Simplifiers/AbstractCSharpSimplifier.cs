@@ -243,7 +243,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Simplification.Simplifiers
 
                 foreach (var usingDirective in usings)
                 {
-                    if (usingDirective.Alias != null)
+                    if (usingDirective.Identifier != default)
                         return true;
                 }
 

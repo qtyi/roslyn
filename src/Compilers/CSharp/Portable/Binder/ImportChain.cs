@@ -92,10 +92,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            ImmutableDictionary<AliasKey, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
             if (!aliasSymbols.IsEmpty)
             {
-                var aliases = ArrayBuilder<AliasKey>.GetInstance(aliasSymbols.Count);
+                var aliases = ArrayBuilder<NameWithArity>.GetInstance(aliasSymbols.Count);
                 aliases.AddRange(aliasSymbols.Keys);
                 aliases.Sort(); // Actual order doesn't matter - just want to be deterministic.
 

@@ -324,7 +324,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
                     externAliasRecordBuilder = ArrayBuilder<ExternAliasRecord>.GetInstance(externAliasStrings.Length);
                     foreach (var externAliasString in externAliasStrings)
                     {
-                        if (!CustomDebugInfoReader.TryParseCSharpImportString(externAliasString, out var alias, out var externAlias, out var target, out var kind))
+                        if (!CustomDebugInfoReader.TryParseCSharpImportString(externAliasString, out var alias, out var typeParameters, out var externAlias, out var target, out var kind))
                         {
                             Debug.WriteLine($"Unable to parse extern alias '{externAliasString}'");
                             continue;
@@ -332,6 +332,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
 
                         Debug.Assert(kind == ImportTargetKind.Assembly, "Programmer error: How did a non-assembly get in the extern alias list?");
                         RoslynDebug.Assert(alias != null); // Name of the extern alias.
+                        RoslynDebug.Assert(typeParameters == null); // Extern alias does not have type parameters.
                         RoslynDebug.Assert(externAlias == null); // Not used.
                         RoslynDebug.Assert(target != null); // Name of the target assembly.
 
@@ -353,7 +354,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
         private static bool TryCreateImportRecordFromCSharpImportString(EESymbolProvider<TTypeSymbol, TLocalSymbol> symbolProvider, string importString, out ImportRecord record)
         {
             string? targetString;
-            if (CustomDebugInfoReader.TryParseCSharpImportString(importString, out var alias, out var externAlias, out targetString, out var targetKind))
+            if (CustomDebugInfoReader.TryParseCSharpImportString(importString, out var alias, out var typeParameters, out var externAlias, out targetString, out var targetKind))
             {
                 ITypeSymbolInternal? type = null;
                 if (targetKind == ImportTargetKind.Type)
@@ -365,6 +366,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
                 record = new ImportRecord(
                     targetKind: targetKind,
                     alias: alias,
+                    typeParameters: typeParameters.ToImmutableArray(),
                     targetType: type,
                     targetString: targetString,
                     targetAssembly: null,
@@ -607,6 +609,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
                 record = new ImportRecord(
                     targetKind: targetKind,
                     alias: alias,
+                    typeParameters: ImmutableArray<string>.Empty,
                     targetType: null,
                     targetString: targetString,
                     targetAssembly: null,

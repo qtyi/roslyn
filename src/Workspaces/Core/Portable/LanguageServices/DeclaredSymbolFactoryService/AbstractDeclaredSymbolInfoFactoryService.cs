@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
@@ -33,16 +34,16 @@ namespace Microsoft.CodeAnalysis.LanguageService
         where TQualifiedNameSyntax : TNameSyntax
         where TIdentifierNameSyntax : TNameSyntax
     {
-        private static readonly ObjectPool<List<Dictionary<string, string>>> s_aliasMapListPool
-            = SharedPools.Default<List<Dictionary<string, string>>>();
+        private static readonly ObjectPool<List<Dictionary<NameWithArity, NameWithArity>>> s_aliasMapListPool
+            = SharedPools.Default<List<Dictionary<NameWithArity, NameWithArity>>>();
 
         // Note: these names are stored case insensitively.  That way the alias mapping works 
         // properly for VB.  It will mean that our inheritance maps may store more links in them
         // for C#.  However, that's ok.  It will be rare in practice, and all it means is that
         // we'll end up examining slightly more types (likely 0) when doing operations like 
         // Find all references.
-        private static readonly ObjectPool<Dictionary<string, string>> s_aliasMapPool
-            = SharedPools.StringIgnoreCaseDictionary<string>();
+        private static readonly ObjectPool<Dictionary<NameWithArity, NameWithArity>> s_aliasMapPool
+            = new(() => new Dictionary<NameWithArity, NameWithArity>(NameWithArityComparer.IgnoreCase), 20);
 
         protected AbstractDeclaredSymbolInfoFactoryService()
         {
@@ -82,10 +83,10 @@ namespace Microsoft.CodeAnalysis.LanguageService
         /// "complex" method (as described at <see cref="TopLevelSyntaxTreeIndex.ExtensionMethodInfo"/>).
         /// </summary>
         protected abstract string GetReceiverTypeName(TMethodDeclarationSyntax node);
-        protected abstract bool TryGetAliasesFromUsingDirective(TUsingDirectiveSyntax node, out ImmutableArray<(string aliasName, string name)> aliases);
+        protected abstract bool TryGetAliasesFromUsingDirective(TUsingDirectiveSyntax node, out ImmutableArray<(NameWithArity aliasName, NameWithArity name)> aliases);
         protected abstract string GetRootNamespace(CompilationOptions compilationOptions);
 
-        protected static List<Dictionary<string, string>> AllocateAliasMapList()
+        protected static List<Dictionary<NameWithArity, NameWithArity>> AllocateAliasMapList()
             => s_aliasMapListPool.Allocate();
 
         // We do not differentiate arrays of different kinds for simplicity.
@@ -106,7 +107,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             }
         }
 
-        protected static string CreateValueTupleTypeString(int elementCount)
+        protected static NameWithArity CreateValueTupleTypeString(int elementCount)
         {
             const string ValueTupleName = "ValueTuple";
             if (elementCount == 0)
@@ -114,10 +115,10 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 return ValueTupleName;
             }
             // A ValueTuple can have up to 8 type parameters.
-            return ValueTupleName + ArityUtilities.GetMetadataAritySuffix(elementCount > 8 ? 8 : elementCount);
+            return new NameWithArity(ValueTupleName, elementCount > 8 ? 8 : elementCount);
         }
 
-        protected static void FreeAliasMapList(List<Dictionary<string, string>> list)
+        protected static void FreeAliasMapList(List<Dictionary<NameWithArity, NameWithArity>> list)
         {
             if (list != null)
             {
@@ -130,7 +131,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             }
         }
 
-        protected static void FreeAliasMap(Dictionary<string, string> aliasMap)
+        protected static void FreeAliasMap(Dictionary<NameWithArity, NameWithArity> aliasMap)
         {
             if (aliasMap != null)
             {
@@ -138,14 +139,15 @@ namespace Microsoft.CodeAnalysis.LanguageService
             }
         }
 
-        protected static Dictionary<string, string> AllocateAliasMap()
+        protected static Dictionary<NameWithArity, NameWithArity> AllocateAliasMap()
             => s_aliasMapPool.Allocate();
 
-        protected static void Intern(StringTable stringTable, ArrayBuilder<string> builder)
+        protected static void Intern(StringTable stringTable, ArrayBuilder<NameWithArity> builder)
         {
             for (int i = 0, n = builder.Count; i < n; i++)
             {
-                builder[i] = stringTable.Add(builder[i]);
+                var old = builder[i];
+                builder[i] = new NameWithArity(stringTable.Add(old.ToString()), old.Arity);
             }
         }
 
@@ -160,7 +162,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             var stringTable = SyntaxTreeIndex.GetStringTable(project);
             var rootNamespace = this.GetRootNamespace(project.CompilationOptions!);
 
-            using var _1 = PooledDictionary<string, string?>.GetInstance(out var aliases);
+            using var _1 = PooledDictionary<NameWithArity, NameWithArity>.GetInstance(out var aliases);
 
             foreach (var usingAlias in GetUsingAliases((TCompilationUnitSyntax)root))
             {
@@ -178,7 +180,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             StringTable stringTable,
             string rootNamespace,
             ArrayBuilder<DeclaredSymbolInfo> declaredSymbolInfos,
-            Dictionary<string, string?> aliases,
+            Dictionary<NameWithArity, NameWithArity> aliases,
             Dictionary<string, ArrayBuilder<int>> extensionMethodInfo,
             string containerDisplayName,
             string fullyQualifiedContainerName,
@@ -315,7 +317,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
                         DeclaredSymbolInfoKind.Namespace,
                         Accessibility.Public,
                         nameSyntax.Span,
-                        inheritanceNames: ImmutableArray<string>.Empty));
+                        inheritanceNames: ImmutableArray<NameWithArity>.Empty));
 
                     return string.IsNullOrEmpty(fullyQualifiedContainerName)
                         ? namespaceName
@@ -338,14 +340,14 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 {
                     // it is an alias of multiple with identical name,
                     // simply treat it as a complex method.
-                    if (originalName == null)
+                    if (originalName.IsDefault)
                     {
                         receiverTypeName = FindSymbols.Extensions.ComplexReceiverTypeName;
                     }
                     else
                     {
                         // replace the alias with its original name.
-                        receiverTypeName = originalName;
+                        receiverTypeName = originalName.Name;
                     }
                 }
 
@@ -359,7 +361,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             }
         }
 
-        private static void AddAliases(Dictionary<string, string?> allAliases, ImmutableArray<(string aliasName, string name)> aliases)
+        private static void AddAliases(Dictionary<NameWithArity, NameWithArity> allAliases, ImmutableArray<(NameWithArity aliasName, NameWithArity name)> aliases)
         {
             foreach (var (aliasName, name) in aliases)
             {
@@ -377,7 +379,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 // target type is this alias as complex method.
                 if (allAliases.ContainsKey(aliasName))
                 {
-                    allAliases[aliasName] = null;
+                    allAliases[aliasName] = default;
                 }
                 else
                 {

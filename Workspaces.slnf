@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
+      "src\\Dependencies\\CodeAnalysis.Debugging\\Microsoft.CodeAnalysis.Debugging.shproj",
+      "src\\Workspaces\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.Workspaces.csproj",
+      "src\\Workspaces\\Core\\Portable\\Microsoft.CodeAnalysis.Workspaces.csproj"
+    ]
+  }
+}

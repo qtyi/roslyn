@@ -410,12 +410,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             if (usingDirective != null)
             {
                 // No = token: 
-                if (usingDirective.Alias == null || usingDirective.Alias.EqualsToken.IsMissing)
+                if (usingDirective.Identifier == default || usingDirective.EqualsToken.IsMissing)
                 {
                     return true;
                 }
 
-                return leftToken.SpanStart < usingDirective.Alias.EqualsToken.SpanStart;
+                return leftToken.SpanStart < usingDirective.EqualsToken.SpanStart;
             }
 
             return false;
