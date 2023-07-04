@@ -37,8 +37,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
         Public Sub New()
         End Sub
 
-        Private Shared Function GetInheritanceNames(stringTable As StringTable, typeBlock As TypeBlockSyntax) As ImmutableArray(Of String)
-            Dim builder = ArrayBuilder(Of String).GetInstance()
+        Private Shared Function GetInheritanceNames(stringTable As StringTable, typeBlock As TypeBlockSyntax) As ImmutableArray(Of NameWithArity)
+            Dim builder = ArrayBuilder(Of NameWithArity).GetInstance()
 
             Dim aliasMap = GetAliasMap(typeBlock)
             Try
@@ -57,10 +57,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
             End Try
         End Function
 
-        Private Shared Function GetAliasMap(typeBlock As TypeBlockSyntax) As Dictionary(Of String, String)
+        Private Shared Function GetAliasMap(typeBlock As TypeBlockSyntax) As Dictionary(Of NameWithArity, NameWithArity)
             Dim compilationUnit = typeBlock.SyntaxTree.GetCompilationUnitRoot()
 
-            Dim aliasMap As Dictionary(Of String, String) = Nothing
+            Dim aliasMap As Dictionary(Of NameWithArity, NameWithArity) = Nothing
             For Each import In compilationUnit.Imports
                 For Each clause In import.ImportsClauses
                     If clause.IsKind(SyntaxKind.SimpleImportsClause) Then
@@ -69,7 +69,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
                             Dim mappedName = GetTypeName(simpleImport.Name)
                             If mappedName IsNot Nothing Then
                                 aliasMap = If(aliasMap, AllocateAliasMap())
-                                aliasMap(simpleImport.Alias.Identifier.ValueText) = mappedName
+                                aliasMap(New NameWithArity(simpleImport.Alias.Identifier.ValueText, If(simpleImport.Alias.TypeParameterList Is Nothing, 0, simpleImport.Alias.TypeParameterList.Parameters.Count))) = mappedName
                             End If
                         End If
                     End If
@@ -80,9 +80,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
         End Function
 
         Private Shared Sub AddInheritanceNames(
-                builder As ArrayBuilder(Of String),
+                builder As ArrayBuilder(Of NameWithArity),
                 types As SeparatedSyntaxList(Of TypeSyntax),
-                aliasMap As Dictionary(Of String, String))
+                aliasMap As Dictionary(Of NameWithArity, NameWithArity))
 
             For Each typeSyntax In types
                 AddInheritanceName(builder, typeSyntax, aliasMap)
@@ -90,14 +90,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
         End Sub
 
         Private Shared Sub AddInheritanceName(
-                builder As ArrayBuilder(Of String),
+                builder As ArrayBuilder(Of NameWithArity),
                 typeSyntax As TypeSyntax,
-                aliasMap As Dictionary(Of String, String))
+                aliasMap As Dictionary(Of NameWithArity, NameWithArity))
             Dim name = GetTypeName(typeSyntax)
             If name IsNot Nothing Then
                 builder.Add(name)
 
-                Dim mappedName As String = Nothing
+                Dim mappedName As NameWithArity = Nothing
                 If aliasMap?.TryGetValue(name, mappedName) = True Then
                     ' Looks Like this could be an alias.  Also include the name the alias points to
                     builder.Add(mappedName)
@@ -192,7 +192,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                 DeclaredSymbolInfoKind.Enum,
                 GetAccessibility(container, enumDeclaration, enumStatement.Modifiers),
                 enumStatement.Identifier.Span,
-                ImmutableArray(Of String).Empty,
+                ImmutableArray(Of NameWithArity).Empty,
                 IsNestedType(enumDeclaration))
         End Function
 
@@ -229,7 +229,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                             DeclaredSymbolInfoKind.Constructor,
                             GetAccessibility(container, constructor, constructor.Modifiers),
                             constructor.NewKeyword.Span,
-                            ImmutableArray(Of String).Empty,
+                            ImmutableArray(Of NameWithArity).Empty,
                             parameterCount:=If(constructor.ParameterList?.Parameters.Count, 0)))
 
                         Return
@@ -247,7 +247,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                         DeclaredSymbolInfoKind.Delegate,
                         GetAccessibility(container, delegateDecl, delegateDecl.Modifiers),
                         delegateDecl.Identifier.Span,
-                        ImmutableArray(Of String).Empty))
+                        ImmutableArray(Of NameWithArity).Empty))
                     Return
                 Case SyntaxKind.EnumMemberDeclaration
                     Dim enumMember = DirectCast(node, EnumMemberDeclarationSyntax)
@@ -261,7 +261,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                         DeclaredSymbolInfoKind.EnumMember,
                         Accessibility.Public,
                         enumMember.Identifier.Span,
-                        ImmutableArray(Of String).Empty))
+                        ImmutableArray(Of NameWithArity).Empty))
                     Return
                 Case SyntaxKind.EventStatement
                     Dim eventDecl = DirectCast(node, EventStatementSyntax)
@@ -275,7 +275,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                         DeclaredSymbolInfoKind.Event,
                         GetAccessibility(container, eventDecl, eventDecl.Modifiers),
                         eventDecl.Identifier.Span,
-                        ImmutableArray(Of String).Empty))
+                        ImmutableArray(Of NameWithArity).Empty))
                     Return
                 Case SyntaxKind.FunctionStatement, SyntaxKind.SubStatement
                     Dim funcDecl = DirectCast(node, MethodStatementSyntax)
@@ -291,7 +291,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                         If(isExtension, DeclaredSymbolInfoKind.ExtensionMethod, DeclaredSymbolInfoKind.Method),
                         GetAccessibility(container, funcDecl, funcDecl.Modifiers),
                         funcDecl.Identifier.Span,
-                        ImmutableArray(Of String).Empty,
+                        ImmutableArray(Of NameWithArity).Empty,
                         parameterCount:=If(funcDecl.ParameterList?.Parameters.Count, 0),
                         typeParameterCount:=If(funcDecl.TypeParameterList?.Parameters.Count, 0)))
 
@@ -309,7 +309,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                         DeclaredSymbolInfoKind.Property,
                         GetAccessibility(container, propertyDecl, propertyDecl.Modifiers),
                         propertyDecl.Identifier.Span,
-                        ImmutableArray(Of String).Empty))
+                        ImmutableArray(Of NameWithArity).Empty))
                     Return
                 Case SyntaxKind.FieldDeclaration
                     Dim fieldDecl = DirectCast(node, FieldDeclarationSyntax)
@@ -327,7 +327,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                                     DeclaredSymbolInfoKind.Field),
                                 GetAccessibility(container, fieldDecl, fieldDecl.Modifiers),
                                 modifiedIdentifier.Identifier.Span,
-                                ImmutableArray(Of String).Empty))
+                                ImmutableArray(Of NameWithArity).Empty))
                         Next
                     Next
             End Select
@@ -545,28 +545,28 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
             Debug.Assert(IsExtensionMethod(funcDecl))
 
             Dim typeParameterNames = funcDecl.TypeParameterList?.Parameters.SelectAsArray(Function(p) p.Identifier.Text)
-            Dim targetTypeName As String = Nothing
+            Dim targetTypeName As NameWithArity = Nothing
             Dim isArray As Boolean = False
 
             TryGetSimpleTypeNameWorker(funcDecl.ParameterList.Parameters(0).AsClause?.Type, typeParameterNames, targetTypeName, isArray)
             Return CreateReceiverTypeString(targetTypeName, isArray)
         End Function
 
-        Protected Overrides Function TryGetAliasesFromUsingDirective(importStatement As ImportsStatementSyntax, ByRef aliases As ImmutableArray(Of (aliasName As String, name As String))) As Boolean
-            Dim builder = ArrayBuilder(Of (String, String)).GetInstance()
+        Protected Overrides Function TryGetAliasesFromUsingDirective(importStatement As ImportsStatementSyntax, ByRef aliases As ImmutableArray(Of (aliasName As NameWithArity, name As NameWithArity))) As Boolean
+            Dim builder = ArrayBuilder(Of (NameWithArity, NameWithArity)).GetInstance()
 
             If importStatement IsNot Nothing Then
                 For Each importsClause In importStatement.ImportsClauses
 
                     If importsClause.Kind = SyntaxKind.SimpleImportsClause Then
                         Dim simpleImportsClause = DirectCast(importsClause, SimpleImportsClauseSyntax)
-                        Dim aliasName, name As String
+                        Dim aliasName, name As NameWithArity
 
-#Disable Warning BC42030 ' Variable is passed by reference before it has been assigned a value
+#Disable Warning BC42108 ' Variable is passed by reference before it has been assigned a value
                         If simpleImportsClause.Alias IsNot Nothing AndAlso
                             TryGetSimpleTypeNameWorker(simpleImportsClause.Alias, Nothing, aliasName, Nothing) AndAlso
                             TryGetSimpleTypeNameWorker(simpleImportsClause, Nothing, name, Nothing) Then
-#Enable Warning BC42030 ' Variable is passed by reference before it has been assigned a value
+#Enable Warning BC42108 ' Variable is passed by reference before it has been assigned a value
 
                             builder.Add((aliasName, name))
                         End If
@@ -581,15 +581,20 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
             Return False
         End Function
 
-        Private Shared Function TryGetSimpleTypeNameWorker(node As SyntaxNode, typeParameterNames As ImmutableArray(Of String)?, ByRef simpleTypeName As String, ByRef isArray As Boolean) As Boolean
+        Private Shared Function TryGetSimpleTypeNameWorker(node As SyntaxNode, typeParameterNames As ImmutableArray(Of String)?, ByRef simpleTypeName As NameWithArity, ByRef isArray As Boolean) As Boolean
 
             isArray = False
 
             If TypeOf node Is IdentifierNameSyntax Then
                 Dim identifierName = DirectCast(node, IdentifierNameSyntax)
                 Dim text = identifierName.Identifier.Text
-                simpleTypeName = If(typeParameterNames?.Contains(text), Nothing, text)
-                Return simpleTypeName IsNot Nothing
+                If typeParameterNames?.Contains(text) Then
+                    simpleTypeName = Nothing
+                    Return False
+                Else
+                    simpleTypeName = text
+                    Return True
+                End If
 
             ElseIf TypeOf node Is ArrayTypeSyntax Then
                 isArray = True
@@ -600,7 +605,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                 Dim genericName = DirectCast(node, GenericNameSyntax)
                 Dim name = genericName.Identifier.Text
                 Dim arity = genericName.Arity
-                simpleTypeName = If(arity = 0, name, name + ArityUtilities.GetMetadataAritySuffix(arity))
+                simpleTypeName = New NameWithArity(name, arity)
                 Return True
 
             ElseIf TypeOf node Is QualifiedNameSyntax Then
@@ -614,7 +619,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
 
             ElseIf TypeOf node Is PredefinedTypeSyntax Then
                 simpleTypeName = GetSpecialTypeName(DirectCast(node, PredefinedTypeSyntax))
-                Return simpleTypeName IsNot Nothing
+                Return Not simpleTypeName.IsDefault
 
             ElseIf TypeOf node Is TupleTypeSyntax Then
                 Dim tupleArity = DirectCast(node, TupleTypeSyntax).Elements.Count

@@ -1200,7 +1200,6 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
         public IAliasSymbol GetSpeculativeAliasInfo(int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
         {
-#warning 未完成
             Binder binder;
             ImmutableArray<Symbol> crefSymbols;
             BoundNode boundNode = GetSpeculativelyBoundExpression(position, nameSyntax, bindingOption, out binder, out crefSymbols); //calls CheckAndAdjustPosition

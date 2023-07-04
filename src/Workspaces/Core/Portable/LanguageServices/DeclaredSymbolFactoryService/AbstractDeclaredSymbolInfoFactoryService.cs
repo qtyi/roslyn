@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -91,9 +92,9 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         // We do not differentiate arrays of different kinds for simplicity.
         // e.g. int[], int[][], int[,], etc. are all represented as int[] in the index.
-        protected static string CreateReceiverTypeString(string typeName, bool isArray)
+        protected static string CreateReceiverTypeString(NameWithArity typeName, bool isArray)
         {
-            if (string.IsNullOrEmpty(typeName))
+            if (typeName.IsDefault || string.IsNullOrEmpty(typeName.Name))
             {
                 return isArray
                     ? FindSymbols.Extensions.ComplexArrayReceiverTypeName
@@ -102,8 +103,8 @@ namespace Microsoft.CodeAnalysis.LanguageService
             else
             {
                 return isArray
-                    ? typeName + FindSymbols.Extensions.ArrayReceiverTypeNameSuffix
-                    : typeName;
+                    ? typeName.ToString() + FindSymbols.Extensions.ArrayReceiverTypeNameSuffix
+                    : typeName.ToString();
             }
         }
 
@@ -147,7 +148,8 @@ namespace Microsoft.CodeAnalysis.LanguageService
             for (int i = 0, n = builder.Count; i < n; i++)
             {
                 var old = builder[i];
-                builder[i] = new NameWithArity(stringTable.Add(old.ToString()), old.Arity);
+                Debug.Assert(!old.IsDefault);
+                builder[i] = new NameWithArity(stringTable.Add(old.Name), old.Arity);
             }
         }
 

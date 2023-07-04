@@ -694,7 +694,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
             var typeParameterNames = methodDeclaration.TypeParameterList?.Parameters.SelectAsArray(p => p.Identifier.Text);
             TryGetSimpleTypeName(methodDeclaration.ParameterList.Parameters[0].Type, typeParameterNames, out var targetTypeName, out var isArray);
-            return CreateReceiverTypeString(targetTypeName.Name, isArray);
+            return CreateReceiverTypeString(targetTypeName, isArray);
         }
 
         private static bool TryGetSimpleTypeName(SyntaxNodeOrToken nodeOrToken, ImmutableArray<string>? typeParameterNames, out NameWithArity simpleTypeName, out bool isArray)

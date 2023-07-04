@@ -1591,11 +1591,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeGeneration
             Return SyntaxFactory.ImportsStatement(SyntaxFactory.SingletonSeparatedList(Of ImportsClauseSyntax)(SyntaxFactory.SimpleImportsClause(DirectCast(name, NameSyntax))))
         End Function
 
-        Public Overrides Function AliasImportDeclaration(aliasIdentifierName As String, name As SyntaxNode) As SyntaxNode
+        Public Overrides Function AliasImportDeclaration(aliasIdentifierName As String, aliasTypeParameters As IEnumerable(Of SyntaxNode), name As SyntaxNode) As SyntaxNode
             If TypeOf name Is NameSyntax Then
                 Return SyntaxFactory.ImportsStatement(SyntaxFactory.SeparatedList(Of ImportsClauseSyntax).Add(
                                                       SyntaxFactory.SimpleImportsClause(
-                                                      SyntaxFactory.ImportAliasClause(aliasIdentifierName),
+                                                      SyntaxFactory.ImportAliasClause(
+                                                      SyntaxFactory.Identifier(aliasIdentifierName),
+                                                      SyntaxFactory.TypeParameterList(
+                                                      SyntaxFactory.SeparatedList(aliasTypeParameters.Cast(Of TypeParameterSyntax)))),
                                                       CType(name, NameSyntax))))
 
             End If

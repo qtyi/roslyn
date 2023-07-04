@@ -1799,8 +1799,8 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.CodeModel
 
             if (!RoslynString.IsNullOrEmpty(alias))
             {
-                var aliasSyntax = SyntaxFactory.NameEquals(alias);
-                return SyntaxFactory.UsingDirective(aliasSyntax, nameSyntax);
+                var identifier = SyntaxFactory.Identifier(alias);
+                return SyntaxFactory.UsingDirective(identifier, null, default, SyntaxFactory.Token(SyntaxKind.EqualsToken), nameSyntax);
             }
             else
             {
@@ -1822,8 +1822,8 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.CodeModel
         {
             if (importNode is UsingDirectiveSyntax usingDirective)
             {
-                return usingDirective.Alias != null
-                    ? usingDirective.Alias.Name.ToString()
+                return usingDirective.Identifier != default
+                    ? new NameWithArity(usingDirective.Identifier.ToString(), usingDirective.TypeParameterList == null ? 0 : usingDirective.TypeParameterList.Parameters.Count).ToString()
                     : string.Empty;
             }
 
