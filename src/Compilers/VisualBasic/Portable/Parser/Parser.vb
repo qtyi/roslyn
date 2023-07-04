@@ -4788,7 +4788,10 @@ checkNullable:
                         aliasIdentifier = ReportSyntaxError(aliasIdentifier, ERRID.ERR_NoTypecharInAlias)
                     End If
 
-                    Dim typeParameterList = ParseGenericParameters()
+                    Dim typeParameterList As TypeParameterListSyntax = Nothing
+                    If (CurrentToken.Kind = SyntaxKind.OpenParenToken) Then
+                        typeParameterList = ParseGenericParameters()
+                    End If
 
                     Dim equalsToken As PunctuationSyntax = DirectCast(CurrentToken, PunctuationSyntax)
 

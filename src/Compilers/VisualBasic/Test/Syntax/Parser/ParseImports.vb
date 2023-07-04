@@ -167,4 +167,13 @@ Imports System
         </errors>)
     End Sub
 
+    <Fact>
+    Public Sub GenericAlias()
+        Dim tree = ParseAndVerify(<![CDATA[
+            Imports X(Of T) = System.String
+            Imports Y(Of T) = T
+            Imports Z(Of T1, T2, T3) = System.Tuple(Of T1, T2, T3)
+        ]]>)
+    End Sub
+
 End Class
