@@ -238,25 +238,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End Get
         End Property
 
-        Public ReadOnly Property IsUnboundGenericAlias As Boolean Implements IAliasSymbol.IsUnboundGenericAlias
-            Get
-                Throw New NotImplementedException()
-            End Get
-        End Property
-
         Public ReadOnly Property TypeParameters As ImmutableArray(Of ITypeParameterSymbol) Implements IAliasSymbol.TypeParameters
-            Get
-                Throw New NotImplementedException()
-            End Get
-        End Property
-
-        Public ReadOnly Property TypeArguments As ImmutableArray(Of ITypeSymbol) Implements IAliasSymbol.TypeArguments
-            Get
-                Throw New NotImplementedException()
-            End Get
-        End Property
-
-        Public ReadOnly Property TypeArgumentNullableAnnotations As ImmutableArray(Of NullableAnnotation) Implements IAliasSymbol.TypeArgumentNullableAnnotations
             Get
                 Throw New NotImplementedException()
             End Get
@@ -313,15 +295,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Return visitor.VisitAlias(Me)
         End Function
 
-        Public Function GetTypeArgumentCustomModifiers(ordinal As Integer) As ImmutableArray(Of CustomModifier) Implements IAliasSymbol.GetTypeArgumentCustomModifiers
+        Public Function Construct(ParamArray typeArguments() As ITypeSymbol) As ITypeSymbol Implements IAliasSymbol.Construct
             Throw New NotImplementedException()
         End Function
 
-        Public Function Construct(ParamArray typeArguments() As ITypeSymbol) As INamedTypeSymbol Implements IAliasSymbol.Construct
-            Throw New NotImplementedException()
-        End Function
-
-        Public Function Construct(typeArguments As ImmutableArray(Of ITypeSymbol), typeArgumentNullableAnnotations As ImmutableArray(Of NullableAnnotation)) As INamedTypeSymbol Implements IAliasSymbol.Construct
+        Public Function Construct(typeArguments As ImmutableArray(Of ITypeSymbol), typeArgumentNullableAnnotations As ImmutableArray(Of NullableAnnotation)) As ITypeSymbol Implements IAliasSymbol.Construct
             Throw New NotImplementedException()
         End Function
     End Class

@@ -19,6 +19,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         internal override CSharp.Symbol UnderlyingSymbol => _underlying;
 
+        #region IAliasSymbol Members
+
         int IAliasSymbol.Arity
         {
             get
@@ -37,28 +39,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         bool IAliasSymbol.IsGenericAlias => _underlying.Arity != 0;
 
-        bool IAliasSymbol.IsUnboundGenericAlias => throw new System.NotImplementedException();
-
         ImmutableArray<ITypeParameterSymbol> IAliasSymbol.TypeParameters => _underlying.TypeParameters.GetPublicSymbols();
 
-        ImmutableArray<ITypeSymbol> IAliasSymbol.TypeArguments => throw new System.NotImplementedException();
-
-        ImmutableArray<CodeAnalysis.NullableAnnotation> IAliasSymbol.TypeArgumentNullableAnnotations => throw new System.NotImplementedException();
-
-        INamedTypeSymbol IAliasSymbol.Construct(params ITypeSymbol[] typeArguments)
+        ITypeSymbol IAliasSymbol.Construct(params ITypeSymbol[] typeArguments)
         {
-            throw new System.NotImplementedException();
+            return _underlying.Construct(ConstructTypeArguments(typeArguments), unbound: false).GetPublicSymbol();
         }
 
-        INamedTypeSymbol IAliasSymbol.Construct(ImmutableArray<ITypeSymbol> typeArguments, ImmutableArray<CodeAnalysis.NullableAnnotation> typeArgumentNullableAnnotations)
+        ITypeSymbol IAliasSymbol.Construct(ImmutableArray<ITypeSymbol> typeArguments, ImmutableArray<CodeAnalysis.NullableAnnotation> typeArgumentNullableAnnotations)
         {
-            throw new System.NotImplementedException();
+            return _underlying.Construct(ConstructTypeArguments(typeArguments, typeArgumentNullableAnnotations), unbound: false).GetPublicSymbol();
         }
 
-        ImmutableArray<CustomModifier> IAliasSymbol.GetTypeArgumentCustomModifiers(int ordinal)
-        {
-            throw new System.NotImplementedException();
-        }
+        #endregion
 
         #region ISymbol Members
 
