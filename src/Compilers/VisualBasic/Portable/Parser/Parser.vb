@@ -4774,8 +4774,13 @@ checkNullable:
             Else
                 ' Handle Clr namespace imports if we have currently have tokens for ID =
 
+                ' If we parse a generic list after an identifier as type parameter list but then fail to find a
+                ' trailing '=', it is most likely that the generic list is the alias target. In case we want to
+                ' restore the scanner and fall back to a alias target senario.
+                Dim restorePoint As Scanner.RestorePoint = Me._scanner.CreateRestorePoint()
+
                 If (CurrentToken.Kind = SyntaxKind.IdentifierToken AndAlso
-                   PeekToken(1).Kind = SyntaxKind.EqualsToken) OrElse
+                   (PeekNextToken.Kind = SyntaxKind.EqualsToken OrElse PeekNextToken.Kind = SyntaxKind.OpenParenToken)) OrElse
                    CurrentToken.Kind = SyntaxKind.EqualsToken Then
 
                     ' If we find "id =" or "=" parse as an imports alias.  While "=" without the id is an error,
@@ -4791,6 +4796,13 @@ checkNullable:
                     Dim typeParameterList As TypeParameterListSyntax = Nothing
                     If (CurrentToken.Kind = SyntaxKind.OpenParenToken) Then
                         typeParameterList = ParseGenericParameters()
+
+                        If (CurrentToken.Kind <> SyntaxKind.EqualsToken) Then
+                            restorePoint.Restore()
+                            ResetCurrentToken(ScannerState.VB)
+
+                            GoTo lAliasTarget
+                        End If
                     End If
 
                     Dim equalsToken As PunctuationSyntax = DirectCast(CurrentToken, PunctuationSyntax)
@@ -4805,6 +4817,7 @@ checkNullable:
                         allowGenericsWithoutOf:=True)
                     importsClause = SyntaxFactory.SimpleImportsClause(SyntaxFactory.ImportAliasClause(aliasIdentifier, typeParameterList, equalsToken), name)
                 Else
+lAliasTarget:
                     Dim name = ParseName(
                         requireQualification:=False,
                         allowGlobalNameSpace:=False,
