@@ -4,13 +4,10 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using Microsoft.CodeAnalysis.ErrorReporting;
-using Microsoft.CodeAnalysis.LanguageService;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
@@ -81,7 +78,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
         /// The names directly referenced in source that this type inherits from.
         /// </summary>
         [DataMember(Order = 5)]
-        public ImmutableArray<NameWithArity> InheritanceNames { get; }
+        public ImmutableArray<string> InheritanceNames { get; }
 
         // Store the kind (5 bits), accessibility (4 bits), parameter-count (4 bits), and type-parameter-count (4 bits)
         // in a single int.
@@ -106,7 +103,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             string? containerDisplayName,
             string fullyQualifiedContainerName,
             TextSpan span,
-            ImmutableArray<NameWithArity> inheritanceNames,
+            ImmutableArray<string> inheritanceNames,
             uint flags)
         {
             Name = name;
@@ -129,7 +126,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             DeclaredSymbolInfoKind kind,
             Accessibility accessibility,
             TextSpan span,
-            ImmutableArray<NameWithArity> inheritanceNames,
+            ImmutableArray<string> inheritanceNames,
             bool isNestedType = false,
             int parameterCount = 0,
             int typeParameterCount = 0)
@@ -202,21 +199,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             writer.WriteInt32(InheritanceNames.Length);
 
             foreach (var name in InheritanceNames)
-                WriteNameWithArity(writer, name);
-        }
-
-        private static void WriteNameWithArity(ObjectWriter writer, NameWithArity name)
-        {
-            Debug.Assert(!name.IsDefault);
-
-            var pooled = PooledStringBuilder.GetInstance();
-            pooled.Builder.Append(name.Name);
-            if (name.HasArity)
-            {
-                pooled.Builder.Append(ArityUtilities.GetMetadataAritySuffix(name.Arity));
-            }
-
-            writer.WriteString(pooled.ToStringAndFree());
+                writer.WriteString(name);
         }
 
         internal static DeclaredSymbolInfo ReadFrom_ThrowsOnFailure(StringTable stringTable, ObjectReader reader)
@@ -230,7 +213,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             var spanLength = reader.ReadInt32();
 
             var inheritanceNamesLength = reader.ReadInt32();
-            using var _ = ArrayBuilder<NameWithArity>.GetInstance(inheritanceNamesLength, out var inheritanceNames);
+            using var _ = ArrayBuilder<string>.GetInstance(inheritanceNamesLength, out var inheritanceNames);
             for (var i = 0; i < inheritanceNamesLength; i++)
                 inheritanceNames.Add(reader.ReadString());
 
@@ -250,20 +233,6 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 GetIsNestedType(flags),
                 GetParameterCount(flags),
                 GetTypeParameterCount(flags));
-        }
-
-        private static void ReadNameWithArity(ObjectReader reader, ArrayBuilder<NameWithArity> names)
-        {
-            var nameWithArity = reader.ReadString();
-            var separatorPos = nameWithArity.IndexOf('`');
-            if (separatorPos < 0)
-            {
-                names.Add(nameWithArity);
-            }
-            else
-            {
-                names.Add(new NameWithArity(nameWithArity.Substring(0, separatorPos), int.Parse(nameWithArity.Substring(separatorPos + 1))));
-            }
         }
 
         public ISymbol? TryResolve(SemanticModel semanticModel, CancellationToken cancellationToken)
@@ -297,7 +266,7 @@ $@"Invalid span in {nameof(DeclaredSymbolInfo)}.
                && FullyQualifiedContainerName == other.FullyQualifiedContainerName
                && Span.Equals(other.Span)
                && _flags == other._flags
-               && InheritanceNames.SequenceEqual(other.InheritanceNames, NameWithArityComparer.Default);
+               && InheritanceNames.SequenceEqual(other.InheritanceNames, arg: true, (s1, s2, _) => s1 == s2);
 
         public override int GetHashCode()
             => Hash.Combine(Name,

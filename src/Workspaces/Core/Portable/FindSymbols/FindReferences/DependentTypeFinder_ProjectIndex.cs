@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                         }
 
                         foreach (var inheritanceName in info.InheritanceNames)
-                            namedTypes.Add(inheritanceName.ToString(), (documentId, info));
+                            namedTypes.Add(inheritanceName, (documentId, info));
                     }
                 }
 
