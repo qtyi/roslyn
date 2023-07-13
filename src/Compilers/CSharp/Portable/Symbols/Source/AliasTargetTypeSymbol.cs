@@ -59,13 +59,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public new AliasSymbol OriginalDefinition => _constructedFrom;
 
-        protected override TypeSymbol OriginalTypeSymbolDefinition => UnderlyingType.OriginalDefinition;
-
-        protected override Symbol OriginalSymbolDefinition => OriginalDefinition;
-
         internal ImmutableArray<TypeWithAnnotations> TypeArgumentsWithAnnotations => _typeArgumentsWithAnnotations;
 
         public AliasSymbolFromSyntax ConstructedFrom => _constructedFrom;
+
+        public override ImmutableArray<Location> Locations => _constructedFrom.Locations;
+
+        public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => _constructedFrom.DeclaringSyntaxReferences;
+
+        public override Accessibility DeclaredAccessibility => _constructedFrom.DeclaredAccessibility;
+
+        internal override string GetDebuggerDisplay()
+        {
+            return $"{nameof(TypeKindInternal.AliasTargetType)} {{{this.UnderlyingType.GetDebuggerDisplay()}}}";
+        }
+
+        #region TypeSymbol members
+
+        protected override TypeSymbol OriginalTypeSymbolDefinition => UnderlyingType.OriginalDefinition;
 
         public override TypeKind TypeKind => TypeKindInternal.AliasTargetType;
 
@@ -79,13 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override SymbolKind Kind => UnderlyingType.Kind;
 
-        public override Symbol ContainingSymbol => _constructedFrom;
-
-        public override ImmutableArray<Location> Locations => _constructedFrom.Locations;
-
-        public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => _constructedFrom.DeclaringSyntaxReferences;
-
-        public override Accessibility DeclaredAccessibility => _constructedFrom.DeclaredAccessibility;
+        public override Symbol ContainingSymbol => UnderlyingType.ContainingSymbol;
 
         public override bool IsStatic => UnderlyingType.IsStatic;
 
@@ -185,6 +190,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             return UnderlyingType.ISymbol;
         }
+
+        #endregion
     }
 
     internal static class AliasTargetTypeSymbolExtensions
@@ -213,6 +220,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             type = Unwrap(type);
             Debug.Assert(type is TSymbol);
             return (TSymbol)type;
+        }
+
+        /// <summary>
+        /// Unwrap a type symbol if it is an AliasTargetTypeSymbol and get its underlying type symbol.
+        /// If <paramref name="type"/> is not <typeparamref name="TSymbol"/> then returns <see langword="null"/>.
+        /// </summary>
+        public static TSymbol? UnwrapAs<TSymbol>(this TypeSymbol type) where TSymbol : TypeSymbol
+        {
+            type = Unwrap(type);
+            return type as TSymbol;
         }
 
         [Conditional("DEBUG")]

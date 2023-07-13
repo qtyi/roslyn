@@ -3193,6 +3193,9 @@ unsafe struct A {
             // (1,14): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
             // using x<a> = A*;
             Diagnostic(ErrorCode.ERR_UnsafeNeeded, "A*").WithLocation(1, 14),
+            // (2,7): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('b')
+            // using y<b> = b*;
+            Diagnostic(ErrorCode.WRN_ManagedAddr, "y").WithArguments("b").WithLocation(2, 7),
             // (2,7): warning CS8981: The type name 'y' only contains lower-cased ascii characters. Such names may become reserved for the language.
             // using y<b> = b*;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "y").WithArguments("y").WithLocation(2, 7),
@@ -3314,6 +3317,9 @@ unsafe struct A {
             // (1,16): warning CS8981: The type name 'a' only contains lower-cased ascii characters. Such names may become reserved for the language.
             // using unsafe x<a> = A*;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "a").WithArguments("a").WithLocation(1, 16),
+            // (2,14): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('b')
+            // using y<b> = b*;
+            Diagnostic(ErrorCode.WRN_ManagedAddr, "y").WithArguments("b").WithLocation(2, 14),
             // (2,14): warning CS8981: The type name 'y' only contains lower-cased ascii characters. Such names may become reserved for the language.
             // using unsafe y<b> = b*;
             Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "y").WithArguments("y").WithLocation(2, 14),
@@ -5906,6 +5912,9 @@ class C
             // (1,1): hidden CS8019: Unnecessary using directive.
             // using X<T> = T?;
             Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using X<T> = T?;").WithLocation(1, 1),
+            // (1,14): error CS0453: The type 'T' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'System.Nullable<T>'
+            // using X<T> = T?;
+            Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "T?").WithArguments("System.Nullable<T>", "T", "T").WithLocation(1, 14),
             // (1,15): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
             // using X<T> = T?;
             Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(1, 15),
@@ -5983,6 +5992,9 @@ class C
             """;
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics(
+            // (1,14): error CS0453: The type 'T' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'System.Nullable<T>'
+            // using X<T> = T?;
+            Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "T?").WithArguments("System.Nullable<T>", "T", "T").WithLocation(1, 14),
             // (1,15): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
             // using X<T> = T?;
             Diagnostic(ErrorCode.WRN_MissingNonNullTypesContextForAnnotation, "?").WithLocation(1, 15),

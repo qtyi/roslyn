@@ -1049,7 +1049,7 @@ hasRelatedInterfaces:
             Debug.Assert(substitution != null);
 
             // The type parameters must be original definitions of type parameters from the containing symbol.
-            Debug.Assert(ReferenceEquals(typeParameter.ContainingSymbol, containingSymbol.OriginalDefinition));
+            Debug.Assert(ReferenceEquals(typeParameter.ContainingSymbol, containingSymbol is AliasTargetTypeSymbol aliasTargetType ? aliasTargetType.OriginalDefinition : containingSymbol.OriginalDefinition));
 
             if (typeArgument.Type.IsErrorType())
             {

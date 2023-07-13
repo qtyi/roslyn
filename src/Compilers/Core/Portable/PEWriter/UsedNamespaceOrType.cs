@@ -40,7 +40,7 @@ namespace Microsoft.Cci
         internal static UsedNamespaceOrType CreateType(ITypeReference type, string? aliasOpt = null, ImmutableArray<string> typeParameters = default)
         {
             RoslynDebug.Assert(type != null);
-            return new UsedNamespaceOrType(alias: aliasOpt, typeParameters: typeParameters, targetType: type);
+            return new UsedNamespaceOrType(alias: aliasOpt, typeParameters: aliasOpt == null ? default : typeParameters.IsDefault ? ImmutableArray<string>.Empty : typeParameters, targetType: type);
         }
 
         internal static UsedNamespaceOrType CreateNamespace(INamespace @namespace, IAssemblyReference? assemblyOpt = null, string? aliasOpt = null)
