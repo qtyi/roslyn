@@ -160,7 +160,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             var stringTable = SyntaxTreeIndex.GetStringTable(project);
             var rootNamespace = this.GetRootNamespace(project.CompilationOptions!);
 
-            using var _1 = PooledDictionary<string, string>.GetInstance(out var aliases);
+            using var _1 = PooledDictionary<string, string?>.GetInstance(out var aliases);
 
             foreach (var usingAlias in GetUsingAliases((TCompilationUnitSyntax)root))
             {
@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
             StringTable stringTable,
             string rootNamespace,
             ArrayBuilder<DeclaredSymbolInfo> declaredSymbolInfos,
-            Dictionary<string, string> aliases,
+            Dictionary<string, string?> aliases,
             Dictionary<string, ArrayBuilder<int>> extensionMethodInfo,
             string containerDisplayName,
             string fullyQualifiedContainerName,

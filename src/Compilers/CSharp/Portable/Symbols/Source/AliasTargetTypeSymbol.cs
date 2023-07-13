@@ -194,6 +194,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         #endregion
     }
 
+#nullable enable
     internal static class AliasTargetTypeSymbolExtensions
     {
         /// <summary>
@@ -201,6 +202,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public static TypeSymbol Unwrap(this TypeSymbol type)
         {
+            RoslynDebug.AssertNotNull(type);
+
             // unwrap recursively.
             while (type.TypeKind == TypeKindInternal.AliasTargetType)
             {
@@ -241,4 +244,5 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
     }
+#nullable disable
 }

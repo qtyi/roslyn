@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var syntaxTree = decl.SyntaxTree;
             var tpl = decl.TypeParameterList!;
 
-            MessageID.IDS_FeatureGenerics.CheckFeatureAvailability(diagnostics, tpl.LessThanToken);
+            MessageID.IDS_FeatureGenerics.CheckFeatureAvailability(diagnostics, tpl, tpl.LessThanToken.GetLocation());
 
             var parameterBuilders = new List<AliasTypeParameterBuilder>();
             int i = 0;
@@ -298,7 +298,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             NamespaceSymbol? target;
             if (!ContainingSymbol.DeclaringCompilation.GetExternAliasTarget(Name, out target))
             {
-                diagnostics.Add(ErrorCode.ERR_BadExternAlias, GetFirstLocation(), Name);
+                diagnostics.Add(ErrorCode.ERR_BadExternAlias, Locations[0], Name);
             }
 
             RoslynDebug.Assert(target is object);
@@ -314,7 +314,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (usingDirective.UnsafeKeyword != default)
             {
-                MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective.UnsafeKeyword);
+                MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective, usingDirective.UnsafeKeyword.GetLocation());
             }
             else if (usingDirective.NamespaceOrType is not NameSyntax)
             {
@@ -365,7 +365,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         declarationBinder.GetSpecialTypeMember(SpecialMember.System_Nullable_T__ctor, diagnostics, nullableTypeSyntax);
                         NamedTypeSymbol nullableTypeSymbol = declarationBinder.GetSpecialType(SpecialType.System_Nullable_T, diagnostics, nullableTypeSyntax);
                         // "The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'"
-                        diagnostics.Add(ErrorCode.ERR_ValConstraintNotSatisfied, nullableTypeSyntax, nullableTypeSymbol, nullableTypeSymbol.TypeParameters.Single(), annotatedElementType.Type!);
+                        diagnostics.Add(ErrorCode.ERR_ValConstraintNotSatisfied, nullableTypeSyntax.Location, nullableTypeSymbol, nullableTypeSymbol.TypeParameters.Single(), annotatedElementType.Type!);
                     }
                 }
             }

@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Roslyn.Utilities;
@@ -271,7 +270,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 var corLibrary = this.ContainingAssembly.CorLibrary;
                 var conversions = new TypeConversions(corLibrary);
-                target.CheckAllConstraints(DeclaringCompilation, conversions, GetFirstLocation(), diagnostics);
+                target.CheckAllConstraints(DeclaringCompilation, conversions, Locations[0], diagnostics);
             }
         }
 
@@ -290,12 +289,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AliasSymbol? other = obj as AliasSymbol;
 
             return (object?)other != null &&
-                Equals(this.TryGetFirstLocation(), other.TryGetFirstLocation()) &&
+                Equals(this.Locations.FirstOrDefault(), other.Locations.FirstOrDefault()) &&
                 Equals(this.ContainingSymbol, other.ContainingSymbol, compareKind);
         }
 
         public override int GetHashCode()
-            => this.TryGetFirstLocation()?.GetHashCode() ?? Name.GetHashCode();
+            => this.Locations.FirstOrDefault()?.GetHashCode() ?? Name.GetHashCode();
 
         internal abstract override bool RequiresCompletion
         {
