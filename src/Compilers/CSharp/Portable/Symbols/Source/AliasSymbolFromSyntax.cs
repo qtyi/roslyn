@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -283,6 +284,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _aliasTarget!;
         }
 
+        internal override TypeSymbol? GetAliasTargetUnwrappedAliasTarget()
+        {
+            if (this.Target.IsNamespace)
+            {
+                return null;
+            }
+
+            var type = ResolveAliasTarget((UsingDirectiveSyntax)_directive.GetSyntax(), BindingDiagnosticBag.Discarded, basesBeingResolved: null, unwrapAliasTarget: false) as TypeSymbol;
+            Debug.Assert(type is not null);
+
+            return type;
+        }
+
         internal BindingDiagnosticBag AliasTargetDiagnostics
         {
             get
@@ -310,7 +324,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private NamespaceOrTypeSymbol ResolveAliasTarget(
             UsingDirectiveSyntax usingDirective,
             BindingDiagnosticBag diagnostics,
-            ConsList<TypeSymbol>? basesBeingResolved)
+            ConsList<TypeSymbol>? basesBeingResolved,
+            bool unwrapAliasTarget = true)
         {
             if (usingDirective.UnsafeKeyword != default)
             {
@@ -327,7 +342,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             var syntax = usingDirective.NamespaceOrType;
-            var flags = BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks;
+            BinderFlags flags = BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks;
+            if (!unwrapAliasTarget)
+            {
+                flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+            }
+
             if (usingDirective.UnsafeKeyword != default)
             {
                 this.CheckUnsafeModifier(DeclarationModifiers.Unsafe, usingDirective.UnsafeKeyword.GetLocation(), diagnostics);

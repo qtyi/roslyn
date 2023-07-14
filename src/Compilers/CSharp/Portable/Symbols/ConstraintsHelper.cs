@@ -72,13 +72,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AssemblySymbol corLibrary,
             ConsList<TypeParameterSymbol> inProgress,
             ImmutableArray<TypeWithAnnotations> constraintTypes,
+            ImmutableArray<TypeWithAnnotations> constraintTypesUnwrappedAliasTarget,
             bool inherited,
             CSharpCompilation currentCompilation,
             BindingDiagnosticBag diagnostics)
         {
             var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
             ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
-            var bounds = typeParameter.ResolveBounds(corLibrary, inProgress, constraintTypes, inherited, currentCompilation, diagnosticsBuilder, ref useSiteDiagnosticsBuilder,
+            var bounds = typeParameter.ResolveBounds(corLibrary, inProgress, constraintTypes, constraintTypesUnwrappedAliasTarget, inherited, currentCompilation, diagnosticsBuilder, ref useSiteDiagnosticsBuilder,
                                                      template: new CompoundUseSiteInfo<AssemblySymbol>(diagnostics, currentCompilation.Assembly));
 
             if (useSiteDiagnosticsBuilder != null)
@@ -101,6 +102,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AssemblySymbol corLibrary,
             ConsList<TypeParameterSymbol> inProgress,
             ImmutableArray<TypeWithAnnotations> constraintTypes,
+            ImmutableArray<TypeWithAnnotations> constraintTypesUnwrappedAliasTarget,
             bool inherited,
             CSharpCompilation currentCompilation,
             ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
@@ -121,15 +123,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             else
             {
                 var constraintTypesBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
+                var constraintTypesUnwrappedAliasTargetBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
                 var interfacesBuilder = ArrayBuilder<NamedTypeSymbol>.GetInstance();
                 var conversions = new TypeConversions(corLibrary);
                 var useSiteInfo = new CompoundUseSiteInfo<AssemblySymbol>(template);
 
                 // Resolve base types, determine the effective base class and
                 // interfaces, and filter out any constraint types that cause cycles.
-                foreach (var constraintType in constraintTypes)
+                for (int i = 0; i < constraintTypes.Length; i++)
                 {
+                    TypeWithAnnotations constraintType = constraintTypes[i];
                     Debug.Assert(!constraintType.Type.ContainsDynamic());
+                    TypeWithAnnotations constraintTypeUnwrappedAliasTarget = constraintTypesUnwrappedAliasTarget[i];
 
                     NamedTypeSymbol constraintEffectiveBase;
                     TypeSymbol constraintDeducedBase;
@@ -197,6 +202,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 AddInterface(interfacesBuilder, (NamedTypeSymbol)constraintType.Type);
                                 constraintTypesBuilder.Add(constraintType);
+                                constraintTypesUnwrappedAliasTargetBuilder.Add(constraintTypeUnwrappedAliasTarget);
                                 continue;
                             }
                             else
@@ -261,6 +267,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     CheckEffectiveAndDeducedBaseTypes(conversions, constraintEffectiveBase, constraintDeducedBase);
 
                     constraintTypesBuilder.Add(constraintType);
+                    constraintTypesUnwrappedAliasTargetBuilder.Add(constraintTypeUnwrappedAliasTarget);
 
                     // Determine the more encompassed of the current effective base
                     // class and the previously computed effective base class.
@@ -287,6 +294,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 CheckEffectiveAndDeducedBaseTypes(conversions, effectiveBaseClass, deducedBaseType);
 
                 constraintTypes = constraintTypesBuilder.ToImmutableAndFree();
+                constraintTypesUnwrappedAliasTarget = constraintTypesUnwrappedAliasTargetBuilder.ToImmutableAndFree();
                 interfaces = interfacesBuilder.ToImmutableAndFree();
             }
 
@@ -301,7 +309,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
-            var bounds = new TypeParameterBounds(constraintTypes, interfaces, effectiveBaseClass, deducedBaseType);
+            var bounds = new TypeParameterBounds(constraintTypes, constraintTypesUnwrappedAliasTarget, interfaces, effectiveBaseClass, deducedBaseType);
 
             // Additional constraint checks for overrides.
             if (inherited)

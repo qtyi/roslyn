@@ -22,6 +22,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public abstract ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes();
 
+        internal abstract ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesUnwrappedAliasTarget();
+
         /// <summary>
         /// If there are no constraints, returns an empty immutable array. Otherwise, returns an immutable
         /// array of kinds, indexed by the constrained type parameter in <see cref="MethodSymbol.TypeParameters"/>.

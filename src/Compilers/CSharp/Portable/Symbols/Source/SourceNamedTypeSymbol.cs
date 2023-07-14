@@ -294,6 +294,14 @@ next:;
             return constraintTypes;
         }
 
+        internal ImmutableArray<TypeWithAnnotations> GetTypeParameterConstraintTypesUnwrappedAliasTarget(int ordinal)
+        {
+            GetTypeParameterConstraintKinds();
+
+            var constraintTypes = MakeTypeParameterConstraintTypes(BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
+            return (constraintTypes.Length > 0) ? constraintTypes[ordinal] : ImmutableArray<TypeWithAnnotations>.Empty;
+        }
+
         /// <summary>
         /// Returns the constraint kind for the given type parameter.
         /// </summary>
@@ -315,7 +323,7 @@ next:;
             return constraintKinds;
         }
 
-        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics)
+        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
         {
             var typeParameters = this.TypeParameters;
             var results = ImmutableArray<TypeParameterConstraintClause>.Empty;
@@ -353,7 +361,12 @@ next:;
                         // Wrap binder from factory in a generic constraints specific binder 
                         // to avoid checking constraints when binding type names.
                         Debug.Assert(!binder.Flags.Includes(BinderFlags.GenericConstraintsClause));
-                        binder = binder.WithContainingMemberOrLambda(this).WithAdditionalFlags(BinderFlags.GenericConstraintsClause | BinderFlags.SuppressConstraintChecks);
+                        var flags = BinderFlags.GenericConstraintsClause | BinderFlags.SuppressConstraintChecks;
+                        if (!unwrapAliasTarget)
+                        {
+                            flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+                        }
+                        binder = binder.WithContainingMemberOrLambda(this).WithAdditionalFlags(flags);
 
                         constraints = binder.BindTypeParameterConstraintClauses(this, typeParameters, typeParameterList, constraintClauses, diagnostics, performOnlyCycleSafeValidation: false);
                     }

@@ -1606,6 +1606,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
+
+            // Unwrap if 'type' is AliasTargetTypeSymbol.
+            if (!this.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
+            {
+                type = type.Unwrap();
+            }
+
             return type;
         }
 
