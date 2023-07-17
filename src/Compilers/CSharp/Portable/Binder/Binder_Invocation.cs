@@ -1617,11 +1617,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             else
             {
-                var returnType = GetCommonTypeOrReturnType(methods) ?? new ExtendedErrorTypeSymbol(this.Compilation, string.Empty, arity: 0, errorInfo: null);
+                var returnType = GetCommonTypeOrReturnType(methods) ?? CreateErrorType();
+                var returnTypeWithoutUnwrappingAliasTarget = GetCommonTypeOrReturnTypeWithoutUnwrappingAliasTarget(methods) ?? CreateErrorType();
                 var methodContainer = (object)receiver != null && (object)receiver.Type != null
                     ? receiver.Type
                     : this.ContainingType;
-                method = new ErrorMethodSymbol(methodContainer, returnType, name);
+                method = new ErrorMethodSymbol(methodContainer, returnType, returnTypeWithoutUnwrappingAliasTarget, name);
             }
 
             args = BuildArgumentsForErrorRecovery(analyzedArguments, methods);
@@ -1835,7 +1836,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             TypeSymbol returnType = new ExtendedErrorTypeSymbol(this.Compilation, string.Empty, arity: 0, errorInfo: null);
             var methodContainer = expr.Type ?? this.ContainingType;
-            MethodSymbol method = new ErrorMethodSymbol(methodContainer, returnType, string.Empty);
+            MethodSymbol method = new ErrorMethodSymbol(methodContainer, returnType, returnType, string.Empty);
 
             var args = BuildArgumentsForErrorRecovery(analyzedArguments);
             var argNames = analyzedArguments.GetNames();
@@ -1848,10 +1849,22 @@ namespace Microsoft.CodeAnalysis.CSharp
         private static TypeSymbol GetCommonTypeOrReturnType<TMember>(ImmutableArray<TMember> members)
             where TMember : Symbol
         {
+            return GetCommonTypeOrReturnType(members, static member => member.GetTypeOrReturnType().Type);
+        }
+
+        private static TypeSymbol GetCommonTypeOrReturnTypeWithoutUnwrappingAliasTarget<TMember>(ImmutableArray<TMember> members)
+            where TMember : Symbol
+        {
+            return GetCommonTypeOrReturnType(members, SymbolExtensions.GetTypeOrReturnTypeWithoutUnwrappingAliasTarget);
+        }
+
+        private static TypeSymbol GetCommonTypeOrReturnType<TMember>(ImmutableArray<TMember> members, Func<TMember, TypeSymbol> getTypeOrReturnType)
+            where TMember : Symbol
+        {
             TypeSymbol type = null;
             for (int i = 0, n = members.Length; i < n; i++)
             {
-                TypeSymbol returnType = members[i].GetTypeOrReturnType().Type;
+                TypeSymbol returnType = getTypeOrReturnType(members[i]);
                 if ((object)type == null)
                 {
                     type = returnType;

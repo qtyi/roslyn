@@ -610,6 +610,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return (bounds != null) ? bounds.ConstraintTypes : ImmutableArray<TypeWithAnnotations>.Empty;
         }
 
+        internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress)
+        {
+            return ConstraintTypesNoUseSiteDiagnostics;
+        }
+
         internal override ImmutableArray<NamedTypeSymbol> GetInterfaces(ConsList<TypeParameterSymbol> inProgress)
         {
             var bounds = this.GetBounds(inProgress);
@@ -659,7 +664,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 var diagnostics = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
                 ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
                 bool inherited = (_containingSymbol.Kind == SymbolKind.Method) && ((MethodSymbol)_containingSymbol).IsOverride;
-                var bounds = this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesUnwrappedAliasTarget: constraintTypes.SelectAsArray(t => t.Type), inherited, currentCompilation: null,
+                var bounds = this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget: constraintTypes, inherited, currentCompilation: null,
                                                 diagnosticsBuilder: diagnostics, useSiteDiagnosticsBuilder: ref useSiteDiagnosticsBuilder, template: default);
 
                 if (useSiteDiagnosticsBuilder != null)

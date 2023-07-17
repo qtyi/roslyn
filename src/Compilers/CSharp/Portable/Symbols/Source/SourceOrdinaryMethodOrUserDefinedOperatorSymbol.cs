@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private ImmutableArray<CustomModifier> _lazyRefCustomModifiers;
         private ImmutableArray<ParameterSymbol> _lazyParameters;
         private TypeWithAnnotations _lazyReturnType;
+        private TypeSymbol? _lazyReturnTypeWithoutUnwrappingAliasTarget;
 
         protected SourceOrdinaryMethodOrUserDefinedOperatorSymbol(NamedTypeSymbol containingType, SyntaxReference syntaxReferenceOpt, Location location, bool isIterator)
             : base(containingType, syntaxReferenceOpt, location, isIterator)
@@ -37,9 +38,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected MethodSymbol? MethodChecks(TypeWithAnnotations returnType, ImmutableArray<ParameterSymbol> parameters, BindingDiagnosticBag diagnostics)
+        protected MethodSymbol? MethodChecks(TypeWithAnnotations returnType, TypeSymbol returnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> parameters, BindingDiagnosticBag diagnostics)
         {
             _lazyReturnType = returnType;
+            _lazyReturnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget;
             _lazyParameters = parameters;
 
             // set ReturnsVoid flag
@@ -198,6 +200,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            LazyMethodChecks();
+            Debug.Assert((object?)_lazyReturnTypeWithoutUnwrappingAliasTarget != null);
+            return _lazyReturnTypeWithoutUnwrappingAliasTarget;
+        }
+
         internal sealed override bool IsExplicitInterfaceImplementation
         {
             get
@@ -238,11 +247,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // type errors but for parameter errors, we'll use the parameter location.
             CheckConstraintsForExplicitInterfaceType(conversions, diagnostics);
 
-            this.ReturnType.CheckAllConstraints(compilation, conversions, this.Locations[0], diagnostics);
+            this.GetReturnTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(compilation, conversions, this.Locations[0], diagnostics);
 
             foreach (var parameter in this.Parameters)
             {
-                parameter.Type.CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
+                parameter.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
             }
 
             PartialMethodChecks(diagnostics);

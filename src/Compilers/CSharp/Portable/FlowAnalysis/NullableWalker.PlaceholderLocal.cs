@@ -50,6 +50,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => ImmutableArray<SyntaxReference>.Empty;
             public override ImmutableArray<Location> Locations => ImmutableArray<Location>.Empty;
             public override TypeWithAnnotations TypeWithAnnotations => _type;
+            internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() => Type;
             internal override LocalDeclarationKind DeclarationKind => LocalDeclarationKind.None;
             internal override SyntaxToken IdentifierToken => throw ExceptionUtilities.Unreachable();
             internal override bool IsCompilerGenerated => true;

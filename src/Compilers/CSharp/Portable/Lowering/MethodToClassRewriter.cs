@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
             else
             {
-                newLocal = new TypeSubstitutedLocalSymbol(local, TypeWithAnnotations.Create(newType), CurrentMethod);
+                newLocal = new TypeSubstitutedLocalSymbol(local, TypeWithAnnotations.Create(newType), newType, CurrentMethod);
                 localMap.Add(local, newLocal);
             }
 

@@ -71,6 +71,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 get { return _typeWithAnnotations; }
             }
 
+            internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+            {
+                return Type;
+            }
+
             public override string Name
             {
                 get { return _name; }

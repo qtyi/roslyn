@@ -1,5 +1,3 @@
-*REMOVED*static Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode>.implicit operator Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>(Microsoft.CodeAnalysis.SeparatedSyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>
-*REMOVED*static Microsoft.CodeAnalysis.SyntaxList<TNode>.implicit operator Microsoft.CodeAnalysis.SyntaxList<TNode!>(Microsoft.CodeAnalysis.SyntaxList<Microsoft.CodeAnalysis.SyntaxNode!> nodes) -> Microsoft.CodeAnalysis.SyntaxList<TNode!>
 Microsoft.CodeAnalysis.Compilation.SupportsRuntimeCapability(Microsoft.CodeAnalysis.RuntimeCapability capability) -> bool
 Microsoft.CodeAnalysis.Emit.MethodInstrumentation
 Microsoft.CodeAnalysis.Emit.MethodInstrumentation.Kinds.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Emit.InstrumentationKind>

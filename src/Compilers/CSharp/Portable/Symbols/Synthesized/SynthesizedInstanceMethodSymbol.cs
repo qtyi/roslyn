@@ -26,6 +26,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return this.ReturnType;
+        }
+
         public sealed override bool IsImplicitlyDeclared
         {
             get

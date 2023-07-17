@@ -4236,12 +4236,18 @@ class C
             //     void M(P<void> vp) { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+            // (1,14): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('T')
+            // using unsafe P<T> = T*;
+            Diagnostic(ErrorCode.WRN_ManagedAddr, "P").WithArguments("T").WithLocation(1, 14),
             // (5,12): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
             //     void M(P<void> vp) { }
             Diagnostic(ErrorCode.ERR_UnsafeNeeded, "P<void>").WithLocation(5, 12),
             // (5,14): error CS1547: Keyword 'void' cannot be used in this context
             //     void M(P<void> vp) { }
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14),
+            // (5,20): error CS0306: The type 'void' may not be used as a type argument
+            //     void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "vp").WithArguments("void").WithLocation(5, 20));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4331,9 +4337,15 @@ class C
             //     unsafe void M(P<void> vp) { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+            // (1,14): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('T')
+            // using unsafe P<T> = T*;
+            Diagnostic(ErrorCode.WRN_ManagedAddr, "P").WithArguments("T").WithLocation(1, 14),
             // (5,21): error CS1547: Keyword 'void' cannot be used in this context
             //     unsafe void M(P<void> vp) { }
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21),
+            // (5,27): error CS0306: The type 'void' may not be used as a type argument
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "vp").WithArguments("void").WithLocation(5, 27));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4424,12 +4436,18 @@ class C
             //     unsafe void M(P<void> vp) { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+            // (1,7): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('T')
+            // using P<T> = T*;
+            Diagnostic(ErrorCode.WRN_ManagedAddr, "P").WithArguments("T").WithLocation(1, 7),
             // (1,14): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
             // using P<T> = T*;
             Diagnostic(ErrorCode.ERR_UnsafeNeeded, "T*").WithLocation(1, 14),
             // (5,21): error CS1547: Keyword 'void' cannot be used in this context
             //     unsafe void M(P<void> vp) { }
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21));
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 21),
+            // (5,27): error CS0306: The type 'void' may not be used as a type argument
+            //     unsafe void M(P<void> vp) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "vp").WithArguments("void").WithLocation(5, 27));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4522,7 +4540,10 @@ class C
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,14): error CS1547: Keyword 'void' cannot be used in this context
             // X<void>
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14));
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14),
+            // (5,20): error CS0306: The type 'void' may not be used as a type argument
+            //     void M(X<void> x) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "x").WithArguments("void").WithLocation(5, 20));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4610,7 +4631,10 @@ class C
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,7): error CS1547: Keyword 'void' cannot be used in this context
             // X<void>
-            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7));
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7),
+            // (5,13): error CS0306: The type 'void' may not be used as a type argument
+            //     X<void> M() { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "M").WithArguments("void").WithLocation(5, 13));
 
         N(SyntaxKind.CompilationUnit);
         {
@@ -4691,6 +4715,9 @@ class C
             // (5,7): error CS1547: Keyword 'void' cannot be used in this context
             // X<void>
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7),
+            // (5,13): error CS0306: The type 'void' may not be used as a type argument
+            //     X<void> M() { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "M").WithArguments("void").WithLocation(5, 13),
             // (5,13): error CS0161: 'C.M()': not all code paths return a value
             //     X<void> M() { }
             Diagnostic(ErrorCode.ERR_ReturnExpected, "M").WithArguments("C.M()").WithLocation(5, 13));
@@ -5049,7 +5076,6 @@ class C
 }";
         UsingTree(text);
         CreateCompilation(text).VerifyDiagnostics();
-
 
         N(SyntaxKind.CompilationUnit);
         {

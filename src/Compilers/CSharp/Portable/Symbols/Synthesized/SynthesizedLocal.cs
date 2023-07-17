@@ -140,6 +140,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _type; }
         }
 
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        {
+            return Type;
+        }
+
         public sealed override ImmutableArray<Location> Locations
         {
             get { return (_syntaxOpt == null) ? ImmutableArray<Location>.Empty : ImmutableArray.Create(_syntaxOpt.GetLocation()); }

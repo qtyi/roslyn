@@ -390,7 +390,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             }
         }
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
         {
             EnsureSignatureIsLoaded();
             return _lazyType.Value;

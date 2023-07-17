@@ -392,6 +392,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override TypeWithAnnotations TypeWithAnnotations => _containingType.SubstituteUnderlyingType(_underlyingParameter.TypeWithAnnotations);
 
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() => Type;
+
         public override ImmutableArray<CustomModifier> RefCustomModifiers => _underlyingParameter.RefCustomModifiers;
 
         internal override bool IsCallerLineNumber => _underlyingParameter.IsCallerLineNumber;
@@ -442,6 +444,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override Symbol ContainingSymbol => _container;
 
         public override TypeWithAnnotations TypeWithAnnotations => _container.SubstituteUnderlyingType(_underlyingProperty.TypeWithAnnotations);
+
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() => Type;
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers => UnderlyingProperty.RefCustomModifiers;
 

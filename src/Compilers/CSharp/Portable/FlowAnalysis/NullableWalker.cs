@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>
         /// Return statements and the result types from analyzing the returned expressions. Used when inferring lambda return type in MethodTypeInferrer.
         /// </summary>
-        private ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations)>? _returnTypesOpt;
+        private ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? _returnTypesOpt;
 
         /// <summary>
         /// Invalid type, used only to catch Visit methods that do not set
@@ -423,7 +423,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             Conversions conversions,
             Variables? variables,
             MethodSymbol? baseOrThisInitializer,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations)>? returnTypesOpt,
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt,
             ImmutableDictionary<BoundExpression, (NullabilityInfo, TypeSymbol?)>.Builder? analyzedNullabilityMapOpt,
             SnapshotManager.Builder? snapshotBuilderOpt,
             bool isSpeculative = false)
@@ -1635,7 +1635,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             DiagnosticBag diagnostics,
             MethodSymbol? delegateInvokeMethodOpt,
             VariableState initialState,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations)>? returnTypesOpt)
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt)
         {
             var symbol = lambda.Symbol;
             var variables = Variables.Create(initialState.Variables).CreateNestedMethodScope(symbol);
@@ -1681,7 +1681,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             MethodSymbol? baseOrThisInitializer,
             ImmutableDictionary<BoundExpression, (NullabilityInfo, TypeSymbol?)>.Builder? analyzedNullabilityMapOpt,
             SnapshotManager.Builder? snapshotBuilderOpt,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations)>? returnTypesOpt,
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt,
             bool getFinalNullableState,
             out VariableState? finalNullableState,
             bool requiresAnalysis = true)
@@ -2842,7 +2842,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 var result = VisitRvalueWithState(expr);
                 if (_returnTypesOpt != null)
                 {
-                    _returnTypesOpt.Add((node, result.ToTypeWithAnnotations(compilation)));
+                    _returnTypesOpt.Add((node, result.ToTypeWithAnnotations(compilation), result.ToTypeWithoutUnwrappingAliasTarget(compilation)));
                 }
             }
 
@@ -4291,8 +4291,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// The expressions returned from a lambda are not converted though, so we'll have to classify fresh conversions.
         /// Note: even if some conversions fail, we'll proceed to infer top-level nullability. That is reasonable in common cases.
         /// </summary>
-        internal static TypeWithAnnotations BestTypeForLambdaReturns(
-            ArrayBuilder<(BoundExpression expr, TypeWithAnnotations resultType, bool isChecked)> returns,
+        internal static (TypeWithAnnotations, TypeSymbol?) BestTypeForLambdaReturns(
+            ArrayBuilder<(BoundExpression expr, TypeWithAnnotations resultType, TypeSymbol? resultTypeWithoutUnwrappingAliasTarget, bool isChecked)> returns,
             Binder binder,
             BoundNode node,
             Conversions conversions,
@@ -4318,7 +4318,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var placeholdersBuilder = ArrayBuilder<BoundExpression>.GetInstance(n);
             for (int i = 0; i < n; i++)
             {
-                var (returnExpr, resultType, _) = returns[i];
+                var (returnExpr, resultType, resultTypeWithoutUnwrappingAliasTarget, _) = returns[i];
                 resultTypes.Add(resultType);
                 placeholdersBuilder.Add(CreatePlaceholderIfNecessary(returnExpr, resultType));
             }
@@ -4353,7 +4353,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             resultTypes.Free();
             walker.Free();
 
-            return inferredType;
+#warning inferredTypeWithoutUnwrappingAliasTarget not implemented.
+            return (inferredType, inferredType.Type);
         }
 
         private static void GetArrayElements(BoundArrayInitialization node, ArrayBuilder<BoundExpression> builder)
@@ -8995,7 +8996,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 var unboundLambda = lambda.UnboundLambda;
                 useDelegateInvokeParameterTypes = !unboundLambda.HasExplicitlyTypedParameterList;
-                useDelegateInvokeReturnType = !unboundLambda.HasExplicitReturnType(out _, out _);
+                useDelegateInvokeReturnType = !unboundLambda.HasExplicitReturnType(out _, out _, out _);
             }
         }
 

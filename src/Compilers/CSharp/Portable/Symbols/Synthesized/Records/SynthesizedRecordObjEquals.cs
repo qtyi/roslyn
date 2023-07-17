@@ -23,16 +23,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override SpecialMember OverriddenSpecialMember => SpecialMember.System_Object__Equals;
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
+        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
             MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.Annotated;
-            return (ReturnType: TypeWithAnnotations.Create(Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics)),
+            var System_Boolean = Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics);
+            var System_Object = Binder.GetSpecialType(compilation, SpecialType.System_Object, location, diagnostics);
+            return (ReturnType: TypeWithAnnotations.Create(System_Boolean),
+                    ReturnTypeWithoutUnwrappingAliasTarget: System_Boolean,
                     Parameters: ImmutableArray.Create<ParameterSymbol>(
                                     new SourceSimpleParameterSymbol(owner: this,
-                                                                    TypeWithAnnotations.Create(Binder.GetSpecialType(compilation, SpecialType.System_Object, location, diagnostics), annotation),
+                                                                    TypeWithAnnotations.Create(System_Object, annotation),
+                                                                    System_Object,
                                                                     ordinal: 0, RefKind.None, ScopedKind.None, "obj", Locations)),
                     IsVararg: false,
                     DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);

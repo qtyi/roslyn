@@ -294,7 +294,7 @@ next:;
             return constraintTypes;
         }
 
-        internal ImmutableArray<TypeWithAnnotations> GetTypeParameterConstraintTypesUnwrappedAliasTarget(int ordinal)
+        internal ImmutableArray<TypeWithAnnotations> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget(int ordinal)
         {
             GetTypeParameterConstraintKinds();
 

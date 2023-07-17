@@ -8848,8 +8848,9 @@ namespace Microsoft.CodeAnalysis.CSharp
         private ErrorPropertySymbol CreateErrorPropertySymbol(ImmutableArray<PropertySymbol> propertyGroup)
         {
             TypeSymbol propertyType = GetCommonTypeOrReturnType(propertyGroup) ?? CreateErrorType();
+            TypeSymbol propertyTypeWithoutUnwrappingAliasTarget = GetCommonTypeOrReturnTypeWithoutUnwrappingAliasTarget(propertyGroup) ?? CreateErrorType();
             var candidate = propertyGroup[0];
-            return new ErrorPropertySymbol(candidate.ContainingType, propertyType, candidate.Name, candidate.IsIndexer, candidate.IsIndexedProperty);
+            return new ErrorPropertySymbol(candidate.ContainingType, propertyType, propertyTypeWithoutUnwrappingAliasTarget, candidate.Name, candidate.IsIndexer, candidate.IsIndexedProperty);
         }
 
         /// <summary>

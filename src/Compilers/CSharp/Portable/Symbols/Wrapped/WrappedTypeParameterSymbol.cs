@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -147,6 +148,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 return _underlyingTypeParameter.DeclaringSyntaxReferences;
             }
+        }
+
+        internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress)
+        {
+            return ConstraintTypesNoUseSiteDiagnostics;
         }
 
         public override string Name

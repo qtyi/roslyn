@@ -36,15 +36,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             var interfaceSpecifier = syntax.ExplicitInterfaceSpecifier;
 
-            TypeSymbol explicitInterfaceType;
-            name = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(bodyBinder, interfaceSpecifier, name, diagnostics, out explicitInterfaceType, aliasQualifierOpt: out _);
+            TypeSymbol explicitInterfaceType, explicitInterfaceTypeWithoutUnwrappingAliasTarget;
+            name = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(bodyBinder, interfaceSpecifier, name, diagnostics, out explicitInterfaceType, out explicitInterfaceTypeWithoutUnwrappingAliasTarget, aliasQualifierOpt: out _);
 
             var methodKind = interfaceSpecifier == null
                 ? MethodKind.Conversion
                 : MethodKind.ExplicitInterfaceImplementation;
 
             return new SourceUserDefinedConversionSymbol(
-                methodKind, containingType, explicitInterfaceType, name, location, syntax, isNullableAnalysisEnabled, diagnostics);
+                methodKind, containingType, explicitInterfaceType, explicitInterfaceTypeWithoutUnwrappingAliasTarget, name, location, syntax, isNullableAnalysisEnabled, diagnostics);
         }
 
         // NOTE: no need to call WithUnsafeRegionIfNecessary, since the signature
@@ -54,6 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             MethodKind methodKind,
             SourceMemberContainerTypeSymbol containingType,
             TypeSymbol explicitInterfaceType,
+            TypeSymbol explicitInterfaceTypeWithoutUnwrappingAliasTarget,
             string name,
             Location location,
             ConversionOperatorDeclarationSyntax syntax,
@@ -62,6 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             base(
                 methodKind,
                 explicitInterfaceType,
+                explicitInterfaceTypeWithoutUnwrappingAliasTarget,
                 name,
                 containingType,
                 location,
@@ -124,7 +126,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return OneOrMany.Create(this.GetSyntax().AttributeLists);
         }
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             ConversionOperatorDeclarationSyntax declarationSyntax = GetSyntax();
             return MakeParametersAndBindReturnType(declarationSyntax, declarationSyntax.Type, diagnostics);

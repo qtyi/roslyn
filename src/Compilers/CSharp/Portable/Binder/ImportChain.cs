@@ -119,7 +119,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // that can't be embedded but doesn't use them anywhere else in the code.  Note, this is only
                         // done for named types.  Other sorts of type symbols (arrays, etc.) are allowed through.
                         var typeRef = GetTypeReference((TypeSymbol)target, syntax, moduleBuilder, diagnostics);
-                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, alias.Name));
+                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, alias.Name, symbol.TypeParameters.SelectAsArray(static p => p.Name)));
                     }
                 }
 

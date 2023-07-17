@@ -25,6 +25,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 hasSetAccessor: true,
                 isExplicitInterfaceImplementation: false,
                 explicitInterfaceType: null,
+                explicitInterfaceTypeWithoutUnwrappingAliasTarget: null,
                 aliasQualifierOpt: null,
                 modifiers: DeclarationModifiers.Public | (isOverride ? DeclarationModifiers.Override : DeclarationModifiers.None),
                 hasInitializer: true, // Synthesized record properties always have a synthesized initializer
@@ -83,9 +84,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 diagnostics);
         }
 
-        protected override (TypeWithAnnotations Type, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations Type, TypeSymbol TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
         {
             return (BackingParameter.TypeWithAnnotations,
+                    BackingParameter.GetTypeWithoutUnwrappingAliasTarget(),
                     ImmutableArray<ParameterSymbol>.Empty);
         }
 

@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly int _memberOffset;
 
         protected SynthesizedRecordEqualityOperatorBase(SourceMemberContainerTypeSymbol containingType, string name, int memberOffset, BindingDiagnosticBag diagnostics)
-            : base(MethodKind.UserDefinedOperator, explicitInterfaceType: null, name, containingType, containingType.Locations[0], (CSharpSyntaxNode)containingType.SyntaxReferences[0].GetSyntax(),
+            : base(MethodKind.UserDefinedOperator, explicitInterfaceType: null, explicitInterfaceTypeWithoutUnwrappingAliasTarget: null, name, containingType, containingType.Locations[0], (CSharpSyntaxNode)containingType.SyntaxReferences[0].GetSyntax(),
                    DeclarationModifiers.Public | DeclarationModifiers.Static, hasBody: true, isExpressionBodied: false, isIterator: false, isNullableAnalysisEnabled: false, diagnostics)
         {
             Debug.Assert(name == WellKnownMemberNames.EqualityOperatorName || name == WellKnownMemberNames.InequalityOperatorName);
@@ -61,18 +61,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal sealed override ExecutableCodeBinder? TryGetBodyBinder(BinderFactory? binderFactoryOpt = null, bool ignoreAccessibility = false) => throw ExceptionUtilities.Unreachable();
         internal abstract override void GenerateMethodBody(TypeCompilationState compilationState, BindingDiagnosticBag diagnostics);
 
-        protected sealed override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected sealed override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.Annotated;
-            return (ReturnType: TypeWithAnnotations.Create(Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics)),
+            var returnType = Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics);
+            return (ReturnType: TypeWithAnnotations.Create(returnType),
+                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
                     Parameters: ImmutableArray.Create<ParameterSymbol>(
                                     new SourceSimpleParameterSymbol(owner: this,
                                                                     TypeWithAnnotations.Create(ContainingType, annotation),
+                                                                    ContainingType,
                                                                     ordinal: 0, RefKind.None, ScopedKind.None, "left", Locations),
                                     new SourceSimpleParameterSymbol(owner: this,
                                                                     TypeWithAnnotations.Create(ContainingType, annotation),
+                                                                    ContainingType,
                                                                     ordinal: 1, RefKind.None, ScopedKind.None, "right", Locations)));
         }
 

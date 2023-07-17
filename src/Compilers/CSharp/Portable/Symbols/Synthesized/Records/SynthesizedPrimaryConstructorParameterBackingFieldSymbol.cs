@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers => ImmutableArray<CustomModifier>.Empty;
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwarpAliasTarget = true)
             => ParameterSymbol.TypeWithAnnotations;
 
         // Some implementations (like in SourceFieldSymbolWithSyntaxReference)

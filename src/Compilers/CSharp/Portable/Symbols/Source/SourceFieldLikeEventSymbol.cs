@@ -21,6 +21,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private readonly string _name;
         private readonly TypeWithAnnotations _type;
+        private readonly TypeSymbol _typeWithoutUnwrappingAliasTarget;
         private readonly SynthesizedEventAccessorSymbol _addMethod;
         private readonly SynthesizedEventAccessorSymbol _removeMethod;
 
@@ -35,6 +36,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var declaratorDiagnostics = BindingDiagnosticBag.GetInstance();
             var declarationSyntax = (VariableDeclarationSyntax)declaratorSyntax.Parent;
             _type = BindEventType(binder, declarationSyntax.Type, declaratorDiagnostics);
+            _typeWithoutUnwrappingAliasTarget = BindEventType(binder, declarationSyntax.Type, BindingDiagnosticBag.Discarded, unwrapAliasTarget: false).Type;
 
             // The runtime will not treat the accessors of this event as overrides or implementations
             // of those of another event unless both the signatures and the custom modifiers match.
@@ -56,6 +58,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if ((object?)overriddenEvent != null)
                 {
                     CopyEventCustomModifiers(overriddenEvent, ref _type, ContainingAssembly);
+                    CustomModifierUtils.CopyTypeCustomModifiers(overriddenEvent.Type, _typeWithoutUnwrappingAliasTarget, ContainingAssembly);
                 }
             }
 
@@ -142,6 +145,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override TypeWithAnnotations TypeWithAnnotations
         {
             get { return _type; }
+        }
+
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        {
+            return _typeWithoutUnwrappingAliasTarget;
         }
 
         public override MethodSymbol AddMethod

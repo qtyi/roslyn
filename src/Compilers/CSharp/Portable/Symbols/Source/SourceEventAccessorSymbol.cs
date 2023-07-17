@@ -178,6 +178,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal sealed override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return ReturnType;
+        }
+
         public sealed override ImmutableArray<CustomModifier> RefCustomModifiers
         {
             get
@@ -207,6 +212,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         public sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
+            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
+
+        internal sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
         public sealed override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()

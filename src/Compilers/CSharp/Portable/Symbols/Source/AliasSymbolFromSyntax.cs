@@ -157,9 +157,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return constraintTypes;
         }
 
-        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics)
+        internal ImmutableArray<TypeWithAnnotations> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget(int ordinal)
         {
-            var results = MakeTypeParameterConstraintClauses(diagnostics);
+            GetTypeParameterConstraintKinds();
+
+            var constraintTypes = MakeTypeParameterConstraintTypes(BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
+            return (constraintTypes.Length > 0) ? constraintTypes[ordinal] : ImmutableArray<TypeWithAnnotations>.Empty;
+        }
+
+        private ImmutableArray<ImmutableArray<TypeWithAnnotations>> MakeTypeParameterConstraintTypes(BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
+        {
+            var results = MakeTypeParameterConstraintClauses(diagnostics, unwrapAliasTarget);
 
             return results.SelectAsArray(clause => clause.ConstraintTypes);
         }
@@ -193,9 +201,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        private ImmutableArray<TypeParameterConstraintClause> MakeTypeParameterConstraintClauses(BindingDiagnosticBag? diagnostics = null)
+        private ImmutableArray<TypeParameterConstraintClause> MakeTypeParameterConstraintClauses(BindingDiagnosticBag? diagnostics = null, bool unwrapAliasTarget = true)
         {
-            diagnostics ??= BindingDiagnosticBag.GetInstance();
+            diagnostics ??= BindingDiagnosticBag.Discarded;
             var typeParameters = this.TypeParameters;
             var results = ImmutableArray<TypeParameterConstraintClause>.Empty;
 
@@ -212,17 +220,30 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if (constraintClauses.Count == 0)
                 {
                     binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
+                    if (!unwrapAliasTarget)
+                    {
+                        binder = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+                    }
 
                     constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
                 }
                 else
                 {
                     binder = binderFactory.GetBinder(constraintClauses[0]);
+                    if (!unwrapAliasTarget)
+                    {
+                        binder = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+                    }
 
                     // Wrap binder from factory in a generic constraints specific binder 
                     // to avoid checking constraints when binding type names.
                     Debug.Assert(!binder.Flags.Includes(BinderFlags.GenericConstraintsClause));
-                    binder = binder.WithContainingMemberOrLambda(this).WithAdditionalFlags(BinderFlags.GenericConstraintsClause | BinderFlags.SuppressConstraintChecks);
+                    var flags = BinderFlags.GenericConstraintsClause | BinderFlags.SuppressConstraintChecks;
+                    if (!unwrapAliasTarget)
+                    {
+                        flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+                    }
+                    binder = binder.WithContainingMemberOrLambda(this).WithAdditionalFlags(flags);
 
                     constraints = binder.BindTypeParameterConstraintClauses(this, typeParameters, typeParameterList, constraintClauses, diagnostics, performOnlyCycleSafeValidation: false);
                 }
@@ -284,7 +305,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _aliasTarget!;
         }
 
-        internal override TypeSymbol? GetAliasTargetUnwrappedAliasTarget()
+        internal override TypeSymbol? GetAliasTargetWithoutUnwrappingAliasTarget()
         {
             if (this.Target.IsNamespace)
             {

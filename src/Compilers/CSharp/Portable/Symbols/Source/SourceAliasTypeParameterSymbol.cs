@@ -145,7 +145,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
-            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, inherited: false, this.DeclaringCompilation, diagnostics);
+            var constraintTypesWithoutUnwrappingAliasTarget = _owner.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget(this.Ordinal);
+            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited: false, this.DeclaringCompilation, diagnostics);
         }
 
         private TypeParameterConstraintKind GetConstraintKinds()

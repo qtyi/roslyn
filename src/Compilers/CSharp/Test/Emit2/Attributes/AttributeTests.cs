@@ -8710,15 +8710,12 @@ public class C<T> : Attribute
 
             var comp = CreateCompilation(source, parseOptions: TestOptions.Regular10);
             comp.VerifyDiagnostics(
-                // (12,21): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
-                // public class C<T> : Attribute
-                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Attribute").WithArguments("generic attributes", "11.0").WithLocation(12, 21),
                 // (6,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<>").WithArguments("Alias", "using alias").WithLocation(6, 2),
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<>").WithArguments("Alias", "using alias").WithLocation(6, 2),
                 // (7,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<int>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(7, 2),
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(7, 2),
                 // (5,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
                 // [Alias]
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias").WithArguments("generic attributes", "11.0").WithLocation(5, 2),
@@ -8727,16 +8724,153 @@ public class C<T> : Attribute
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<>").WithArguments("generic attributes", "11.0").WithLocation(6, 2),
                 // (7,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
                 // [Alias<int>]
-                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int>").WithArguments("generic attributes", "11.0").WithLocation(7, 2));
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int>").WithArguments("generic attributes", "11.0").WithLocation(7, 2),
+                // (12,21): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // public class C<T> : Attribute
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Attribute").WithArguments("generic attributes", "11.0").WithLocation(12, 21));
 
             comp = CreateCompilation(source, parseOptions: TestOptions.RegularPreview);
             comp.VerifyDiagnostics(
                 // (6,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<>").WithArguments("Alias", "using alias").WithLocation(6, 2),
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<>").WithArguments("Alias", "using alias").WithLocation(6, 2),
                 // (7,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<int>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(7, 2));
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(7, 2));
+        }
+
+        [Fact]
+        public void AliasedGenericAttributeType_Source2()
+        {
+            var source = @"
+using System;
+using Alias<T> = C<T>;
+
+[Alias]
+[Alias<>]
+[Alias<int>]
+[Alias<int, int>]
+class Test
+{
+}
+
+public class C<T> : Attribute
+{
+}
+";
+
+            var comp = CreateCompilation(source, parseOptions: TestOptions.Regular10);
+            comp.VerifyDiagnostics(
+                // (3,12): error CS8652: The feature 'using generic alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // using Alias<T> = C<T>;
+                Diagnostic(ErrorCode.ERR_FeatureInPreview, "<T>").WithArguments("using generic alias").WithLocation(3, 12),
+                // (13,21): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // public class C<T> : Attribute
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Attribute").WithArguments("generic attributes", "11.0").WithLocation(13, 21),
+                // (5,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias").WithArguments("Alias", "using alias", "1").WithLocation(5, 2),
+                // (6,2): error CS7003: Unexpected use of an unbound generic name
+                // [Alias<>]
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "Alias<>").WithLocation(6, 2),
+                // (8,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int>").WithArguments("Alias", "using alias", "1").WithLocation(8, 2),
+                // (6,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<>").WithArguments("generic attributes", "11.0").WithLocation(6, 2),
+                // (7,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int>").WithArguments("generic attributes", "11.0").WithLocation(7, 2),
+                // (8,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int, int>").WithArguments("generic attributes", "11.0").WithLocation(8, 2),
+                // (7,2): error CS0579: Duplicate 'Alias<>' attribute
+                // [Alias<int>]
+                Diagnostic(ErrorCode.ERR_DuplicateAttribute, "Alias<int>").WithArguments("Alias<>").WithLocation(7, 2));
+
+            comp = CreateCompilation(source, parseOptions: TestOptions.RegularPreview);
+            comp.VerifyDiagnostics(
+                // (5,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias").WithArguments("Alias", "using alias", "1").WithLocation(5, 2),
+                // (6,2): error CS7003: Unexpected use of an unbound generic name
+                // [Alias<>]
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "Alias<>").WithLocation(6, 2),
+                // (8,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int>").WithArguments("Alias", "using alias", "1").WithLocation(8, 2),
+                // (7,2): error CS0579: Duplicate 'Alias<>' attribute
+                // [Alias<int>]
+                Diagnostic(ErrorCode.ERR_DuplicateAttribute, "Alias<int>").WithArguments("Alias<>").WithLocation(7, 2));
+        }
+
+        [Fact]
+        public void AliasedGenericAttributeType_Source3()
+        {
+            var source = @"
+using System;
+using Alias<T> = C<T>;
+using Alias<T1, T2, T3> = C<T1, T2, T3>;
+
+[Alias<int>]
+[Alias<int, int>]
+[Alias<int, int, int>]
+[Alias<int, int, int, int>]
+class Test
+{
+}
+
+public class C<T> : C<T, T, T>
+{
+}
+
+public class C<T1, T2, T3> : Attribute
+{
+}
+";
+
+            var comp = CreateCompilation(source, parseOptions: TestOptions.Regular10);
+            comp.VerifyDiagnostics(
+                // (4,12): error CS8652: The feature 'using generic alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // using Alias<T1, T2, T3> = C<T1, T2, T3>;
+                Diagnostic(ErrorCode.ERR_FeatureInPreview, "<T1, T2, T3>").WithArguments("using generic alias").WithLocation(4, 12),
+                // (3,12): error CS8652: The feature 'using generic alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // using Alias<T> = C<T>;
+                Diagnostic(ErrorCode.ERR_FeatureInPreview, "<T>").WithArguments("using generic alias").WithLocation(3, 12),
+                // (18,30): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // public class C<T1, T2, T3> : Attribute
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Attribute").WithArguments("generic attributes", "11.0").WithLocation(18, 30),
+                // (14,21): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // public class C<T> : C<T, T, T>
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "C<T, T, T>").WithArguments("generic attributes", "11.0").WithLocation(14, 21),
+                // (7,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int>").WithArguments("Alias", "using alias", "1").WithLocation(7, 2),
+                // (9,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int, int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int, int, int>").WithArguments("Alias", "using alias", "1").WithLocation(9, 2),
+                // (6,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int>").WithArguments("generic attributes", "11.0").WithLocation(6, 2),
+                // (7,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int, int>").WithArguments("generic attributes", "11.0").WithLocation(7, 2),
+                // (8,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int, int, int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int, int, int>").WithArguments("generic attributes", "11.0").WithLocation(8, 2),
+                // (9,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
+                // [Alias<int, int, int, int>]
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int, int, int, int>").WithArguments("generic attributes", "11.0").WithLocation(9, 2));
+
+            comp = CreateCompilation(source, parseOptions: TestOptions.RegularPreview);
+            comp.VerifyDiagnostics(
+                // (7,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int>").WithArguments("Alias", "using alias", "1").WithLocation(7, 2),
+                // (9,2): error CS0305: Using the generic using alias 'Alias' requires 1 type arguments
+                // [Alias<int, int, int, int>]
+                Diagnostic(ErrorCode.ERR_BadArity, "Alias<int, int, int, int>").WithArguments("Alias", "using alias", "1").WithLocation(9, 2));
         }
 
         [WorkItem(611177, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/611177")]
@@ -8777,13 +8911,13 @@ class Test
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias").WithArguments("generic attributes", "11.0").WithLocation(4, 2),
                 // (5,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<>").WithArguments("Alias", "using alias").WithLocation(5, 2),
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<>").WithArguments("Alias", "using alias").WithLocation(5, 2),
                 // (5,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
                 // [Alias<>]
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<>").WithArguments("generic attributes", "11.0").WithLocation(5, 2),
                 // (6,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                 // [Alias<int>]
-                Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(6, 2),
+                Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(6, 2),
                 // (6,2): error CS8936: Feature 'generic attributes' is not available in C# 10.0. Please use language version 11.0 or greater.
                 // [Alias<int>]
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion10, "Alias<int>").WithArguments("generic attributes", "11.0").WithLocation(6, 2));
@@ -8794,10 +8928,10 @@ class Test
             comp.VerifyDiagnostics(
                     // (5,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                     // [Alias<>]
-                    Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<>").WithArguments("Alias", "using alias").WithLocation(5, 2),
+                    Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<>").WithArguments("Alias", "using alias").WithLocation(5, 2),
                     // (6,2): error CS0307: The using alias 'Alias' cannot be used with type arguments
                     // [Alias<int>]
-                    Diagnostic(ErrorCode.ERR_TypeArgsNotAllowed, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(6, 2));
+                    Diagnostic(ErrorCode.ERR_HasNoTypeVars, "Alias<int>").WithArguments("Alias", "using alias").WithLocation(6, 2));
         }
 
         [WorkItem(611177, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/611177")]

@@ -13,16 +13,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
     internal sealed class ErrorMethodSymbol : MethodSymbol
     {
-        public static readonly ErrorMethodSymbol UnknownMethod = new ErrorMethodSymbol(ErrorTypeSymbol.UnknownResultType, ErrorTypeSymbol.UnknownResultType, string.Empty);
+        public static readonly ErrorMethodSymbol UnknownMethod = new ErrorMethodSymbol(ErrorTypeSymbol.UnknownResultType, ErrorTypeSymbol.UnknownResultType, ErrorTypeSymbol.UnknownResultType, string.Empty);
 
         private readonly TypeSymbol _containingType;
         private readonly TypeSymbol _returnType;
+        private readonly TypeSymbol _returnTypeWithoutUnwrappingAliasTarget;
         private readonly string _name;
 
-        public ErrorMethodSymbol(TypeSymbol containingType, TypeSymbol returnType, string name)
+        public ErrorMethodSymbol(TypeSymbol containingType, TypeSymbol returnType, TypeSymbol returnTypeWithoutUnwrappingAliasTarget, string name)
         {
             _containingType = containingType;
             _returnType = returnType;
+            _returnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget;
             _name = name;
         }
 
@@ -163,6 +165,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override TypeWithAnnotations ReturnTypeWithAnnotations
         {
             get { return TypeWithAnnotations.Create(_returnType); }
+        }
+
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return _returnTypeWithoutUnwrappingAliasTarget;
         }
 
         public override bool ReturnsVoid

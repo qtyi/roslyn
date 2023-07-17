@@ -107,6 +107,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
+        internal override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
+            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
+
         public override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
             => ImmutableArray<TypeParameterConstraintKind>.Empty;
 
@@ -122,6 +125,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 LazyMethodChecks();
                 return _lazyReturnType;
             }
+        }
+
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return ReturnType;
         }
 
         private DeclarationModifiers MakeModifiers(SyntaxTokenList modifiers, Location location, BindingDiagnosticBag diagnostics, out bool modifierErrors)

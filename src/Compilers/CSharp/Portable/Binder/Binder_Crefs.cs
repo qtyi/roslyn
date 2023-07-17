@@ -795,6 +795,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 isInitOnly: false,
                                 isStatic: false,
                                 returnType: default,
+                                returnTypeWithoutUnwrappingAliasTarget: null,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
                             break;
@@ -810,6 +811,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 name: null,
                                 refKind: RefKind.None,
                                 type: default,
+                                typeWithoutUnwrappingAliasTarget: null,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 isStatic: false,
                                 explicitInterfaceImplementations: ImmutableArray<PropertySymbol>.Empty);
@@ -936,8 +938,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 Debug.Assert(parameterListSyntax.Parent is object);
                 TypeSymbol type = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, diagnostics);
+                TypeSymbol typeWithoutUnwrappingAliasTarget = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
 
-                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
+                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), typeWithoutUnwrappingAliasTarget, ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
             }
 
             return parameterBuilder.ToImmutableAndFree();
@@ -946,14 +949,19 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <remarks>
         /// Keep in sync with CSharpSemanticModel.GetSpeculativelyBoundExpressionWithoutNullability.
         /// </remarks>
-        private TypeSymbol BindCrefParameterOrReturnType(TypeSyntax typeSyntax, MemberCrefSyntax memberCrefSyntax, BindingDiagnosticBag diagnostics)
+        private TypeSymbol BindCrefParameterOrReturnType(TypeSyntax typeSyntax, MemberCrefSyntax memberCrefSyntax, BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
         {
             // After much deliberation, we eventually decided to suppress lookup of inherited members within
             // crefs, in order to match dev11's behavior (Changeset #829014).  Unfortunately, it turns out
             // that dev11 does not suppress these members when performing lookup within parameter and return
             // types, within crefs (DevDiv #586815, #598371).
             Debug.Assert(InCrefButNotParameterOrReturnType);
-            Binder parameterOrReturnTypeBinder = this.WithAdditionalFlags(BinderFlags.CrefParameterOrReturnType);
+            var flags = BinderFlags.CrefParameterOrReturnType;
+            if (!unwrapAliasTarget)
+            {
+                flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+            }
+            Binder parameterOrReturnTypeBinder = this.WithAdditionalFlags(flags);
 
             // It would be nice to pull this binder out of the factory so we wouldn't have to worry about them getting out
             // of sync, but this code is also used for included crefs, which don't have BinderFactories.

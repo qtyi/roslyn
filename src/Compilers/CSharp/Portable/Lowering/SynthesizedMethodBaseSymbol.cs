@@ -84,12 +84,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 compilation.TrySynthesizeAttribute(WellKnownMember.System_Runtime_CompilerServices_CompilerGeneratedAttribute__ctor));
         }
 
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return ReturnType;
+        }
+
         public sealed override ImmutableArray<TypeParameterSymbol> TypeParameters
         {
             get { return _typeParameters; }
         }
 
         public sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
+            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
+
+        internal override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
         public sealed override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()

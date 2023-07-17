@@ -1493,7 +1493,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             UnboundLambda anonymousFunction = (UnboundLambda)source;
-            if (!anonymousFunction.HasExplicitReturnType(out _, out TypeWithAnnotations anonymousFunctionReturnType))
+            if (!anonymousFunction.HasExplicitReturnType(out _, out TypeWithAnnotations anonymousFunctionReturnType, out _))
             {
                 return;
             }

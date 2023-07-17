@@ -409,7 +409,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool callerIsSemanticModel = originalBinder.IsSemanticModelBinder;
 
             AliasAndUsingDirective alias;
-            if (usingAliases.TryGetValue(new NameWithArity(name, arity), out alias))
+
+            if (!usingAliases.TryGetValue(new NameWithArity(name, arity), out alias))
+            {
+                alias = usingAliases.Where(pair => pair.Key.Name == name).OrderBy(pair => pair.Key.Arity).Select(pair => pair.Value).FirstOrDefault();
+            }
+            if (alias.Alias is not null && alias.UsingDirectiveReference is not null)
             {
                 // Found a match in our list of normal aliases.  Mark the alias as being seen so that
                 // it won't be reported to the user as something that can be removed.

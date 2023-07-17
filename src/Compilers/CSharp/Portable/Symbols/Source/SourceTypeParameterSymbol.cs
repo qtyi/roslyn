@@ -94,10 +94,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return (bounds != null) ? bounds.ConstraintTypes : ImmutableArray<TypeWithAnnotations>.Empty;
         }
 
-        internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesUnwrappedAliasTarget(ConsList<TypeParameterSymbol> inProgress)
+        internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress)
         {
             var bounds = this.GetBounds(inProgress);
-            return (bounds != null) ? bounds.ConstraintTypesUnwrappedAliasTarget : ImmutableArray<TypeWithAnnotations>.Empty;
+            return (bounds != null) ? bounds.ConstraintTypesWithoutUnwrappingAliasTarget : ImmutableArray<TypeWithAnnotations>.Empty;
         }
 
         internal override ImmutableArray<NamedTypeSymbol> GetInterfaces(ConsList<TypeParameterSymbol> inProgress)
@@ -258,7 +258,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         private void CheckConstraintTypeConstraints(BindingDiagnosticBag diagnostics)
         {
-            var constraintTypes = this.ConstraintTypesUnwrappedAliasTarget;
+            var constraintTypes = this.ConstraintTypesWithoutUnwrappingAliasTarget;
             if (constraintTypes.Length == 0)
             {
                 return;
@@ -586,8 +586,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
-            var constraintTypesUnwrappedAliasTarget = _owner.GetTypeParameterConstraintTypesUnwrappedAliasTarget(this.Ordinal);
-            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesUnwrappedAliasTarget, inherited: false, this.DeclaringCompilation, diagnostics);
+            var constraintTypesWithoutUnwrappingAliasTarget = _owner.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget(this.Ordinal);
+            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited: false, this.DeclaringCompilation, diagnostics);
         }
 
         private TypeParameterConstraintKind GetConstraintKinds()
@@ -722,9 +722,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
-            var constraintsUnwrappedAliasTarget = _owner.GetTypeParameterConstraintTypesUnwrappedAliasTarget();
-            var constraintTypesUnwrappedAliasTarget = constraints.IsEmpty ? ImmutableArray<TypeWithAnnotations>.Empty : constraints[Ordinal];
-            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesUnwrappedAliasTarget, inherited: false, this.DeclaringCompilation, diagnostics);
+            var constraintsWithoutUnwrappingAliasTarget = _owner.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget();
+            var constraintTypesWithoutUnwrappingAliasTarget = constraints.IsEmpty ? ImmutableArray<TypeWithAnnotations>.Empty : constraints[Ordinal];
+            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited: false, this.DeclaringCompilation, diagnostics);
         }
 
         private TypeParameterConstraintKind GetConstraintKinds()
@@ -973,8 +973,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Debug.Assert(map != null);
 
             var constraintTypes = map.SubstituteTypes(typeParameter.ConstraintTypesNoUseSiteDiagnostics);
-            var constraintTypesUnwrappedAliasTarget = map.SubstituteTypes(typeParameter.ConstraintTypesUnwrappedAliasTarget);
-            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesUnwrappedAliasTarget, inherited: true, this.DeclaringCompilation, diagnostics);
+            var constraintTypesWithoutUnwrappingAliasTarget = map.SubstituteTypes(typeParameter.ConstraintTypesWithoutUnwrappingAliasTarget);
+            return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited: true, this.DeclaringCompilation, diagnostics);
         }
 
         /// <summary>

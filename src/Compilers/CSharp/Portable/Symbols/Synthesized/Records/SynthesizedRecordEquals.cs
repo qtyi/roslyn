@@ -32,16 +32,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return result;
         }
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
+        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
             MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.Annotated;
-            return (ReturnType: TypeWithAnnotations.Create(Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics)),
+            var returnType = Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics);
+            return (ReturnType: TypeWithAnnotations.Create(returnType),
+                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
                     Parameters: ImmutableArray.Create<ParameterSymbol>(
                                     new SourceSimpleParameterSymbol(owner: this,
                                                                     TypeWithAnnotations.Create(ContainingType, annotation),
+                                                                    ContainingType,
                                                                     ordinal: 0, RefKind.None, ScopedKind.None, "other", Locations)),
                     IsVararg: false,
                     DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);

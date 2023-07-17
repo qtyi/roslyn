@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public TypeWithState WithSuppression(bool suppress) => suppress ? new TypeWithState(Type, NullableFlowState.NotNull) : this;
 
-        public TypeWithAnnotations ToTypeWithAnnotations(CSharpCompilation compilation, bool asAnnotatedType = false)
+        private TypeWithAnnotations ToTypeWithAnnotations(CSharpCompilation compilation, bool asAnnotatedType, bool withoutUnwrappingAliasTarget)
         {
             if (Type?.IsTypeParameterDisallowingAnnotationInCSharp8() == true)
             {
@@ -92,10 +92,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             NullableAnnotation annotation = asAnnotatedType ?
                 (Type?.IsValueType == true ? NullableAnnotation.NotAnnotated : NullableAnnotation.Annotated) :
                 (State.IsNotNull() || Type?.CanContainNull() == false ? NullableAnnotation.NotAnnotated : NullableAnnotation.Annotated);
+#warning withoutUnwrappingAliasTarget not implemented.
             return TypeWithAnnotations.Create(this.Type, annotation);
         }
 
+        public TypeWithAnnotations ToTypeWithAnnotations(CSharpCompilation compilation, bool asAnnotatedType = false) =>
+            ToTypeWithAnnotations(compilation, asAnnotatedType, withoutUnwrappingAliasTarget: false);
+
         public TypeWithAnnotations ToAnnotatedTypeWithAnnotations(CSharpCompilation compilation) =>
-            ToTypeWithAnnotations(compilation, asAnnotatedType: true);
+            ToTypeWithAnnotations(compilation, asAnnotatedType: true, withoutUnwrappingAliasTarget: false);
+
+        public TypeSymbol ToTypeWithoutUnwrappingAliasTarget(CSharpCompilation compilation) =>
+            ToTypeWithAnnotations(compilation, asAnnotatedType: false, withoutUnwrappingAliasTarget: true).Type;
     }
 }

@@ -727,12 +727,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return (isAdder ? "add_" : "remove_") + eventName;
         }
 
-        protected TypeWithAnnotations BindEventType(Binder binder, TypeSyntax typeSyntax, BindingDiagnosticBag diagnostics)
+        protected TypeWithAnnotations BindEventType(Binder binder, TypeSyntax typeSyntax, BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
         {
             // NOTE: no point in reporting unsafe errors in the return type - anything unsafe will either
             // fail to be a delegate or will be (invalidly) passed as a type argument.
             // Prevent constraint checking.
-            binder = binder.WithAdditionalFlagsAndContainingMemberOrLambda(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressUnsafeDiagnostics, this);
+            var flags = BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressUnsafeDiagnostics;
+            if (!unwrapAliasTarget)
+            {
+                flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+            }
+
+            binder = binder.WithAdditionalFlagsAndContainingMemberOrLambda(flags, this);
 
             return binder.BindType(typeSyntax, diagnostics);
         }
@@ -743,7 +749,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var location = this.Locations[0];
 
             this.CheckModifiersAndType(diagnostics);
-            this.Type.CheckAllConstraints(compilation, conversions, location, diagnostics);
+            this.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(compilation, conversions, location, diagnostics);
 
             if (compilation.ShouldEmitNativeIntegerAttributes(Type))
             {

@@ -15,9 +15,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private readonly LocalSymbol _originalVariable;
         private readonly TypeWithAnnotations _type;
+        private readonly TypeSymbol _typeWithoutUnwrappingAliasTarget;
         private readonly Symbol _containingSymbol;
 
-        public TypeSubstitutedLocalSymbol(LocalSymbol originalVariable, TypeWithAnnotations type, Symbol containingSymbol)
+        public TypeSubstitutedLocalSymbol(LocalSymbol originalVariable, TypeWithAnnotations type, TypeSymbol typeWithoutUnwrappingAliasTarget, Symbol containingSymbol)
         {
             Debug.Assert(originalVariable != null);
             Debug.Assert(type.HasType);
@@ -26,6 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             _originalVariable = originalVariable;
             _type = type;
+            _typeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget;
             _containingSymbol = containingSymbol;
         }
 
@@ -77,6 +79,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override TypeWithAnnotations TypeWithAnnotations
         {
             get { return _type; }
+        }
+
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        {
+            return _typeWithoutUnwrappingAliasTarget;
         }
 
         internal override SyntaxToken IdentifierToken
@@ -140,6 +147,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 #endif
                         ),
                     _type,
+                    _typeWithoutUnwrappingAliasTarget,
                     _containingSymbol
                 );
         }

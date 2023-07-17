@@ -1023,9 +1023,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     var targetParamsBuilder = ArrayBuilder<ParameterSymbol>.GetInstance(method.Parameters.Length);
                     foreach (var param in method.Parameters)
                     {
+                        var paramType = translator.Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode);
                         targetParamsBuilder.Add(
                             new SignatureOnlyParameterSymbol(
-                                translator.Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                                paramType,
+                                paramType.Type,
                                 translator.RetargetModifiers(param.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                                 param.IsParams,
                                 param.RefKind));
@@ -1035,6 +1037,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     // IndexedTypeParameterSymbols should work just fine as the type parameters for the method.
                     // We can't produce "real" TypeParameterSymbols without finding the method first and this
                     // is what we are trying to do right now.
+                    var returnType = translator.Retarget(method.ReturnTypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode);
                     var targetMethod = new SignatureOnlyMethodSymbol(
                         method.Name,
                         retargetedType,
@@ -1045,7 +1048,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                         method.RefKind,
                         method.IsInitOnly,
                         method.IsStatic,
-                        translator.Retarget(method.ReturnTypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                        returnType,
+                        returnType.Type,
                         translator.RetargetModifiers(method.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                         ImmutableArray<MethodSymbol>.Empty);
 
@@ -1101,20 +1105,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                 var targetParamsBuilder = ArrayBuilder<ParameterSymbol>.GetInstance(property.Parameters.Length);
                 foreach (var param in property.Parameters)
                 {
+                    var paramType = Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode);
                     targetParamsBuilder.Add(
                         new SignatureOnlyParameterSymbol(
-                            Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                            paramType,
+                            paramType.Type,
                             RetargetModifiers(param.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                             param.IsParams,
                             param.RefKind));
                 }
 
+                var returnType = Retarget(property.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode);
                 var targetProperty = new SignatureOnlyPropertySymbol(
                     property.Name,
                     retargetedType,
                     targetParamsBuilder.ToImmutableAndFree(),
                     property.RefKind,
-                    Retarget(property.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                    returnType,
+                    returnType.Type,
                     RetargetModifiers(property.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                     property.IsStatic,
                     ImmutableArray<PropertySymbol>.Empty);

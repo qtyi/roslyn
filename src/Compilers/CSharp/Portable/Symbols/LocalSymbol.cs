@@ -72,6 +72,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
+        internal abstract TypeSymbol GetTypeWithoutUnwrappingAliasTarget();
+
         /// <summary>
         /// WARN WARN WARN: If you access this via the semantic model, things will break (since the initializer may not have been bound).
         /// 

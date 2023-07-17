@@ -217,6 +217,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return UnderlyingMethod.GetDllImportData();
         }
 
+        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return ReturnType;
+        }
+
         internal override MarshalPseudoCustomAttributeData ReturnValueMarshallingInformation
         {
             get

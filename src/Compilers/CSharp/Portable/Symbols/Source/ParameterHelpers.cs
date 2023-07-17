@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 addRefReadOnlyModifier,
                 suppressUseSiteDiagnostics: false,
                 lastIndex: syntax.Parameters.Count - 1,
-                parameterCreationFunc: (Binder context, Symbol owner, TypeWithAnnotations parameterType,
+                parameterCreationFunc: (Binder context, Symbol owner, TypeWithAnnotations parameterType, TypeSymbol parameterTypeWithoutUnwrappingAliasTarget,
                                         ParameterSyntax syntax, RefKind refKind, int ordinal,
                                         SyntaxToken paramsKeyword, SyntaxToken thisKeyword, bool addRefReadOnlyModifier,
                                         ScopedKind scope,
@@ -47,6 +47,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         context,
                         owner,
                         parameterType,
+                        parameterTypeWithoutUnwrappingAliasTarget,
                         syntax,
                         refKind,
                         syntax.Identifier,
@@ -77,7 +78,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 addRefReadOnlyModifier: true,
                 suppressUseSiteDiagnostics,
                 parametersList.Count - 2,
-                parameterCreationFunc: (Binder binder, FunctionPointerMethodSymbol owner, TypeWithAnnotations parameterType,
+                parameterCreationFunc: (Binder binder, FunctionPointerMethodSymbol owner, TypeWithAnnotations parameterType, TypeSymbol parameterTypeWithoutUnwrappingAliasTarget,
                                         FunctionPointerParameterSyntax syntax, RefKind refKind, int ordinal,
                                         SyntaxToken paramsKeyword, SyntaxToken thisKeyword, bool addRefReadOnlyModifier,
                                         ScopedKind scope,
@@ -100,6 +101,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     return new FunctionPointerParameterSymbol(
                         parameterType,
+                        parameterTypeWithoutUnwrappingAliasTarget,
                         refKind,
                         ordinal,
                         owner,
@@ -119,7 +121,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool addRefReadOnlyModifier,
             bool suppressUseSiteDiagnostics,
             int lastIndex,
-            Func<Binder, TOwningSymbol, TypeWithAnnotations, TParameterSyntax, RefKind, int, SyntaxToken, SyntaxToken, bool, ScopedKind, BindingDiagnosticBag, TParameterSymbol> parameterCreationFunc,
+            Func<Binder, TOwningSymbol, TypeWithAnnotations, TypeSymbol, TParameterSyntax, RefKind, int, SyntaxToken, SyntaxToken, bool, ScopedKind, BindingDiagnosticBag, TParameterSymbol> parameterCreationFunc,
             bool parsingFunctionPointer = false)
             where TParameterSyntax : BaseParameterSyntax
             where TParameterSymbol : ParameterSymbol
@@ -177,6 +179,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 Debug.Assert(parameterSyntax.Type != null);
                 var parameterType = withTypeParametersBinder.BindType(parameterSyntax.Type, diagnostics, suppressUseSiteDiagnostics: suppressUseSiteDiagnostics);
+                var parameterTypeWithoutUnwrappingAliasTarget = withTypeParametersBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(parameterSyntax.Type, BindingDiagnosticBag.Discarded, suppressUseSiteDiagnostics: suppressUseSiteDiagnostics).Type;
 
                 if (!allowRefOrOut && (refKind == RefKind.Ref || refKind == RefKind.Out))
                 {
@@ -186,7 +189,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     diagnostics.Add(ErrorCode.ERR_IllegalRefParam, refnessKeyword.GetLocation());
                 }
 
-                TParameterSymbol parameter = parameterCreationFunc(withTypeParametersBinder, owner, parameterType, parameterSyntax, refKind, parameterIndex, paramsKeyword, thisKeyword, addRefReadOnlyModifier, scope, diagnostics);
+                TParameterSymbol parameter = parameterCreationFunc(withTypeParametersBinder, owner, parameterType, parameterTypeWithoutUnwrappingAliasTarget, parameterSyntax, refKind, parameterIndex, paramsKeyword, thisKeyword, addRefReadOnlyModifier, scope, diagnostics);
 
                 ScopedKind? declaredScope = parameter is SourceParameterSymbol s ? s.DeclaredScope : null;
                 ReportParameterErrors(owner, parameterSyntax, parameter.Ordinal, lastParameterIndex: lastIndex, parameter.IsParams, parameter.TypeWithAnnotations,

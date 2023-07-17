@@ -17,6 +17,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
            SyntaxReference? syntaxRef,
            SyntaxList<AttributeListSyntax> attributeLists,
            TypeWithAnnotations parameterType,
+           TypeSymbol? parameterTypeWithoutUnwrappingAliasTarget,
            int ordinal,
            RefKind refKind,
            ScopedKind scope,
@@ -24,7 +25,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
            bool isDiscard,
            bool isParams,
            ImmutableArray<Location> locations)
-           : base(owner, ordinal, parameterType, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis: false, scope)
+           : base(owner, ordinal, parameterType, parameterTypeWithoutUnwrappingAliasTarget, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis: false, scope)
         {
             _attributeLists = attributeLists;
             IsDiscard = isDiscard;

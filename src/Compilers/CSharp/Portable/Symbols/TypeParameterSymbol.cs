@@ -88,12 +88,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal ImmutableArray<TypeWithAnnotations> ConstraintTypesUnwrappedAliasTarget
+        internal ImmutableArray<TypeWithAnnotations> ConstraintTypesWithoutUnwrappingAliasTarget
         {
             get
             {
                 this.EnsureAllConstraintsAreResolved();
-                return this.GetConstraintTypesUnwrappedAliasTarget(ConsList<TypeParameterSymbol>.Empty);
+                return this.GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol>.Empty);
             }
         }
 
@@ -402,7 +402,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal abstract ImmutableArray<TypeWithAnnotations> GetConstraintTypes(ConsList<TypeParameterSymbol> inProgress);
 
-        internal abstract ImmutableArray<TypeWithAnnotations> GetConstraintTypesUnwrappedAliasTarget(ConsList<TypeParameterSymbol> inProgress);
+        internal abstract ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress);
 
         internal abstract ImmutableArray<NamedTypeSymbol> GetInterfaces(ConsList<TypeParameterSymbol> inProgress);
 

@@ -424,6 +424,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         public TypeSymbol? Type { get; }
+
+        public TypeSymbol? TypeWithoutUnwrappingAliasTarget { get; }
     }
 
     internal abstract partial class BoundValuePlaceholderBase : BoundExpression

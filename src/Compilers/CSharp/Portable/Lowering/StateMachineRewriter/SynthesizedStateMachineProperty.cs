@@ -48,6 +48,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _getter.ReturnTypeWithAnnotations; }
         }
 
+        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        {
+            return Type;
+        }
+
         public override ImmutableArray<CustomModifier> RefCustomModifiers
         {
             get { return _getter.RefCustomModifiers; }

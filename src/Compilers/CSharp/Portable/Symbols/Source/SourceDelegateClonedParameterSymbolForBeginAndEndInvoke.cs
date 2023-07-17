@@ -26,10 +26,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // they throw PlatformNotSupportedException at runtime and we feel it's unnecessary to support them.
         internal override int CallerArgumentExpressionParameterIndex => -1;
 
-        internal override ParameterSymbol WithCustomModifiersAndParams(TypeSymbol newType, ImmutableArray<CustomModifier> newCustomModifiers, ImmutableArray<CustomModifier> newRefCustomModifiers, bool newIsParams)
+        internal override ParameterSymbol WithCustomModifiersAndParams(TypeSymbol newType, TypeSymbol newTypeWithoutUnwrappingAliasTarget, ImmutableArray<CustomModifier> newCustomModifiers, ImmutableArray<CustomModifier> newRefCustomModifiers, bool newIsParams)
         {
             return new SourceDelegateClonedParameterSymbolForBeginAndEndInvoke(
-                _originalParam.WithCustomModifiersAndParamsCore(newType, newCustomModifiers, newRefCustomModifiers, newIsParams),
+                _originalParam.WithCustomModifiersAndParamsCore(newType, newTypeWithoutUnwrappingAliasTarget, newCustomModifiers, newRefCustomModifiers, newIsParams),
                 (SourceDelegateMethodSymbol)ContainingSymbol,
                 Ordinal);
         }

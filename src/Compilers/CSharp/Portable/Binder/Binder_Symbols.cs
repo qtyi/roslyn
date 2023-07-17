@@ -1262,6 +1262,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                     diagnostics);
             }
 
+            // Unwrap if 'resultType' is AliasTargetTypeSymbol.
+            if (!this.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
+            {
+                resultType = resultType.Unwrap();
+            }
+
             if (unconstructedTypeOrAlias.IsAlias)
             {
                 if (Compilation.IsFeatureEnabled(MessageID.IDS_FeatureUsingTypeAlias) ? resultType.ContainsPointer() : resultType.IsUnsafe())
@@ -1604,13 +1610,6 @@ namespace Microsoft.CodeAnalysis.CSharp
                                                   typeSyntax, typeArgumentsSyntax, basesBeingResolved);
                         break;
                 }
-            }
-
-
-            // Unwrap if 'type' is AliasTargetTypeSymbol.
-            if (!this.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
-            {
-                type = type.Unwrap();
             }
 
             return type;

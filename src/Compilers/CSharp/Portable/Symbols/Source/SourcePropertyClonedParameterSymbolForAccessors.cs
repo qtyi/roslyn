@@ -22,10 +22,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override int CallerArgumentExpressionParameterIndex => _originalParam.CallerArgumentExpressionParameterIndex;
 
-        internal override ParameterSymbol WithCustomModifiersAndParams(TypeSymbol newType, ImmutableArray<CustomModifier> newCustomModifiers, ImmutableArray<CustomModifier> newRefCustomModifiers, bool newIsParams)
+        internal override ParameterSymbol WithCustomModifiersAndParams(TypeSymbol newType, TypeSymbol newTypeWithoutUnwrappingAliasTarget, ImmutableArray<CustomModifier> newCustomModifiers, ImmutableArray<CustomModifier> newRefCustomModifiers, bool newIsParams)
         {
             return new SourcePropertyClonedParameterSymbolForAccessors(
-                _originalParam.WithCustomModifiersAndParamsCore(newType, newCustomModifiers, newRefCustomModifiers, newIsParams),
+                _originalParam.WithCustomModifiersAndParamsCore(newType, newTypeWithoutUnwrappingAliasTarget, newCustomModifiers, newRefCustomModifiers, newIsParams),
                 this.ContainingSymbol);
         }
     }
