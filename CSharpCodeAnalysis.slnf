@@ -5,8 +5,7 @@
       "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
       "src\\Compilers\\CSharp\\Test\\Emit2\\Microsoft.CodeAnalysis.CSharp.Emit2.UnitTests.csproj",
       "src\\Compilers\\CSharp\\Test\\Emit\\Microsoft.CodeAnalysis.CSharp.Emit.UnitTests.csproj",
-      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
-      "src\\Dependencies\\CodeAnalysis.Debugging\\Microsoft.CodeAnalysis.Debugging.Package.csproj"
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj"
     ]
   }
 }

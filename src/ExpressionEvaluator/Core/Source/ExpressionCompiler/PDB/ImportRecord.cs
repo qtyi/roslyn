@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Debugging;
 using Microsoft.CodeAnalysis.Symbols;
 
@@ -12,7 +11,6 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
     {
         public readonly ImportTargetKind TargetKind;
         public readonly string? Alias;
-        public readonly ImmutableArray<string> TypeParameters;
 
         // target type of a type import (C#)
         public readonly ITypeSymbolInternal? TargetType;
@@ -29,7 +27,6 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
         public ImportRecord(
             ImportTargetKind targetKind,
             string? alias = null,
-            ImmutableArray<string> typeParameters = default,
             ITypeSymbolInternal? targetType = null,
             string? targetString = null,
             IAssemblySymbolInternal? targetAssembly = null,
@@ -37,7 +34,6 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
         {
             TargetKind = targetKind;
             Alias = alias;
-            TypeParameters = typeParameters;
             TargetType = targetType;
             TargetString = targetString;
             TargetAssembly = targetAssembly;

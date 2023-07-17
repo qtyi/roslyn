@@ -1074,7 +1074,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                                 continue;
                             }
 
-                            if (!TryAddImport(importRecord.Alias, importRecord.TypeParameters.Length, typeSymbol, usingsBuilder, usingAliases, binder, importRecord))
+                            if (!TryAddImport(importRecord.Alias, typeSymbol, usingsBuilder, usingAliases, binder, importRecord))
                             {
                                 continue;
                             }
@@ -1141,7 +1141,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                                 continue; // Don't add anything for this import.
                             }
 
-                            if (!TryAddImport(importRecord.Alias, 0, namespaceSymbol, usingsBuilder, usingAliases, binder, importRecord))
+                            if (!TryAddImport(importRecord.Alias, namespaceSymbol, usingsBuilder, usingAliases, binder, importRecord))
                             {
                                 continue;
                             }
@@ -1180,7 +1180,6 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
 
         private static bool TryAddImport(
             string? alias,
-            int arity,
             NamespaceOrTypeSymbol targetSymbol,
             ArrayBuilder<NamespaceOrTypeAndUsingDirective> usingsBuilder,
             ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Builder usingAliases,
@@ -1200,7 +1199,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                 }
 
                 var aliasSymbol = AliasSymbol.CreateCustomDebugInfoAlias(targetSymbol, aliasSyntax.Identifier, binder.ContainingMemberOrLambda, isExtern: false);
-                usingAliases.Add(new NameWithArity(alias, arity), new AliasAndUsingDirective(aliasSymbol, usingDirective: null));
+                usingAliases.Add(new NameWithArity(alias, 0), new AliasAndUsingDirective(aliasSymbol, usingDirective: null));
             }
 
             return true;

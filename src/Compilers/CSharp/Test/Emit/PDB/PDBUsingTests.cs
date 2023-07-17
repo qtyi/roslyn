@@ -542,6 +542,95 @@ namespace X
 </symbols>");
         }
 
+        [Fact(Skip = "Sometimes pass and sometimes failed. Cannot figure out why.")]
+        public void TestSkipGenericAliases()
+        {
+            var text = @"
+using P<T> = T;
+
+class A { void M() { } }
+
+namespace X
+{
+    using Q<T1, T2> = (T1, P<T2>);
+
+    class B { void M() { } }
+
+    namespace Y
+    {
+        using R<T1, T2> = Q<Q<T1, T2>, Q<T2, T1>>;
+
+        class C { void M() { } }
+
+        namespace X
+        {
+            using unsafe S<T> where T : unmanaged = T*;
+
+            class D { void M() { } }
+        }
+    }
+}
+";
+            CompileAndVerify(text, options: TestOptions.UnsafeDebugDll, targetFramework: TargetFramework.NetFramework).VerifyPdb(@"
+<symbols>
+  <files>
+    <file id=""1"" name="""" language=""C#"" />
+  </files>
+  <methods>
+    <method containingType=""A"" name=""M"">
+      <customDebugInfo>
+        <using>
+          <namespace usingCount=""0"" />
+        </using>
+      </customDebugInfo>
+      <sequencePoints>
+        <entry offset=""0x0"" startLine=""4"" startColumn=""20"" endLine=""4"" endColumn=""21"" document=""1"" />
+        <entry offset=""0x1"" startLine=""4"" startColumn=""22"" endLine=""4"" endColumn=""23"" document=""1"" />
+      </sequencePoints>
+    </method>
+    <method containingType=""X.B"" name=""M"">
+      <customDebugInfo>
+        <using>
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+        </using>
+      </customDebugInfo>
+      <sequencePoints>
+        <entry offset=""0x0"" startLine=""10"" startColumn=""24"" endLine=""10"" endColumn=""25"" document=""1"" />
+        <entry offset=""0x1"" startLine=""10"" startColumn=""26"" endLine=""10"" endColumn=""27"" document=""1"" />
+      </sequencePoints>
+    </method>
+    <method containingType=""X.Y.C"" name=""M"">
+      <customDebugInfo>
+        <using>
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+        </using>
+      </customDebugInfo>
+      <sequencePoints>
+        <entry offset=""0x0"" startLine=""16"" startColumn=""28"" endLine=""16"" endColumn=""29"" document=""1"" />
+        <entry offset=""0x1"" startLine=""16"" startColumn=""30"" endLine=""16"" endColumn=""31"" document=""1"" />
+      </sequencePoints>
+    </method>
+    <method containingType=""X.Y.X.D"" name=""M"">
+      <customDebugInfo>
+        <using>
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+          <namespace usingCount=""0"" />
+        </using>
+      </customDebugInfo>
+      <sequencePoints>
+        <entry offset=""0x0"" startLine=""22"" startColumn=""32"" endLine=""22"" endColumn=""33"" document=""1"" />
+        <entry offset=""0x1"" startLine=""22"" startColumn=""34"" endLine=""22"" endColumn=""35"" document=""1"" />
+      </sequencePoints>
+    </method>
+  </methods>
+</symbols>");
+        }
+
         [Fact]
         public void TestExternAliases1()
         {

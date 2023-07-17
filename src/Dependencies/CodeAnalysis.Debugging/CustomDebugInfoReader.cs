@@ -565,7 +565,6 @@ RETRY:
         ///  "USystem" -> <namespace name="System" />
         ///  "AS USystem" -> <alias name="S" target="System" kind="namespace" />
         ///  "AC TSystem.Console" -> <alias name="C" target="System.Console" kind="type" />
-        ///  "ASD`1[T] TSystem.Collections.Generic.Dictionary`2[System.String,T]" -> <alias name="ASD`1[T]" target="System.Collections.Generic.Dictionary`2[System.String,T]" kind="type" />
         ///  "AS ESystem alias" -> <alias name="S" qualifier="alias" target="System" kind="type" />
         ///  "XOldLib" -> <extern alias="OldLib" />
         ///  "ZOldLib assembly" -> <externinfo name="OldLib" assembly="assembly" />
@@ -573,10 +572,9 @@ RETRY:
         ///  "TSystem.Math" -> <type name="System.Math" />
         /// ]]>
         /// </remarks>
-        public static bool TryParseCSharpImportString(string import, out string alias, out string[] typeParameters, out string externAlias, out string target, out ImportTargetKind kind)
+        public static bool TryParseCSharpImportString(string import, out string alias, out string externAlias, out string target, out ImportTargetKind kind)
         {
             alias = null;
-            typeParameters = null;
             externAlias = null;
             target = null;
             kind = default;
@@ -590,7 +588,6 @@ RETRY:
             {
                 case 'U': // C# (namespace) using
                     alias = null;
-                    typeParameters = null;
                     externAlias = null;
                     target = import.Substring(1);
                     kind = ImportTargetKind.Namespace;
@@ -605,13 +602,11 @@ RETRY:
                     }
 
                     alias = null;
-                    typeParameters = null;
                     kind = ImportTargetKind.Namespace;
                     return true;
 
                 case 'T': // C# (type) using
                     alias = null;
-                    typeParameters = null;
                     externAlias = null;
                     target = import.Substring(1);
                     kind = ImportTargetKind.Type;
@@ -621,20 +616,6 @@ RETRY:
                     if (!TrySplit(import, 1, ' ', out alias, out target))
                     {
                         return false;
-                    }
-
-                    if (TrySplit(alias, 0, '`', out var name, out var genericPostfix))
-                    {
-                        int startPos = genericPostfix.IndexOf('[');
-                        int endPos = genericPostfix.IndexOf(']');
-                        if (startPos < 0 || endPos < 0 || startPos > endPos)
-                        {
-                            alias = null;
-                            return false;
-                        }
-
-                        alias = name;
-                        typeParameters = genericPostfix.Substring(startPos, endPos - startPos).Split(',');
                     }
 
                     switch (target[0])
