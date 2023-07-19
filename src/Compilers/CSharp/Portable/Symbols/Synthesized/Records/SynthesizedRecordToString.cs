@@ -36,14 +36,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override SpecialMember OverriddenSpecialMember => SpecialMember.System_Object__ToString;
 
-        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.NotAnnotated;
             var returnType = Binder.GetSpecialType(compilation, SpecialType.System_String, location, diagnostics);
             return (ReturnType: TypeWithAnnotations.Create(returnType, annotation),
-                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
+                    ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(returnType, annotation),
                     Parameters: ImmutableArray<ParameterSymbol>.Empty,
                     IsVararg: false,
                     DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);

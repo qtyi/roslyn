@@ -35,13 +35,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return result;
         }
 
-        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var returnType = Binder.GetSpecialType(compilation, SpecialType.System_Void, location, diagnostics);
             return (ReturnType: TypeWithAnnotations.Create(returnType),
-                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
+                    ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(returnType),
                     Parameters: _ctor.Parameters.SelectAsArray<ParameterSymbol, ImmutableArray<Location>, ParameterSymbol>(
                                         (param, locations) =>
                                             new SourceSimpleParameterSymbol(owner: this,

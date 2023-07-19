@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public SourceSimpleParameterSymbol(
             Symbol owner,
             TypeWithAnnotations parameterType,
-            TypeSymbol parameterTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             int ordinal,
             RefKind refKind,
             ScopedKind scope,

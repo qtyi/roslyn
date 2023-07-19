@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private readonly Symbol _containingSymbol;
         private readonly TypeWithAnnotations _typeWithAnnotations;
-        private readonly TypeSymbol _typeWithoutUnwrappingAliasTarget;
+        private readonly TypeWithAnnotations _typeWithoutUnwrappingAliasTarget;
         private readonly string _name;
         private readonly bool _isIndexer;
         private readonly bool _isIndexedProperty;
@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             _containingSymbol = containingSymbol;
             _typeWithAnnotations = TypeWithAnnotations.Create(type);
-            _typeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget;
+            _typeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(typeWithoutUnwrappingAliasTarget);
             _name = name;
             _isIndexer = isIndexer;
             _isIndexedProperty = isIndexedProperty;
@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override TypeWithAnnotations TypeWithAnnotations { get { return _typeWithAnnotations; } }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
             return _typeWithoutUnwrappingAliasTarget;
         }

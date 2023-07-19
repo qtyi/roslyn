@@ -18,12 +18,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private ImmutableArray<ParameterSymbol> _parameters;
         private readonly TypeWithAnnotations _returnType;
-        private readonly TypeSymbol _returnTypeWithoutUnwrappingAliasTarget;
+        private readonly TypeWithAnnotations _returnTypeWithoutUnwrappingAliasTarget;
 
         protected SourceDelegateMethodSymbol(
             SourceMemberContainerTypeSymbol delegateType,
             TypeWithAnnotations returnType,
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             DelegateDeclarationSyntax syntax,
             MethodKind methodKind,
             DeclarationModifiers declarationModifiers)
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             returnTypeSyntax = returnTypeSyntax.SkipScoped(out _).SkipRefInLocalOrReturn(diagnostics, out RefKind refKind);
             var returnType = binder.BindType(returnTypeSyntax, diagnostics);
-            var returnTypeWithoutUnwrappingAliasTarget = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded).Type;
+            var returnTypeWithoutUnwrappingAliasTarget = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // reuse types to avoid reporting duplicate errors if missing:
             var voidType = TypeWithAnnotations.Create(binder.GetSpecialType(SpecialType.System_Void, diagnostics, syntax));
@@ -161,9 +161,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
-        internal override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
-            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
-
         public override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
             => ImmutableArray<TypeParameterConstraintKind>.Empty;
 
@@ -175,7 +172,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
             return _returnTypeWithoutUnwrappingAliasTarget;
         }
@@ -231,7 +228,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 TypeWithAnnotations objectType,
                 TypeWithAnnotations intPtrType,
                 DelegateDeclarationSyntax syntax)
-                : base(delegateType, voidType, voidType.Type, syntax, MethodKind.Constructor, DeclarationModifiers.Public)
+                : base(delegateType, voidType, voidType, syntax, MethodKind.Constructor, DeclarationModifiers.Public)
             {
                 InitializeParameters(ImmutableArray.Create<ParameterSymbol>(
                     SynthesizedParameterSymbol.Create(this, objectType, 0, RefKind.None, "object"),
@@ -277,7 +274,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 SourceMemberContainerTypeSymbol delegateType,
                 RefKind refKind,
                 TypeWithAnnotations returnType,
-                TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+                TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
                 DelegateDeclarationSyntax syntax,
                 Binder binder,
                 BindingDiagnosticBag diagnostics)
@@ -380,7 +377,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 TypeWithAnnotations objectType,
                 TypeWithAnnotations asyncCallbackType,
                 DelegateDeclarationSyntax syntax)
-                : base((SourceNamedTypeSymbol)invoke.ContainingType, iAsyncResultType, iAsyncResultType.Type, syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
+                : base((SourceNamedTypeSymbol)invoke.ContainingType, iAsyncResultType, iAsyncResultType, syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
             {
                 var parameters = ArrayBuilder<ParameterSymbol>.GetInstance();
                 foreach (SourceParameterSymbol p in invoke.Parameters)

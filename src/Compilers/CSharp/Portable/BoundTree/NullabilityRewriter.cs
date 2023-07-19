@@ -156,7 +156,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return local;
                 }
 
-                updatedLocal = new UpdatedContainingSymbolAndNullableAnnotationLocal(local, updatedContaining ?? local.ContainingSymbol, updatedType ?? local.TypeWithAnnotations, updatedType?.Type ?? local.GetTypeWithoutUnwrappingAliasTarget());
+                updatedLocal = new UpdatedContainingSymbolAndNullableAnnotationLocal(local, updatedContaining ?? local.ContainingSymbol, updatedType ?? local.TypeWithAnnotations, updatedType ?? local.GetTypeWithoutUnwrappingAliasTarget());
                 _remappedSymbols.Add(local, updatedLocal);
                 return updatedLocal;
             }

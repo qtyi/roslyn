@@ -1032,7 +1032,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             // without being violated on the method. Report that the constraint is violated on the 
             // formal parameter type.
 
-            TypeSymbol formalParameterType = method.GetParameterTypeWithoutUnwrappingAliasTarget(result.Result.BadParameter);
+            TypeSymbol formalParameterType = method.GetParameterTypeWithoutUnwrappingAliasTarget(result.Result.BadParameter).Type;
             formalParameterType.CheckAllConstraints(new ConstraintsHelper.CheckConstraintsArgsBoxed((CSharpCompilation)compilation, conversions, includeNullability: false, location, diagnostics));
 
             return true;
@@ -1266,10 +1266,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         SignatureOnlyParameterSymbol displayArg = new SignatureOnlyParameterSymbol(
                             TypeWithAnnotations.Create(argType),
-                            argType,
+                            TypeWithAnnotations.Create(argType),
                             ImmutableArray<CustomModifier>.Empty,
                             isParams: false,
-                            refKind: refArg); ;
+                            refKind: refArg);
 
                         SymbolDistinguisher distinguisher = new SymbolDistinguisher(binder.Compilation, displayArg, UnwrapIfParamsArray(parameter, isLastParameter));
 

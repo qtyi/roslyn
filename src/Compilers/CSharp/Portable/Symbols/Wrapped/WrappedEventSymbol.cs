@@ -91,11 +91,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
-        {
-            return Type;
-        }
-
         public override bool IsStatic
         {
             get

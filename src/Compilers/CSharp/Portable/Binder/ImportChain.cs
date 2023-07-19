@@ -97,7 +97,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 var aliases = ArrayBuilder<NameWithArity>.GetInstance(aliasSymbols.Count);
                 aliases.AddRange(aliasSymbols.Keys);
-                aliases.Sort(); // Actual order doesn't matter - just want to be deterministic.
+                aliases.Sort(NameWithArityComparer.Default); // Actual order doesn't matter - just want to be deterministic.
 
                 foreach (var alias in aliases)
                 {

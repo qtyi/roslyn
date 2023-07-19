@@ -26,14 +26,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override SpecialMember OverriddenSpecialMember => SpecialMember.System_Object__GetHashCode;
 
-        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation)
             MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var returnType = Binder.GetSpecialType(compilation, SpecialType.System_Int32, location, diagnostics);
             return (ReturnType: TypeWithAnnotations.Create(returnType),
-                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
+                    ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(returnType),
                     Parameters: ImmutableArray<ParameterSymbol>.Empty,
                     IsVararg: false,
                     DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);

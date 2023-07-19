@@ -167,9 +167,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return TypeWithAnnotations.Create(_returnType); }
         }
 
-        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
-            return _returnTypeWithoutUnwrappingAliasTarget;
+            return TypeWithAnnotations.Create(_returnTypeWithoutUnwrappingAliasTarget);
         }
 
         public override bool ReturnsVoid

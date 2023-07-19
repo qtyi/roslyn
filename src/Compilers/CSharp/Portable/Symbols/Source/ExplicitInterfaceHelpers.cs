@@ -53,8 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // that might result in a recursive attempt to bind the containing class.
             NameSyntax explicitInterfaceName = explicitInterfaceSpecifierOpt.Name;
             explicitInterfaceTypeOpt = binder.WithAdditionalFlags(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks).BindType(explicitInterfaceName, diagnostics).Type;
-
-            explicitInterfaceTypeWithoutUnwrappingAliasTargetOpt = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(explicitInterfaceName, BindingDiagnosticBag.Discarded).Type;
+            explicitInterfaceTypeWithoutUnwrappingAliasTargetOpt = binder.WithAdditionalFlags(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks | BinderFlags.SuppressAliasTargetUnwrapping).BindType(explicitInterfaceName, BindingDiagnosticBag.Discarded).Type;
 
             aliasQualifierOpt = explicitInterfaceName.GetAliasQualifierOpt();
             return GetMemberName(name, explicitInterfaceTypeOpt, aliasQualifierOpt);

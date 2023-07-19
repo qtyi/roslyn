@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>
         /// Return statements and the result types from analyzing the returned expressions. Used when inferring lambda return type in MethodTypeInferrer.
         /// </summary>
-        private ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? _returnTypesOpt;
+        private ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeWithAnnotations)>? _returnTypesOpt;
 
         /// <summary>
         /// Invalid type, used only to catch Visit methods that do not set
@@ -423,7 +423,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             Conversions conversions,
             Variables? variables,
             MethodSymbol? baseOrThisInitializer,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt,
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeWithAnnotations)>? returnTypesOpt,
             ImmutableDictionary<BoundExpression, (NullabilityInfo, TypeSymbol?)>.Builder? analyzedNullabilityMapOpt,
             SnapshotManager.Builder? snapshotBuilderOpt,
             bool isSpeculative = false)
@@ -1635,7 +1635,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             DiagnosticBag diagnostics,
             MethodSymbol? delegateInvokeMethodOpt,
             VariableState initialState,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt)
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeWithAnnotations)>? returnTypesOpt)
         {
             var symbol = lambda.Symbol;
             var variables = Variables.Create(initialState.Variables).CreateNestedMethodScope(symbol);
@@ -1681,7 +1681,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             MethodSymbol? baseOrThisInitializer,
             ImmutableDictionary<BoundExpression, (NullabilityInfo, TypeSymbol?)>.Builder? analyzedNullabilityMapOpt,
             SnapshotManager.Builder? snapshotBuilderOpt,
-            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeSymbol?)>? returnTypesOpt,
+            ArrayBuilder<(BoundReturnStatement, TypeWithAnnotations, TypeWithAnnotations)>? returnTypesOpt,
             bool getFinalNullableState,
             out VariableState? finalNullableState,
             bool requiresAnalysis = true)
@@ -4291,8 +4291,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// The expressions returned from a lambda are not converted though, so we'll have to classify fresh conversions.
         /// Note: even if some conversions fail, we'll proceed to infer top-level nullability. That is reasonable in common cases.
         /// </summary>
-        internal static (TypeWithAnnotations, TypeSymbol?) BestTypeForLambdaReturns(
-            ArrayBuilder<(BoundExpression expr, TypeWithAnnotations resultType, TypeSymbol? resultTypeWithoutUnwrappingAliasTarget, bool isChecked)> returns,
+        internal static (TypeWithAnnotations, TypeWithAnnotations) BestTypeForLambdaReturns(
+            ArrayBuilder<(BoundExpression expr, TypeWithAnnotations resultType, TypeWithAnnotations resultTypeWithoutUnwrappingAliasTarget, bool isChecked)> returns,
             Binder binder,
             BoundNode node,
             Conversions conversions,
@@ -4354,7 +4354,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             walker.Free();
 
 #warning inferredTypeWithoutUnwrappingAliasTarget not implemented.
-            return (inferredType, inferredType.Type);
+            return (inferredType, inferredType);
         }
 
         private static void GetArrayElements(BoundArrayInitialization node, ArrayBuilder<BoundExpression> builder)

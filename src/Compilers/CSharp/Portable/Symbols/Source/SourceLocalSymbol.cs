@@ -307,10 +307,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
             TypeWithAnnotations localType = GetTypeSymbol(unwrapAliasTarget: false);
-            return localType.Type;
+            return localType;
         }
 
         public bool IsVar

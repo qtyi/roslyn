@@ -63,9 +63,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        internal TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
-            return GetFieldType(ConsList<FieldSymbol>.Empty, unwrapAliasTarget: false).Type;
+            return GetFieldType(ConsList<FieldSymbol>.Empty, unwrapAliasTarget: false);
         }
 
         public abstract RefKind RefKind { get; }

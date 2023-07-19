@@ -216,10 +216,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BaseMethodDeclarationSyntax declarationSyntax, TypeSyntax returnTypeSyntax, BindingDiagnosticBag diagnostics)
+        protected (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BaseMethodDeclarationSyntax declarationSyntax, TypeSyntax returnTypeSyntax, BindingDiagnosticBag diagnostics)
         {
             TypeWithAnnotations returnType;
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget;
             ImmutableArray<ParameterSymbol> parameters;
 
             var binder = this.DeclaringCompilation.
@@ -251,7 +251,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             returnType = signatureBinder.BindType(returnTypeSyntax, diagnostics);
-            returnTypeWithoutUnwrappingAliasTarget = signatureBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded).Type;
+            returnTypeWithoutUnwrappingAliasTarget = signatureBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // restricted types cannot be returned. 
             // NOTE: Span-like types can be returned (if expression is returnable).
@@ -289,7 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CheckOperatorSignatures(diagnostics);
         }
 
-        protected abstract (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics);
+        protected abstract (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics);
 
         protected sealed override void ExtensionMethodChecks(BindingDiagnosticBag diagnostics)
         {
@@ -801,7 +801,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
         internal sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
-            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
+            => base.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget();
 
         public sealed override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
             => ImmutableArray<TypeParameterConstraintKind>.Empty;

@@ -331,8 +331,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             get { return _eventTypeWithAnnotations; }
         }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() => Type;
-
         public override MethodSymbol AddMethod
         {
             get { return _addMethod; }

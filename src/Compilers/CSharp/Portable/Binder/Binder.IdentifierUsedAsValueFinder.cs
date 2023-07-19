@@ -177,14 +177,14 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             private static ExecutableCodeBinder CreateLambdaBodyBinder(Binder enclosingBinder, UnboundLambda unboundLambda)
             {
-                unboundLambda.HasExplicitReturnType(out RefKind refKind, out TypeWithAnnotations returnType, out TypeSymbol? returnTypeWithoutUnwrappingAliasTarget);
+                unboundLambda.HasExplicitReturnType(out RefKind refKind, out TypeWithAnnotations returnType, out TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget);
                 var lambdaSymbol = new LambdaSymbol(
                                         enclosingBinder,
                                         enclosingBinder.Compilation,
                                         enclosingBinder.ContainingMemberOrLambda!,
                                         unboundLambda,
                                         ImmutableArray<TypeWithAnnotations>.Empty,
-                                        ImmutableArray<TypeSymbol?>.Empty,
+                                        ImmutableArray<TypeWithAnnotations>.Empty,
                                         ImmutableArray<RefKind>.Empty,
                                         refKind,
                                         returnType,

@@ -438,13 +438,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return binder.WithAdditionalFlagsAndContainingMemberOrLambda(BinderFlags.SuppressConstraintChecks, this);
         }
 
-        protected override (TypeWithAnnotations Type, TypeSymbol TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
         {
             Binder binder = CreateBinderForTypeAndParameters();
             var syntax = CSharpSyntaxNode;
 
             return (Type: ComputeType(binder, syntax, diagnostics),
-                    TypeWithoutUnwrappingAliasTarget: ComputeType(binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping), syntax, BindingDiagnosticBag.Discarded).Type,
+                    TypeWithoutUnwrappingAliasTarget: ComputeType(binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping), syntax, BindingDiagnosticBag.Discarded),
                     Parameters: ComputeParameters(binder, syntax, diagnostics));
         }
 
@@ -455,6 +455,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             typeSyntax = typeSyntax.SkipScoped(out _).SkipRef();
             var type = binder.BindType(typeSyntax, diagnostics);
+
+            if (binder.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
+            {
+                // Skip type checks
+                return type;
+            }
+
             CompoundUseSiteInfo<AssemblySymbol> useSiteInfo = binder.GetNewCompoundUseSiteInfo(diagnostics);
 
             if (GetExplicitInterfaceSpecifier() is null && !this.IsNoMoreVisibleThan(type, ref useSiteInfo))

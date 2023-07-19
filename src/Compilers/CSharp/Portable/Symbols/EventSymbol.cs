@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
-        internal abstract TypeSymbol GetTypeWithoutUnwrappingAliasTarget();
+        internal virtual TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() => TypeWithAnnotations;
 
         /// <summary>
         /// The 'add' accessor of the event.  Null only in error scenarios.

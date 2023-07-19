@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly ImmutableArray<ParameterSymbol> _parameters;
         private readonly RefKind _refKind;
         private readonly TypeWithAnnotations _type;
-        private readonly TypeSymbol _typeWithoutUnwrappingAliasTarget;
+        private readonly TypeWithAnnotations _typeWithoutUnwrappingAliasTarget;
         private readonly ImmutableArray<CustomModifier> _refCustomModifiers;
         private readonly bool _isStatic;
         private readonly ImmutableArray<PropertySymbol> _explicitInterfaceImplementations;
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             ImmutableArray<ParameterSymbol> parameters,
             RefKind refKind,
             TypeWithAnnotations type,
-            TypeSymbol typeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations typeWithoutUnwrappingAliasTarget,
             ImmutableArray<CustomModifier> refCustomModifiers,
             bool isStatic,
             ImmutableArray<PropertySymbol> explicitInterfaceImplementations)
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override TypeWithAnnotations TypeWithAnnotations { get { return _type; } }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() { return _typeWithoutUnwrappingAliasTarget; }
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() { return _typeWithoutUnwrappingAliasTarget; }
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers { get { return _refCustomModifiers; } }
 

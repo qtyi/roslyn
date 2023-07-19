@@ -16,14 +16,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal class ParameterSignature
     {
         internal readonly ImmutableArray<TypeWithAnnotations> parameterTypesWithAnnotations;
-        internal readonly ImmutableArray<TypeSymbol> parameterTypesWithoutUnwrappingAliasTarget;
+        internal readonly ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget;
         internal readonly ImmutableArray<RefKind> parameterRefKinds;
 
         internal static readonly ParameterSignature NoParams =
-            new ParameterSignature(ImmutableArray<TypeWithAnnotations>.Empty, ImmutableArray<TypeSymbol>.Empty, default(ImmutableArray<RefKind>));
+            new ParameterSignature(ImmutableArray<TypeWithAnnotations>.Empty, ImmutableArray<TypeWithAnnotations>.Empty, default(ImmutableArray<RefKind>));
 
         private ParameterSignature(ImmutableArray<TypeWithAnnotations> parameterTypesWithAnnotations,
-                                   ImmutableArray<TypeSymbol> parameterTypesWithoutUnwrappingAliasTarget,
+                                   ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget,
                                    ImmutableArray<RefKind> parameterRefKinds)
         {
             this.parameterTypesWithAnnotations = parameterTypesWithAnnotations;
@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             var types = ArrayBuilder<TypeWithAnnotations>.GetInstance();
-            var typesWithoutUnwrappingAliasTarget = ArrayBuilder<TypeSymbol>.GetInstance();
+            var typesWithoutUnwrappingAliasTarget = ArrayBuilder<TypeWithAnnotations>.GetInstance();
             ArrayBuilder<RefKind> refs = null;
 
             for (int parm = 0; parm < parameters.Length; ++parm)

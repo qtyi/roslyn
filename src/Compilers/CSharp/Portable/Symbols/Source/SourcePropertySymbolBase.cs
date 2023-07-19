@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private SymbolCompletionState _state;
         private ImmutableArray<ParameterSymbol> _lazyParameters;
         private TypeWithAnnotations.Boxed _lazyType;
-        private TypeSymbol _lazyTypeWithoutUnwrappingAliasTarget;
+        private TypeWithAnnotations.Boxed _lazyTypeWithoutUnwrappingAliasTarget;
 
         private string _lazySourceName;
 
@@ -175,10 +175,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _lazyRefCustomModifiers = ImmutableArray<CustomModifier>.Empty;
 
             TypeWithAnnotations type;
-            TypeSymbol typeWithoutUnwrappingAliasTarget;
+            TypeWithAnnotations typeWithoutUnwrappingAliasTarget;
             (type, typeWithoutUnwrappingAliasTarget, _lazyParameters) = MakeParametersAndBindType(diagnostics);
             _lazyType = new TypeWithAnnotations.Boxed(type);
-            _lazyTypeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget;
+            _lazyTypeWithoutUnwrappingAliasTarget = new TypeWithAnnotations.Boxed(typeWithoutUnwrappingAliasTarget);
 
             // The runtime will not treat the accessors of this property as overrides or implementations
             // of those of another property unless both the signatures and the custom modifiers match.
@@ -222,6 +222,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     _lazyRefCustomModifiers = _refKind != RefKind.None ? overriddenOrImplementedProperty.RefCustomModifiers : ImmutableArray<CustomModifier>.Empty;
 
                     TypeWithAnnotations overriddenPropertyType = overriddenOrImplementedProperty.TypeWithAnnotations;
+                    TypeWithAnnotations overriddenPropertyTypeUnwrappingAliasTarget = overriddenOrImplementedProperty.GetTypeWithoutUnwrappingAliasTarget();
 
                     // We do an extra check before copying the type to handle the case where the overriding
                     // property (incorrectly) has a different type than the overridden property.  In such cases,
@@ -231,10 +232,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         type = type.WithTypeAndModifiers(
                             CustomModifierUtils.CopyTypeCustomModifiers(overriddenPropertyType.Type, type.Type, this.ContainingAssembly),
                             overriddenPropertyType.CustomModifiers);
-                        typeWithoutUnwrappingAliasTarget = CustomModifierUtils.CopyTypeCustomModifiers(overriddenPropertyType.Type, typeWithoutUnwrappingAliasTarget, this.ContainingAssembly);
+                        typeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget.WithTypeAndModifiers(
+                            CustomModifierUtils.CopyTypeCustomModifiers(overriddenPropertyTypeUnwrappingAliasTarget.Type, typeWithoutUnwrappingAliasTarget.Type, this.ContainingAssembly),
+                            overriddenPropertyTypeUnwrappingAliasTarget.CustomModifiers);
 
                         _lazyType = new TypeWithAnnotations.Boxed(type);
-                        _lazyTypeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget;
+                        _lazyTypeWithoutUnwrappingAliasTarget = new TypeWithAnnotations.Boxed(typeWithoutUnwrappingAliasTarget);
                     }
 
                     _lazyParameters = CustomModifierUtils.CopyParameterCustomModifiers(overriddenOrImplementedProperty.Parameters, _lazyParameters, alsoCopyParamsModifier: isOverride);
@@ -304,9 +307,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        internal sealed override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
-            return _lazyTypeWithoutUnwrappingAliasTarget;
+            EnsureSignature();
+            return _lazyTypeWithoutUnwrappingAliasTarget.Value;
         }
 
 #nullable enable 
@@ -1478,7 +1482,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                     foreach (var parameter in this.Parameters)
                                     {
                                         parameter.ForceComplete(locationOpt, cancellationToken);
-                                        parameter.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(DeclaringCompilation, conversions, parameter.Locations[0], diagnostics);
+                                        parameter.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(DeclaringCompilation, conversions, parameter.Locations[0], diagnostics);
                                     }
 
                                     this.AddDeclarationDiagnostics(diagnostics);
@@ -1504,7 +1508,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 var diagnostics = BindingDiagnosticBag.GetInstance();
                                 var conversions = new TypeConversions(this.ContainingAssembly.CorLibrary);
-                                this.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
+                                this.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
 
                                 ValidatePropertyType(diagnostics);
 
@@ -1565,7 +1569,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
 #nullable enable
 
-        protected abstract (TypeWithAnnotations Type, TypeSymbol TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics);
+        protected abstract (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics);
 
         protected static ExplicitInterfaceSpecifierSyntax? GetExplicitInterfaceSpecifier(SyntaxNode syntax)
             => (syntax as BasePropertyDeclarationSyntax)?.ExplicitInterfaceSpecifier;

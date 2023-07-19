@@ -4034,7 +4034,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     TypeWithAnnotations.Create(System_Void),
-                    System_Void,
+                    TypeWithAnnotations.Create(System_Void),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4075,7 +4075,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
                                                                 TypeWithAnnotations.Create(this),
-                                                                this,
+                                                                TypeWithAnnotations.Create(this),
                                                                 ImmutableArray<CustomModifier>.Empty,
                                                                 isParams: false,
                                                                 RefKind.None
@@ -4084,7 +4084,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     TypeWithAnnotations.Create(System_Void),
-                    System_Void,
+                    TypeWithAnnotations.Create(System_Void),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4127,7 +4127,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
                         TypeWithAnnotations.Create(System_Text_StringBuilder),
-                        System_Text_StringBuilder,
+                        TypeWithAnnotations.Create(System_Text_StringBuilder),
                         ImmutableArray<CustomModifier>.Empty,
                         isParams: false,
                         RefKind.None)),
@@ -4135,7 +4135,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     returnType: TypeWithAnnotations.Create(System_Boolean),
-                    returnTypeWithoutUnwrappingAliasTarget: System_Boolean,
+                    returnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(System_Boolean),
                     refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                     explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
 
@@ -4192,7 +4192,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     returnType: TypeWithAnnotations.Create(System_String),
-                    returnTypeWithoutUnwrappingAliasTarget: System_String,
+                    returnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(System_String),
                     refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                     explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
 
@@ -4369,7 +4369,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     TypeWithAnnotations.Create(System_Int32),
-                    System_Int32,
+                    TypeWithAnnotations.Create(System_Int32),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4400,7 +4400,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                                                      ImmutableArray<ParameterSymbol>.Empty,
                                                                      RefKind.None,
                                                                      TypeWithAnnotations.Create(System_Type),
-                                                                     System_Type,
+                                                                     TypeWithAnnotations.Create(System_Type),
                                                                      ImmutableArray<CustomModifier>.Empty,
                                                                      isStatic: false,
                                                                      ImmutableArray<PropertySymbol>.Empty);
@@ -4463,7 +4463,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
                                                                 TypeWithAnnotations.Create(this),
-                                                                this,
+                                                                TypeWithAnnotations.Create(this),
                                                                 ImmutableArray<CustomModifier>.Empty,
                                                                 isParams: false,
                                                                 RefKind.None
@@ -4472,7 +4472,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     isInitOnly: false,
                     isStatic: false,
                     TypeWithAnnotations.Create(System_Boolean),
-                    System_Boolean,
+                    TypeWithAnnotations.Create(System_Boolean),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 

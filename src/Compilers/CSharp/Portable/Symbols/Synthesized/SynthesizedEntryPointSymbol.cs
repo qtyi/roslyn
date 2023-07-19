@@ -142,9 +142,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return ReturnType.IsVoidType(); }
         }
 
-        internal sealed override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal sealed override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
-            return ReturnType;
+            return base.GetReturnTypeWithoutUnwrappingAliasTarget();
         }
 
         public sealed override FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations => FlowAnalysisAnnotations.None;

@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal static ImmutableArray<TypeSymbol> GetParameterTypesWithoutUnwrappingAliasTarget(this Symbol member)
+        internal static ImmutableArray<TypeWithAnnotations> GetParameterTypesWithoutUnwrappingAliasTarget(this Symbol member)
         {
             switch (member.Kind)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 case SymbolKind.Property:
                     return ((PropertySymbol)member).GetParameterTypesWithoutUnwrappingAliasTarget();
                 case SymbolKind.Event:
-                    return ImmutableArray<TypeSymbol>.Empty;
+                    return ImmutableArray<TypeWithAnnotations>.Empty;
                 default:
                     throw ExceptionUtilities.UnexpectedValue(member.Kind);
             }

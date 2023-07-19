@@ -35,11 +35,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             public override SyntaxList<AttributeListSyntax> ParameterAttributes(int index) => default;
             public override bool HasSignature { get { return true; } }
 
-            public override bool HasExplicitReturnType(out RefKind refKind, out TypeWithAnnotations returnType, out TypeSymbol returnTypeWithoutUnwrappingAliasTarget)
+            public override bool HasExplicitReturnType(out RefKind refKind, out TypeWithAnnotations returnType, out TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget)
             {
                 refKind = default;
                 returnType = default;
-                returnTypeWithoutUnwrappingAliasTarget = null;
+                returnTypeWithoutUnwrappingAliasTarget = default;
                 return false;
             }
 
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             // Query unbound lambdas don't have associated parameter syntax
             public override ParameterSyntax ParameterSyntax(int index) => null;
             public override TypeWithAnnotations ParameterTypeWithAnnotations(int index) { throw new ArgumentException(); } // implicitly typed
-            internal override TypeSymbol GetParameterTypeWithoutUnwrappingAliasTarget(int index) { throw new ArgumentException(); } // implicitly typed
+            internal override TypeWithAnnotations GetParameterTypeWithoutUnwrappingAliasTarget(int index) { throw new ArgumentException(); } // implicitly typed
 
             public override void GenerateAnonymousFunctionConversionError(BindingDiagnosticBag diagnostics, TypeSymbol targetType)
             {

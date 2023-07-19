@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var syntax = GetSyntax();
             var withTypeParamsBinder = this.DeclaringCompilation.GetBinderFactory(syntax.SyntaxTree).GetBinder(syntax.ReturnType, syntax, this);
@@ -150,8 +150,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             returnTypeSyntax = returnTypeSyntax.SkipScoped(out _).SkipRef();
             TypeWithAnnotations returnType = signatureBinder.BindType(returnTypeSyntax, diagnostics);
-
-            var returnTypeWithoutUnwrappingAliasTarget = withTypeParamsBinder.WithAdditionalFlagsAndContainingMemberOrLambda(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressAliasTargetUnwrapping, this).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded).Type;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget = signatureBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // span-like types are returnable in general
             if (returnType.IsRestrictedType(ignoreSpanLikeTypes: true))
@@ -198,6 +197,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
 
                 forceMethodTypeParameters(returnType, this, declaredConstraints);
+                forceMethodTypeParameters(returnTypeWithoutUnwrappingAliasTarget, this, declaredConstraints);
             }
 
             return (returnType, returnTypeWithoutUnwrappingAliasTarget, parameters, _lazyIsVararg, declaredConstraints);

@@ -44,8 +44,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override TypeWithAnnotations TypeWithAnnotations => _type;
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget() => Type;
-
         public override RefKind RefKind => _refKind;
 
         public sealed override bool IsDiscard => false;

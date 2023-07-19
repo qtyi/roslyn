@@ -61,22 +61,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal sealed override ExecutableCodeBinder? TryGetBodyBinder(BinderFactory? binderFactoryOpt = null, bool ignoreAccessibility = false) => throw ExceptionUtilities.Unreachable();
         internal abstract override void GenerateMethodBody(TypeCompilationState compilationState, BindingDiagnosticBag diagnostics);
 
-        protected sealed override (TypeWithAnnotations ReturnType, TypeSymbol ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected sealed override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.Annotated;
             var returnType = Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics);
             return (ReturnType: TypeWithAnnotations.Create(returnType),
-                    ReturnTypeWithoutUnwrappingAliasTarget: returnType,
+                    ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(returnType),
                     Parameters: ImmutableArray.Create<ParameterSymbol>(
                                     new SourceSimpleParameterSymbol(owner: this,
                                                                     TypeWithAnnotations.Create(ContainingType, annotation),
-                                                                    ContainingType,
+                                                                    TypeWithAnnotations.Create(ContainingType, annotation),
                                                                     ordinal: 0, RefKind.None, ScopedKind.None, "left", Locations),
                                     new SourceSimpleParameterSymbol(owner: this,
                                                                     TypeWithAnnotations.Create(ContainingType, annotation),
-                                                                    ContainingType,
+                                                                    TypeWithAnnotations.Create(ContainingType, annotation),
                                                                     ordinal: 1, RefKind.None, ScopedKind.None, "right", Locations)));
         }
 

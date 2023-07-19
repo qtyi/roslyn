@@ -305,17 +305,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _aliasTarget!;
         }
 
-        internal override TypeSymbol? GetAliasTargetWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetAliasTargetWithoutUnwrappingAliasTarget()
         {
             if (this.Target.IsNamespace)
             {
-                return null;
+                return default;
             }
 
             var type = ResolveAliasTarget((UsingDirectiveSyntax)_directive.GetSyntax(), BindingDiagnosticBag.Discarded, basesBeingResolved: null, unwrapAliasTarget: false) as TypeSymbol;
             Debug.Assert(type is not null);
 
-            return type;
+            return TypeWithAnnotations.Create(type);
         }
 
         internal BindingDiagnosticBag AliasTargetDiagnostics

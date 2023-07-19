@@ -593,11 +593,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             get { return _propertyTypeWithAnnotations; }
         }
 
-        internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
-        {
-            return Type;
-        }
-
         public override ImmutableArray<CustomModifier> RefCustomModifiers
         {
             get { return ImmutableArray<CustomModifier>.Empty; }

@@ -610,11 +610,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return (bounds != null) ? bounds.ConstraintTypes : ImmutableArray<TypeWithAnnotations>.Empty;
         }
 
-        internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress)
-        {
-            return ConstraintTypesNoUseSiteDiagnostics;
-        }
-
         internal override ImmutableArray<NamedTypeSymbol> GetInterfaces(ConsList<TypeParameterSymbol> inProgress)
         {
             var bounds = this.GetBounds(inProgress);

@@ -1834,7 +1834,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             LookupResultKind resultKind,
             AnalyzedArguments analyzedArguments)
         {
-            TypeSymbol returnType = new ExtendedErrorTypeSymbol(this.Compilation, string.Empty, arity: 0, errorInfo: null);
+            TypeSymbol returnType = CreateErrorType();
             var methodContainer = expr.Type ?? this.ContainingType;
             MethodSymbol method = new ErrorMethodSymbol(methodContainer, returnType, returnType, string.Empty);
 
@@ -1849,7 +1849,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         private static TypeSymbol GetCommonTypeOrReturnType<TMember>(ImmutableArray<TMember> members)
             where TMember : Symbol
         {
-            return GetCommonTypeOrReturnType(members, static member => member.GetTypeOrReturnType().Type);
+            return GetCommonTypeOrReturnType(members, SymbolExtensions.GetTypeOrReturnType);
         }
 
         private static TypeSymbol GetCommonTypeOrReturnTypeWithoutUnwrappingAliasTarget<TMember>(ImmutableArray<TMember> members)
@@ -1858,18 +1858,18 @@ namespace Microsoft.CodeAnalysis.CSharp
             return GetCommonTypeOrReturnType(members, SymbolExtensions.GetTypeOrReturnTypeWithoutUnwrappingAliasTarget);
         }
 
-        private static TypeSymbol GetCommonTypeOrReturnType<TMember>(ImmutableArray<TMember> members, Func<TMember, TypeSymbol> getTypeOrReturnType)
+        private static TypeSymbol GetCommonTypeOrReturnType<TMember>(ImmutableArray<TMember> members, Func<TMember, TypeWithAnnotations> getTypeOrReturnType)
             where TMember : Symbol
         {
             TypeSymbol type = null;
             for (int i = 0, n = members.Length; i < n; i++)
             {
-                TypeSymbol returnType = getTypeOrReturnType(members[i]);
+                TypeSymbol returnType = getTypeOrReturnType(members[i]).Type;
                 if ((object)type == null)
                 {
                     type = returnType;
                 }
-                else if (!TypeSymbol.Equals(type, returnType, TypeCompareKind.ConsiderEverything2))
+                else if (!TypeSymbol.Equals(type.Unwrap(), returnType.Unwrap(), TypeCompareKind.ConsiderEverything2))
                 {
                     return null;
                 }

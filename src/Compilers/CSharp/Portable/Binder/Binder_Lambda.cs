@@ -44,11 +44,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             ImmutableArray<RefKind> refKinds = default;
             ImmutableArray<ScopedKind> scopes = default;
             ImmutableArray<TypeWithAnnotations> types = default;
-            ImmutableArray<TypeSymbol?> typesWithoutUnwrappingAliasTarget = default;
+            ImmutableArray<TypeWithAnnotations> typesWithoutUnwrappingAliasTarget = default;
             ImmutableArray<EqualsValueClauseSyntax?> defaultValues = default;
             RefKind returnRefKind = RefKind.None;
             TypeWithAnnotations returnType = default;
-            TypeSymbol? returnTypeWithoutUnwrappingAliasTarget = null;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget = default;
             ImmutableArray<SyntaxList<AttributeListSyntax>> parameterAttributes = default;
 
             var namesBuilder = ArrayBuilder<string>.GetInstance();
@@ -122,13 +122,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                 var hasExplicitlyTypedParameterList = true;
 
                 var typesBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
-                var typesWithoutUnwrappingAliasTargetBuilder = ArrayBuilder<TypeSymbol?>.GetInstance();
+                var typesWithoutUnwrappingAliasTargetBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
                 var refKindsBuilder = ArrayBuilder<RefKind>.GetInstance();
                 var scopesBuilder = ArrayBuilder<ScopedKind>.GetInstance();
                 var attributesBuilder = ArrayBuilder<SyntaxList<AttributeListSyntax>>.GetInstance();
                 var defaultValueBuilder = ArrayBuilder<EqualsValueClauseSyntax?>.GetInstance();
-
-                var withoutUnwrappingAliasTargetBinder = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
 
                 // In the batch compiler case we probably should have given a syntax error if the
                 // user did something like (int x, y)=>x+y -- but in the IDE scenario we might be in
@@ -172,7 +170,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     var typeSyntax = p.Type;
                     TypeWithAnnotations type = default;
-                    TypeSymbol? typeWithoutUnwrappingAliasTarget = null;
+                    TypeWithAnnotations typeWithoutUnwrappingAliasTarget = default;
                     var refKind = RefKind.None;
                     var scope = ScopedKind.None;
 
@@ -183,7 +181,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     else
                     {
                         type = BindType(typeSyntax, diagnostics);
-                        typeWithoutUnwrappingAliasTarget = withoutUnwrappingAliasTargetBinder.BindType(typeSyntax, BindingDiagnosticBag.Discarded).Type;
+                        typeWithoutUnwrappingAliasTarget = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(typeSyntax, BindingDiagnosticBag.Discarded);
                         ParameterHelpers.CheckParameterModifiers(p, diagnostics, parsingFunctionPointerParams: false,
                             parsingLambdaParams: !isAnonymousMethod,
                             parsingAnonymousMethodParams: isAnonymousMethod);
@@ -289,7 +287,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         }
 
-        private (RefKind, TypeWithAnnotations, TypeSymbol) BindExplicitLambdaReturnType(TypeSyntax syntax, BindingDiagnosticBag diagnostics)
+        private (RefKind, TypeWithAnnotations, TypeWithAnnotations) BindExplicitLambdaReturnType(TypeSyntax syntax, BindingDiagnosticBag diagnostics)
         {
             MessageID.IDS_FeatureLambdaReturnType.CheckFeatureAvailability(diagnostics, syntax);
 
@@ -301,7 +299,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             var returnType = BindType(syntax, diagnostics);
-            var returnTypeWithoutUnwrappingAliasTarget = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(syntax, BindingDiagnosticBag.Discarded).Type;
+            var returnTypeWithoutUnwrappingAliasTarget = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(syntax, BindingDiagnosticBag.Discarded);
             var type = returnType.Type;
 
             if (returnType.IsStatic)

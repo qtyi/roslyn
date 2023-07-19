@@ -795,7 +795,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 isInitOnly: false,
                                 isStatic: false,
                                 returnType: default,
-                                returnTypeWithoutUnwrappingAliasTarget: null,
+                                returnTypeWithoutUnwrappingAliasTarget: default,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
                             break;
@@ -811,7 +811,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 name: null,
                                 refKind: RefKind.None,
                                 type: default,
-                                typeWithoutUnwrappingAliasTarget: null,
+                                typeWithoutUnwrappingAliasTarget: default,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 isStatic: false,
                                 explicitInterfaceImplementations: ImmutableArray<PropertySymbol>.Empty);
@@ -940,7 +940,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 TypeSymbol type = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, diagnostics);
                 TypeSymbol typeWithoutUnwrappingAliasTarget = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
 
-                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), typeWithoutUnwrappingAliasTarget, ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
+                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), TypeWithAnnotations.Create(typeWithoutUnwrappingAliasTarget), ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
             }
 
             return parameterBuilder.ToImmutableAndFree();
@@ -956,12 +956,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             // that dev11 does not suppress these members when performing lookup within parameter and return
             // types, within crefs (DevDiv #586815, #598371).
             Debug.Assert(InCrefButNotParameterOrReturnType);
-            var flags = BinderFlags.CrefParameterOrReturnType;
-            if (!unwrapAliasTarget)
-            {
-                flags |= BinderFlags.SuppressAliasTargetUnwrapping;
-            }
-            Binder parameterOrReturnTypeBinder = this.WithAdditionalFlags(flags);
+            Binder parameterOrReturnTypeBinder = this.WithAdditionalFlags(BinderFlags.CrefParameterOrReturnType);
 
             // It would be nice to pull this binder out of the factory so we wouldn't have to worry about them getting out
             // of sync, but this code is also used for included crefs, which don't have BinderFactories.
@@ -969,6 +964,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(!this.Compilation.ContainsSyntaxTree(typeSyntax.SyntaxTree) ||
                 this.Compilation.GetBinderFactory(typeSyntax.SyntaxTree).GetBinder(typeSyntax).Flags ==
                 (parameterOrReturnTypeBinder.Flags & ~BinderFlags.SemanticModel));
+
+            if (!unwrapAliasTarget)
+            {
+                parameterOrReturnTypeBinder = parameterOrReturnTypeBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+            }
 
             var localDiagnostics = new BindingDiagnosticBag(DiagnosticBag.GetInstance(), // Examined, but not reported.
                                                             diagnostics.DependenciesBag);
@@ -994,7 +994,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             else
             {
-                Debug.Assert(type.TypeKind != TypeKind.Error || typeSyntax.ContainsDiagnostics || !typeSyntax.SyntaxTree.ReportDocumentationCommentDiagnostics(), "Why wasn't there a diagnostic?");
+                Debug.Assert(type.Unwrap().TypeKind != TypeKind.Error || typeSyntax.ContainsDiagnostics || !typeSyntax.SyntaxTree.ReportDocumentationCommentDiagnostics(), "Why wasn't there a diagnostic?");
             }
 
             localDiagnostics.DiagnosticBag.Free();

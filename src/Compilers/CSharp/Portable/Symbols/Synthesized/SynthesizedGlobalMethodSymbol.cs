@@ -95,11 +95,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _privateImplType; }
         }
 
-        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
-        {
-            return ReturnType;
-        }
-
         public override string Name
         {
             get { return _name; }

@@ -460,9 +460,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return returnType;
         }
 
-        internal static TypeSymbol GetTypeOrReturnTypeWithoutUnwrappingAliasTarget(this Symbol symbol)
+        internal static TypeWithAnnotations GetTypeOrReturnTypeWithoutUnwrappingAliasTarget(this Symbol symbol)
         {
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget;
             GetTypeOrReturnType(symbol, refKind: out _, out _, out returnTypeWithoutUnwrappingAliasTarget, refCustomModifiers: out _);
             return returnTypeWithoutUnwrappingAliasTarget;
         }
@@ -504,7 +504,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             };
         }
 
-        internal static void GetTypeOrReturnType(this Symbol symbol, out RefKind refKind, out TypeWithAnnotations returnType, out TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+        internal static void GetTypeOrReturnType(this Symbol symbol, out RefKind refKind, out TypeWithAnnotations returnType, out TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
                                                  out ImmutableArray<CustomModifier> refCustomModifiers)
         {
             switch (symbol.Kind)
@@ -554,7 +554,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 case SymbolKind.ErrorType:
                     refKind = RefKind.None;
                     returnType = TypeWithAnnotations.Create((TypeSymbol)symbol);
-                    returnTypeWithoutUnwrappingAliasTarget = (TypeSymbol)symbol;
+                    returnTypeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create((TypeSymbol)symbol);
                     refCustomModifiers = ImmutableArray<CustomModifier>.Empty;
                     break;
                 default:

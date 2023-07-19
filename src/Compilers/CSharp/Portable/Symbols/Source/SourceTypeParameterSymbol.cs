@@ -258,7 +258,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         private void CheckConstraintTypeConstraints(BindingDiagnosticBag diagnostics)
         {
-            var constraintTypes = this.ConstraintTypesWithoutUnwrappingAliasTarget;
+            var constraintTypes = this.GetConstraintTypesWithoutUnwrappingAliasTarget();
             if (constraintTypes.Length == 0)
             {
                 return;
@@ -973,7 +973,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Debug.Assert(map != null);
 
             var constraintTypes = map.SubstituteTypes(typeParameter.ConstraintTypesNoUseSiteDiagnostics);
-            var constraintTypesWithoutUnwrappingAliasTarget = map.SubstituteTypes(typeParameter.ConstraintTypesWithoutUnwrappingAliasTarget);
+            var constraintTypesWithoutUnwrappingAliasTarget = map.SubstituteTypes(typeParameter.GetConstraintTypesWithoutUnwrappingAliasTarget());
             return this.ResolveBounds(this.ContainingAssembly.CorLibrary, inProgress.Prepend(this), constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited: true, this.DeclaringCompilation, diagnostics);
         }
 

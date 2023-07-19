@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly ImmutableArray<ParameterSymbol> _parameters;
         private RefKind _refKind;
         private TypeWithAnnotations _returnType;
-        private TypeSymbol? _returnTypeWithoutUnwrappingAliasTarget;
+        private TypeWithAnnotations _returnTypeWithoutUnwrappingAliasTarget;
         private readonly bool _isSynthesized;
         private readonly bool _isAsync;
         private readonly bool _isStatic;
@@ -43,11 +43,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Symbol containingSymbol,
             UnboundLambda unboundLambda,
             ImmutableArray<TypeWithAnnotations> parameterTypes,
-            ImmutableArray<TypeSymbol?> parameterTypesWithoutUnwrappingAliasTarget,
+            ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget,
             ImmutableArray<RefKind> parameterRefKinds,
             RefKind refKind,
             TypeWithAnnotations returnType,
-            TypeSymbol? returnTypeWithoutUnwrappingAliasTarget) :
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget) :
             base(unboundLambda.Syntax.GetReference())
         {
             Debug.Assert(syntaxReferenceOpt is not null);
@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 _refKind = refKind;
                 _returnType = !returnType.HasType ? TypeWithAnnotations.Create(ReturnTypeIsBeingInferred) : returnType;
-                _returnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget ?? ReturnTypeIsBeingInferred;
+                _returnTypeWithoutUnwrappingAliasTarget = !returnTypeWithoutUnwrappingAliasTarget.HasType ? TypeWithAnnotations.Create(ReturnTypeIsBeingInferred) : returnTypeWithoutUnwrappingAliasTarget;
             }
             _isSynthesized = unboundLambda.WasCompilerGenerated;
             _isAsync = unboundLambda.IsAsync;
@@ -153,7 +153,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _returnType; }
         }
 
-        internal override TypeSymbol? GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
             return _returnTypeWithoutUnwrappingAliasTarget;
         }
@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // until after the body is bound, but the symbol is created before the body
         // is bound.  Fill in the return type post hoc in these scenarios; the
         // IDE might inspect the symbol and want to know the return type.
-        internal void SetInferredReturnType(RefKind refKind, TypeWithAnnotations inferredReturnType, TypeSymbol? inferredReturnTypeWithoutUnwrappingAliasTarget)
+        internal void SetInferredReturnType(RefKind refKind, TypeWithAnnotations inferredReturnType, TypeWithAnnotations inferredReturnTypeWithoutUnwrappingAliasTarget)
         {
             Debug.Assert(inferredReturnType.HasType);
             Debug.Assert(_returnType.Type.IsErrorType());
@@ -310,7 +310,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CSharpCompilation compilation,
             UnboundLambda unboundLambda,
             ImmutableArray<TypeWithAnnotations> parameterTypes,
-            ImmutableArray<TypeSymbol?> parameterTypesWithoutUnwrappingAliasTarget,
+            ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget,
             ImmutableArray<RefKind> parameterRefKinds)
         {
             Debug.Assert(parameterTypes.Length == parameterRefKinds.Length);
@@ -341,7 +341,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 // in the delegate parameters; they are not in scope!)
 
                 TypeWithAnnotations type;
-                TypeSymbol? typeWithoutUnwrappingAliasTarget;
+                TypeWithAnnotations typeWithoutUnwrappingAliasTarget;
                 RefKind refKind;
                 ScopedKind scope;
                 ParameterSyntax? paramSyntax = null;
@@ -364,7 +364,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     var errorType = new ExtendedErrorTypeSymbol(compilation, name: string.Empty, arity: 0, errorInfo: null);
                     type = TypeWithAnnotations.Create(errorType);
-                    typeWithoutUnwrappingAliasTarget = errorType;
+                    typeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(errorType);
                     refKind = RefKind.None;
                     scope = ScopedKind.None;
                 }
@@ -420,8 +420,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override bool IsInitOnly => false;
 
         public override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes() => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
-
-        internal override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget() => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
         public override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds() => ImmutableArray<TypeParameterConstraintKind>.Empty;
 

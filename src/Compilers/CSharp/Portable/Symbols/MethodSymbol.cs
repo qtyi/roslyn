@@ -242,7 +242,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol ReturnType => ReturnTypeWithAnnotations.Type;
 
-        internal abstract TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget();
+        internal virtual TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget() => ReturnTypeWithAnnotations;
 
         public abstract FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations { get; }
 
@@ -896,12 +896,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
         internal TypeSymbol GetParameterType(int index) => ParameterTypesWithAnnotations[index].Type;
-        internal ImmutableArray<TypeSymbol> GetParameterTypesWithoutUnwrappingAliasTarget()
+        internal ImmutableArray<TypeWithAnnotations> GetParameterTypesWithoutUnwrappingAliasTarget()
         {
             ParameterSignature.PopulateParameterSignature(this.Parameters, ref _lazyParameterSignature);
             return _lazyParameterSignature.parameterTypesWithoutUnwrappingAliasTarget;
         }
-        internal TypeSymbol GetParameterTypeWithoutUnwrappingAliasTarget(int index) => GetParameterTypesWithoutUnwrappingAliasTarget()[index];
+        internal TypeWithAnnotations GetParameterTypeWithoutUnwrappingAliasTarget(int index) => GetParameterTypesWithoutUnwrappingAliasTarget()[index];
 
         /// <summary>
         /// Null if no parameter is ref/out. Otherwise the RefKind for each parameter.

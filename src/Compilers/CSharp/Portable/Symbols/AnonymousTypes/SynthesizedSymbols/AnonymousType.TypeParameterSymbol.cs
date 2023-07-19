@@ -120,11 +120,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray<TypeWithAnnotations>.Empty;
             }
 
-            internal override ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress)
-            {
-                return ImmutableArray<TypeWithAnnotations>.Empty;
-            }
-
             public override Symbol ContainingSymbol
             {
                 get { return _container; }

@@ -486,9 +486,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _typeMap.SubstituteType(_reducedFrom.ReturnTypeWithAnnotations); }
         }
 
-        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
-            return _typeMap.SubstituteType(TypeWithAnnotations.Create(_reducedFrom.GetReturnTypeWithoutUnwrappingAliasTarget())).Type;
+            return _typeMap.SubstituteType(_reducedFrom.GetReturnTypeWithoutUnwrappingAliasTarget());
         }
 
         public override FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations => _reducedFrom.ReturnTypeFlowAnalysisAnnotations;
@@ -627,9 +627,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 get { return _containingMethod._typeMap.SubstituteType(this._underlyingParameter.TypeWithAnnotations); }
             }
 
-            internal override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+            internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
             {
-                return _containingMethod._typeMap.SubstituteType(TypeWithAnnotations.Create(this._underlyingParameter.GetTypeWithoutUnwrappingAliasTarget())).Type;
+                return _containingMethod._typeMap.SubstituteType(this._underlyingParameter.GetTypeWithoutUnwrappingAliasTarget());
             }
 
             public override ImmutableArray<CustomModifier> RefCustomModifiers

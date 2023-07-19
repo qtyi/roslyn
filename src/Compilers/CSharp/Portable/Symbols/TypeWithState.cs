@@ -102,7 +102,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public TypeWithAnnotations ToAnnotatedTypeWithAnnotations(CSharpCompilation compilation) =>
             ToTypeWithAnnotations(compilation, asAnnotatedType: true, withoutUnwrappingAliasTarget: false);
 
-        public TypeSymbol ToTypeWithoutUnwrappingAliasTarget(CSharpCompilation compilation) =>
-            ToTypeWithAnnotations(compilation, asAnnotatedType: false, withoutUnwrappingAliasTarget: true).Type;
+        public TypeWithAnnotations ToTypeWithoutUnwrappingAliasTarget(CSharpCompilation compilation) =>
+            ToTypeWithAnnotations(compilation, asAnnotatedType: false, withoutUnwrappingAliasTarget: true);
     }
 }

@@ -96,7 +96,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             foreach (var parameter in this.Parameters)
             {
-                parameter.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
+                parameter.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
             }
         }
 
@@ -145,9 +145,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         internal sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
-        {
-            return ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
-        }
+            => base.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget();
 
         public sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
@@ -167,11 +165,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 LazyMethodChecks();
                 return _lazyReturnType;
             }
-        }
-
-        internal sealed override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
-        {
-            return ReturnType;
         }
 
         public sealed override string Name

@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
-        internal abstract TypeSymbol GetTypeWithoutUnwrappingAliasTarget();
+        internal virtual TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() => TypeWithAnnotations;
 
         /// <summary>
         /// Determines if the parameter ref, out or neither.

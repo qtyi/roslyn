@@ -318,7 +318,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // which will cause some error to be reported.  That's sufficient (i.e. no need to specifically report its absence here).
                     var System_Object = compilation.GetSpecialType(SpecialType.System_Object);
                     parameter = new SignatureOnlyParameterSymbol(
-                        TypeWithAnnotations.Create(System_Object, customModifiers: parameter.TypeWithAnnotations.CustomModifiers), System_Object, parameter.RefCustomModifiers, parameter.IsParams, parameter.RefKind);
+                        TypeWithAnnotations.Create(System_Object, customModifiers: parameter.TypeWithAnnotations.CustomModifiers), TypeWithAnnotations.Create(System_Object, customModifiers: parameter.GetTypeWithoutUnwrappingAliasTarget().CustomModifiers), parameter.RefCustomModifiers, parameter.IsParams, parameter.RefKind);
                 }
 
                 analyzedArguments.Arguments.Add(new BoundParameter(syntax, parameter) { WasCompilerGenerated = true });

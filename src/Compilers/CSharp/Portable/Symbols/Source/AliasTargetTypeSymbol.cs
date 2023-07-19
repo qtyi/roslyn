@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal AliasTargetTypeSymbol(AliasSymbolFromSyntax constructedFrom, ImmutableArray<TypeWithAnnotations> typeArgumentsWithAnnotations)
         {
             Debug.Assert(constructedFrom.Target is TypeSymbol);
-            Debug.Assert(constructedFrom.Arity == typeArgumentsWithAnnotations.Length);
+            Debug.Assert(!typeArgumentsWithAnnotations.IsDefault && constructedFrom.Arity == typeArgumentsWithAnnotations.Length);
 
             _constructedFrom = constructedFrom;
             _typeArgumentsWithAnnotations = typeArgumentsWithAnnotations;
@@ -197,6 +197,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 #nullable enable
     internal static class AliasTargetTypeSymbolExtensions
     {
+        private sealed class UnwrapAliasTargetTypeMap : AbstractTypeMap
+        {
+            protected override TypeSymbol SubstituteAliasTargetType(AliasTargetTypeSymbol t)
+            {
+                TypeSymbol type = t;
+                // unwrap recursively.
+                while (type.TypeKind == TypeKindInternal.AliasTargetType)
+                {
+                    CheckSymbol(type);
+
+                    type = ((AliasTargetTypeSymbol)type).UnderlyingType;
+                }
+
+                return SubstituteType(TypeWithAnnotations.Create(type)).Type;
+            }
+        }
+
         /// <summary>
         /// Unwrap a type symbol if it is an AliasTargetTypeSymbol and get its underlying type symbol.
         /// </summary>
@@ -204,15 +221,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             RoslynDebug.AssertNotNull(type);
 
-            // unwrap recursively.
-            while (type.TypeKind == TypeKindInternal.AliasTargetType)
+            if (type.VisitType(static (t, _, _) => t.TypeKind == TypeKindInternal.AliasTargetType, /*unused*/arg: false, canDigThroughNullable: true) is null)
             {
-                CheckSymbol(type);
-
-                type = ((AliasTargetTypeSymbol)type).UnderlyingType;
+                // No need to unwrap 'type' as there is no AliasTargetType symbol inside.
+                return type;
             }
 
-            return type;
+            var typeMap = new UnwrapAliasTargetTypeMap();
+            var unwrappedType = typeMap.SubstituteType(TypeWithAnnotations.Create(type)).Type;
+
+            return unwrappedType;
         }
 
         /// <summary>

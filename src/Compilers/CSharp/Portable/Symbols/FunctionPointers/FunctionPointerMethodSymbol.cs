@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal sealed class FunctionPointerMethodSymbol : MethodSymbol
     {
         private readonly ImmutableArray<FunctionPointerParameterSymbol> _parameters;
-        private readonly TypeSymbol _returnTypeWithoutUnwrappingAliasTarget;
+        private readonly TypeWithAnnotations _returnTypeWithoutUnwrappingAliasTarget;
         private ImmutableHashSet<CustomModifier>? _lazyCallingConventionModifiers;
 
         public static FunctionPointerMethodSymbol CreateFromSource(FunctionPointerTypeSyntax syntax, Binder typeBinder, BindingDiagnosticBag diagnostics, ConsList<TypeSymbol> basesBeingResolved, bool suppressUseSiteDiagnostics)
@@ -29,12 +29,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             RefKind refKind = RefKind.None;
             TypeWithAnnotations returnType;
             Binder typeWithoutUnwrappingAliasTargetBinder = typeBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget;
 
             if (syntax.ParameterList.Parameters.Count == 0)
             {
                 returnType = TypeWithAnnotations.Create(typeBinder.CreateErrorType());
-                returnTypeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTargetBinder.CreateErrorType();
+                returnTypeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(typeWithoutUnwrappingAliasTargetBinder.CreateErrorType());
             }
             else
             {
@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
 
                 returnType = typeBinder.BindType(returnTypeParameter.Type, diagnostics, basesBeingResolved, suppressUseSiteDiagnostics);
-                returnTypeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTargetBinder.BindType(returnTypeParameter.Type, diagnostics, basesBeingResolved, suppressUseSiteDiagnostics).Type;
+                returnTypeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTargetBinder.BindType(returnTypeParameter.Type, BindingDiagnosticBag.Discarded, basesBeingResolved, suppressUseSiteDiagnostics);
 
                 if (returnType.IsVoidType() && refKind != RefKind.None)
                 {
@@ -96,7 +96,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
             else
             {
-                returnType = returnType.WithModifiers(customModifiers.ToImmutableAndFree());
+                var returnTypeCustomModifiers = customModifiers.ToImmutableAndFree();
+                returnType = returnType.WithModifiers(returnTypeCustomModifiers);
+                returnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget.WithModifiers(returnTypeCustomModifiers);
             }
 
             return new FunctionPointerMethodSymbol(
@@ -260,10 +262,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 callingConvention,
                 returnRefKind,
                 returnType,
-                returnType.Type,
+                returnType,
                 refCustomModifiers,
                 parameterTypes,
-                parameterTypes.SelectAsArray(t => t.Type),
+                parameterTypes,
                 parameterRefCustomModifiers,
                 parameterRefKinds,
                 compilation);
@@ -308,10 +310,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 callingConvention,
                 returnRefKind,
                 returnTypeWithAnnotations,
-                returnTypeWithAnnotations.Type,
+                returnTypeWithAnnotations,
                 refCustomModifiers,
                 parameterTypes,
-                parameterTypes.SelectAsArray(t => t.Type),
+                parameterTypes,
                 parameterRefCustomModifiers: default,
                 parameterRefKinds,
                 compilation);
@@ -347,11 +349,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 this.CallingConvention,
                 this.RefKind,
                 substitutedReturnType,
-                substitutedReturnType.Type,
+                substitutedReturnType,
                 refCustomModifiers.IsDefault ? this.RefCustomModifiers : refCustomModifiers,
                 this.Parameters,
                 substitutedParameterTypes,
-                substitutedParameterTypes.SelectAsArray(t => t.Type),
+                substitutedParameterTypes,
                 paramRefCustomModifiers,
                 this.UseUpdatedEscapeRules);
 
@@ -452,11 +454,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CallingConvention callingConvention,
             RefKind refKind,
             TypeWithAnnotations returnType,
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             ImmutableArray<CustomModifier> refCustomModifiers,
             ImmutableArray<ParameterSymbol> originalParameters,
             ImmutableArray<TypeWithAnnotations> substitutedParameterTypes,
-            ImmutableArray<TypeSymbol> substitutedParameterTypesWithoutUnwrappingAliasTarget,
+            ImmutableArray<TypeWithAnnotations> substitutedParameterTypesWithoutUnwrappingAliasTarget,
             ImmutableArray<ImmutableArray<CustomModifier>> substitutedRefCustomModifiers,
             bool useUpdatedEscapeRules)
         {
@@ -503,10 +505,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CallingConvention callingConvention,
             RefKind refKind,
             TypeWithAnnotations returnTypeWithAnnotations,
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             ImmutableArray<CustomModifier> refCustomModifiers,
             ImmutableArray<TypeWithAnnotations> parameterTypes,
-            ImmutableArray<TypeSymbol> parameterTypesWithoutUnwrappingAliasTarget,
+            ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget,
             ImmutableArray<ImmutableArray<CustomModifier>> parameterRefCustomModifiers,
             ImmutableArray<RefKind> parameterRefKinds,
             CSharpCompilation compilation)
@@ -539,7 +541,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CallingConvention callingConvention,
             RefKind refKind,
             TypeWithAnnotations returnType,
-            TypeSymbol returnTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             ImmutableArray<CustomModifier> refCustomModifiers,
             FunctionPointerTypeSyntax syntax,
             Binder typeBinder,
@@ -569,8 +571,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Debug.Assert(retAndParamTypes.Length == retAndParamTypesWithoutUnwrappingAliasTarget.Length);
 
             ParamInfo<TypeSymbol> retInfo = retAndParamTypes[0];
+            ParamInfo<TypeSymbol> retWithoutUnwrappingAliasTargetInfo = retAndParamTypesWithoutUnwrappingAliasTarget[0];
             var returnType = TypeWithAnnotations.Create(retInfo.Type, customModifiers: CSharpCustomModifier.Convert(retInfo.CustomModifiers));
-            var returnTypeWithoutUnwrappingAliasTarget = retAndParamTypesWithoutUnwrappingAliasTarget[0].Type;
+            var returnTypeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(retWithoutUnwrappingAliasTargetInfo.Type, customModifiers: CSharpCustomModifier.Convert(retWithoutUnwrappingAliasTargetInfo.CustomModifiers));
 
             RefCustomModifiers = CSharpCustomModifier.Convert(retInfo.RefCustomModifiers);
             CallingConvention = callingConvention;
@@ -590,9 +593,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     for (int i = 0; i < parameterTypes.Length; i++)
                     {
                         ParamInfo<TypeSymbol> param = parameterTypes[i];
-                        var paramRefCustomMods = CSharpCustomModifier.Convert(param.RefCustomModifiers);
+                        ParamInfo<TypeSymbol> paramWithoutUnwrappingAliasTarget = parameterTypesWithoutUnwrappingAliasTarget[i];
                         var paramType = TypeWithAnnotations.Create(param.Type, customModifiers: CSharpCustomModifier.Convert(param.CustomModifiers));
-                        var paramTypeWithoutUnwrappingAliasTarget = parameterTypesWithoutUnwrappingAliasTarget[i].Type;
+                        var paramTypeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(paramWithoutUnwrappingAliasTarget.Type, customModifiers: CSharpCustomModifier.Convert(paramWithoutUnwrappingAliasTarget.CustomModifiers));
+                        var paramRefCustomMods = CSharpCustomModifier.Convert(param.RefCustomModifiers);
                         RefKind paramRefKind = getRefKind(param, paramRefCustomMods, RefKind.In, RefKind.Out);
                         paramsBuilder.Add(new FunctionPointerParameterSymbol(paramType, paramTypeWithoutUnwrappingAliasTarget, paramRefKind, i, parent, paramRefCustomMods));
                     }
@@ -792,7 +796,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override bool ReturnsVoid => ReturnTypeWithAnnotations.IsVoidType();
         public override RefKind RefKind { get; }
         public override TypeWithAnnotations ReturnTypeWithAnnotations { get; }
-        internal override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget() => _returnTypeWithoutUnwrappingAliasTarget;
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget() => _returnTypeWithoutUnwrappingAliasTarget;
         public override ImmutableArray<ParameterSymbol> Parameters =>
             _parameters.Cast<FunctionPointerParameterSymbol, ParameterSymbol>();
         public override ImmutableArray<CustomModifier> RefCustomModifiers { get; }

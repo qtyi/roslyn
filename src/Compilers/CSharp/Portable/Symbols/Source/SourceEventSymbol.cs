@@ -612,19 +612,27 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return SourceDocumentationCommentUtils.GetAndCacheDocumentationComment(this, expandIncludes, ref lazyDocComment);
         }
 
-        protected static void CopyEventCustomModifiers(EventSymbol eventWithCustomModifiers, ref TypeWithAnnotations type, AssemblySymbol containingAssembly)
+        protected static void CopyEventCustomModifiers(EventSymbol eventWithCustomModifiers, ref TypeWithAnnotations type, ref TypeWithAnnotations typeWithoutUnwrappingAliasTarget, AssemblySymbol containingAssembly)
         {
             RoslynDebug.Assert((object)eventWithCustomModifiers != null);
 
-            TypeSymbol overriddenEventType = eventWithCustomModifiers.Type;
+            type = CopyEventTypeCustomModifiers(eventWithCustomModifiers.TypeWithAnnotations, type, containingAssembly);
+            typeWithoutUnwrappingAliasTarget = CopyEventTypeCustomModifiers(eventWithCustomModifiers.GetTypeWithoutUnwrappingAliasTarget(), typeWithoutUnwrappingAliasTarget, containingAssembly);
 
-            // We do an extra check before copying the type to handle the case where the overriding
-            // event (incorrectly) has a different type than the overridden event.  In such cases,
-            // we want to retain the original (incorrect) type to avoid hiding the type given in source.
-            if (type.Type.Equals(overriddenEventType, TypeCompareKind.IgnoreCustomModifiersAndArraySizesAndLowerBounds | TypeCompareKind.IgnoreNullableModifiersForReferenceTypes | TypeCompareKind.IgnoreDynamic))
+            static TypeWithAnnotations CopyEventTypeCustomModifiers(TypeWithAnnotations sourceType, TypeWithAnnotations destinationType, AssemblySymbol containingAssembly)
             {
-                type = type.WithTypeAndModifiers(CustomModifierUtils.CopyTypeCustomModifiers(overriddenEventType, type.Type, containingAssembly),
-                                   eventWithCustomModifiers.TypeWithAnnotations.CustomModifiers);
+                TypeSymbol destinationTypeSymbol = destinationType.Type;
+
+                // We do an extra check before copying the type to handle the case where the overriding
+                // event (incorrectly) has a different type than the overridden event.  In such cases,
+                // we want to retain the original (incorrect) type to avoid hiding the type given in source.
+                TypeSymbol sourceTypeWithCustomModifiers = sourceType.Type;
+                if (destinationTypeSymbol.Equals(sourceTypeWithCustomModifiers, TypeCompareKind.IgnoreCustomModifiersAndArraySizesAndLowerBounds | TypeCompareKind.IgnoreNullableModifiersForReferenceTypes | TypeCompareKind.IgnoreDynamic))
+                {
+                    return destinationType.WithTypeAndModifiers(CustomModifierUtils.CopyTypeCustomModifiers(sourceTypeWithCustomModifiers, destinationTypeSymbol, containingAssembly), sourceType.CustomModifiers);
+                }
+
+                return destinationType;
             }
         }
 
@@ -749,7 +757,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var location = this.Locations[0];
 
             this.CheckModifiersAndType(diagnostics);
-            this.GetTypeWithoutUnwrappingAliasTarget().CheckAllConstraints(compilation, conversions, location, diagnostics);
+            this.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(compilation, conversions, location, diagnostics);
 
             if (compilation.ShouldEmitNativeIntegerAttributes(Type))
             {

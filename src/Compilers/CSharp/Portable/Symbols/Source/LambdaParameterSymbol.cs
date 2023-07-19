@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
            SyntaxReference? syntaxRef,
            SyntaxList<AttributeListSyntax> attributeLists,
            TypeWithAnnotations parameterType,
-           TypeSymbol? parameterTypeWithoutUnwrappingAliasTarget,
+           TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
            int ordinal,
            RefKind refKind,
            ScopedKind scope,

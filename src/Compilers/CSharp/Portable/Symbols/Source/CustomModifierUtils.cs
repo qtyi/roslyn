@@ -22,6 +22,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             MethodSymbol sourceMethod,
             MethodSymbol destinationMethod,
             out TypeWithAnnotations returnType,
+            out TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             out ImmutableArray<CustomModifier> customModifiers,
             out ImmutableArray<ParameterSymbol> parameters,
             bool alsoCopyParamsModifier) // Last since always named.
@@ -44,20 +45,30 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             parameters = CopyParameterCustomModifiers(constructedSourceMethod.Parameters, destinationMethod.Parameters, alsoCopyParamsModifier);
 
-            returnType = destinationMethod.ReturnTypeWithAnnotations; // Default value - in case we don't copy the custom modifiers.
-            TypeSymbol returnTypeSymbol = returnType.Type;
+            returnType = CopyReturnTypeCustomModifiers(
+                constructedSourceMethod.ReturnTypeWithAnnotations,
+                destinationMethod.ReturnTypeWithAnnotations, // Default value - in case we don't copy the custom modifiers.
+                destinationMethod.ContainingAssembly);
+            returnTypeWithoutUnwrappingAliasTarget = CopyReturnTypeCustomModifiers(
+                constructedSourceMethod.GetReturnTypeWithoutUnwrappingAliasTarget(),
+                destinationMethod.GetReturnTypeWithoutUnwrappingAliasTarget(), // Default value - in case we don't copy the custom modifiers.
+                destinationMethod.ContainingAssembly);
 
-            var sourceMethodReturnType = constructedSourceMethod.ReturnTypeWithAnnotations;
-
-            // We do an extra check before copying the return type to handle the case where the overriding
-            // method (incorrectly) has a different return type than the overridden method.  In such cases,
-            // we want to retain the original (incorrect) return type to avoid hiding the return type
-            // given in source.
-            TypeSymbol returnTypeWithCustomModifiers = sourceMethodReturnType.Type;
-            if (returnTypeSymbol.Equals(returnTypeWithCustomModifiers, TypeCompareKind.AllIgnoreOptions))
+            static TypeWithAnnotations CopyReturnTypeCustomModifiers(TypeWithAnnotations sourceType, TypeWithAnnotations destinationType, AssemblySymbol containingAssembly)
             {
-                returnType = returnType.WithTypeAndModifiers(CopyTypeCustomModifiers(returnTypeWithCustomModifiers, returnTypeSymbol, destinationMethod.ContainingAssembly),
-                                               sourceMethodReturnType.CustomModifiers);
+                TypeSymbol destinationTypeSymbol = destinationType.Type;
+
+                // We do an extra check before copying the return type to handle the case where the overriding
+                // method (incorrectly) has a different return type than the overridden method.  In such cases,
+                // we want to retain the original (incorrect) return type to avoid hiding the return type
+                // given in source.
+                TypeSymbol sourceTypeWithCustomModifiers = sourceType.Type;
+                if (destinationTypeSymbol.Equals(sourceTypeWithCustomModifiers, TypeCompareKind.AllIgnoreOptions))
+                {
+                    return destinationType.WithTypeAndModifiers(CopyTypeCustomModifiers(sourceTypeWithCustomModifiers, destinationTypeSymbol, containingAssembly), sourceType.CustomModifiers);
+                }
+
+                return destinationType;
             }
         }
 
@@ -141,7 +152,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
 
                     bool newParams = alsoCopyParamsModifier ? sourceParameter.IsParams : destinationParameter.IsParams;
-                    builder.Add(destinationParameter.WithCustomModifiersAndParams(sourceParameter.Type, sourceParameter.GetTypeWithoutUnwrappingAliasTarget(),
+                    builder.Add(destinationParameter.WithCustomModifiersAndParams(sourceParameter.Type, sourceParameter.GetTypeWithoutUnwrappingAliasTarget().Type,
                                                                                   sourceParameter.TypeWithAnnotations.CustomModifiers,
                                                                                   destinationParameter.RefKind != RefKind.None ? sourceParameter.RefCustomModifiers : ImmutableArray<CustomModifier>.Empty,
                                                                                   newParams));

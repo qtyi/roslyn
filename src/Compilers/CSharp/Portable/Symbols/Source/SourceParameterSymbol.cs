@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         protected SymbolCompletionState state;
         protected readonly TypeWithAnnotations parameterType;
-        private readonly TypeSymbol _parameterTypeWithoutUnwrappingAliasTarget;
+        private readonly TypeWithAnnotations _parameterTypeWithoutUnwrappingAliasTarget;
         private readonly string _name;
         private readonly ImmutableArray<Location> _locations;
         private readonly RefKind _refKind;
@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Binder context,
             Symbol owner,
             TypeWithAnnotations parameterType,
-            TypeSymbol parameterTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             ParameterSyntax syntax,
             RefKind refKind,
             SyntaxToken identifier,
@@ -103,7 +103,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         protected SourceParameterSymbol(
             Symbol owner,
             TypeWithAnnotations parameterType,
-            TypeSymbol parameterTypeWithoutUnwrappingAliasTarget,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             int ordinal,
             RefKind refKind,
             ScopedKind scope,
@@ -134,9 +134,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal SourceParameterSymbol WithCustomModifiersAndParamsCore(TypeSymbol newType, TypeSymbol newTypeWithoutUnwrappingAliasTarget, ImmutableArray<CustomModifier> newCustomModifiers, ImmutableArray<CustomModifier> newRefCustomModifiers, bool newIsParams)
         {
             newType = CustomModifierUtils.CopyTypeCustomModifiers(newType, this.Type, this.ContainingAssembly);
-            newTypeWithoutUnwrappingAliasTarget = CustomModifierUtils.CopyTypeCustomModifiers(newTypeWithoutUnwrappingAliasTarget, this.Type, this.ContainingAssembly);
+            newTypeWithoutUnwrappingAliasTarget = CustomModifierUtils.CopyTypeCustomModifiers(newTypeWithoutUnwrappingAliasTarget, this.GetTypeWithoutUnwrappingAliasTarget().Type, this.ContainingAssembly);
 
             TypeWithAnnotations newTypeWithModifiers = this.TypeWithAnnotations.WithTypeAndModifiers(newType, newCustomModifiers);
+            TypeWithAnnotations newTypeWithoutUnwrappingAliasTargetWithModifiers = this.GetTypeWithoutUnwrappingAliasTarget().WithTypeAndModifiers(newTypeWithoutUnwrappingAliasTarget, newCustomModifiers);
 
             if (newRefCustomModifiers.IsEmpty)
             {
@@ -144,7 +145,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     this.ContainingSymbol,
                     this.Ordinal,
                     newTypeWithModifiers,
-                    newTypeWithoutUnwrappingAliasTarget,
+                    newTypeWithoutUnwrappingAliasTargetWithModifiers,
                     _refKind,
                     _name,
                     _locations,
@@ -161,7 +162,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 this.ContainingSymbol,
                 this.Ordinal,
                 newTypeWithModifiers,
-                newTypeWithoutUnwrappingAliasTarget,
+                newTypeWithoutUnwrappingAliasTargetWithModifiers,
                 _refKind,
                 newRefCustomModifiers,
                 _name,
@@ -282,7 +283,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal sealed override TypeSymbol GetTypeWithoutUnwrappingAliasTarget()
+        internal sealed override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
             return _parameterTypeWithoutUnwrappingAliasTarget;
         }

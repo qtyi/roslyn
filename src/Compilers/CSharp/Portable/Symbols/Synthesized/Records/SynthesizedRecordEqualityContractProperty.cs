@@ -72,11 +72,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw ExceptionUtilities.Unreachable();
         }
 
-        protected override (TypeWithAnnotations Type, TypeSymbol TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
         {
             var returnType = Binder.GetWellKnownType(DeclaringCompilation, WellKnownType.System_Type, diagnostics, Location);
             return (TypeWithAnnotations.Create(returnType, NullableAnnotation.NotAnnotated),
-                    returnType,
+                    TypeWithAnnotations.Create(returnType, NullableAnnotation.NotAnnotated),
                     ImmutableArray<ParameterSymbol>.Empty);
         }
 

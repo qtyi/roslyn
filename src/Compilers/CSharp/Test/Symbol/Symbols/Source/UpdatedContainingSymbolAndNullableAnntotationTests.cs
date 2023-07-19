@@ -40,9 +40,9 @@ class C
             // Using a different method as the parent is an accurate enough simulation for these tests of equality.
             Symbol m2 = model.GetDeclaredSymbol(root.DescendantNodes().OfType<MethodDeclarationSyntax>().ElementAt(1)).GetSymbol();
 
-            var wrappedLocal1 = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local1, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.Annotated));
-            var wrappedLocal1a = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local1, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.Annotated));
-            var wrappedLocal2 = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local2, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.NotAnnotated));
+            var wrappedLocal1 = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local1, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.Annotated), local1.GetTypeWithoutUnwrappingAliasTarget());
+            var wrappedLocal1a = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local1, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.Annotated), local1.GetTypeWithoutUnwrappingAliasTarget());
+            var wrappedLocal2 = UpdatedContainingSymbolAndNullableAnnotationLocal.CreateForTest(local2, m2, TypeWithAnnotations.Create(local1.Type, NullableAnnotation.NotAnnotated), local1.GetTypeWithoutUnwrappingAliasTarget());
 
             assertEquality(local1, local1, nullableIgnored: true, considerEverything: true);
             assertEquality(local1, wrappedLocal1, nullableIgnored: true, considerEverything: false);

@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly SourcePropertySymbolBase _property;
         private ImmutableArray<ParameterSymbol> _lazyParameters;
         private TypeWithAnnotations _lazyReturnType;
-        private TypeSymbol _lazyReturnTypeWithoutUnwrappingAliasTarget;
+        private TypeWithAnnotations _lazyReturnTypeWithoutUnwrappingAliasTarget;
         private ImmutableArray<CustomModifier> _lazyRefCustomModifiers;
         private ImmutableArray<MethodSymbol> _lazyExplicitInterfaceImplementations;
         private string _lazyName;
@@ -254,7 +254,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // event that we need to find the overridden accessor.
             _lazyParameters = ComputeParameters();
             _lazyReturnType = ComputeReturnType(diagnostics);
-            _lazyReturnTypeWithoutUnwrappingAliasTarget = ComputeReturnTypeWithoutUnwrappingAliasTarget();
+            _lazyReturnTypeWithoutUnwrappingAliasTarget = ComputeReturnType(BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
             _lazyRefCustomModifiers = ImmutableArray<CustomModifier>.Empty;
 
             var explicitInterfaceImplementations = ExplicitInterfaceImplementations;
@@ -262,10 +262,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 Debug.Assert(explicitInterfaceImplementations.Length == 1);
                 MethodSymbol implementedMethod = explicitInterfaceImplementations[0];
-                CustomModifierUtils.CopyMethodCustomModifiers(implementedMethod, this, out _lazyReturnType,
+                CustomModifierUtils.CopyMethodCustomModifiers(implementedMethod, this, out _lazyReturnType, out _lazyReturnTypeWithoutUnwrappingAliasTarget,
                                                               out _lazyRefCustomModifiers,
                                                               out _lazyParameters, alsoCopyParamsModifier: false);
-                CustomModifierUtils.CopyTypeCustomModifiers(implementedMethod.ReturnType, _lazyReturnTypeWithoutUnwrappingAliasTarget, ContainingAssembly);
             }
             else if (this.IsOverride)
             {
@@ -274,14 +273,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 MethodSymbol overriddenMethod = this.OverriddenMethod;
                 if ((object)overriddenMethod != null)
                 {
-                    CustomModifierUtils.CopyMethodCustomModifiers(overriddenMethod, this, out _lazyReturnType,
+                    CustomModifierUtils.CopyMethodCustomModifiers(overriddenMethod, this, out _lazyReturnType, out _lazyReturnTypeWithoutUnwrappingAliasTarget,
                                                                   out _lazyRefCustomModifiers,
                                                                   out _lazyParameters, alsoCopyParamsModifier: true);
-                    var overriddenMethodReturnTypeWithoutUnwrappingAliasTarget = overriddenMethod.GetReturnTypeWithoutUnwrappingAliasTarget();
-                    if (_lazyReturnTypeWithoutUnwrappingAliasTarget.Equals(overriddenMethodReturnTypeWithoutUnwrappingAliasTarget, TypeCompareKind.AllIgnoreOptions))
-                    {
-                        _lazyReturnTypeWithoutUnwrappingAliasTarget = CustomModifierUtils.CopyTypeCustomModifiers(overriddenMethodReturnTypeWithoutUnwrappingAliasTarget, _lazyReturnTypeWithoutUnwrappingAliasTarget, ContainingAssembly);
-                    }
                 }
             }
             else if (!_lazyReturnType.IsVoidType())
@@ -291,7 +285,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 _lazyReturnType = _lazyReturnType.WithTypeAndModifiers(
                     CustomModifierUtils.CopyTypeCustomModifiers(type.Type, _lazyReturnType.Type, this.ContainingAssembly),
                     type.CustomModifiers);
-                CustomModifierUtils.CopyTypeCustomModifiers(type.Type, _lazyReturnTypeWithoutUnwrappingAliasTarget, this.ContainingAssembly);
+                _lazyReturnTypeWithoutUnwrappingAliasTarget = _lazyReturnTypeWithoutUnwrappingAliasTarget.WithTypeAndModifiers(
+                    CustomModifierUtils.CopyTypeCustomModifiers(type.Type, _lazyReturnTypeWithoutUnwrappingAliasTarget.Type, this.ContainingAssembly),
+                    type.CustomModifiers);
                 _lazyRefCustomModifiers = associatedProperty.RefCustomModifiers;
             }
         }
@@ -345,7 +341,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
         internal sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
-            => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
+            => base.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget();
 
         public sealed override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
             => ImmutableArray<TypeParameterConstraintKind>.Empty;
@@ -364,7 +360,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal sealed override TypeSymbol GetReturnTypeWithoutUnwrappingAliasTarget()
+        internal sealed override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
         {
             LazyMethodChecks();
             return _lazyReturnTypeWithoutUnwrappingAliasTarget;
@@ -394,11 +390,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public sealed override ImmutableHashSet<string> ReturnNotNullIfParameterNotNull => ImmutableHashSet<string>.Empty;
 
-        private TypeWithAnnotations ComputeReturnType(BindingDiagnosticBag diagnostics)
+        private TypeWithAnnotations ComputeReturnType(BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
         {
             if (this.MethodKind == MethodKind.PropertyGet)
             {
-                return _property.TypeWithAnnotations;
+                return unwrapAliasTarget ? _property.TypeWithAnnotations : _property.GetTypeWithoutUnwrappingAliasTarget();
             }
             else
             {
@@ -414,21 +410,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         CSharpCustomModifier.CreateRequired(isInitOnlyType));
                     type = type.WithModifiers(modifiers);
                 }
-
-                return type;
-            }
-        }
-
-        private TypeSymbol ComputeReturnTypeWithoutUnwrappingAliasTarget()
-        {
-            if (this.MethodKind == MethodKind.PropertyGet)
-            {
-                return _property.GetTypeWithoutUnwrappingAliasTarget();
-            }
-            else
-            {
-                var binder = GetBinder();
-                var type = binder.GetSpecialType(SpecialType.System_Void, BindingDiagnosticBag.Discarded, this.GetSyntax());
 
                 return type;
             }
