@@ -451,8 +451,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return Hash.Combine(_containingType, Hash.Combine(MetadataName, arity));
             }
 
-            internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
+            internal override bool Equals(TypeSymbol? t2, TypeCompareKind comparison)
             {
+                t2 = t2?.GetUnwrappedType();
                 if (ReferenceEquals(this, t2))
                 {
                     return true;

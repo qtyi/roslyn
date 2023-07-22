@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -38,7 +36,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (constructedFrom.Arity == 0)
             {
-                _underlyingType = constructedFrom.Target as TypeSymbol;
+                _underlyingType = (TypeSymbol)constructedFrom.Target;
             }
             else
             {
@@ -72,6 +70,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override string GetDebuggerDisplay()
         {
             return $"{nameof(TypeKindInternal.AliasTargetType)} {{{this.UnderlyingType.GetDebuggerDisplay()}}}";
+        }
+
+        internal override bool Equals(TypeSymbol? t2, TypeCompareKind compareKind)
+        {
+            return ReferenceEquals(this, t2) || this.GetUnwrappedType().Equals(t2?.GetUnwrappedType(), compareKind);
         }
 
         #region TypeSymbol members
@@ -161,7 +164,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return UnderlyingType.GetUnificationUseSiteDiagnosticRecursive(ref result, owner, ref checkedTypes);
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol> basesBeingResolved = null)
+        internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol>? basesBeingResolved = null)
         {
             return UnderlyingType.InterfacesNoUseSiteDiagnostics(basesBeingResolved);
         }
@@ -197,48 +200,30 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 #nullable enable
     internal static class AliasTargetTypeSymbolExtensions
     {
-        private sealed class UnwrapAliasTargetTypeMap : AbstractTypeMap
-        {
-            protected override TypeSymbol SubstituteAliasTargetType(AliasTargetTypeSymbol t)
-            {
-                TypeSymbol type = t;
-                // unwrap recursively.
-                while (type.TypeKind == TypeKindInternal.AliasTargetType)
-                {
-                    CheckSymbol(type);
-
-                    type = ((AliasTargetTypeSymbol)type).UnderlyingType;
-                }
-
-                return SubstituteType(TypeWithAnnotations.Create(type)).Type;
-            }
-        }
-
         /// <summary>
         /// Unwrap a type symbol if it is an AliasTargetTypeSymbol and get its underlying type symbol.
         /// </summary>
-        public static TypeSymbol Unwrap(this TypeSymbol type)
+        public static TypeSymbol GetUnwrappedType(this TypeSymbol type)
         {
             RoslynDebug.AssertNotNull(type);
 
-            if (type.VisitType(static (t, _, _) => t.TypeKind == TypeKindInternal.AliasTargetType, /*unused*/arg: false, canDigThroughNullable: true) is null)
+            // unwrap recursively.
+            while (type.TypeKind == TypeKindInternal.AliasTargetType)
             {
-                // No need to unwrap 'type' as there is no AliasTargetType symbol inside.
-                return type;
+                CheckSymbol(type);
+
+                type = ((AliasTargetTypeSymbol)type).UnderlyingType;
             }
 
-            var typeMap = new UnwrapAliasTargetTypeMap();
-            var unwrappedType = typeMap.SubstituteType(TypeWithAnnotations.Create(type)).Type;
-
-            return unwrappedType;
+            return type;
         }
 
         /// <summary>
         /// Unwrap a type symbol if it is an AliasTargetTypeSymbol and get its underlying type symbol.
         /// </summary>
-        public static TSymbol Unwrap<TSymbol>(this TypeSymbol type) where TSymbol : TypeSymbol
+        public static TSymbol GetUnwrappedType<TSymbol>(this TypeSymbol type) where TSymbol : TypeSymbol
         {
-            type = Unwrap(type);
+            type = type.GetUnwrappedType();
             Debug.Assert(type is TSymbol);
             return (TSymbol)type;
         }
@@ -247,10 +232,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Unwrap a type symbol if it is an AliasTargetTypeSymbol and get its underlying type symbol.
         /// If <paramref name="type"/> is not <typeparamref name="TSymbol"/> then returns <see langword="null"/>.
         /// </summary>
-        public static TSymbol? UnwrapAs<TSymbol>(this TypeSymbol type) where TSymbol : TypeSymbol
+        public static TSymbol? GetUnwrappedTypeAs<TSymbol>(this TypeSymbol type) where TSymbol : TypeSymbol
         {
-            type = Unwrap(type);
+            type = type.GetUnwrappedType();
             return type as TSymbol;
+        }
+
+        [DebuggerStepThrough]
+        public static TypeKind GetUnwrappedTypeKind(this TypeSymbol type)
+        {
+            return type.GetUnwrappedType().TypeKind;
         }
 
         [Conditional("DEBUG")]

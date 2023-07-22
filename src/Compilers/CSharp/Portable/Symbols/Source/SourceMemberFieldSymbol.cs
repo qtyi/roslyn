@@ -428,7 +428,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (!unwrapAliasTarget)
             {
-                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, unwrapAliasTarget: true);
+                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, unwrapAliasTarget: unwrapAliasTarget);
             }
 
             return GetTypeAndRefKind(fieldsBeingBound).Type;
@@ -612,7 +612,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             type = type.WithModifiers(this.RequiredCustomModifiers);
-            TypeChecks(type.Type.Unwrap(), diagnostics);
+            if (unwrapAliasTarget)
+            {
+                TypeChecks(type.Type, diagnostics);
+            }
 
             bool isFirstDeclarator = fieldSyntax.Declaration.Variables[0] == declarator;
             if (isFirstDeclarator)

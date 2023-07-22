@@ -196,8 +196,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override IEnumerable<(MethodSymbol Body, MethodSymbol Implemented)> SynthesizedInterfaceMethodImpls() => throw ExceptionUtilities.Unreachable();
 
-        internal override bool Equals(TypeSymbol t2, TypeCompareKind compareKind)
+        internal override bool Equals(TypeSymbol? t2, TypeCompareKind compareKind)
         {
+            t2 = t2?.GetUnwrappedType();
             if (ReferenceEquals(this, t2))
             {
                 return true;

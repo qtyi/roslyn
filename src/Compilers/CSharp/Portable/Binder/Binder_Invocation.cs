@@ -1869,7 +1869,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     type = returnType;
                 }
-                else if (!TypeSymbol.Equals(type.Unwrap(), returnType.Unwrap(), TypeCompareKind.ConsiderEverything2))
+                else if (!TypeSymbol.Equals(type, returnType, TypeCompareKind.ConsiderEverything2))
                 {
                     return null;
                 }

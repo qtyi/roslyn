@@ -1265,7 +1265,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             // Unwrap if 'resultType' is AliasTargetTypeSymbol.
             if (!this.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
             {
-                resultType = resultType.Unwrap();
+                resultType = resultType.GetUnwrappedType();
             }
 
             if (unconstructedTypeOrAlias.IsAlias)

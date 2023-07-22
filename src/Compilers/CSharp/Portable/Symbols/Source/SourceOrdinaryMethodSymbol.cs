@@ -194,6 +194,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 foreach (var param in parameters)
                 {
                     forceMethodTypeParameters(param.TypeWithAnnotations, this, declaredConstraints);
+                    forceMethodTypeParameters(param.GetTypeWithoutUnwrappingAliasTarget(), this, declaredConstraints);
                 }
 
                 forceMethodTypeParameters(returnType, this, declaredConstraints);

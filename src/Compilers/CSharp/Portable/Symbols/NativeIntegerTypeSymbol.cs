@@ -185,6 +185,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool Equals(TypeSymbol? other, TypeCompareKind comparison)
         {
+            other = other?.GetUnwrappedType();
             if (other is null)
             {
                 return false;
