@@ -27,9 +27,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 _property = property;
             }
 
-            internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+            internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
             {
-                return _property.TypeWithAnnotations;
+                if (unwrapAliasTarget)
+                {
+                    return _property.TypeWithAnnotations;
+                }
+                else
+                {
+                    return _property.GetTypeWithoutUnwrappingAliasTarget();
+                }
             }
 
             public override RefKind RefKind => RefKind.None;

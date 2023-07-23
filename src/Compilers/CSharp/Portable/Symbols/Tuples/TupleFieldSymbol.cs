@@ -125,9 +125,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public sealed override ImmutableArray<CustomModifier> RefCustomModifiers => _underlyingField.RefCustomModifiers;
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
         {
-            return _underlyingField.GetFieldType(fieldsBeingBound);
+            return _underlyingField.GetFieldType(fieldsBeingBound, unwrapAliasTarget);
         }
 
         public override ImmutableArray<CSharpAttributeData> GetAttributes()
@@ -317,9 +317,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
         }
-
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
-            => _underlyingField.GetFieldType(fieldsBeingBound);
 
         public override ImmutableArray<CSharpAttributeData> GetAttributes()
         {

@@ -307,6 +307,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
+        {
+            TypeWithAnnotations localType = GetTypeSymbol(unwrapAliasTarget: false);
+            return localType;
+        }
+
         public bool IsVar
         {
             get
@@ -330,7 +336,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        private TypeWithAnnotations GetTypeSymbol()
+        private TypeWithAnnotations GetTypeSymbol(bool unwrapAliasTarget = true)
         {
             //
             // Note that we drop the diagnostics on the floor! That is because this code is invoked mainly in
@@ -343,6 +349,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var diagnostics = BindingDiagnosticBag.Discarded;
 
             Binder typeBinder = this.TypeSyntaxBinder;
+            if (!unwrapAliasTarget)
+            {
+                typeBinder = typeBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+            }
 
             bool isVar;
             TypeWithAnnotations declType;

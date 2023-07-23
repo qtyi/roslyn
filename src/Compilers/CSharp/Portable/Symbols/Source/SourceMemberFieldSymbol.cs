@@ -424,8 +424,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal sealed override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+        internal sealed override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
         {
+            if (!unwrapAliasTarget)
+            {
+                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, BindingDiagnosticBag.Discarded, unwrapAliasTarget: unwrapAliasTarget);
+            }
+
             return GetTypeAndRefKind(fieldsBeingBound).Type;
         }
 
@@ -438,22 +443,39 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return _lazyTypeAndRefKind;
             }
 
+            var diagnostics = BindingDiagnosticBag.GetInstance();
+            // When we have multiple declarators, we report the type diagnostics on only the first.
+            var diagnosticsForFirstDeclarator = BindingDiagnosticBag.GetInstance();
+            var type = BindFieldType(fieldsBeingBound, out var refKind, diagnostics, diagnosticsForFirstDeclarator);
+
+            // update the lazyType only if it contains value last seen by the current thread:
+            if (Interlocked.CompareExchange(ref _lazyTypeAndRefKind, new TypeAndRefKind(refKind, type), null) == null)
+            {
+                state.NotePartComplete(CompletionPart.Type);
+            }
+
+            diagnostics.Free();
+            diagnosticsForFirstDeclarator.Free();
+            return _lazyTypeAndRefKind;
+        }
+
+        private TypeWithAnnotations BindFieldType(ConsList<FieldSymbol> fieldsBeingBound, out RefKind refKind, BindingDiagnosticBag diagnostics, BindingDiagnosticBag diagnosticsForFirstDeclarator, bool unwrapAliasTarget = true)
+        {
+            Debug.Assert(fieldsBeingBound != null);
+            Debug.Assert(diagnostics != null);
+
             var declarator = VariableDeclaratorNode;
             var fieldSyntax = GetFieldDeclaration(declarator);
             var typeSyntax = fieldSyntax.Declaration.Type;
             var compilation = this.DeclaringCompilation;
 
-            var diagnostics = BindingDiagnosticBag.GetInstance();
-            RefKind refKind = RefKind.None;
+            refKind = RefKind.None;
             TypeWithAnnotations type;
 
             if (typeSyntax is ScopedTypeSyntax scopedType)
             {
                 diagnostics.Add(ErrorCode.ERR_BadMemberFlag, ErrorLocation, SyntaxFacts.GetText(SyntaxKind.ScopedKeyword));
             }
-
-            // When we have multiple declarators, we report the type diagnostics on only the first.
-            var diagnosticsForFirstDeclarator = BindingDiagnosticBag.GetInstance();
 
             Symbol associatedPropertyOrEvent = this.AssociatedSymbol;
             if ((object)associatedPropertyOrEvent != null && associatedPropertyOrEvent.Kind == SymbolKind.Event)
@@ -478,7 +500,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 var binderFactory = compilation.GetBinderFactory(SyntaxTree);
                 var binder = binderFactory.GetBinder(typeSyntax);
 
-                binder = binder.WithAdditionalFlagsAndContainingMemberOrLambda(BinderFlags.SuppressConstraintChecks, this);
+                var flags = BinderFlags.SuppressConstraintChecks;
+                if (!unwrapAliasTarget)
+                {
+                    flags |= BinderFlags.SuppressAliasTargetUnwrapping;
+                }
+                binder = binder.WithAdditionalFlagsAndContainingMemberOrLambda(flags, this);
                 if (!ContainingType.IsScriptClass)
                 {
                     var typeOnly = typeSyntax.SkipScoped(out _).SkipRefInField(out refKind);
@@ -581,8 +608,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            // update the lazyType only if it contains value last seen by the current thread:
-            if (Interlocked.CompareExchange(ref _lazyTypeAndRefKind, new TypeAndRefKind(refKind, type.WithModifiers(this.RequiredCustomModifiers)), null) == null)
+            // We do not do TypeChecks and AddDeclarationDiagnostics when binding TypeSymbol without unwrap alias target.
+            if (unwrapAliasTarget)
             {
                 TypeChecks(type.Type, diagnostics);
 
@@ -594,13 +621,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     AddDeclarationDiagnostics(diagnosticsForFirstDeclarator);
                 }
-
-                state.NotePartComplete(CompletionPart.Type);
             }
 
-            diagnostics.Free();
-            diagnosticsForFirstDeclarator.Free();
-            return _lazyTypeAndRefKind;
+            return type.WithModifiers(this.RequiredCustomModifiers);
         }
 
         internal bool FieldTypeInferred(ConsList<FieldSymbol> fieldsBeingBound)
@@ -647,7 +670,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // This check prevents redundant ManagedAddr diagnostics on the underlying pointer field of a fixed-size buffer
             if (!IsFixedSizeBuffer)
             {
-                Type.CheckAllConstraints(DeclaringCompilation, conversions, ErrorLocation, diagnostics);
+                GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(DeclaringCompilation, conversions, ErrorLocation, diagnostics);
             }
 
             base.AfterAddingTypeMembersChecks(conversions, diagnostics);

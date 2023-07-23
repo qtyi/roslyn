@@ -733,10 +733,10 @@
     <value>A local or parameter named '{0}' cannot be declared in this scope because that name is used in an enclosing local scope to define a local or parameter</value>
   </data>
   <data name="ERR_BadUsingNamespace" xml:space="preserve">
-    <value>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</value>
+    <value>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</value>
   </data>
   <data name="ERR_BadUsingType" xml:space="preserve">
-    <value>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</value>
+    <value>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</value>
   </data>
   <data name="ERR_NoAliasHere" xml:space="preserve">
     <value>A 'using static' directive cannot be used to declare an alias</value>
@@ -1243,22 +1243,22 @@
     <value>The non-generic {1} '{0}' cannot be used with type arguments</value>
   </data>
   <data name="ERR_NewConstraintNotSatisfied" xml:space="preserve">
-    <value>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</value>
+    <value>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</value>
   </data>
   <data name="ERR_GenericConstraintNotSatisfiedRefType" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</value>
   </data>
   <data name="ERR_GenericConstraintNotSatisfiedNullableEnum" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</value>
   </data>
   <data name="ERR_GenericConstraintNotSatisfiedNullableInterface" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</value>
   </data>
   <data name="ERR_GenericConstraintNotSatisfiedTyVar" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</value>
   </data>
   <data name="ERR_GenericConstraintNotSatisfiedValType" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</value>
   </data>
   <data name="ERR_DuplicateGeneratedName" xml:space="preserve">
     <value>The parameter name '{0}' conflicts with an automatically-generated parameter name</value>
@@ -1447,10 +1447,10 @@
     <value>The 'new()' constraint cannot be used with the 'struct' constraint</value>
   </data>
   <data name="ERR_RefConstraintNotSatisfied" xml:space="preserve">
-    <value>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</value>
+    <value>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</value>
   </data>
   <data name="ERR_ValConstraintNotSatisfied" xml:space="preserve">
-    <value>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</value>
+    <value>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</value>
   </data>
   <data name="ERR_CircularConstraint" xml:space="preserve">
     <value>Circular constraint dependency involving '{0}' and '{1}'</value>
@@ -5804,10 +5804,10 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>Nullable value type may be null.</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterConstraint" xml:space="preserve">
-    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</value>
+    <value>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterConstraint_Title" xml:space="preserve">
-    <value>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</value>
+    <value>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</value>
   </data>
   <data name="WRN_MissingNonNullTypesContextForAnnotation" xml:space="preserve">
     <value>The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.</value>
@@ -5948,7 +5948,7 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>The 'new()' constraint cannot be used with the 'unmanaged' constraint</value>
   </data>
   <data name="ERR_UnmanagedConstraintNotSatisfied" xml:space="preserve">
-    <value>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</value>
+    <value>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</value>
   </data>
   <data name="ERR_ConWithUnmanagedCon" xml:space="preserve">
     <value>Type parameter '{1}' has the 'unmanaged' constraint so '{1}' cannot be used as a constraint for '{0}'</value>
@@ -6059,7 +6059,7 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>Cannot create constructed generic type from another constructed generic type.</value>
   </data>
   <data name="CannotCreateConstructedFromNongeneric" xml:space="preserve">
-    <value>Cannot create constructed generic type from non-generic type.</value>
+    <value>Cannot create constructed type from non-generic type or alias.</value>
   </data>
   <data name="IDS_FeatureUnconstrainedTypeParameterInNullCoalescingOperator" xml:space="preserve">
     <value>unconstrained type parameters in null coalescing operator</value>
@@ -6071,10 +6071,10 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>Nullability in constraints for type parameter doesn't match the constraints for type parameter in implicitly implemented interface method'.</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint" xml:space="preserve">
-    <value>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</value>
+    <value>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title" xml:space="preserve">
-    <value>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</value>
+    <value>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</value>
   </data>
   <data name="ERR_TripleDotNotAllowed" xml:space="preserve">
     <value>Unexpected character sequence '...'</value>
@@ -6305,10 +6305,10 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>stackalloc in nested expressions</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterNotNullConstraint" xml:space="preserve">
-    <value>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</value>
+    <value>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</value>
   </data>
   <data name="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title" xml:space="preserve">
-    <value>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</value>
+    <value>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</value>
   </data>
   <data name="IDS_FeatureNotNullGenericTypeConstraint" xml:space="preserve">
     <value>notnull generic type constraint</value>
@@ -7296,7 +7296,7 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
     <value>This constructor must add 'SetsRequiredMembers' because it chains to a constructor that has that attribute.</value>
   </data>
   <data name="ERR_NewConstraintCannotHaveRequiredMembers" xml:space="preserve">
-    <value>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</value>
+    <value>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</value>
   </data>
   <data name="ERR_FileTypeDisallowedInSignature" xml:space="preserve">
     <value>File-local type '{0}' cannot be used in a member signature in non-file-local type '{1}'.</value>
@@ -7507,5 +7507,8 @@ To remove the warning, you can use /reference instead (set the Embed Interop Typ
   </data>
   <data name="ERR_ConstantValueOfTypeExpected" xml:space="preserve">
     <value>A constant value of type '{0}' is expected</value>
+  </data>
+  <data name="IDS_FeatureUsingGenericAlias" xml:space="preserve">
+    <value>using generic alias</value>
   </data>
 </root>

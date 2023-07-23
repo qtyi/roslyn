@@ -121,7 +121,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Simplification.Simplifiers
 
                     if (syntaxRef != null)
                     {
-                        var declIdentifier = ((UsingDirectiveSyntax)syntaxRef.GetSyntax(cancellationToken)).Alias.Name.Identifier;
+                        var declIdentifier = ((UsingDirectiveSyntax)syntaxRef.GetSyntax(cancellationToken)).Identifier;
                         text = declIdentifier.IsVerbatimIdentifier() ? declIdentifier.ToString()[1..] : declIdentifier.ToString();
                     }
 
@@ -671,7 +671,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Simplification.Simplifiers
             }
 
             if (name?.Parent is UsingDirectiveSyntax usingDirective &&
-                usingDirective.Alias == null)
+                usingDirective.Identifier == default)
             {
                 // We're a qualified name in a using.  We don't want to reduce this name as people like
                 // fully qualified names in usings so they can properly tell what the name is resolving

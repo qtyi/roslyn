@@ -719,6 +719,42 @@ namespace System
         }
 
         [Theory, MemberData(nameof(TestAllData))]
+        public async Task TestUnnecessaryImportAddedAndRemoved2(bool useSymbolAnnotations)
+        {
+            await TestAsync(
+@"using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
+    }
+}",
+
+@"using System.Collections.Generic;
+using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
+    }
+}",
+
+@"using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
+    }
+}", useSymbolAnnotations);
+        }
+
+        [Theory, MemberData(nameof(TestAllData))]
         public async Task TestImportAddedToStartOfDocumentIfNoNestedImports(bool useSymbolAnnotations)
         {
             await TestAsync(

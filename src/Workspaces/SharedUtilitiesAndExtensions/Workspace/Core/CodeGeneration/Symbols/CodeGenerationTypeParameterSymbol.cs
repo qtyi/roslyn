@@ -95,6 +95,14 @@ namespace Microsoft.CodeAnalysis.CodeGeneration
             }
         }
 
+        IAliasSymbol ITypeParameterSymbol.DeclaringAlias
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         public NullableAnnotation ReferenceTypeConstraintNullableAnnotation => throw new System.NotImplementedException();
 
         public ImmutableArray<NullableAnnotation> ConstraintNullableAnnotations => ConstraintTypes.SelectAsArray(t => t.NullableAnnotation);

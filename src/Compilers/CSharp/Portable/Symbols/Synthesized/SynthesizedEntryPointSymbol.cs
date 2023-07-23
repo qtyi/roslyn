@@ -142,6 +142,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return ReturnType.IsVoidType(); }
         }
 
+        internal sealed override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return base.GetReturnTypeWithoutUnwrappingAliasTarget();
+        }
+
         public sealed override FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations => FlowAnalysisAnnotations.None;
 
         public sealed override ImmutableHashSet<string> ReturnNotNullIfParameterNotNull => ImmutableHashSet<string>.Empty;

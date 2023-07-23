@@ -63,6 +63,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
+        {
+            return GetFieldType(ConsList<FieldSymbol>.Empty, unwrapAliasTarget: false);
+        }
+
         public abstract RefKind RefKind { get; }
 
         public abstract ImmutableArray<CustomModifier> RefCustomModifiers { get; }
@@ -74,7 +79,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
-        internal abstract TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound);
+        internal abstract TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true);
 
         /// <summary>
         /// If this field serves as a backing variable for an automatically generated

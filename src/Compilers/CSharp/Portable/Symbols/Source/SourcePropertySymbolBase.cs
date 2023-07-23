@@ -47,6 +47,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly SourcePropertyAccessorSymbol? _setMethod;
 #nullable disable
         private readonly TypeSymbol _explicitInterfaceType;
+        private readonly TypeSymbol _explicitInterfaceTypeWithoutUnwrappingAliasTarget;
         private ImmutableArray<PropertySymbol> _lazyExplicitInterfaceImplementations;
         private readonly Flags _propertyFlags;
         private readonly RefKind _refKind;
@@ -54,6 +55,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private SymbolCompletionState _state;
         private ImmutableArray<ParameterSymbol> _lazyParameters;
         private TypeWithAnnotations.Boxed _lazyType;
+        private TypeWithAnnotations.Boxed _lazyTypeWithoutUnwrappingAliasTarget;
 
         private string _lazySourceName;
 
@@ -75,6 +77,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool hasSetAccessor,
             bool isExplicitInterfaceImplementation,
             TypeSymbol? explicitInterfaceType,
+            TypeSymbol? explicitInterfaceTypeWithoutUnwrappingAliasTarget,
             string? aliasQualifierOpt,
             DeclarationModifiers modifiers,
             bool hasInitializer,
@@ -97,6 +100,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _refKind = refKind;
             _modifiers = modifiers;
             _explicitInterfaceType = explicitInterfaceType;
+            _explicitInterfaceTypeWithoutUnwrappingAliasTarget = explicitInterfaceTypeWithoutUnwrappingAliasTarget;
 
             if (isExplicitInterfaceImplementation)
             {
@@ -171,8 +175,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _lazyRefCustomModifiers = ImmutableArray<CustomModifier>.Empty;
 
             TypeWithAnnotations type;
-            (type, _lazyParameters) = MakeParametersAndBindType(diagnostics);
+            TypeWithAnnotations typeWithoutUnwrappingAliasTarget;
+            (type, typeWithoutUnwrappingAliasTarget, _lazyParameters) = MakeParametersAndBindType(diagnostics);
             _lazyType = new TypeWithAnnotations.Boxed(type);
+            _lazyTypeWithoutUnwrappingAliasTarget = new TypeWithAnnotations.Boxed(typeWithoutUnwrappingAliasTarget);
 
             // The runtime will not treat the accessors of this property as overrides or implementations
             // of those of another property unless both the signatures and the custom modifiers match.
@@ -216,6 +222,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     _lazyRefCustomModifiers = _refKind != RefKind.None ? overriddenOrImplementedProperty.RefCustomModifiers : ImmutableArray<CustomModifier>.Empty;
 
                     TypeWithAnnotations overriddenPropertyType = overriddenOrImplementedProperty.TypeWithAnnotations;
+                    TypeWithAnnotations overriddenPropertyTypeUnwrappingAliasTarget = overriddenOrImplementedProperty.GetTypeWithoutUnwrappingAliasTarget();
 
                     // We do an extra check before copying the type to handle the case where the overriding
                     // property (incorrectly) has a different type than the overridden property.  In such cases,
@@ -225,8 +232,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         type = type.WithTypeAndModifiers(
                             CustomModifierUtils.CopyTypeCustomModifiers(overriddenPropertyType.Type, type.Type, this.ContainingAssembly),
                             overriddenPropertyType.CustomModifiers);
+                        typeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget.WithTypeAndModifiers(
+                            CustomModifierUtils.CopyTypeCustomModifiers(overriddenPropertyTypeUnwrappingAliasTarget.Type, typeWithoutUnwrappingAliasTarget.Type, this.ContainingAssembly),
+                            overriddenPropertyTypeUnwrappingAliasTarget.CustomModifiers);
 
                         _lazyType = new TypeWithAnnotations.Boxed(type);
+                        _lazyTypeWithoutUnwrappingAliasTarget = new TypeWithAnnotations.Boxed(typeWithoutUnwrappingAliasTarget);
                     }
 
                     _lazyParameters = CustomModifierUtils.CopyParameterCustomModifiers(overriddenOrImplementedProperty.Parameters, _lazyParameters, alsoCopyParamsModifier: isOverride);
@@ -294,6 +305,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 EnsureSignature();
                 return _lazyType.Value;
             }
+        }
+
+        internal sealed override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
+        {
+            EnsureSignature();
+            return _lazyTypeWithoutUnwrappingAliasTarget.Value;
         }
 
 #nullable enable 
@@ -800,9 +817,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if ((object)_explicitInterfaceType != null)
             {
+                Debug.Assert((object)_explicitInterfaceTypeWithoutUnwrappingAliasTarget != null);
                 var explicitInterfaceSpecifier = GetExplicitInterfaceSpecifier();
                 Debug.Assert(explicitInterfaceSpecifier != null);
-                _explicitInterfaceType.CheckAllConstraints(compilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), diagnostics);
+                _explicitInterfaceTypeWithoutUnwrappingAliasTarget.CheckAllConstraints(compilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), diagnostics);
 
                 // Note: we delayed nullable-related checks that could pull on NonNullTypes
                 if (explicitlyImplementedProperty is object)
@@ -1464,7 +1482,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                     foreach (var parameter in this.Parameters)
                                     {
                                         parameter.ForceComplete(locationOpt, cancellationToken);
-                                        parameter.Type.CheckAllConstraints(DeclaringCompilation, conversions, parameter.Locations[0], diagnostics);
+                                        parameter.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(DeclaringCompilation, conversions, parameter.Locations[0], diagnostics);
                                     }
 
                                     this.AddDeclarationDiagnostics(diagnostics);
@@ -1490,7 +1508,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 var diagnostics = BindingDiagnosticBag.GetInstance();
                                 var conversions = new TypeConversions(this.ContainingAssembly.CorLibrary);
-                                this.Type.CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
+                                this.GetTypeWithoutUnwrappingAliasTarget().Type.CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
 
                                 ValidatePropertyType(diagnostics);
 
@@ -1551,7 +1569,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
 #nullable enable
 
-        protected abstract (TypeWithAnnotations Type, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics);
+        protected abstract (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics);
 
         protected static ExplicitInterfaceSpecifierSyntax? GetExplicitInterfaceSpecifier(SyntaxNode syntax)
             => (syntax as BasePropertyDeclarationSyntax)?.ExplicitInterfaceSpecifier;

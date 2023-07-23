@@ -36,6 +36,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return type.TypeParameters.IsEmpty ? type : type.Construct(typeArguments, unbound: false);
         }
 
+        public static AliasTargetTypeSymbol ConstructIfGeneric(this AliasSymbolFromSyntax alias, ImmutableArray<TypeWithAnnotations> typeArguments)
+        {
+            Debug.Assert(alias.TypeParameters.IsEmpty == (typeArguments.Length == 0));
+            Debug.Assert(alias.Target is TypeSymbol);
+            return alias.TypeParameters.IsEmpty ? new AliasTargetTypeSymbol(alias) : alias.Construct(typeArguments, unbound: false);
+        }
+
         public static bool IsNestedType([NotNullWhen(true)] this Symbol? symbol)
         {
             return symbol is NamedTypeSymbol && (object?)symbol.ContainingType != null;
@@ -198,6 +205,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public static Symbol ConstructedFrom(this Symbol symbol)
         {
+            if (symbol is AliasTargetTypeSymbol)
+            {
+                return ((AliasTargetTypeSymbol)symbol).ConstructedFrom;
+            }
+
             switch (symbol.Kind)
             {
                 case SymbolKind.NamedType:
@@ -349,6 +361,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         return ((NamedTypeSymbol)symbol).Arity;
                     case SymbolKind.Method:
                         return ((MethodSymbol)symbol).Arity;
+                    case SymbolKind.Alias:
+                        return ((AliasSymbol)symbol).Arity;
                 }
             }
 
@@ -442,8 +456,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal static TypeWithAnnotations GetTypeOrReturnType(this Symbol symbol)
         {
             TypeWithAnnotations returnType;
-            GetTypeOrReturnType(symbol, refKind: out _, out returnType, refCustomModifiers: out _);
+            GetTypeOrReturnType(symbol, refKind: out _, out returnType, out _, refCustomModifiers: out _);
             return returnType;
+        }
+
+        internal static TypeWithAnnotations GetTypeOrReturnTypeWithoutUnwrappingAliasTarget(this Symbol symbol)
+        {
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget;
+            GetTypeOrReturnType(symbol, refKind: out _, out _, out returnTypeWithoutUnwrappingAliasTarget, refCustomModifiers: out _);
+            return returnTypeWithoutUnwrappingAliasTarget;
         }
 
         internal static FlowAnalysisAnnotations GetFlowAnalysisAnnotations(this PropertySymbol property)
@@ -483,7 +504,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             };
         }
 
-        internal static void GetTypeOrReturnType(this Symbol symbol, out RefKind refKind, out TypeWithAnnotations returnType,
+        internal static void GetTypeOrReturnType(this Symbol symbol, out RefKind refKind, out TypeWithAnnotations returnType, out TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
                                                  out ImmutableArray<CustomModifier> refCustomModifiers)
         {
             switch (symbol.Kind)
@@ -492,41 +513,48 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     FieldSymbol field = (FieldSymbol)symbol;
                     refKind = RefKind.None;
                     returnType = field.TypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = field.GetTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = ImmutableArray<CustomModifier>.Empty;
                     break;
                 case SymbolKind.Method:
                     MethodSymbol method = (MethodSymbol)symbol;
                     refKind = method.RefKind;
                     returnType = method.ReturnTypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = method.GetReturnTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = method.RefCustomModifiers;
                     break;
                 case SymbolKind.Property:
                     PropertySymbol property = (PropertySymbol)symbol;
                     refKind = property.RefKind;
                     returnType = property.TypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = property.GetTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = property.RefCustomModifiers;
                     break;
                 case SymbolKind.Event:
                     EventSymbol @event = (EventSymbol)symbol;
                     refKind = RefKind.None;
                     returnType = @event.TypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = @event.GetTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = ImmutableArray<CustomModifier>.Empty;
                     break;
                 case SymbolKind.Local:
                     LocalSymbol local = (LocalSymbol)symbol;
                     refKind = local.RefKind;
                     returnType = local.TypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = local.GetTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = ImmutableArray<CustomModifier>.Empty;
                     break;
                 case SymbolKind.Parameter:
                     ParameterSymbol parameter = (ParameterSymbol)symbol;
                     refKind = parameter.RefKind;
                     returnType = parameter.TypeWithAnnotations;
+                    returnTypeWithoutUnwrappingAliasTarget = parameter.GetTypeWithoutUnwrappingAliasTarget();
                     refCustomModifiers = parameter.RefCustomModifiers;
                     break;
                 case SymbolKind.ErrorType:
                     refKind = RefKind.None;
                     returnType = TypeWithAnnotations.Create((TypeSymbol)symbol);
+                    returnTypeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create((TypeSymbol)symbol);
                     refCustomModifiers = ImmutableArray<CustomModifier>.Empty;
                     break;
                 default:

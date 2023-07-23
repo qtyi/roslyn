@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis.CSharp
     /// A specific location for binding.
     /// </summary>
     [Flags]
-    internal enum BinderFlags : uint
+    internal enum BinderFlags : ulong
     {
         None, // No specific location
         SuppressConstraintChecks = 1 << 0,
@@ -111,6 +111,11 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// The current context is an expression tree
         /// </summary>
         InExpressionTree = 1 << 30,
+
+        /// <summary>
+        /// Skip unwrapping <see cref="Symbols.AliasTargetTypeSymbol"/> when binding a generic name.
+        /// </summary>
+        SuppressAliasTargetUnwrapping = 1L << 31,
 
         // Groups
 

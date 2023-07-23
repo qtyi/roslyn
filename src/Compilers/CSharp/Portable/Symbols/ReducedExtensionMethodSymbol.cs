@@ -486,6 +486,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return _typeMap.SubstituteType(_reducedFrom.ReturnTypeWithAnnotations); }
         }
 
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return _typeMap.SubstituteType(_reducedFrom.GetReturnTypeWithoutUnwrappingAliasTarget());
+        }
+
         public override FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations => _reducedFrom.ReturnTypeFlowAnalysisAnnotations;
 
         public override ImmutableHashSet<string> ReturnNotNullIfParameterNotNull => _reducedFrom.ReturnNotNullIfParameterNotNull;
@@ -620,6 +625,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             public override TypeWithAnnotations TypeWithAnnotations
             {
                 get { return _containingMethod._typeMap.SubstituteType(this._underlyingParameter.TypeWithAnnotations); }
+            }
+
+            internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
+            {
+                return _containingMethod._typeMap.SubstituteType(this._underlyingParameter.GetTypeWithoutUnwrappingAliasTarget());
             }
 
             public override ImmutableArray<CustomModifier> RefCustomModifiers

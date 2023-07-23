@@ -1026,6 +1026,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                         targetParamsBuilder.Add(
                             new SignatureOnlyParameterSymbol(
                                 translator.Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                                translator.Retarget(param.GetTypeWithoutUnwrappingAliasTarget(), RetargetOptions.RetargetPrimitiveTypesByTypeCode),
                                 translator.RetargetModifiers(param.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                                 param.IsParams,
                                 param.RefKind));
@@ -1046,6 +1047,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                         method.IsInitOnly,
                         method.IsStatic,
                         translator.Retarget(method.ReturnTypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                        translator.Retarget(method.GetReturnTypeWithoutUnwrappingAliasTarget(), RetargetOptions.RetargetPrimitiveTypesByTypeCode),
                         translator.RetargetModifiers(method.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                         ImmutableArray<MethodSymbol>.Empty);
 
@@ -1104,6 +1106,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     targetParamsBuilder.Add(
                         new SignatureOnlyParameterSymbol(
                             Retarget(param.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                            Retarget(param.GetTypeWithoutUnwrappingAliasTarget(), RetargetOptions.RetargetPrimitiveTypesByTypeCode),
                             RetargetModifiers(param.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                             param.IsParams,
                             param.RefKind));
@@ -1115,6 +1118,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     targetParamsBuilder.ToImmutableAndFree(),
                     property.RefKind,
                     Retarget(property.TypeWithAnnotations, RetargetOptions.RetargetPrimitiveTypesByTypeCode),
+                    Retarget(property.GetTypeWithoutUnwrappingAliasTarget(), RetargetOptions.RetargetPrimitiveTypesByTypeCode),
                     RetargetModifiers(property.RefCustomModifiers, out modifiersHaveChanged_Ignored),
                     property.IsStatic,
                     ImmutableArray<PropertySymbol>.Empty);

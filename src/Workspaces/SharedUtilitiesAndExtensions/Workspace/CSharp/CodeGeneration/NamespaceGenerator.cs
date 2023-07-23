@@ -154,7 +154,10 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGeneration
                 if (name != null)
                 {
                     return SyntaxFactory.UsingDirective(
-                        SyntaxFactory.NameEquals(alias.Name.ToIdentifierName()),
+                        alias.Name.ToIdentifierToken(),
+                        null,
+                        default,
+                        SyntaxFactory.Token(SyntaxKind.EqualsToken),
                         name);
                 }
             }

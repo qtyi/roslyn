@@ -61,8 +61,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Utilities
             var directive1IsUsingStatic = using1.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
             var directive2IsUsingStatic = using2.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
 
-            var directive1IsAlias = using1.Alias != null;
-            var directive2IsAlias = using2.Alias != null;
+            var directive1IsAlias = using1.Identifier != default;
+            var directive2IsAlias = using2.Identifier != default;
 
             var directive1IsNamespace = !directive1IsUsingStatic && !directive1IsAlias;
             var directive2IsNamespace = !directive2IsUsingStatic && !directive2IsAlias;

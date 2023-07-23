@@ -2270,6 +2270,11 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGen
             get { throw new NotImplementedException(); }
         }
 
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
+        {
+            throw new NotImplementedException();
+        }
+
         public override ImmutableArray<Location> Locations
         {
             get { throw new NotImplementedException(); }

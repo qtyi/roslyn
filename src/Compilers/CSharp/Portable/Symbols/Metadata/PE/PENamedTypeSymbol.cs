@@ -2503,6 +2503,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 
             internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
             {
+                t2 = t2?.GetUnwrappedType();
                 return t2 is NativeIntegerTypeSymbol nativeInteger ?
                     nativeInteger.Equals(this, comparison) :
                     base.Equals(t2, comparison);

@@ -94,31 +94,37 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return default(TypeWithAnnotations);
 
             TypeSymbol result;
-
-            switch (previous.Kind)
+            if (previous.TypeKind == TypeKindInternal.AliasTargetType)
             {
-                case SymbolKind.NamedType:
-                    result = SubstituteNamedType((NamedTypeSymbol)previous);
-                    break;
-                case SymbolKind.TypeParameter:
-                    return SubstituteTypeParameter((TypeParameterSymbol)previous);
-                case SymbolKind.ArrayType:
-                    result = SubstituteArrayType((ArrayTypeSymbol)previous);
-                    break;
-                case SymbolKind.PointerType:
-                    result = SubstitutePointerType((PointerTypeSymbol)previous);
-                    break;
-                case SymbolKind.FunctionPointerType:
-                    result = SubstituteFunctionPointerType((FunctionPointerTypeSymbol)previous);
-                    break;
-                case SymbolKind.DynamicType:
-                    result = SubstituteDynamicType();
-                    break;
-                case SymbolKind.ErrorType:
-                    return ((ErrorTypeSymbol)previous).Substitute(this);
-                default:
-                    result = previous;
-                    break;
+                result = SubstituteAliasTargetType((AliasTargetTypeSymbol)previous);
+            }
+            else
+            {
+                switch (previous.Kind)
+                {
+                    case SymbolKind.NamedType:
+                        result = SubstituteNamedType((NamedTypeSymbol)previous);
+                        break;
+                    case SymbolKind.TypeParameter:
+                        return SubstituteTypeParameter((TypeParameterSymbol)previous);
+                    case SymbolKind.ArrayType:
+                        result = SubstituteArrayType((ArrayTypeSymbol)previous);
+                        break;
+                    case SymbolKind.PointerType:
+                        result = SubstitutePointerType((PointerTypeSymbol)previous);
+                        break;
+                    case SymbolKind.FunctionPointerType:
+                        result = SubstituteFunctionPointerType((FunctionPointerTypeSymbol)previous);
+                        break;
+                    case SymbolKind.DynamicType:
+                        result = SubstituteDynamicType();
+                        break;
+                    case SymbolKind.ErrorType:
+                        return ((ErrorTypeSymbol)previous).Substitute(this);
+                    default:
+                        result = previous;
+                        break;
+                }
             }
 
             return TypeWithAnnotations.Create(result);
@@ -168,6 +174,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             return customModifiers;
+        }
+
+        protected virtual TypeSymbol SubstituteAliasTargetType(AliasTargetTypeSymbol t)
+        {
+            var typeArguments = t.TypeArgumentsWithAnnotations;
+            if (typeArguments.IsEmpty)
+            {
+                return t;
+            }
+
+            return new AliasTargetTypeSymbol(
+                t.ConstructedFrom,
+                SubstituteTypes(typeArguments));
         }
 
         protected virtual TypeSymbol SubstituteDynamicType()

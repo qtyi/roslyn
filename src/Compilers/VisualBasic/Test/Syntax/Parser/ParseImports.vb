@@ -167,4 +167,24 @@ Imports System
         </errors>)
     End Sub
 
+    <Fact>
+    Public Sub GenericAlias()
+        ParseAndVerify(<![CDATA[
+            Imports System.Tuple(Of String, Integer)
+            Imports Tuple(Of String, Integer)
+        ]]>)
+
+        ParseAndVerify(<![CDATA[
+            Imports X(Of T) = System.String
+            Imports Y(Of T) = T
+            Imports Z(Of T1, T2, T3) = System.Tuple(Of T1, T2, T3)
+        ]]>)
+
+        ParseAndVerify(<![CDATA[
+            Imports X(Of T As Class) = T
+            Imports Y(Of T As Structure) = T
+            Imports Z(Of T1 As New, T2 As Class, T3 As T2) = System.Tuple(Of T1, T2, T3)
+        ]]>)
+    End Sub
+
 End Class

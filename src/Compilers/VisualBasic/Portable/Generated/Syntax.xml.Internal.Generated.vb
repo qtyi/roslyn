@@ -997,37 +997,50 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         Inherits VisualBasicSyntaxNode
 
         Friend ReadOnly _identifier as IdentifierTokenSyntax
+        Friend ReadOnly _typeParameterList as TypeParameterListSyntax
         Friend ReadOnly _equalsToken as PunctuationSyntax
 
-        Friend Sub New(ByVal kind As SyntaxKind, identifier As InternalSyntax.IdentifierTokenSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
+        Friend Sub New(ByVal kind As SyntaxKind, identifier As InternalSyntax.IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
             MyBase.New(kind)
-            MyBase._slotCount = 2
+            MyBase._slotCount = 3
 
             AdjustFlagsAndWidth(identifier)
             Me._identifier = identifier
+            If typeParameterList IsNot Nothing Then
+                AdjustFlagsAndWidth(typeParameterList)
+                Me._typeParameterList = typeParameterList
+            End If
             AdjustFlagsAndWidth(equalsToken)
             Me._equalsToken = equalsToken
 
         End Sub
 
-        Friend Sub New(ByVal kind As SyntaxKind, identifier As InternalSyntax.IdentifierTokenSyntax, equalsToken As InternalSyntax.PunctuationSyntax, context As ISyntaxFactoryContext)
+        Friend Sub New(ByVal kind As SyntaxKind, identifier As InternalSyntax.IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As InternalSyntax.PunctuationSyntax, context As ISyntaxFactoryContext)
             MyBase.New(kind)
-            MyBase._slotCount = 2
+            MyBase._slotCount = 3
             Me.SetFactoryContext(context)
 
             AdjustFlagsAndWidth(identifier)
             Me._identifier = identifier
+            If typeParameterList IsNot Nothing Then
+                AdjustFlagsAndWidth(typeParameterList)
+                Me._typeParameterList = typeParameterList
+            End If
             AdjustFlagsAndWidth(equalsToken)
             Me._equalsToken = equalsToken
 
         End Sub
 
-        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), identifier As InternalSyntax.IdentifierTokenSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
+        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), identifier As InternalSyntax.IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
             MyBase.New(kind, errors, annotations)
-            MyBase._slotCount = 2
+            MyBase._slotCount = 3
 
             AdjustFlagsAndWidth(identifier)
             Me._identifier = identifier
+            If typeParameterList IsNot Nothing Then
+                AdjustFlagsAndWidth(typeParameterList)
+                Me._typeParameterList = typeParameterList
+            End If
             AdjustFlagsAndWidth(equalsToken)
             Me._equalsToken = equalsToken
 
@@ -1035,11 +1048,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
 
         Friend Sub New(reader as ObjectReader)
             MyBase.New(reader)
-            MyBase._slotCount = 2
+            MyBase._slotCount = 3
             Dim _identifier = DirectCast(reader.ReadValue(), IdentifierTokenSyntax)
             If _identifier isnot Nothing
                 AdjustFlagsAndWidth(_identifier)
                 Me._identifier = _identifier
+            End If
+            Dim _typeParameterList = DirectCast(reader.ReadValue(), TypeParameterListSyntax)
+            If _typeParameterList isnot Nothing
+                AdjustFlagsAndWidth(_typeParameterList)
+                Me._typeParameterList = _typeParameterList
             End If
             Dim _equalsToken = DirectCast(reader.ReadValue(), PunctuationSyntax)
             If _equalsToken isnot Nothing
@@ -1053,6 +1071,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         Friend Overrides Sub WriteTo(writer as ObjectWriter)
             MyBase.WriteTo(writer)
             writer.WriteValue(Me._identifier)
+            writer.WriteValue(Me._typeParameterList)
             writer.WriteValue(Me._equalsToken)
         End Sub
 
@@ -1074,6 +1093,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         End Property
 
         ''' <summary>
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </summary>
+        ''' <remarks>
+        ''' This child is optional. If it is not present, then Nothing is returned.
+        ''' </remarks>
+        Friend ReadOnly Property TypeParameterList As InternalSyntax.TypeParameterListSyntax
+            Get
+                Return Me._typeParameterList
+            End Get
+        End Property
+
+        ''' <summary>
         ''' The "=" token.
         ''' </summary>
         Friend ReadOnly Property EqualsToken As InternalSyntax.PunctuationSyntax
@@ -1087,6 +1119,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
                 Case 0
                     Return Me._identifier
                 Case 1
+                    Return Me._typeParameterList
+                Case 2
                     Return Me._equalsToken
                 Case Else
                     Debug.Assert(false, "child index out of range")
@@ -1096,11 +1130,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
 
 
         Friend Overrides Function SetDiagnostics(ByVal newErrors As DiagnosticInfo()) As GreenNode
-            Return new ImportAliasClauseSyntax(Me.Kind, newErrors, GetAnnotations, _identifier, _equalsToken)
+            Return new ImportAliasClauseSyntax(Me.Kind, newErrors, GetAnnotations, _identifier, _typeParameterList, _equalsToken)
         End Function
 
         Friend Overrides Function SetAnnotations(ByVal annotations As SyntaxAnnotation()) As GreenNode
-            Return new ImportAliasClauseSyntax(Me.Kind, GetDiagnostics, annotations, _identifier, _equalsToken)
+            Return new ImportAliasClauseSyntax(Me.Kind, GetDiagnostics, annotations, _identifier, _typeParameterList, _equalsToken)
         End Function
 
         Public Overrides Function Accept(ByVal visitor As VisualBasicSyntaxVisitor) As VisualBasicSyntaxNode
@@ -37839,11 +37873,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
 
             Dim newIdentifier = DirectCast(Visit(node.Identifier), IdentifierTokenSyntax)
             If node._identifier IsNot newIdentifier Then anyChanges = True
+            Dim newTypeParameterList = DirectCast(Visit(node._typeParameterList), TypeParameterListSyntax)
+            If node._typeParameterList IsNot newTypeParameterList Then anyChanges = True
             Dim newEqualsToken = DirectCast(Visit(node.EqualsToken), PunctuationSyntax)
             If node._equalsToken IsNot newEqualsToken Then anyChanges = True
 
             If anyChanges Then
-                Return New ImportAliasClauseSyntax(node.Kind, node.GetDiagnostics, node.GetAnnotations, newIdentifier, newEqualsToken)
+                Return New ImportAliasClauseSyntax(node.Kind, node.GetDiagnostics, node.GetAnnotations, newIdentifier, newTypeParameterList, newEqualsToken)
             Else
                 Return node
             End If
@@ -42840,20 +42876,24 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         ''' <param name="identifier">
         ''' The identifier being introduced.
         ''' </param>
+        ''' <param name="typeParameterList">
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </param>
         ''' <param name="equalsToken">
         ''' The "=" token.
         ''' </param>
-        Friend Shared Function ImportAliasClause(identifier As IdentifierTokenSyntax, equalsToken As PunctuationSyntax) As ImportAliasClauseSyntax
+        Friend Shared Function ImportAliasClause(identifier As IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As PunctuationSyntax) As ImportAliasClauseSyntax
             Debug.Assert(identifier IsNot Nothing AndAlso identifier.Kind = SyntaxKind.IdentifierToken)
             Debug.Assert(equalsToken IsNot Nothing AndAlso equalsToken.Kind = SyntaxKind.EqualsToken)
 
             Dim hash As Integer
-            Dim cached = SyntaxNodeCache.TryGetNode(SyntaxKind.ImportAliasClause, identifier, equalsToken, hash)
+            Dim cached = SyntaxNodeCache.TryGetNode(SyntaxKind.ImportAliasClause, identifier, typeParameterList, equalsToken, hash)
             If cached IsNot Nothing Then
                 Return DirectCast(cached, ImportAliasClauseSyntax)
             End If
 
-            Dim result = New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, identifier, equalsToken)
+            Dim result = New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, identifier, typeParameterList, equalsToken)
             If hash >= 0 Then
                 SyntaxNodeCache.AddNode(result, hash)
             End If
@@ -54918,20 +54958,24 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         ''' <param name="identifier">
         ''' The identifier being introduced.
         ''' </param>
+        ''' <param name="typeParameterList">
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </param>
         ''' <param name="equalsToken">
         ''' The "=" token.
         ''' </param>
-        Friend Function ImportAliasClause(identifier As IdentifierTokenSyntax, equalsToken As PunctuationSyntax) As ImportAliasClauseSyntax
+        Friend Function ImportAliasClause(identifier As IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As PunctuationSyntax) As ImportAliasClauseSyntax
             Debug.Assert(identifier IsNot Nothing AndAlso identifier.Kind = SyntaxKind.IdentifierToken)
             Debug.Assert(equalsToken IsNot Nothing AndAlso equalsToken.Kind = SyntaxKind.EqualsToken)
 
             Dim hash As Integer
-            Dim cached = VisualBasicSyntaxNodeCache.TryGetNode(SyntaxKind.ImportAliasClause, identifier, equalsToken, _factoryContext, hash)
+            Dim cached = VisualBasicSyntaxNodeCache.TryGetNode(SyntaxKind.ImportAliasClause, identifier, typeParameterList, equalsToken, _factoryContext, hash)
             If cached IsNot Nothing Then
                 Return DirectCast(cached, ImportAliasClauseSyntax)
             End If
 
-            Dim result = New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, identifier, equalsToken, _factoryContext)
+            Dim result = New ImportAliasClauseSyntax(SyntaxKind.ImportAliasClause, identifier, typeParameterList, equalsToken, _factoryContext)
             If hash >= 0 Then
                 SyntaxNodeCache.AddNode(result, hash)
             End If

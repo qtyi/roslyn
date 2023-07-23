@@ -795,6 +795,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 isInitOnly: false,
                                 isStatic: false,
                                 returnType: default,
+                                returnTypeWithoutUnwrappingAliasTarget: default,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
                             break;
@@ -810,6 +811,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 name: null,
                                 refKind: RefKind.None,
                                 type: default,
+                                typeWithoutUnwrappingAliasTarget: default,
                                 refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                                 isStatic: false,
                                 explicitInterfaceImplementations: ImmutableArray<PropertySymbol>.Empty);
@@ -936,8 +938,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 Debug.Assert(parameterListSyntax.Parent is object);
                 TypeSymbol type = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, diagnostics);
+                TypeSymbol typeWithoutUnwrappingAliasTarget = BindCrefParameterOrReturnType(parameter.Type, (MemberCrefSyntax)parameterListSyntax.Parent, BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
 
-                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
+                parameterBuilder.Add(new SignatureOnlyParameterSymbol(TypeWithAnnotations.Create(type), TypeWithAnnotations.Create(typeWithoutUnwrappingAliasTarget), ImmutableArray<CustomModifier>.Empty, isParams: false, refKind: refKind));
             }
 
             return parameterBuilder.ToImmutableAndFree();
@@ -946,7 +949,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <remarks>
         /// Keep in sync with CSharpSemanticModel.GetSpeculativelyBoundExpressionWithoutNullability.
         /// </remarks>
-        private TypeSymbol BindCrefParameterOrReturnType(TypeSyntax typeSyntax, MemberCrefSyntax memberCrefSyntax, BindingDiagnosticBag diagnostics)
+        private TypeSymbol BindCrefParameterOrReturnType(TypeSyntax typeSyntax, MemberCrefSyntax memberCrefSyntax, BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
         {
             // After much deliberation, we eventually decided to suppress lookup of inherited members within
             // crefs, in order to match dev11's behavior (Changeset #829014).  Unfortunately, it turns out
@@ -961,6 +964,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(!this.Compilation.ContainsSyntaxTree(typeSyntax.SyntaxTree) ||
                 this.Compilation.GetBinderFactory(typeSyntax.SyntaxTree).GetBinder(typeSyntax).Flags ==
                 (parameterOrReturnTypeBinder.Flags & ~BinderFlags.SemanticModel));
+
+            if (!unwrapAliasTarget)
+            {
+                parameterOrReturnTypeBinder = parameterOrReturnTypeBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+            }
 
             var localDiagnostics = new BindingDiagnosticBag(DiagnosticBag.GetInstance(), // Examined, but not reported.
                                                             diagnostics.DependenciesBag);
@@ -986,7 +994,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             else
             {
-                Debug.Assert(type.TypeKind != TypeKind.Error || typeSyntax.ContainsDiagnostics || !typeSyntax.SyntaxTree.ReportDocumentationCommentDiagnostics(), "Why wasn't there a diagnostic?");
+                Debug.Assert(type.GetUnwrappedTypeKind() != TypeKind.Error || typeSyntax.ContainsDiagnostics || !typeSyntax.SyntaxTree.ReportDocumentationCommentDiagnostics(), "Why wasn't there a diagnostic?");
             }
 
             localDiagnostics.DiagnosticBag.Free();

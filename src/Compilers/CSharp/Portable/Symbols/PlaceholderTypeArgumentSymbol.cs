@@ -58,9 +58,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
+        internal override bool Equals(TypeSymbol? t2, TypeCompareKind comparison)
         {
-            return (object)t2 == this;
+            t2 = t2?.GetUnwrappedType();
+            return (object?)t2 == this;
         }
 
         public override int GetHashCode()

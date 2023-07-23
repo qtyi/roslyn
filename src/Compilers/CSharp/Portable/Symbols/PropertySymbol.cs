@@ -89,6 +89,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
+        internal virtual TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() => TypeWithAnnotations;
+
         /// <summary>
         /// Custom modifiers associated with the ref modifier, or an empty array if there are none.
         /// </summary>
@@ -120,6 +122,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 ParameterSignature.PopulateParameterSignature(this.Parameters, ref _lazyParameterSignature);
                 return _lazyParameterSignature.parameterTypesWithAnnotations;
             }
+        }
+
+        internal ImmutableArray<TypeWithAnnotations> GetParameterTypesWithoutUnwrappingAliasTarget()
+        {
+            ParameterSignature.PopulateParameterSignature(this.Parameters, ref _lazyParameterSignature);
+            return _lazyParameterSignature.parameterTypesWithoutUnwrappingAliasTarget;
         }
 
         internal ImmutableArray<RefKind> ParameterRefKinds

@@ -145,7 +145,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions
             var allUsings = root is CompilationUnitSyntax compilationUnit
                 ? compilationUnit.Usings.Concat(namespaceUsings)
                 : namespaceUsings;
-            return allUsings.Where(u => u.Alias != null);
+            return allUsings.Where(u => u.Identifier != default);
         }
 
         public static bool TryGetRecordPrimaryConstructor(this INamedTypeSymbol typeSymbol, [NotNullWhen(true)] out IMethodSymbol? primaryConstructor)

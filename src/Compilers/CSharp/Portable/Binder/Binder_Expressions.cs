@@ -3896,8 +3896,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 CheckFeatureAvailability(node, MessageID.IDS_FeatureRefStructs, diagnostics);
 
                 var spanType = GetWellKnownType(WellKnownType.System_Span_T, diagnostics, node);
-                return ConstructNamedType(
-                    type: spanType,
+                return ConstructNamedTypeOrAlias(
+                    namedTypeOrAlias: spanType,
                     typeSyntax: node.Kind() == SyntaxKind.StackAllocArrayCreationExpression
                         ? ((StackAllocArrayCreationExpressionSyntax)node).Type
                         : node,
@@ -6405,7 +6405,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         Debug.Assert((object)leftType != null);
 
                         var leftName = left.Identifier.ValueText;
-                        if (leftType.Name == leftName || IsUsingAliasInScope(leftName))
+                        if (leftType.Name == leftName || IsUsingAliasInScope(leftName, arity: 0))
                         {
                             var typeDiagnostics = BindingDiagnosticBag.Create(diagnostics);
                             var boundType = BindNamespaceOrType(left, typeDiagnostics);
@@ -6438,18 +6438,18 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             string name = id.Identifier.ValueText;
 
-            return (type.Name == name || IsUsingAliasInScope(name)) &&
+            return (type.Name == name || IsUsingAliasInScope(name, arity: 0)) &&
                    TypeSymbol.Equals(BindNamespaceOrType(id, BindingDiagnosticBag.Discarded).Type, type, TypeCompareKind.AllIgnoreOptions);
         }
 
         // returns true if name matches a using alias in scope
         // NOTE: when true is returned, the corresponding using is also marked as "used" 
-        private bool IsUsingAliasInScope(string name)
+        private bool IsUsingAliasInScope(string name, int arity)
         {
             var isSemanticModel = this.IsSemanticModelBinder;
             for (var chain = this.ImportChain; chain != null; chain = chain.ParentOpt)
             {
-                if (IsUsingAlias(chain.Imports.UsingAliases, name, isSemanticModel))
+                if (IsUsingAlias(chain.Imports.UsingAliases, name, arity, isSemanticModel))
                 {
                     return true;
                 }
@@ -8848,8 +8848,9 @@ namespace Microsoft.CodeAnalysis.CSharp
         private ErrorPropertySymbol CreateErrorPropertySymbol(ImmutableArray<PropertySymbol> propertyGroup)
         {
             TypeSymbol propertyType = GetCommonTypeOrReturnType(propertyGroup) ?? CreateErrorType();
+            TypeSymbol propertyTypeWithoutUnwrappingAliasTarget = GetCommonTypeOrReturnTypeWithoutUnwrappingAliasTarget(propertyGroup) ?? CreateErrorType();
             var candidate = propertyGroup[0];
-            return new ErrorPropertySymbol(candidate.ContainingType, propertyType, candidate.Name, candidate.IsIndexer, candidate.IsIndexedProperty);
+            return new ErrorPropertySymbol(candidate.ContainingType, propertyType, propertyTypeWithoutUnwrappingAliasTarget, candidate.Name, candidate.IsIndexer, candidate.IsIndexedProperty);
         }
 
         /// <summary>

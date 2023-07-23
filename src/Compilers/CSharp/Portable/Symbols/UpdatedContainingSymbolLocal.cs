@@ -15,12 +15,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Creates a new <see cref="UpdatedContainingSymbolAndNullableAnnotationLocal"/> for testing purposes,
         /// which does not verify that the containing symbol matches the original containing symbol.
         /// </summary>
-        internal static UpdatedContainingSymbolAndNullableAnnotationLocal CreateForTest(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType)
+        internal static UpdatedContainingSymbolAndNullableAnnotationLocal CreateForTest(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType, TypeWithAnnotations updatedTypeWithoutUnwrappingAliasTarget)
         {
-            return new UpdatedContainingSymbolAndNullableAnnotationLocal(underlyingLocal, updatedContainingSymbol, updatedType, assertContaining: false);
+            return new UpdatedContainingSymbolAndNullableAnnotationLocal(underlyingLocal, updatedContainingSymbol, updatedType, updatedTypeWithoutUnwrappingAliasTarget, assertContaining: false);
         }
 
-        private UpdatedContainingSymbolAndNullableAnnotationLocal(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType, bool assertContaining)
+        private UpdatedContainingSymbolAndNullableAnnotationLocal(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType, TypeWithAnnotations updatedTypeWithoutUnwrappingAliasTarget, bool assertContaining)
         {
             RoslynDebug.Assert(underlyingLocal is object);
             RoslynDebug.Assert(updatedContainingSymbol is object);
@@ -28,17 +28,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Debug.Assert(!assertContaining || updatedContainingSymbol.Equals(underlyingLocal.ContainingSymbol, TypeCompareKind.AllNullableIgnoreOptions));
             ContainingSymbol = updatedContainingSymbol;
             TypeWithAnnotations = updatedType;
+            _updatedTypeWithoutUnwrappingAliasTarget = updatedTypeWithoutUnwrappingAliasTarget;
             _underlyingLocal = underlyingLocal;
         }
 
-        internal UpdatedContainingSymbolAndNullableAnnotationLocal(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType)
-            : this(underlyingLocal, updatedContainingSymbol, updatedType, assertContaining: true)
+        internal UpdatedContainingSymbolAndNullableAnnotationLocal(SourceLocalSymbol underlyingLocal, Symbol updatedContainingSymbol, TypeWithAnnotations updatedType, TypeWithAnnotations updatedTypeWithoutUnwrappingAliasTarget)
+            : this(underlyingLocal, updatedContainingSymbol, updatedType, updatedTypeWithoutUnwrappingAliasTarget, assertContaining: true)
         {
         }
 
+        private readonly TypeWithAnnotations _updatedTypeWithoutUnwrappingAliasTarget;
         private readonly SourceLocalSymbol _underlyingLocal;
         public override Symbol ContainingSymbol { get; }
         public override TypeWithAnnotations TypeWithAnnotations { get; }
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() => _updatedTypeWithoutUnwrappingAliasTarget;
 
         public override bool Equals(Symbol other, TypeCompareKind compareKind)
         {

@@ -296,7 +296,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // NB: It doesn't matter that submissionImports hasn't been expanded since we're not actually using the alias target. 
                     if (submissionSymbols.IsMultiViable &&
                         considerUsings &&
-                        IsUsingAlias(submissionImports.UsingAliases, name, originalBinder.IsSemanticModelBinder))
+                        IsUsingAlias(submissionImports.UsingAliases, name, arity, originalBinder.IsSemanticModelBinder))
                     {
                         // using alias is ambiguous with another definition within the same submission iff the other definition is a 0-ary type or a non-type:
                         Symbol existingDefinition = submissionSymbols.Symbols.First();
@@ -370,10 +370,10 @@ namespace Microsoft.CodeAnalysis.CSharp
             nonViable.Free();
         }
 
-        protected bool IsUsingAlias(ImmutableDictionary<string, AliasAndUsingDirective> usingAliases, string name, bool callerIsSemanticModel)
+        protected bool IsUsingAlias(ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases, string name, int arity, bool callerIsSemanticModel)
         {
             AliasAndUsingDirective node;
-            if (usingAliases.TryGetValue(name, out node))
+            if (usingAliases.TryGetValue(new NameWithArity(name, arity), out node))
             {
                 // This method is called by InContainerBinder.LookupSymbolsInSingleBinder to see if
                 // there's a conflict between an alias and a member.  As a conflict may cause a
@@ -395,7 +395,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         protected void LookupSymbolInAliases(
-            ImmutableDictionary<string, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases,
             ImmutableArray<AliasAndExternAliasDirective> externAliases,
             Binder originalBinder,
             LookupResult result,
@@ -409,7 +409,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool callerIsSemanticModel = originalBinder.IsSemanticModelBinder;
 
             AliasAndUsingDirective alias;
-            if (usingAliases.TryGetValue(name, out alias))
+
+            if (!usingAliases.TryGetValue(new NameWithArity(name, arity), out alias))
+            {
+                alias = usingAliases.Where(pair => pair.Key.Name == name).OrderBy(pair => pair.Key.Arity).Select(pair => pair.Value).FirstOrDefault();
+            }
+            if (alias.Alias is not null && alias.UsingDirectiveReference is not null)
             {
                 // Found a match in our list of normal aliases.  Mark the alias as being seen so that
                 // it won't be reported to the user as something that can be removed.
@@ -1837,6 +1842,27 @@ symIsHidden:;
                     }
                     break;
 
+                case SymbolKind.Alias:
+                    if (arity != 0 || (options & LookupOptions.AllAliasOnArityZero) == 0)
+                    {
+                        AliasSymbol alias = (AliasSymbol)symbol;
+                        if (alias.Arity != arity)
+                        {
+                            if (alias.Arity == 0)
+                            {
+                                // The non-generic {1} '{0}' cannot be used with type arguments
+                                diagInfo = diagnose ? new CSDiagnosticInfo(ErrorCode.ERR_HasNoTypeVars, alias, MessageID.IDS_SK_ALIAS.Localize()) : null;
+                            }
+                            else
+                            {
+                                // Using the generic {1} '{0}' requires {2} type arguments
+                                diagInfo = diagnose ? new CSDiagnosticInfo(ErrorCode.ERR_BadArity, alias, MessageID.IDS_SK_ALIAS.Localize(), alias.Arity) : null;
+                            }
+                            return true;
+                        }
+                    }
+                    break;
+
                 default:
                     if (arity != 0)
                     {
@@ -1941,7 +1967,7 @@ symIsHidden:;
         }
 
         protected void AddLookupSymbolsInfoInAliases(
-            ImmutableDictionary<string, AliasAndUsingDirective> usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases,
             ImmutableArray<AliasAndExternAliasDirective> externAliases,
             LookupSymbolsInfo result, LookupOptions options, Binder originalBinder)
         {

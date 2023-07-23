@@ -195,13 +195,13 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
                usingDirective.NamespaceOrType == node;
 
         public bool IsUsingAliasDirective([NotNullWhen(true)] SyntaxNode? node)
-            => node is UsingDirectiveSyntax usingDirectiveNode && usingDirectiveNode.Alias != null;
+            => node is UsingDirectiveSyntax usingDirectiveNode && usingDirectiveNode.Identifier != default;
 
         public void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken alias, out SyntaxNode name)
         {
             var usingDirective = (UsingDirectiveSyntax)node;
             globalKeyword = usingDirective.GlobalKeyword;
-            alias = usingDirective.Alias!.Name.Identifier;
+            alias = usingDirective.Identifier;
             name = usingDirective.NamespaceOrType;
         }
 

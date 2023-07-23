@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal sealed class SourceOrdinaryMethodSymbol : SourceOrdinaryMethodSymbolBase
     {
         private readonly TypeSymbol _explicitInterfaceType;
+        private readonly TypeSymbol _explicitInterfaceTypeWithoutUnwrappingAliasTarget;
         private readonly bool _isExpressionBodied;
         private readonly bool _hasAnyBody;
         private readonly RefKind _refKind;
@@ -57,19 +58,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var nameToken = syntax.Identifier;
 
             TypeSymbol explicitInterfaceType;
-            var name = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(bodyBinder, interfaceSpecifier, nameToken.ValueText, diagnostics, out explicitInterfaceType, aliasQualifierOpt: out _);
+            TypeSymbol explicitInterfaceTypeWithoutUnwrappingAliasTarget;
+            var name = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(bodyBinder, interfaceSpecifier, nameToken.ValueText, diagnostics, out explicitInterfaceType, out explicitInterfaceTypeWithoutUnwrappingAliasTarget, aliasQualifierOpt: out _);
             var location = new SourceLocation(nameToken);
 
             var methodKind = interfaceSpecifier == null
                 ? MethodKind.Ordinary
                 : MethodKind.ExplicitInterfaceImplementation;
 
-            return new SourceOrdinaryMethodSymbol(containingType, explicitInterfaceType, name, location, syntax, methodKind, isNullableAnalysisEnabled, diagnostics);
+            return new SourceOrdinaryMethodSymbol(containingType, explicitInterfaceType, explicitInterfaceTypeWithoutUnwrappingAliasTarget, name, location, syntax, methodKind, isNullableAnalysisEnabled, diagnostics);
         }
 
         private SourceOrdinaryMethodSymbol(
             NamedTypeSymbol containingType,
             TypeSymbol explicitInterfaceType,
+            TypeSymbol explicitInterfaceTypeWithoutUnwrappingAliasTarget,
             string name,
             Location location,
             MethodDeclarationSyntax syntax,
@@ -93,6 +96,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Debug.Assert(diagnostics.DiagnosticBag is object);
 
             _explicitInterfaceType = explicitInterfaceType;
+            _explicitInterfaceTypeWithoutUnwrappingAliasTarget = explicitInterfaceTypeWithoutUnwrappingAliasTarget;
 
             bool hasBlockBody = syntax.Body != null;
             _isExpressionBodied = !hasBlockBody && syntax.ExpressionBody != null;
@@ -119,7 +123,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var syntax = GetSyntax();
             var withTypeParamsBinder = this.DeclaringCompilation.GetBinderFactory(syntax.SyntaxTree).GetBinder(syntax.ReturnType, syntax, this);
@@ -146,6 +150,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             returnTypeSyntax = returnTypeSyntax.SkipScoped(out _).SkipRef();
             TypeWithAnnotations returnType = signatureBinder.BindType(returnTypeSyntax, diagnostics);
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget = signatureBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // span-like types are returnable in general
             if (returnType.IsRestrictedType(ignoreSpanLikeTypes: true))
@@ -189,12 +194,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 foreach (var param in parameters)
                 {
                     forceMethodTypeParameters(param.TypeWithAnnotations, this, declaredConstraints);
+                    forceMethodTypeParameters(param.GetTypeWithoutUnwrappingAliasTarget(), this, declaredConstraints);
                 }
 
                 forceMethodTypeParameters(returnType, this, declaredConstraints);
+                forceMethodTypeParameters(returnTypeWithoutUnwrappingAliasTarget, this, declaredConstraints);
             }
 
-            return (returnType, parameters, _lazyIsVararg, declaredConstraints);
+            return (returnType, returnTypeWithoutUnwrappingAliasTarget, parameters, _lazyIsVararg, declaredConstraints);
 
             static void forceMethodTypeParameters(TypeWithAnnotations type, SourceOrdinaryMethodSymbol method, ImmutableArray<TypeParameterConstraintClause> declaredConstraints)
             {
@@ -332,6 +339,26 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             return _lazyTypeParameterConstraintTypes;
+        }
+
+        internal override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
+        {
+            GetTypeParameterConstraintKinds();
+
+            var syntax = GetSyntax();
+            var withTypeParametersBinder =
+                this.DeclaringCompilation
+                .GetBinderFactory(syntax.SyntaxTree)
+                .GetBinder(syntax.ReturnType, syntax, this)
+                .WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
+            var constraints = this.MakeTypeParameterConstraintTypes(
+                withTypeParametersBinder,
+                TypeParameters,
+                syntax.TypeParameterList,
+                syntax.ConstraintClauses,
+                BindingDiagnosticBag.Discarded);
+
+            return constraints;
         }
 
         public override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
@@ -628,9 +655,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if ((object)_explicitInterfaceType != null)
             {
+                Debug.Assert((object)_explicitInterfaceTypeWithoutUnwrappingAliasTarget != null);
                 var syntax = this.GetSyntax();
                 Debug.Assert(syntax.ExplicitInterfaceSpecifier != null);
-                _explicitInterfaceType.CheckAllConstraints(DeclaringCompilation, conversions, new SourceLocation(syntax.ExplicitInterfaceSpecifier.Name), diagnostics);
+                _explicitInterfaceTypeWithoutUnwrappingAliasTarget.CheckAllConstraints(DeclaringCompilation, conversions, new SourceLocation(syntax.ExplicitInterfaceSpecifier.Name), diagnostics);
             }
         }
 

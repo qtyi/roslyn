@@ -520,12 +520,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             RefKind refKind1;
             TypeWithAnnotations unsubstitutedReturnType1;
             ImmutableArray<CustomModifier> refCustomModifiers1;
-            member1.GetTypeOrReturnType(out refKind1, out unsubstitutedReturnType1, out refCustomModifiers1);
+            member1.GetTypeOrReturnType(out refKind1, out unsubstitutedReturnType1, out _, out refCustomModifiers1);
 
             RefKind refKind2;
             TypeWithAnnotations unsubstitutedReturnType2;
             ImmutableArray<CustomModifier> refCustomModifiers2;
-            member2.GetTypeOrReturnType(out refKind2, out unsubstitutedReturnType2, out refCustomModifiers2);
+            member2.GetTypeOrReturnType(out refKind2, out unsubstitutedReturnType2, out _, out refCustomModifiers2);
 
             // short-circuit type map building in the easiest cases
             if (refKind1 != refKind2)

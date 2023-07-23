@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -166,6 +167,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 return _underlyingField.ObsoleteAttributeData;
             }
+        }
+
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        {
+            return _underlyingField.GetFieldType(fieldsBeingBound, unwrapAliasTarget);
         }
 
         public override object ConstantValue

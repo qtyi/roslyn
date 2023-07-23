@@ -207,6 +207,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            TypeSyntax returnTypeSyntax = Syntax.ReturnType;
+            Debug.Assert(returnTypeSyntax is not ScopedTypeSyntax);
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget = WithTypeParametersBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax.SkipScoped(out _).SkipRef(), BindingDiagnosticBag.Discarded);
+
+            return returnTypeWithoutUnwrappingAliasTarget;
+        }
+
         public override RefKind RefKind => _refKind;
 
         internal void ComputeReturnType()

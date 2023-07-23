@@ -1605,6 +1605,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     interfaceMethod.IsInitOnly,
                     interfaceMethod.IsStatic,
                     interfaceMethod.ReturnTypeWithAnnotations,
+                    interfaceMethod.GetReturnTypeWithoutUnwrappingAliasTarget(),
                     interfaceMethod.RefCustomModifiers,
                     interfaceMethod.ExplicitInterfaceImplementations);
 

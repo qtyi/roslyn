@@ -824,7 +824,7 @@ namespace Microsoft.CodeAnalysis.CSharp.EditAndContinue
                         // and `using X = ...` it's more likely that this is the same alias, and just the name portion
                         // changed versus thinking that some other using became this alias.
                         distance =
-                            ComputeDistance(leftUsing.Alias, rightUsing.Alias) +
+                            ComputeDistance(leftUsing.Identifier, rightUsing.Identifier) +
                             ComputeDistance(leftUsing.NamespaceOrType, rightUsing.NamespaceOrType);
 
                         // Consider two usings that only differ by presence/absence of 'global' to be a near match.
@@ -833,6 +833,16 @@ namespace Microsoft.CodeAnalysis.CSharp.EditAndContinue
 
                         // Consider two usings that only differ by presence/absence of 'unsafe' to be a near match.
                         if (leftUsing.UnsafeKeyword.IsKind(SyntaxKind.None) != rightUsing.UnsafeKeyword.IsKind(SyntaxKind.None))
+                            distance += EpsilonDist;
+
+                        var leftTypeParameters = leftUsing.TypeParameterList?.Parameters;
+                        var rightTypeParameters = rightUsing.TypeParameterList?.Parameters;
+                        var typeParametersDistance = ComputeDistance(leftTypeParameters, rightTypeParameters);
+                        // Consider two usings that differ by count of type parameters not to be a near match.
+                        if (leftTypeParameters?.Count != rightTypeParameters?.Count)
+                            distance += typeParametersDistance;
+                        // Consider two usings that only differ by names of type parameters to be a near match.
+                        else if (typeParametersDistance != 0)
                             distance += EpsilonDist;
 
                         return true;

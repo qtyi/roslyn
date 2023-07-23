@@ -121,7 +121,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (updatedDelegateType is null)
                 {
                     Debug.Assert(updatedContaining is object);
-                    updatedLambda = boundLambda.CreateLambdaSymbol(updatedContaining, lambda.ReturnTypeWithAnnotations, lambda.ParameterTypesWithAnnotations, lambda.ParameterRefKinds, lambda.RefKind);
+                    updatedLambda = boundLambda.CreateLambdaSymbol(updatedContaining, lambda.ReturnTypeWithAnnotations, lambda.GetReturnTypeWithoutUnwrappingAliasTarget(), lambda.ParameterTypesWithAnnotations, lambda.GetParameterTypesWithoutUnwrappingAliasTarget(), lambda.ParameterRefKinds, lambda.RefKind);
                 }
                 else
                 {
@@ -156,7 +156,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return local;
                 }
 
-                updatedLocal = new UpdatedContainingSymbolAndNullableAnnotationLocal(local, updatedContaining ?? local.ContainingSymbol, updatedType ?? local.TypeWithAnnotations);
+                updatedLocal = new UpdatedContainingSymbolAndNullableAnnotationLocal(local, updatedContaining ?? local.ContainingSymbol, updatedType ?? local.TypeWithAnnotations, updatedType ?? local.GetTypeWithoutUnwrappingAliasTarget());
                 _remappedSymbols.Add(local, updatedLocal);
                 return updatedLocal;
             }

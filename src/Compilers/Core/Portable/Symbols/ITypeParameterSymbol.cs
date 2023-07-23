@@ -43,6 +43,11 @@ namespace Microsoft.CodeAnalysis
         INamedTypeSymbol? DeclaringType { get; }
 
         /// <summary>
+        /// The alias that declares the type parameter, or null.
+        /// </summary>
+        IAliasSymbol? DeclaringAlias { get; }
+
+        /// <summary>
         /// True if the reference type constraint (<c>class</c>) was specified for the type parameter.
         /// </summary>
         bool HasReferenceTypeConstraint { get; }

@@ -85,15 +85,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 #endif
         }
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
             var annotation = ContainingType.IsRecordStruct ? NullableAnnotation.Oblivious : NullableAnnotation.NotAnnotated;
-            return (ReturnType: TypeWithAnnotations.Create(Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics)),
+            var System_Boolean = Binder.GetSpecialType(compilation, SpecialType.System_Boolean, location, diagnostics);
+            var System_Text_StringBuilder = Binder.GetWellKnownType(compilation, WellKnownType.System_Text_StringBuilder, diagnostics, location);
+            return (ReturnType: TypeWithAnnotations.Create(System_Boolean),
+                    ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(System_Boolean),
                     Parameters: ImmutableArray.Create<ParameterSymbol>(
                         new SourceSimpleParameterSymbol(owner: this,
-                            TypeWithAnnotations.Create(Binder.GetWellKnownType(compilation, WellKnownType.System_Text_StringBuilder, diagnostics, location), annotation),
+                            TypeWithAnnotations.Create(System_Text_StringBuilder, annotation),
+                            TypeWithAnnotations.Create(System_Text_StringBuilder, annotation),
                             ordinal: 0, RefKind.None, ScopedKind.None, "builder", Locations)),
                     IsVararg: false,
                     DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);

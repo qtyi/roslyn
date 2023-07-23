@@ -92,12 +92,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            ImmutableDictionary<string, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
             if (!aliasSymbols.IsEmpty)
             {
-                var aliases = ArrayBuilder<string>.GetInstance(aliasSymbols.Count);
+                var aliases = ArrayBuilder<NameWithArity>.GetInstance(aliasSymbols.Count);
                 aliases.AddRange(aliasSymbols.Keys);
-                aliases.Sort(StringComparer.Ordinal); // Actual order doesn't matter - just want to be deterministic.
+                aliases.Sort(NameWithArityComparer.Default); // Actual order doesn't matter - just want to be deterministic.
 
                 foreach (var alias in aliases)
                 {
@@ -111,7 +111,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         var ns = (NamespaceSymbol)target;
                         var assemblyRef = TryGetAssemblyScope(ns, moduleBuilder, diagnostics);
-                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateNamespace(ns.GetCciAdapter(), assemblyRef, alias));
+                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateNamespace(ns.GetCciAdapter(), assemblyRef, alias.Name));
+                    }
+                    else if (symbol.Arity > 0)
+                    {
+                        // We skip all generic alias imports.
+                        continue;
                     }
                     else if (target is NamedTypeSymbol { ContainingAssembly.IsLinked: false } or not NamedTypeSymbol)
                     {
@@ -119,7 +124,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // that can't be embedded but doesn't use them anywhere else in the code.  Note, this is only
                         // done for named types.  Other sorts of type symbols (arrays, etc.) are allowed through.
                         var typeRef = GetTypeReference((TypeSymbol)target, syntax, moduleBuilder, diagnostics);
-                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, alias));
+                        usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, alias.Name));
                     }
                 }
 

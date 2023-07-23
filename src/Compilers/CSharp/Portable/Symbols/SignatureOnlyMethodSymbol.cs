@@ -28,6 +28,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly bool _isInitOnly;
         private readonly bool _isStatic;
         private readonly TypeWithAnnotations _returnType;
+        private readonly TypeWithAnnotations _returnTypeWithoutUnwrappingAliasTarget;
         private readonly ImmutableArray<CustomModifier> _refCustomModifiers;
         private readonly ImmutableArray<MethodSymbol> _explicitInterfaceImplementations;
 
@@ -42,6 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool isInitOnly,
             bool isStatic,
             TypeWithAnnotations returnType,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             ImmutableArray<CustomModifier> refCustomModifiers,
             ImmutableArray<MethodSymbol> explicitInterfaceImplementations)
         {
@@ -52,6 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _isInitOnly = isInitOnly;
             _isStatic = isStatic;
             _returnType = returnType;
+            _returnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget;
             _refCustomModifiers = refCustomModifiers;
             _parameters = parameters;
             _explicitInterfaceImplementations = explicitInterfaceImplementations.NullToEmpty();
@@ -75,6 +78,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override RefKind RefKind { get { return _refKind; } }
 
         public override TypeWithAnnotations ReturnTypeWithAnnotations { get { return _returnType; } }
+
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget() { return _returnTypeWithoutUnwrappingAliasTarget; }
 
         public override FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations => FlowAnalysisAnnotations.None;
 

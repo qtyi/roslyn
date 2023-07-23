@@ -88,15 +88,6 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // method invoked with initializer expressions as arguments. Roslyn bug 11987 tracks this work item.
                     return false;
 
-                case SyntaxKind.IdentifierName:
-                    // The alias of a using directive is a declaration, so there is no semantic info - use GetDeclaredSymbol instead.
-                    if (!isSpeculative && node.Parent != null && node.Parent.Kind() == SyntaxKind.NameEquals && node.Parent.Parent.Kind() == SyntaxKind.UsingDirective)
-                    {
-                        return false;
-                    }
-
-                    goto default;
-
                 case SyntaxKind.OmittedTypeArgument:
                 case SyntaxKind.RefExpression:
                 case SyntaxKind.RefType:
@@ -1166,6 +1157,21 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// to A. Otherwise return null.
         /// </summary>
         public IAliasSymbol GetAliasInfo(IdentifierNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            CheckSyntaxNode(nameSyntax);
+
+            if (!CanGetSemanticInfo(nameSyntax))
+                return null;
+
+            SymbolInfo info = GetSymbolInfoWorker(nameSyntax, SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases, cancellationToken);
+            return info.Symbol as IAliasSymbol;
+        }
+
+        /// <summary>
+        /// If <paramref name="nameSyntax"/> resolves to a generic alias name, return the AliasSymbol corresponding
+        /// to A. Otherwise return null.
+        /// </summary>
+        public IAliasSymbol GetAliasInfo(GenericNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
             CheckSyntaxNode(nameSyntax);
 
@@ -5036,9 +5042,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             return this.GetTypeInfoFromNode(node, cancellationToken);
         }
 
-        protected sealed override IAliasSymbol GetAliasInfoCore(SyntaxNode node, CancellationToken cancellationToken)
+        protected sealed override IAliasSymbol GetAliasInfoCore(SyntaxNode nameSyntax, CancellationToken cancellationToken)
         {
-            return node is IdentifierNameSyntax nameSyntax ? GetAliasInfo(nameSyntax, cancellationToken) : null;
+            return nameSyntax switch
+            {
+                IdentifierNameSyntax identifierNameSyntax => GetAliasInfo(identifierNameSyntax, cancellationToken),
+                GenericNameSyntax genericNameSyntax => GetAliasInfo(genericNameSyntax, cancellationToken),
+                _ => null
+            };
         }
 
         protected sealed override PreprocessingSymbolInfo GetPreprocessingSymbolInfoCore(SyntaxNode node)
@@ -5097,7 +5108,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return this.GetDeclaredSymbol((TypeParameterSyntax)node, cancellationToken);
                 case SyntaxKind.UsingDirective:
                     var usingDirective = (UsingDirectiveSyntax)node;
-                    if (usingDirective.Alias == null)
+                    if (usingDirective.Identifier == default)
                     {
                         break;
                     }

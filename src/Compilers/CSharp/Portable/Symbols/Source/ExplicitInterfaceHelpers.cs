@@ -25,8 +25,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             string name)
         {
             TypeSymbol discardedExplicitInterfaceType;
+            TypeSymbol discardedExplicitInterfaceTypeWithoutUnwrappingAliasTarget;
             string discardedAliasOpt;
-            string methodName = GetMemberNameAndInterfaceSymbol(binder, explicitInterfaceSpecifierOpt, name, BindingDiagnosticBag.Discarded, out discardedExplicitInterfaceType, out discardedAliasOpt);
+            string methodName = GetMemberNameAndInterfaceSymbol(binder, explicitInterfaceSpecifierOpt, name, BindingDiagnosticBag.Discarded, out discardedExplicitInterfaceType, out discardedExplicitInterfaceTypeWithoutUnwrappingAliasTarget, out discardedAliasOpt);
 
             return methodName;
         }
@@ -37,21 +38,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             string name,
             BindingDiagnosticBag diagnostics,
             out TypeSymbol explicitInterfaceTypeOpt,
+            out TypeSymbol explicitInterfaceTypeWithoutUnwrappingAliasTargetOpt,
             out string aliasQualifierOpt)
         {
             if (explicitInterfaceSpecifierOpt == null)
             {
                 explicitInterfaceTypeOpt = null;
+                explicitInterfaceTypeWithoutUnwrappingAliasTargetOpt = null;
                 aliasQualifierOpt = null;
                 return name;
             }
 
             // Avoid checking constraints context when binding explicit interface type since
             // that might result in a recursive attempt to bind the containing class.
-            binder = binder.WithAdditionalFlags(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks);
-
             NameSyntax explicitInterfaceName = explicitInterfaceSpecifierOpt.Name;
-            explicitInterfaceTypeOpt = binder.BindType(explicitInterfaceName, diagnostics).Type;
+            explicitInterfaceTypeOpt = binder.WithAdditionalFlags(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks).BindType(explicitInterfaceName, diagnostics).Type;
+            explicitInterfaceTypeWithoutUnwrappingAliasTargetOpt = binder.WithAdditionalFlags(BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks | BinderFlags.SuppressAliasTargetUnwrapping).BindType(explicitInterfaceName, BindingDiagnosticBag.Discarded).Type;
+
             aliasQualifierOpt = explicitInterfaceName.GetAliasQualifierOpt();
             return GetMemberName(name, explicitInterfaceTypeOpt, aliasQualifierOpt);
         }

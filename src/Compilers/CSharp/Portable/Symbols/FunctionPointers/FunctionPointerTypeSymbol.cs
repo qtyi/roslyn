@@ -96,8 +96,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override TResult Accept<TArgument, TResult>(CSharpSymbolVisitor<TArgument, TResult> visitor, TArgument a) => visitor.VisitFunctionPointerType(this, a);
         internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol>? basesBeingResolved = null) => ImmutableArray<NamedTypeSymbol>.Empty;
 
-        internal override bool Equals(TypeSymbol t2, TypeCompareKind compareKind)
+        internal override bool Equals(TypeSymbol? t2, TypeCompareKind compareKind)
         {
+            t2 = t2?.GetUnwrappedType();
             if (ReferenceEquals(this, t2))
             {
                 return true;

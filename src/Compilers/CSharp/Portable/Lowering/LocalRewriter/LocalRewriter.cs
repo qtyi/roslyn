@@ -559,7 +559,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 SpecialType type = (SpecialType)descriptor.DeclaringTypeId;
                 TypeSymbol container = compilation.Assembly.GetSpecialType(type);
                 TypeSymbol returnType = new ExtendedErrorTypeSymbol(compilation: compilation, name: descriptor.Name, errorInfo: null, arity: descriptor.Arity);
-                return new ErrorMethodSymbol(container, returnType, "Missing");
+                return new ErrorMethodSymbol(container, returnType, returnType, "Missing");
             }
         }
 

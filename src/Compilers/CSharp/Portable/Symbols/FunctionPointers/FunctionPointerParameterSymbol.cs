@@ -11,12 +11,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
     internal sealed class FunctionPointerParameterSymbol : ParameterSymbol
     {
+        private readonly TypeWithAnnotations _typeWithoutUnwrappingAliasTarget;
         private readonly FunctionPointerMethodSymbol _containingSymbol;
 
-        public FunctionPointerParameterSymbol(TypeWithAnnotations typeWithAnnotations, RefKind refKind, int ordinal, FunctionPointerMethodSymbol containingSymbol, ImmutableArray<CustomModifier> refCustomModifiers)
+        public FunctionPointerParameterSymbol(TypeWithAnnotations typeWithAnnotations, TypeWithAnnotations typeWithoutUnwrappingAliasTarget, RefKind refKind, int ordinal, FunctionPointerMethodSymbol containingSymbol, ImmutableArray<CustomModifier> refCustomModifiers)
         {
             Debug.Assert(typeWithAnnotations.HasType);
             TypeWithAnnotations = typeWithAnnotations;
+            _typeWithoutUnwrappingAliasTarget = typeWithoutUnwrappingAliasTarget;
             RefKind = refKind;
             Ordinal = ordinal;
             _containingSymbol = containingSymbol;
@@ -24,6 +26,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         public override TypeWithAnnotations TypeWithAnnotations { get; }
+        internal override TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget() => _typeWithoutUnwrappingAliasTarget;
         public override RefKind RefKind { get; }
         public override int Ordinal { get; }
         public override Symbol ContainingSymbol => _containingSymbol;

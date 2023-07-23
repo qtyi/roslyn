@@ -16,12 +16,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public SourceSimpleParameterSymbol(
             Symbol owner,
             TypeWithAnnotations parameterType,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             int ordinal,
             RefKind refKind,
             ScopedKind scope,
             string name,
             ImmutableArray<Location> locations)
-            : base(owner, parameterType, ordinal, refKind, scope, name, locations)
+            : base(owner, parameterType, parameterTypeWithoutUnwrappingAliasTarget, ordinal, refKind, scope, name, locations)
         {
         }
 

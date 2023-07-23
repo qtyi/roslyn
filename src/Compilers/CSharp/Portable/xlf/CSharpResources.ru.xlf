@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
-        <source>Cannot create constructed generic type from non-generic type.</source>
-        <target state="translated">Не удается создать сконструированный универсальный тип из неуниверсального типа.</target>
+        <source>Cannot create constructed type from non-generic type or alias.</source>
+        <target state="needs-review-translation">Не удается создать сконструированный универсальный тип из неуниверсального типа.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">
@@ -1093,8 +1093,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintCannotHaveRequiredMembers">
-        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</source>
-        <target state="translated">"{2}" не соответствует ограничению "new()" параметра "{1}" в универсальном типе или методе "{0}", поскольку у "{2}" есть обязательные элементы.</target>
+        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</source>
+        <target state="needs-review-translation">"{2}" не соответствует ограничению "new()" параметра "{1}" в универсальном типе или методе "{0}", поскольку у "{2}" есть обязательные элементы.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlinesAreNotAllowedInsideANonVerbatimInterpolatedString">
@@ -1987,6 +1987,11 @@
         <target state="translated">сдвиг вправо без знака</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">Строковые литералы UTF-8</target>
@@ -2573,8 +2578,8 @@
         <note>UnmanagedCallersOnly is not localizable.</note>
       </trans-unit>
       <trans-unit id="ERR_UnmanagedConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Чтобы тип "{2}" можно было использовать как параметр "{1}" в универсальном типе метода "{0}", он должен быть типом значения, который, как и все поля на любом уровне вложения, не допускает значения NULL.</target>
+        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Чтобы тип "{2}" можно было использовать как параметр "{1}" в универсальном типе метода "{0}", он должен быть типом значения, который, как и все поля на любом уровне вложения, не допускает значения NULL.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedCallingConvention">
@@ -4092,33 +4097,33 @@
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{3}" не соответствует типу ограничения "{1}".</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{3}" не соответствует типу ограничения "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</source>
-        <target state="translated">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует типу ограничения.</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</source>
+        <target state="needs-review-translation">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует типу ограничения.</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
-        <target state="translated">Тип "{2}" не может быть использован как параметр типа "{1}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{2}" не соответствует ограничению "notnull".</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">Тип "{2}" не может быть использован как параметр типа "{1}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{2}" не соответствует ограничению "notnull".</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</source>
-        <target state="translated">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует ограничению "notnull".</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует ограничению "notnull".</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
-        <target state="translated">Тип "{2}" не может быть использован как параметр типа "{1}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{2}" не соответствует ограничению "class".</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">Тип "{2}" не может быть использован как параметр типа "{1}" в универсальном типе или методе "{0}". Допустимость значения NULL для аргумента типа "{2}" не соответствует ограничению "class".</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</source>
-        <target state="translated">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует ограничению "class".</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">Тип не может быть использован как параметр типа в универсальном типе или методе. Допустимость значения NULL для аргумента типа не соответствует ограничению "class".</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullableValueTypeMayBeNull">
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">Директива "using namespace" может применяться только к пространствам имен; "{0}" является типом, а не пространством имен. Используйте директиву "using static"</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">Директива "using namespace" может применяться только к пространствам имен; "{0}" является типом, а не пространством имен. Используйте директиву "using static"</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">Директива "using static" может применяться только к типам; "{0}" является пространством имен, а не типом. Используйте директиву "using namespace"</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">Директива "using static" может применяться только к типам; "{0}" является пространством имен, а не типом. Используйте директиву "using namespace"</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">
@@ -5857,33 +5862,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintNotSatisfied">
-        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">'{2}" должен быть неабстрактным типом и иметь открытый конструктор без параметров, чтобы использовать его в качестве параметра "{1}" в универсальном типе или методе "{0}".</target>
+        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">'{2}" должен быть неабстрактным типом и иметь открытый конструктор без параметров, чтобы использовать его в качестве параметра "{1}" в универсальном типе или методе "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedRefType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования неявной ссылки из "{3}" в "{1}".</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования неявной ссылки из "{3}" в "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableEnum">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Тип "{3}", допускающий значение Null, не соответствует ограничению "{1}".</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Тип "{3}", допускающий значение Null, не соответствует ограничению "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableInterface">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Тип "{3}", допускающий значение Null, не соответствует ограничению "{1}". Типы, допускающие значение Null, не соответствуют никаким ограничениям интерфейсов.</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Тип "{3}", допускающий значение Null, не соответствует ограничению "{1}". Типы, допускающие значение Null, не соответствуют никаким ограничениям интерфейсов.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedTyVar">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования-упаковки или преобразования параметра типа из "{3}" в "{1}".</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования-упаковки или преобразования параметра типа из "{3}" в "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedValType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
-        <target state="translated">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования-упаковки из "{3}" в "{1}".</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">Тип "{3}" не может быть использован как параметр типа "{2}" в универсальном типе или методе "{0}". Нет преобразования-упаковки из "{3}" в "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_DuplicateGeneratedName">
@@ -6157,13 +6162,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_RefConstraintNotSatisfied">
-        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Тип "{2}" должен быть ссылочным типом для его использования в качестве параметра "{1}" в универсальном типе или методе "{0}".</target>
+        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Тип "{2}" должен быть ссылочным типом для его использования в качестве параметра "{1}" в универсальном типе или методе "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_ValConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">Для использования в качестве параметра "{1}" в универсальном типе или методе "{0}" тип "{2}" должен быть типом значения, не допускающим значения Null.</target>
+        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">Для использования в качестве параметра "{1}" в универсальном типе или методе "{0}" тип "{2}" должен быть типом значения, не допускающим значения Null.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_CircularConstraint">

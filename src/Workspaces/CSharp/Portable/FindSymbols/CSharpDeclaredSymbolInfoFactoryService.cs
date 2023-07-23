@@ -111,17 +111,17 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
             foreach (var usingDecl in usings)
             {
-                if (usingDecl.Alias != null)
+                if (usingDecl.Identifier != default)
                 {
                     var mappedName = GetTypeName(usingDecl.Name);
                     if (mappedName != null)
                     {
                         aliasMap ??= AllocateAliasMap();
 
-                        // If we have:  using X = Goo, then we store a mapping from X -> Goo
-                        // here.  That way if we see a class that inherits from X we also state
+                        // If we have:  using X<T> = Goo, then we store a mapping from X -> Goo
+                        // here.  That way if we see a class that inherits from X<?> we also state
                         // that it inherits from Goo as well.
-                        aliasMap[usingDecl.Alias.Name.Identifier.ValueText] = mappedName;
+                        aliasMap[new NameWithArity(usingDecl.Identifier.ValueText, usingDecl.TypeParameterList == null ? 0 : usingDecl.TypeParameterList.Parameters.Count).ToString()] = mappedName;
                     }
                 }
             }
@@ -653,6 +653,10 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             {
                 return GetSimpleTypeName(aliasName.Name);
             }
+            else if (type is GenericNameSyntax genericName)
+            {
+                return new NameWithArity(genericName.Identifier.ValueText, genericName.Arity).ToString();
+            }
 
             return null;
         }
@@ -670,9 +674,9 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
         protected override bool TryGetAliasesFromUsingDirective(
             UsingDirectiveSyntax usingDirectiveNode, out ImmutableArray<(string aliasName, string name)> aliases)
         {
-            if (usingDirectiveNode.Alias != null)
+            if (usingDirectiveNode.Identifier != default)
             {
-                if (TryGetSimpleTypeName(usingDirectiveNode.Alias.Name, typeParameterNames: null, out var aliasName, out _) &&
+                if (TryGetSimpleTypeName(usingDirectiveNode.Identifier, typeParameterNames: null, out var aliasName, out _) &&
                     TryGetSimpleTypeName(usingDirectiveNode.NamespaceOrType, typeParameterNames: null, out var name, out _))
                 {
                     aliases = ImmutableArray.Create<(string, string)>((aliasName, name));
@@ -693,19 +697,21 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
             return CreateReceiverTypeString(targetTypeName, isArray);
         }
 
-        private static bool TryGetSimpleTypeName(SyntaxNode node, ImmutableArray<string>? typeParameterNames, out string simpleTypeName, out bool isArray)
+        private static bool TryGetSimpleTypeName(SyntaxNodeOrToken nodeOrToken, ImmutableArray<string>? typeParameterNames, out string simpleTypeName, out bool isArray)
         {
             isArray = false;
 
-            if (node is TypeSyntax typeNode)
+            if (nodeOrToken.IsToken)
+            {
+                return getFromIdentifierToken(nodeOrToken.AsToken(), out simpleTypeName);
+            }
+            if (nodeOrToken.AsNode() is TypeSyntax typeNode)
             {
                 switch (typeNode)
                 {
                     case IdentifierNameSyntax identifierNameNode:
-                        // We consider it a complex method if the receiver type is a type parameter.
-                        var text = identifierNameNode.Identifier.Text;
-                        simpleTypeName = typeParameterNames?.Contains(text) == true ? null : text;
-                        return simpleTypeName != null;
+                        var identifier = identifierNameNode.Identifier;
+                        return getFromIdentifierToken(identifier, out simpleTypeName);
 
                     case ArrayTypeSyntax arrayTypeNode:
                         isArray = true;
@@ -714,7 +720,7 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
                     case GenericNameSyntax genericNameNode:
                         var name = genericNameNode.Identifier.Text;
                         var arity = genericNameNode.Arity;
-                        simpleTypeName = arity == 0 ? name : name + ArityUtilities.GetMetadataAritySuffix(arity);
+                        simpleTypeName = new NameWithArity(name, arity).ToString();
                         return true;
 
                     case PredefinedTypeSyntax predefinedTypeNode:
@@ -742,6 +748,22 @@ namespace Microsoft.CodeAnalysis.CSharp.FindSymbols
 
             simpleTypeName = null;
             return false;
+
+            bool getFromIdentifierToken(SyntaxToken identifier, out string simpleTypeName)
+            {
+                // We consider it a complex method if the receiver type is a type parameter.
+                var text = identifier.Text;
+                if (typeParameterNames?.Contains(text) == true)
+                {
+                    simpleTypeName = null;
+                    return false;
+                }
+                else
+                {
+                    simpleTypeName = text;
+                    return true;
+                }
+            }
         }
 
         private static string GetSpecialTypeName(PredefinedTypeSyntax predefinedTypeNode)

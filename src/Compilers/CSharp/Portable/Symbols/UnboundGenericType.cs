@@ -101,9 +101,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
+        internal override bool Equals(TypeSymbol? t2, TypeCompareKind comparison)
         {
-            if ((object)t2 == (object)this)
+            t2 = t2?.GetUnwrappedType();
+            if ((object?)t2 == (object)this)
             {
                 return true;
             }

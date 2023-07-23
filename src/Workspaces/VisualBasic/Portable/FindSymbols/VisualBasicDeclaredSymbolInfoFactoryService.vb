@@ -69,7 +69,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.FindSymbols
                             Dim mappedName = GetTypeName(simpleImport.Name)
                             If mappedName IsNot Nothing Then
                                 aliasMap = If(aliasMap, AllocateAliasMap())
-                                aliasMap(simpleImport.Alias.Identifier.ValueText) = mappedName
+                                aliasMap(New NameWithArity(simpleImport.Alias.Identifier.ValueText, If(simpleImport.Alias.TypeParameterList Is Nothing, 0, simpleImport.Alias.TypeParameterList.Parameters.Count)).ToString()) = mappedName
                             End If
                         End If
                     End If
@@ -588,8 +588,13 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
             If TypeOf node Is IdentifierNameSyntax Then
                 Dim identifierName = DirectCast(node, IdentifierNameSyntax)
                 Dim text = identifierName.Identifier.Text
-                simpleTypeName = If(typeParameterNames?.Contains(text), Nothing, text)
-                Return simpleTypeName IsNot Nothing
+                If typeParameterNames?.Contains(text) Then
+                    simpleTypeName = Nothing
+                    Return False
+                Else
+                    simpleTypeName = text
+                    Return True
+                End If
 
             ElseIf TypeOf node Is ArrayTypeSyntax Then
                 isArray = True
@@ -600,7 +605,7 @@ typeDeclaration.Members.All(Function(m) TypeOf m Is TypeBlockSyntax) Then
                 Dim genericName = DirectCast(node, GenericNameSyntax)
                 Dim name = genericName.Identifier.Text
                 Dim arity = genericName.Arity
-                simpleTypeName = If(arity = 0, name, name + ArityUtilities.GetMetadataAritySuffix(arity))
+                simpleTypeName = New NameWithArity(name, arity).ToString()
                 Return True
 
             ElseIf TypeOf node Is QualifiedNameSyntax Then

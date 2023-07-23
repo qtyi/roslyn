@@ -693,7 +693,7 @@ namespace NS
 
             var tree = compilation.SyntaxTrees.Single();
 
-            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Skip(1).Single();
+            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Single();
 
             Assert.Equal("Short.MyClass", node.Parent.ToString());
 
@@ -736,7 +736,7 @@ class Test
 
             var tree = compilation.SyntaxTrees.Single();
 
-            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Skip(1).Single();
+            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Single();
 
             Assert.Equal("Short.MyClass", node.Parent.ToString());
 

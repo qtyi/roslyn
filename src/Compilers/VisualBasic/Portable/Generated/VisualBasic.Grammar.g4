@@ -23,7 +23,56 @@ simple_imports_clause
   ;
 
 import_alias_clause
-  : identifier_token '='
+  : identifier_token type_parameter_list? '='
+  ;
+
+type_parameter_list
+  : '(' 'Of' type_parameter (',' type_parameter)* ')'
+  ;
+
+type_parameter
+  : 'In'? identifier_token type_parameter_constraint_clause?
+  | 'Out'? identifier_token type_parameter_constraint_clause?
+  ;
+
+type_parameter_constraint_clause
+  : type_parameter_multiple_constraint_clause
+  | type_parameter_single_constraint_clause
+  ;
+
+type_parameter_multiple_constraint_clause
+  : 'As' '{' constraint (',' constraint)* '}'
+  ;
+
+constraint
+  : special_constraint
+  | type_constraint
+  ;
+
+special_constraint
+  : class_constraint
+  | new_constraint
+  | structure_constraint
+  ;
+
+class_constraint
+  : 'Class'
+  ;
+
+new_constraint
+  : 'New'
+  ;
+
+structure_constraint
+  : 'Structure'
+  ;
+
+type_constraint
+  : type
+  ;
+
+type_parameter_single_constraint_clause
+  : 'As' constraint
   ;
 
 xml_namespace_imports_clause
@@ -553,55 +602,6 @@ delegate_statement
 
 delegate_function_statement
   : 'Delegate' 'Function' identifier_token type_parameter_list? simple_as_clause?
-  ;
-
-type_parameter_list
-  : '(' 'Of' type_parameter (',' type_parameter)* ')'
-  ;
-
-type_parameter
-  : 'In'? identifier_token type_parameter_constraint_clause?
-  | 'Out'? identifier_token type_parameter_constraint_clause?
-  ;
-
-type_parameter_constraint_clause
-  : type_parameter_multiple_constraint_clause
-  | type_parameter_single_constraint_clause
-  ;
-
-type_parameter_multiple_constraint_clause
-  : 'As' '{' constraint (',' constraint)* '}'
-  ;
-
-constraint
-  : special_constraint
-  | type_constraint
-  ;
-
-special_constraint
-  : class_constraint
-  | new_constraint
-  | structure_constraint
-  ;
-
-class_constraint
-  : 'Class'
-  ;
-
-new_constraint
-  : 'New'
-  ;
-
-structure_constraint
-  : 'Structure'
-  ;
-
-type_constraint
-  : type
-  ;
-
-type_parameter_single_constraint_clause
-  : 'As' constraint
   ;
 
 delegate_sub_statement

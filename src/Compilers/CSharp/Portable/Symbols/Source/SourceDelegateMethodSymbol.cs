@@ -18,16 +18,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         private ImmutableArray<ParameterSymbol> _parameters;
         private readonly TypeWithAnnotations _returnType;
+        private readonly TypeWithAnnotations _returnTypeWithoutUnwrappingAliasTarget;
 
         protected SourceDelegateMethodSymbol(
             SourceMemberContainerTypeSymbol delegateType,
             TypeWithAnnotations returnType,
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
             DelegateDeclarationSyntax syntax,
             MethodKind methodKind,
             DeclarationModifiers declarationModifiers)
             : base(delegateType, syntax.GetReference(), location: syntax.Identifier.GetLocation(), isIterator: false)
         {
             _returnType = returnType;
+            _returnTypeWithoutUnwrappingAliasTarget = returnTypeWithoutUnwrappingAliasTarget;
             this.MakeFlags(methodKind, declarationModifiers, _returnType.IsVoidType(), isExtensionMethod: false, isNullableAnalysisEnabled: false);
         }
 
@@ -51,6 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             returnTypeSyntax = returnTypeSyntax.SkipScoped(out _).SkipRefInLocalOrReturn(diagnostics, out RefKind refKind);
             var returnType = binder.BindType(returnTypeSyntax, diagnostics);
+            var returnTypeWithoutUnwrappingAliasTarget = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // reuse types to avoid reporting duplicate errors if missing:
             var voidType = TypeWithAnnotations.Create(binder.GetSpecialType(SpecialType.System_Void, diagnostics, syntax));
@@ -66,7 +70,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             // A delegate has the following members: (see CLI spec 13.6)
             // (1) a method named Invoke with the specified signature
-            var invoke = new InvokeMethod(delegateType, refKind, returnType, syntax, binder, diagnostics);
+            var invoke = new InvokeMethod(delegateType, refKind, returnType, returnTypeWithoutUnwrappingAliasTarget, syntax, binder, diagnostics);
             invoke.CheckDelegateVarianceSafety(diagnostics);
             symbols.Add(invoke);
 
@@ -168,6 +172,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override TypeWithAnnotations GetReturnTypeWithoutUnwrappingAliasTarget()
+        {
+            return _returnTypeWithoutUnwrappingAliasTarget;
+        }
+
         public sealed override bool IsImplicitlyDeclared
         {
             get
@@ -219,7 +228,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 TypeWithAnnotations objectType,
                 TypeWithAnnotations intPtrType,
                 DelegateDeclarationSyntax syntax)
-                : base(delegateType, voidType, syntax, MethodKind.Constructor, DeclarationModifiers.Public)
+                : base(delegateType, voidType, voidType, syntax, MethodKind.Constructor, DeclarationModifiers.Public)
             {
                 InitializeParameters(ImmutableArray.Create<ParameterSymbol>(
                     SynthesizedParameterSymbol.Create(this, objectType, 0, RefKind.None, "object"),
@@ -265,10 +274,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 SourceMemberContainerTypeSymbol delegateType,
                 RefKind refKind,
                 TypeWithAnnotations returnType,
+                TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget,
                 DelegateDeclarationSyntax syntax,
                 Binder binder,
                 BindingDiagnosticBag diagnostics)
-                : base(delegateType, returnType, syntax, MethodKind.DelegateInvoke, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
+                : base(delegateType, returnType, returnTypeWithoutUnwrappingAliasTarget, syntax, MethodKind.DelegateInvoke, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
             {
                 this._refKind = refKind;
 
@@ -367,7 +377,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 TypeWithAnnotations objectType,
                 TypeWithAnnotations asyncCallbackType,
                 DelegateDeclarationSyntax syntax)
-                : base((SourceNamedTypeSymbol)invoke.ContainingType, iAsyncResultType, syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
+                : base((SourceNamedTypeSymbol)invoke.ContainingType, iAsyncResultType, iAsyncResultType, syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
             {
                 var parameters = ArrayBuilder<ParameterSymbol>.GetInstance();
                 foreach (SourceParameterSymbol p in invoke.Parameters)
@@ -410,7 +420,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 InvokeMethod invoke,
                 TypeWithAnnotations iAsyncResultType,
                 DelegateDeclarationSyntax syntax)
-                : base((SourceNamedTypeSymbol)invoke.ContainingType, invoke.ReturnTypeWithAnnotations, syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
+                : base((SourceNamedTypeSymbol)invoke.ContainingType, invoke.ReturnTypeWithAnnotations, invoke.GetReturnTypeWithoutUnwrappingAliasTarget(), syntax, MethodKind.Ordinary, DeclarationModifiers.Virtual | DeclarationModifiers.Public)
             {
                 _invoke = invoke;
 

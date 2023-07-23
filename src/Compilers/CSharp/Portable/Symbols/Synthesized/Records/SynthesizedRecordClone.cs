@@ -96,10 +96,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return null;
         }
 
-        protected override (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
-            return (ReturnType: !ContainingAssembly.RuntimeSupportsCovariantReturnsOfClasses && VirtualCloneInBase() is { } baseClone ?
+            MethodSymbol? baseClone = null;
+            if (!ContainingAssembly.RuntimeSupportsCovariantReturnsOfClasses)
+            {
+                baseClone = VirtualCloneInBase();
+            }
+            return (ReturnType: baseClone is not null ?
                                      baseClone.ReturnTypeWithAnnotations :
+                                     TypeWithAnnotations.Create(isNullableEnabled: true, ContainingType),
+                    ReturnTypeWithoutUnwrappingAliasTarget: baseClone is not null ?
+                                     baseClone.GetReturnTypeWithoutUnwrappingAliasTarget() :
                                      TypeWithAnnotations.Create(isNullableEnabled: true, ContainingType),
                     Parameters: ImmutableArray<ParameterSymbol>.Empty,
                     IsVararg: false,

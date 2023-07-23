@@ -1905,7 +1905,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             CheckSyntaxNode(declarationSyntax);
 
-            if (declarationSyntax.Alias == null)
+            if (declarationSyntax.Identifier == default)
             {
                 return null;
             }
@@ -1920,7 +1920,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     foreach (var alias in usingAliases)
                     {
-                        if (alias.Alias.Locations[0].SourceSpan == declarationSyntax.Alias.Name.Span)
+                        if (alias.Alias.Locations[0].SourceSpan == declarationSyntax.Identifier.Span)
                         {
                             return alias.Alias.GetPublicSymbol();
                         }
@@ -2146,6 +2146,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                     case LocalFunctionStatementSyntax localDecl:
                         parameterizedSymbol = GetDeclaredSymbol(localDecl, cancellationToken);
                         break;
+                    case UsingDirectiveSyntax aliasDecl:
+                        parameterizedSymbol = GetDeclaredSymbol(aliasDecl, cancellationToken);
+                        break;
                     default:
                         throw ExceptionUtilities.UnexpectedValue(typeParameter.Parent.Kind());
                 }
@@ -2160,6 +2163,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                             ((object)methodSymbol.PartialDefinitionPart == null
                                 ? null
                                 : this.GetTypeParameterSymbol(methodSymbol.PartialDefinitionPart.TypeParameters, typeParameter))).GetPublicSymbol();
+
+                    case AliasSymbol aliasSymbol:
+                        return this.GetTypeParameterSymbol(aliasSymbol.TypeParameters, typeParameter).GetPublicSymbol();
                 }
             }
 

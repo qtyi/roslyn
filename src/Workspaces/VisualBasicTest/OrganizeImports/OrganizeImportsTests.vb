@@ -106,6 +106,28 @@ Imports D = E
         End Function
 
         <Fact>
+        Public Async Function TestGenericInAliases() As Task
+            Dim initial =
+<content>Imports A(Of T) = T
+Imports A = B
+Imports C = D
+Imports C(Of T2, T1) = System.ValueTuple(Of T1, T2)
+Imports C(Of T) = System.ValueTuple(Of T, T)
+Imports E(Of T1, T2, T3) = System.ValueTuple(Of T3, T2, T1)</content>
+
+            Dim final =
+<content>Imports A = B
+Imports A(Of T) = T
+Imports C = D
+Imports C(Of T) = System.ValueTuple(Of T, T)
+Imports C(Of T2, T1) = System.ValueTuple(Of T1, T2)
+Imports E(Of T1, T2, T3) = System.ValueTuple(Of T3, T2, T1)
+</content>
+
+            Await CheckAsync(initial, final)
+        End Function
+
+        <Fact>
         Public Async Function TestMultipleStatementsMultipleClauses() As Task
             Dim initial =
                 <content>Imports F

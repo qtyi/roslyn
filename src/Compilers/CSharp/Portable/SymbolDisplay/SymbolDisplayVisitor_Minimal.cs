@@ -200,7 +200,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var usingAliases = GetAncestorsOrThis<BaseNamespaceDeclarationSyntax>(startNode)
                 .SelectMany(n => n.Usings)
                 .Concat(GetAncestorsOrThis<CompilationUnitSyntax>(startNode).SelectMany(c => c.Usings))
-                .Where(u => u.Alias != null)
+                .Where(u => u.Identifier != default)
                 .Select(u => semanticModel.GetDeclaredSymbol(u) as IAliasSymbol)
                 .Where(u => u != null);
 

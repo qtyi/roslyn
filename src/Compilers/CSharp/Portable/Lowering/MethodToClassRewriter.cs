@@ -103,13 +103,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             var newType = VisitType(local.Type);
+            var newTypeWithoutUnwrappingAliasTarget = VisitType(local.GetTypeWithoutUnwrappingAliasTarget().Type);
             if (TypeSymbol.Equals(newType, local.Type, TypeCompareKind.ConsiderEverything2))
             {
                 newLocal = local;
             }
             else
             {
-                newLocal = new TypeSubstitutedLocalSymbol(local, TypeWithAnnotations.Create(newType), CurrentMethod);
+                newLocal = new TypeSubstitutedLocalSymbol(local, TypeWithAnnotations.Create(newType), TypeWithAnnotations.Create(newTypeWithoutUnwrappingAliasTarget), CurrentMethod);
                 localMap.Add(local, newLocal);
             }
 

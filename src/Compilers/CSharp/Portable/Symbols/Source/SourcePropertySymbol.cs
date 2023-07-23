@@ -60,9 +60,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool isExpressionBodied = !hasAccessorList && GetArrowExpression(syntax) != null;
 
             binder = binder.WithUnsafeRegionIfNecessary(modifiersTokenList);
-            TypeSymbol? explicitInterfaceType;
+            TypeSymbol? explicitInterfaceType, explicitInterfaceTypeWithoutUnwrappingAliasTarget;
             string? aliasQualifierOpt;
-            string memberName = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(binder, explicitInterfaceSpecifier, name, diagnostics, out explicitInterfaceType, out aliasQualifierOpt);
+            string memberName = ExplicitInterfaceHelpers.GetMemberNameAndInterfaceSymbol(binder, explicitInterfaceSpecifier, name, diagnostics, out explicitInterfaceType, out explicitInterfaceTypeWithoutUnwrappingAliasTarget, out aliasQualifierOpt);
 
             return new SourcePropertySymbol(
                 containingType,
@@ -71,6 +71,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 hasSetAccessor: setSyntax != null,
                 isExplicitInterfaceImplementation,
                 explicitInterfaceType,
+                explicitInterfaceTypeWithoutUnwrappingAliasTarget,
                 aliasQualifierOpt,
                 modifiers,
                 isAutoProperty: isAutoProperty,
@@ -88,6 +89,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool hasSetAccessor,
             bool isExplicitInterfaceImplementation,
             TypeSymbol? explicitInterfaceType,
+            TypeSymbol? explicitInterfaceTypeWithoutUnwrappingAliasTarget,
             string? aliasQualifierOpt,
             DeclarationModifiers modifiers,
             bool isAutoProperty,
@@ -103,6 +105,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 hasSetAccessor,
                 isExplicitInterfaceImplementation,
                 explicitInterfaceType,
+                explicitInterfaceTypeWithoutUnwrappingAliasTarget,
                 aliasQualifierOpt,
                 modifiers,
                 hasInitializer: HasInitializer(syntax),
@@ -435,12 +438,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return binder.WithAdditionalFlagsAndContainingMemberOrLambda(BinderFlags.SuppressConstraintChecks, this);
         }
 
-        protected override (TypeWithAnnotations Type, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
         {
             Binder binder = CreateBinderForTypeAndParameters();
             var syntax = CSharpSyntaxNode;
 
-            return (ComputeType(binder, syntax, diagnostics), ComputeParameters(binder, syntax, diagnostics));
+            return (Type: ComputeType(binder, syntax, diagnostics),
+                    TypeWithoutUnwrappingAliasTarget: ComputeType(binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping), syntax, BindingDiagnosticBag.Discarded),
+                    Parameters: ComputeParameters(binder, syntax, diagnostics));
         }
 
         private TypeWithAnnotations ComputeType(Binder binder, SyntaxNode syntax, BindingDiagnosticBag diagnostics)
@@ -450,6 +455,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             typeSyntax = typeSyntax.SkipScoped(out _).SkipRef();
             var type = binder.BindType(typeSyntax, diagnostics);
+
+            if (binder.Flags.Includes(BinderFlags.SuppressAliasTargetUnwrapping))
+            {
+                // Skip type checks
+                return type;
+            }
+
             CompoundUseSiteInfo<AssemblySymbol> useSiteInfo = binder.GetNewCompoundUseSiteInfo(diagnostics);
 
             if (GetExplicitInterfaceSpecifier() is null && !this.IsNoMoreVisibleThan(type, ref useSiteInfo))

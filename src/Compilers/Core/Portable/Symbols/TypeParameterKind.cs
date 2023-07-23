@@ -23,5 +23,10 @@ namespace Microsoft.CodeAnalysis
         /// Type parameter in a <c>cref</c> attribute in XML documentation comments. For example: <c>T</c> in <c><![CDATA[<see cref="List{T}"/>]]></c>.
         /// </summary>
         Cref = 2,
+
+        /// <summary>
+        /// Type parameter of a alias. For example: <c>T</c> in <c><![CDATA[using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>]]></c>.
+        /// </summary>
+        Alias = 3,
     }
 }

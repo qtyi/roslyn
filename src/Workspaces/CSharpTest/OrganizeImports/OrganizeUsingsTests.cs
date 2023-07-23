@@ -102,6 +102,28 @@ using D = E;
         }
 
         [Fact]
+        public async Task GenericInAliases()
+        {
+            var initial =
+@"using A<T> = T;
+using A = B;
+using C = D;
+using C<T1, T2> = (T1, T2);
+using C<T> = (T, T);
+using E<T1, T2, T3> = (T3, T2, T1);";
+
+            var final =
+@"using A = B;
+using A<T> = T;
+using C = D;
+using C<T> = (T, T);
+using C<T1, T2> = (T1, T2);
+using E<T1, T2, T3> = (T3, T2, T1);";
+
+            await CheckAsync(initial, final);
+        }
+
+        [Fact]
         public async Task NestedStatements()
         {
             var initial =

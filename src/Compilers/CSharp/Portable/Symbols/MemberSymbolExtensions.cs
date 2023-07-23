@@ -63,6 +63,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal static ImmutableArray<TypeWithAnnotations> GetParameterTypesWithoutUnwrappingAliasTarget(this Symbol member)
+        {
+            switch (member.Kind)
+            {
+                case SymbolKind.Method:
+                    return ((MethodSymbol)member).GetParameterTypesWithoutUnwrappingAliasTarget();
+                case SymbolKind.Property:
+                    return ((PropertySymbol)member).GetParameterTypesWithoutUnwrappingAliasTarget();
+                case SymbolKind.Event:
+                    return ImmutableArray<TypeWithAnnotations>.Empty;
+                default:
+                    throw ExceptionUtilities.UnexpectedValue(member.Kind);
+            }
+        }
+
         internal static bool GetIsVararg(this Symbol member)
         {
             switch (member.Kind)

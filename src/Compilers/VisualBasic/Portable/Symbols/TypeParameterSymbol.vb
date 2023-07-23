@@ -108,6 +108,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End Get
         End Property
 
+        ''' <summary>
+        ''' The alias that declares this type parameter
+        ''' </summary>
+        Public ReadOnly Property DeclaringAlias As AliasSymbol
+            Get
+                Return TryCast(Me.ContainingSymbol, AliasSymbol)
+            End Get
+        End Property
+
         ' Type parameters do not have members.
         Public NotOverridable Overrides Function GetTypeMembers() As ImmutableArray(Of NamedTypeSymbol)
             Return ImmutableArray(Of NamedTypeSymbol).Empty
@@ -379,6 +388,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Private ReadOnly Property ITypeParameterSymbol_DeclaringType As INamedTypeSymbol Implements ITypeParameterSymbol.DeclaringType
             Get
                 Return Me.DeclaringType
+            End Get
+        End Property
+
+        Private ReadOnly Property ITypeParameterSymbol_DeclaringAlias As IAliasSymbol Implements ITypeParameterSymbol.DeclaringAlias
+            Get
+                Return Me.DeclaringAlias
             End Get
         End Property
 

@@ -144,12 +144,12 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             foreach (var @using in usings)
             {
-                if (@using.Alias == null || @using.Alias.Name == null)
+                if (@using.Identifier == default)
                 {
                     continue;
                 }
 
-                @using.Alias.Name.Identifier.ValueText.AppendToAliasNameSet(builder);
+                @using.Identifier.ValueText.AppendToAliasNameSet(builder);
             }
         }
 

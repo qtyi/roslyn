@@ -72,13 +72,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AssemblySymbol corLibrary,
             ConsList<TypeParameterSymbol> inProgress,
             ImmutableArray<TypeWithAnnotations> constraintTypes,
+            ImmutableArray<TypeWithAnnotations> constraintTypesWithoutUnwrappingAliasTarget,
             bool inherited,
             CSharpCompilation currentCompilation,
             BindingDiagnosticBag diagnostics)
         {
             var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
             ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
-            var bounds = typeParameter.ResolveBounds(corLibrary, inProgress, constraintTypes, inherited, currentCompilation, diagnosticsBuilder, ref useSiteDiagnosticsBuilder,
+            var bounds = typeParameter.ResolveBounds(corLibrary, inProgress, constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, inherited, currentCompilation, diagnosticsBuilder, ref useSiteDiagnosticsBuilder,
                                                      template: new CompoundUseSiteInfo<AssemblySymbol>(diagnostics, currentCompilation.Assembly));
 
             if (useSiteDiagnosticsBuilder != null)
@@ -101,6 +102,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AssemblySymbol corLibrary,
             ConsList<TypeParameterSymbol> inProgress,
             ImmutableArray<TypeWithAnnotations> constraintTypes,
+            ImmutableArray<TypeWithAnnotations> constraintTypesWithoutUnwrappingAliasTarget,
             bool inherited,
             CSharpCompilation currentCompilation,
             ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
@@ -121,15 +123,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             else
             {
                 var constraintTypesBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
+                var constraintTypesWithoutUnwrappingAliasTargetBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
                 var interfacesBuilder = ArrayBuilder<NamedTypeSymbol>.GetInstance();
                 var conversions = new TypeConversions(corLibrary);
                 var useSiteInfo = new CompoundUseSiteInfo<AssemblySymbol>(template);
 
                 // Resolve base types, determine the effective base class and
                 // interfaces, and filter out any constraint types that cause cycles.
-                foreach (var constraintType in constraintTypes)
+                for (int i = 0; i < constraintTypes.Length; i++)
                 {
+                    TypeWithAnnotations constraintType = constraintTypes[i];
                     Debug.Assert(!constraintType.Type.ContainsDynamic());
+                    TypeWithAnnotations constraintTypeWithoutUnwrappingAliasTarget = constraintTypesWithoutUnwrappingAliasTarget[i];
 
                     NamedTypeSymbol constraintEffectiveBase;
                     TypeSymbol constraintDeducedBase;
@@ -197,6 +202,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 AddInterface(interfacesBuilder, (NamedTypeSymbol)constraintType.Type);
                                 constraintTypesBuilder.Add(constraintType);
+                                constraintTypesWithoutUnwrappingAliasTargetBuilder.Add(constraintTypeWithoutUnwrappingAliasTarget);
                                 continue;
                             }
                             else
@@ -261,6 +267,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     CheckEffectiveAndDeducedBaseTypes(conversions, constraintEffectiveBase, constraintDeducedBase);
 
                     constraintTypesBuilder.Add(constraintType);
+                    constraintTypesWithoutUnwrappingAliasTargetBuilder.Add(constraintTypeWithoutUnwrappingAliasTarget);
 
                     // Determine the more encompassed of the current effective base
                     // class and the previously computed effective base class.
@@ -287,6 +294,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 CheckEffectiveAndDeducedBaseTypes(conversions, effectiveBaseClass, deducedBaseType);
 
                 constraintTypes = constraintTypesBuilder.ToImmutableAndFree();
+                constraintTypesWithoutUnwrappingAliasTarget = constraintTypesWithoutUnwrappingAliasTargetBuilder.ToImmutableAndFree();
                 interfaces = interfacesBuilder.ToImmutableAndFree();
             }
 
@@ -301,7 +309,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
-            var bounds = new TypeParameterBounds(constraintTypes, interfaces, effectiveBaseClass, deducedBaseType);
+            var bounds = new TypeParameterBounds(constraintTypes, constraintTypesWithoutUnwrappingAliasTarget, interfaces, effectiveBaseClass, deducedBaseType);
 
             // Additional constraint checks for overrides.
             if (inherited)
@@ -539,7 +547,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private static bool CheckConstraintsSingleType(TypeSymbol type, in CheckConstraintsArgs args)
         {
-            if (type.Kind == SymbolKind.NamedType)
+            if (type.TypeKind == TypeKindInternal.AliasTargetType)
+            {
+                ((AliasTargetTypeSymbol)type).CheckConstraints(args);
+                return true; // do not dive into underlying type.
+            }
+            else if (type.Kind == SymbolKind.NamedType)
             {
                 ((NamedTypeSymbol)type).CheckConstraints(args);
             }
@@ -701,10 +714,74 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return result;
         }
 
+        public static bool CheckConstraintsForAliasTargetType(
+            this AliasTargetTypeSymbol type,
+            in CheckConstraintsArgs args,
+            SyntaxNode typeSyntax,
+            SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax) // may be omitted in synthesized invocations
+        {
+            Debug.Assert(typeArgumentsSyntax.Count == 0 /*omitted*/ || typeArgumentsSyntax.Count == type.Arity);
+
+            if (!RequiresChecking(type))
+            {
+                return true;
+            }
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = !typeSyntax.HasErrors && CheckAliasConstraints(type, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: args.IncludeNullability ? diagnosticsBuilder : null,
+                                                                       ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                int ordinal = pair.TypeParameter.Ordinal;
+                var location = ordinal < typeArgumentsSyntax.Count ? typeArgumentsSyntax[ordinal].Location : args.Location;
+                args.Diagnostics.Add(pair.UseSiteInfo, location);
+            }
+
+            diagnosticsBuilder.Free();
+
+            return result;
+        }
+
+        public static bool CheckConstraints(this AliasTargetTypeSymbol type, in CheckConstraintsArgs args)
+        {
+            Debug.Assert(args.CurrentCompilation is object);
+
+            if (!RequiresChecking(type))
+            {
+                return true;
+            }
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = CheckAliasConstraints(type, in args, diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt: args.IncludeNullability ? diagnosticsBuilder : null,
+                                              ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                args.Diagnostics.Add(pair.UseSiteInfo, args.Location);
+            }
+
+            diagnosticsBuilder.Free();
+
+            return result;
+        }
+
         // C# does not let you declare a type in which it would be possible for distinct base interfaces
         // to unify under some instantiations.  But such ill-formed classes can come in through
         // metadata and be instantiated in C#.  We check to see if that's happened.
-        private static bool HasDuplicateInterfaces(NamedTypeSymbol type, ConsList<TypeSymbol> basesBeingResolved)
+        private static bool HasDuplicateInterfaces(TypeSymbol type, ConsList<TypeSymbol> basesBeingResolved)
         {
             // PERF: avoid instantiating all interfaces here
             //       Ex: if class implements just IEnumerable<> and IComparable<> it cannot have conflicting implementations
@@ -814,6 +891,25 @@ hasRelatedInterfaces:
                 nullabilityDiagnosticsBuilderOpt,
                 ref useSiteDiagnosticsBuilder,
                 skipParameters);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CheckAliasConstraints(
+            AliasTargetTypeSymbol alias,
+            in CheckConstraintsArgs args,
+            ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
+            ArrayBuilder<TypeParameterDiagnosticInfo> nullabilityDiagnosticsBuilderOpt,
+            ref ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder)
+        {
+            return CheckConstraints(
+                alias,
+                in args,
+                alias.TypeSubstitution,
+                alias.OriginalDefinition.TypeParameters,
+                alias.TypeArgumentsWithAnnotations,
+                diagnosticsBuilder,
+                nullabilityDiagnosticsBuilderOpt,
+                ref useSiteDiagnosticsBuilder);
         }
 
         /// <summary>
@@ -961,7 +1057,7 @@ hasRelatedInterfaces:
             Debug.Assert(substitution != null);
 
             // The type parameters must be original definitions of type parameters from the containing symbol.
-            Debug.Assert(ReferenceEquals(typeParameter.ContainingSymbol, containingSymbol.OriginalDefinition));
+            Debug.Assert(ReferenceEquals(typeParameter.ContainingSymbol, containingSymbol is AliasTargetTypeSymbol aliasTargetType ? aliasTargetType.OriginalDefinition : containingSymbol.OriginalDefinition));
 
             if (typeArgument.Type.IsErrorType())
             {
@@ -1501,6 +1597,16 @@ hasRelatedInterfaces:
             }
 
             Debug.Assert(method.ConstructedFrom != method);
+            return true;
+        }
+
+        public static bool RequiresChecking(AliasTargetTypeSymbol type)
+        {
+            if (type.Arity == 0)
+            {
+                return false;
+            }
+
             return true;
         }
 

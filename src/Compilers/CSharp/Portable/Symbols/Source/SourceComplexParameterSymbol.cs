@@ -40,6 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Symbol owner,
             int ordinal,
             TypeWithAnnotations parameterType,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             RefKind refKind,
             string name,
             ImmutableArray<Location> locations,
@@ -47,7 +48,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool isParams,
             bool isExtensionMethodThis,
             ScopedKind scope)
-            : base(owner, parameterType, ordinal, refKind, scope, name, locations)
+            : base(owner, parameterType, parameterTypeWithoutUnwrappingAliasTarget, ordinal, refKind, scope, name, locations)
         {
             Debug.Assert((syntaxRef == null) || (syntaxRef.GetSyntax().IsKind(SyntaxKind.Parameter)));
 
@@ -1508,6 +1509,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Symbol owner,
             int ordinal,
             TypeWithAnnotations parameterType,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             RefKind refKind,
             string name,
             ImmutableArray<Location> locations,
@@ -1515,7 +1517,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool isParams,
             bool isExtensionMethodThis,
             ScopedKind scope)
-            : base(owner, ordinal, parameterType, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis, scope)
+            : base(owner, ordinal, parameterType, parameterTypeWithoutUnwrappingAliasTarget, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis, scope)
         {
         }
 
@@ -1530,6 +1532,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Symbol owner,
             int ordinal,
             TypeWithAnnotations parameterType,
+            TypeWithAnnotations parameterTypeWithoutUnwrappingAliasTarget,
             RefKind refKind,
             ImmutableArray<CustomModifier> refCustomModifiers,
             string name,
@@ -1538,7 +1541,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             bool isParams,
             bool isExtensionMethodThis,
             ScopedKind scope)
-            : base(owner, ordinal, parameterType, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis, scope)
+            : base(owner, ordinal, parameterType, parameterTypeWithoutUnwrappingAliasTarget, refKind, name, locations, syntaxRef, isParams, isExtensionMethodThis, scope)
         {
             Debug.Assert(!refCustomModifiers.IsEmpty);
 

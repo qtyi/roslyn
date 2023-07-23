@@ -993,14 +993,23 @@ namespace Microsoft.CodeAnalysis.Editing
         /// <param name="aliasIdentifierName">The name of the alias.</param>
         /// <param name="symbol">The namespace or type to be aliased.</param>
         public SyntaxNode AliasImportDeclaration(string aliasIdentifierName, INamespaceOrTypeSymbol symbol)
-            => AliasImportDeclaration(aliasIdentifierName, NameExpression(symbol));
+            => AliasImportDeclaration(aliasIdentifierName, null, NameExpression(symbol));
 
         /// <summary>
         /// Creates an alias import declaration.
         /// </summary>
         /// <param name="aliasIdentifierName">The name of the alias.</param>
+        /// <param name="symbol">The type to be aliased.</param>
+        public SyntaxNode AliasImportDeclaration(string aliasIdentifierName, IEnumerable<string> aliasTypeParameterNames, ITypeSymbol symbol)
+            => AliasImportDeclaration(aliasIdentifierName, aliasTypeParameterNames.Select(parameterName => IdentifierName(parameterName)), NameExpression(symbol));
+
+        /// <summary>
+        /// Creates an alias import declaration.
+        /// </summary>
+        /// <param name="aliasIdentifierName">The name of the alias.</param>
+        /// <param name="aliasTypeParameters">The type parameters of the alias.</param>
         /// <param name="name">The namespace or type to be aliased.</param>
-        public abstract SyntaxNode AliasImportDeclaration(string aliasIdentifierName, SyntaxNode name);
+        public abstract SyntaxNode AliasImportDeclaration(string aliasIdentifierName, IEnumerable<SyntaxNode>? aliasTypeParameters, SyntaxNode name);
 
         /// <summary>
         /// Creates an attribute.

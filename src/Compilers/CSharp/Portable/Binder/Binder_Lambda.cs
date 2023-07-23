@@ -44,9 +44,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             ImmutableArray<RefKind> refKinds = default;
             ImmutableArray<ScopedKind> scopes = default;
             ImmutableArray<TypeWithAnnotations> types = default;
+            ImmutableArray<TypeWithAnnotations> typesWithoutUnwrappingAliasTarget = default;
             ImmutableArray<EqualsValueClauseSyntax?> defaultValues = default;
             RefKind returnRefKind = RefKind.None;
             TypeWithAnnotations returnType = default;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget = default;
             ImmutableArray<SyntaxList<AttributeListSyntax>> parameterAttributes = default;
 
             var namesBuilder = ArrayBuilder<string>.GetInstance();
@@ -77,7 +79,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     var paren = (ParenthesizedLambdaExpressionSyntax)syntax;
                     if (paren.ReturnType is { } returnTypeSyntax)
                     {
-                        (returnRefKind, returnType) = BindExplicitLambdaReturnType(returnTypeSyntax, diagnostics);
+                        (returnRefKind, returnType, returnTypeWithoutUnwrappingAliasTarget) = BindExplicitLambdaReturnType(returnTypeSyntax, diagnostics);
                     }
                     parameterSyntaxList = paren.ParameterList.Parameters;
                     CheckParenthesizedLambdaParameters(parameterSyntaxList.Value, diagnostics);
@@ -120,6 +122,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 var hasExplicitlyTypedParameterList = true;
 
                 var typesBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
+                var typesWithoutUnwrappingAliasTargetBuilder = ArrayBuilder<TypeWithAnnotations>.GetInstance();
                 var refKindsBuilder = ArrayBuilder<RefKind>.GetInstance();
                 var scopesBuilder = ArrayBuilder<ScopedKind>.GetInstance();
                 var attributesBuilder = ArrayBuilder<SyntaxList<AttributeListSyntax>>.GetInstance();
@@ -167,6 +170,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     var typeSyntax = p.Type;
                     TypeWithAnnotations type = default;
+                    TypeWithAnnotations typeWithoutUnwrappingAliasTarget = default;
                     var refKind = RefKind.None;
                     var scope = ScopedKind.None;
 
@@ -177,6 +181,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     else
                     {
                         type = BindType(typeSyntax, diagnostics);
+                        typeWithoutUnwrappingAliasTarget = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(typeSyntax, BindingDiagnosticBag.Discarded);
                         ParameterHelpers.CheckParameterModifiers(p, diagnostics, parsingFunctionPointerParams: false,
                             parsingLambdaParams: !isAnonymousMethod,
                             parsingAnonymousMethodParams: isAnonymousMethod);
@@ -196,6 +201,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     namesBuilder.Add(p.Identifier.ValueText);
                     typesBuilder.Add(type);
+                    typesWithoutUnwrappingAliasTargetBuilder.Add(typeWithoutUnwrappingAliasTarget);
                     refKindsBuilder.Add(refKind);
                     scopesBuilder.Add(scope);
                     attributesBuilder.Add(syntax.Kind() == SyntaxKind.ParenthesizedLambdaExpression ? p.AttributeLists : default);
@@ -207,6 +213,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (hasExplicitlyTypedParameterList)
                 {
                     types = typesBuilder.ToImmutable();
+                    typesWithoutUnwrappingAliasTarget = typesWithoutUnwrappingAliasTargetBuilder.ToImmutable();
                 }
 
                 if (refKindsBuilder.Any(r => r != RefKind.None))
@@ -230,6 +237,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
 
                 typesBuilder.Free();
+                typesWithoutUnwrappingAliasTargetBuilder.Free();
                 scopesBuilder.Free();
                 refKindsBuilder.Free();
                 attributesBuilder.Free();
@@ -243,7 +251,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             namesBuilder.Free();
 
-            return UnboundLambda.Create(syntax, this, diagnostics.AccumulatesDependencies, returnRefKind, returnType, parameterAttributes, refKinds, scopes, types, names, discardsOpt, parameterSyntaxList, defaultValues, isAsync: isAsync, isStatic: isStatic, hasParamsArray: hasParamsArray);
+            return UnboundLambda.Create(syntax, this, diagnostics.AccumulatesDependencies, returnRefKind, returnType, returnTypeWithoutUnwrappingAliasTarget, parameterAttributes, refKinds, scopes, types, typesWithoutUnwrappingAliasTarget, names, discardsOpt, parameterSyntaxList, defaultValues, isAsync: isAsync, isStatic: isStatic, hasParamsArray: hasParamsArray);
 
             static ImmutableArray<bool> computeDiscards(SeparatedSyntaxList<ParameterSyntax> parameters, int underscoresCount)
             {
@@ -279,7 +287,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         }
 
-        private (RefKind, TypeWithAnnotations) BindExplicitLambdaReturnType(TypeSyntax syntax, BindingDiagnosticBag diagnostics)
+        private (RefKind, TypeWithAnnotations, TypeWithAnnotations) BindExplicitLambdaReturnType(TypeSyntax syntax, BindingDiagnosticBag diagnostics)
         {
             MessageID.IDS_FeatureLambdaReturnType.CheckFeatureAvailability(diagnostics, syntax);
 
@@ -291,6 +299,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             var returnType = BindType(syntax, diagnostics);
+            var returnTypeWithoutUnwrappingAliasTarget = WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(syntax, BindingDiagnosticBag.Discarded);
             var type = returnType.Type;
 
             if (returnType.IsStatic)
@@ -302,7 +311,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 diagnostics.Add(ErrorCode.ERR_MethodReturnCantBeRefAny, syntax.Location, type);
             }
 
-            return (refKind, returnType);
+            return (refKind, returnType, returnTypeWithoutUnwrappingAliasTarget);
         }
 
         private static void CheckParenthesizedLambdaParameters(

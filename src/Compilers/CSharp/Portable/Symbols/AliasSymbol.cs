@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -98,13 +100,28 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override SymbolKind Kind
+        public sealed override SymbolKind Kind
         {
             get
             {
                 return SymbolKind.Alias;
             }
         }
+
+        /// <summary>
+        /// Returns the arity of this alias, or the number of type parameters it takes.
+        /// A non-generic alias has zero arity.
+        /// </summary>
+        public abstract int Arity
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Returns the type parameters that this alias has. If this is a non-generic alias,
+        /// returns an empty ImmutableArray.  
+        /// </summary>
+        public abstract ImmutableArray<TypeParameterSymbol> TypeParameters { get; }
 
         /// <summary>
         /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
@@ -115,7 +132,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get;
         }
 
-        public override ImmutableArray<Location> Locations
+        public sealed override ImmutableArray<Location> Locations
         {
             get
             {
@@ -203,12 +220,29 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// return that as the "containing" symbol, even though the alias isn't a member of the
         /// namespace as such.
         /// </summary>
-        public sealed override Symbol ContainingSymbol
+        public override Symbol ContainingSymbol
         {
             get
             {
                 return _containingSymbol;
             }
+        }
+
+        public new virtual AliasSymbol OriginalDefinition
+        {
+            get { return this; }
+        }
+
+        protected sealed override Symbol OriginalSymbolDefinition => this.OriginalDefinition;
+
+        /// <summary>
+        /// Returns the map from type parameters to type arguments.
+        /// If this is not a generic alias instantiation, returns null.
+        /// The map targets the original definition of the type.
+        /// </summary>
+        internal virtual TypeMap? TypeSubstitution
+        {
+            get { return null; }
         }
 
         internal override TResult Accept<TArg, TResult>(CSharpSymbolVisitor<TArg, TResult> visitor, TArg a)
@@ -229,9 +263,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // basesBeingResolved is only used to break circular references.
         internal abstract NamespaceOrTypeSymbol GetAliasTarget(ConsList<TypeSymbol>? basesBeingResolved);
 
+        internal abstract TypeWithAnnotations GetAliasTargetWithoutUnwrappingAliasTarget();
+
         internal void CheckConstraints(BindingDiagnosticBag diagnostics)
         {
-            var target = this.Target as TypeSymbol;
+            var target = this.GetAliasTargetWithoutUnwrappingAliasTarget().Type;
             if ((object?)target != null && Locations.Length > 0)
             {
                 var corLibrary = this.ContainingAssembly.CorLibrary;
@@ -260,177 +296,102 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         public override int GetHashCode()
-        {
-            if (this.Locations.Length > 0)
-                return this.Locations.First().GetHashCode();
-            else
-                return Name.GetHashCode();
-        }
+            => this.Locations.FirstOrDefault()?.GetHashCode() ?? Name.GetHashCode();
 
         internal abstract override bool RequiresCompletion
         {
             get;
         }
 
-        protected override ISymbol CreateISymbol()
+        #region Construct
+
+        /// <summary>
+        /// Returns a constructed alias given a list of type arguments.
+        /// </summary>
+        /// <param name="typeArguments">The immediate type arguments to be replaced for type
+        /// parameters in the alias target.</param>
+        public AliasTargetTypeSymbol Construct(params TypeSymbol[] typeArguments)
         {
-            return new PublicModel.AliasSymbol(this);
-        }
-    }
-
-    internal sealed class AliasSymbolFromSyntax : AliasSymbol
-    {
-        private readonly SyntaxReference _directive;
-        private SymbolCompletionState _state;
-        private NamespaceOrTypeSymbol? _aliasTarget;
-
-        // lazy binding
-        private BindingDiagnosticBag? _aliasTargetDiagnostics;
-
-        internal AliasSymbolFromSyntax(SourceNamespaceSymbol containingSymbol, UsingDirectiveSyntax syntax)
-            : base(syntax.Alias!.Name.Identifier.ValueText, containingSymbol, ImmutableArray.Create(syntax.Alias!.Name.Identifier.GetLocation()), isExtern: false)
-        {
-            Debug.Assert(syntax.Alias is object);
-
-            _directive = syntax.GetReference();
-        }
-
-        internal AliasSymbolFromSyntax(SourceNamespaceSymbol containingSymbol, ExternAliasDirectiveSyntax syntax)
-            : base(syntax.Identifier.ValueText, containingSymbol, ImmutableArray.Create(syntax.Identifier.GetLocation()), isExtern: true)
-        {
-            _directive = syntax.GetReference();
+            // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass TypeWithAnnotations[] instead of TypeSymbol[].
+            return ConstructWithoutModifiers(typeArguments.AsImmutableOrNull(), false);
         }
 
         /// <summary>
-        /// Gets the <see cref="NamespaceOrTypeSymbol"/> for the
-        /// namespace or type referenced by the alias.
+        /// Returns a constructed alias given a list of type arguments.
         /// </summary>
-        public override NamespaceOrTypeSymbol Target
+        /// <param name="typeArguments">The immediate type arguments to be replaced for type
+        /// parameters in the alias target.</param>
+        public AliasTargetTypeSymbol Construct(ImmutableArray<TypeSymbol> typeArguments)
         {
-            get
-            {
-                return GetAliasTarget(basesBeingResolved: null);
-            }
+            // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass ImmutableArray<TypeWithAnnotations> instead of ImmutableArray<TypeSymbol>.
+            return ConstructWithoutModifiers(typeArguments, false);
         }
 
-        // basesBeingResolved is only used to break circular references.
-        internal override NamespaceOrTypeSymbol GetAliasTarget(ConsList<TypeSymbol>? basesBeingResolved)
+        /// <summary>
+        /// Returns a constructed alias given a list of type arguments.
+        /// </summary>
+        /// <param name="typeArguments"></param>
+        public AliasTargetTypeSymbol Construct(IEnumerable<TypeSymbol> typeArguments)
         {
-            if (!_state.HasComplete(CompletionPart.AliasTarget))
-            {
-                // the target is not yet bound. If it is an ordinary alias, bind the target
-                // symbol. If it is an extern alias then find the target in the list of metadata references.
-                var newDiagnostics = BindingDiagnosticBag.GetInstance();
-
-                NamespaceOrTypeSymbol symbol = this.IsExtern
-                    ? ResolveExternAliasTarget(newDiagnostics)
-                    : ResolveAliasTarget((UsingDirectiveSyntax)_directive.GetSyntax(), newDiagnostics, basesBeingResolved);
-
-                if (Interlocked.CompareExchange(ref _aliasTarget, symbol, null) is null)
-                {
-                    // Note: It's important that we don't call newDiagnosticsToReadOnlyAndFree here. That call
-                    // can force the prompt evaluation of lazy initialized diagnostics.  That in turn can 
-                    // call back into GetAliasTarget on the same thread resulting in a dead lock scenario.
-                    bool won = Interlocked.Exchange(ref _aliasTargetDiagnostics, newDiagnostics) == null;
-                    Debug.Assert(won, "Only one thread can win the alias target CompareExchange");
-
-                    _state.NotePartComplete(CompletionPart.AliasTarget);
-                    // we do not clear this.aliasTargetName, as another thread might be about to use it for ResolveAliasTarget(...)
-                }
-                else
-                {
-                    newDiagnostics.Free();
-                    // Wait for diagnostics to have been reported if another thread resolves the alias
-                    _state.SpinWaitComplete(CompletionPart.AliasTarget, default(CancellationToken));
-                }
-            }
-
-            return _aliasTarget!;
+            // https://github.com/dotnet/roslyn/issues/30064: We should fix the callers to pass IEnumerable<TypeWithAnnotations> instead of IEnumerable<TypeSymbol>.
+            return ConstructWithoutModifiers(typeArguments.AsImmutableOrNull(), false);
         }
 
-        internal BindingDiagnosticBag AliasTargetDiagnostics
+        private AliasTargetTypeSymbol ConstructWithoutModifiers(ImmutableArray<TypeSymbol> typeArguments, bool unbound)
         {
-            get
-            {
-                GetAliasTarget(null);
-                RoslynDebug.Assert(_aliasTargetDiagnostics != null);
-                return _aliasTargetDiagnostics;
-            }
-        }
+            ImmutableArray<TypeWithAnnotations> modifiedArguments;
 
-        private NamespaceSymbol ResolveExternAliasTarget(BindingDiagnosticBag diagnostics)
-        {
-            NamespaceSymbol? target;
-            if (!ContainingSymbol.DeclaringCompilation.GetExternAliasTarget(Name, out target))
+            if (typeArguments.IsDefault)
             {
-                diagnostics.Add(ErrorCode.ERR_BadExternAlias, Locations[0], Name);
-            }
-
-            RoslynDebug.Assert(target is object);
-            RoslynDebug.Assert(target.IsGlobalNamespace);
-
-            return target;
-        }
-
-        private NamespaceOrTypeSymbol ResolveAliasTarget(
-            UsingDirectiveSyntax usingDirective,
-            BindingDiagnosticBag diagnostics,
-            ConsList<TypeSymbol>? basesBeingResolved)
-        {
-            if (usingDirective.UnsafeKeyword != default)
-            {
-                MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective, usingDirective.UnsafeKeyword.GetLocation());
-            }
-            else if (usingDirective.NamespaceOrType is not NameSyntax)
-            {
-                MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective.NamespaceOrType);
-            }
-
-            var syntax = usingDirective.NamespaceOrType;
-            var flags = BinderFlags.SuppressConstraintChecks | BinderFlags.SuppressObsoleteChecks;
-            if (usingDirective.UnsafeKeyword != default)
-            {
-                this.CheckUnsafeModifier(DeclarationModifiers.Unsafe, usingDirective.UnsafeKeyword.GetLocation(), diagnostics);
-                flags |= BinderFlags.UnsafeRegion;
+                modifiedArguments = default(ImmutableArray<TypeWithAnnotations>);
             }
             else
             {
-                // Prior to C#12, allow the alias to be an unsafe region.  This allows us to maintain compat with prior
-                // versions of the compiler that allowed `using X = List<int*[]>` to be written.  In 12.0 and onwards
-                // though, we require the code to explicitly contain the `unsafe` keyword.
-                if (!DeclaringCompilation.IsFeatureEnabled(MessageID.IDS_FeatureUsingTypeAlias))
-                    flags |= BinderFlags.UnsafeRegion;
+                modifiedArguments = typeArguments.SelectAsArray(t => TypeWithAnnotations.Create(t));
             }
 
-            var declarationBinder = ContainingSymbol.DeclaringCompilation
-                .GetBinderFactory(syntax.SyntaxTree)
-                .GetBinder(syntax)
-                .WithAdditionalFlags(flags);
-
-            var annotatedNamespaceOrType = declarationBinder.BindNamespaceOrTypeSymbol(syntax, diagnostics, basesBeingResolved);
-
-            // `using X = RefType?;` is not legal.
-            if (usingDirective.NamespaceOrType is NullableTypeSyntax nullableType &&
-                annotatedNamespaceOrType.TypeWithAnnotations.NullableAnnotation == NullableAnnotation.Annotated &&
-                annotatedNamespaceOrType.TypeWithAnnotations.Type?.IsReferenceType is true)
-            {
-                diagnostics.Add(ErrorCode.ERR_BadNullableReferenceTypeInUsingAlias, nullableType.QuestionToken.GetLocation());
-            }
-
-            var namespaceOrType = annotatedNamespaceOrType.NamespaceOrTypeSymbol;
-            if (namespaceOrType is TypeSymbol { IsNativeIntegerWrapperType: true } &&
-                (usingDirective.NamespaceOrType.IsNint || usingDirective.NamespaceOrType.IsNuint))
-            {
-                // using X = nint;
-                MessageID.IDS_FeatureUsingTypeAlias.CheckFeatureAvailability(diagnostics, usingDirective.NamespaceOrType);
-            }
-
-            return namespaceOrType;
+            return Construct(modifiedArguments, unbound);
         }
 
-        internal override bool RequiresCompletion
+        internal AliasTargetTypeSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments)
         {
-            get { return true; }
+            return Construct(typeArguments, unbound: false);
+        }
+
+        internal AliasTargetTypeSymbol Construct(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
+        {
+            if (this.Arity == 0)
+            {
+                throw new InvalidOperationException(CSharpResources.CannotCreateConstructedFromNongeneric);
+            }
+
+            if (typeArguments.IsDefault)
+            {
+                throw new ArgumentNullException(nameof(typeArguments));
+            }
+
+            if (typeArguments.Any(NamedTypeSymbol.TypeWithAnnotationsIsNullFunction))
+            {
+                throw new ArgumentException(CSharpResources.TypeArgumentCannotBeNull, nameof(typeArguments));
+            }
+
+            if (typeArguments.Length != this.Arity)
+            {
+                throw new ArgumentException(CSharpResources.WrongNumberOfTypeArguments, nameof(typeArguments));
+            }
+
+            Debug.Assert(!unbound || typeArguments.All(NamedTypeSymbol.TypeWithAnnotationsIsErrorType));
+
+            return this.ConstructCore(typeArguments, unbound);
+        }
+
+        protected abstract AliasTargetTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound);
+
+        #endregion
+
+        protected override ISymbol CreateISymbol()
+        {
+            return new PublicModel.AliasSymbol(this);
         }
     }
 
@@ -442,6 +403,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             : base(aliasName, containingSymbol, locations, isExtern)
         {
             _aliasTarget = target;
+        }
+
+        public override int Arity
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        public override ImmutableArray<TypeParameterSymbol> TypeParameters
+        {
+            get
+            {
+                return ImmutableArray<TypeParameterSymbol>.Empty;
+            }
         }
 
         /// <summary>
@@ -459,6 +436,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override NamespaceOrTypeSymbol GetAliasTarget(ConsList<TypeSymbol>? basesBeingResolved)
         {
             return _aliasTarget;
+        }
+
+        internal override TypeWithAnnotations GetAliasTargetWithoutUnwrappingAliasTarget()
+        {
+            return TypeWithAnnotations.Create(_aliasTarget as TypeSymbol);
+        }
+
+        protected override AliasTargetTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)
+        {
+            throw ExceptionUtilities.Unreachable();
         }
 
         internal override bool RequiresCompletion

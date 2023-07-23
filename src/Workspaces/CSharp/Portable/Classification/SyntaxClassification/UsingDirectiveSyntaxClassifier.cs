@@ -37,9 +37,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Classification.Classifiers
         {
             // For using aliases, we bind the target on the right of the equals and use that
             // binding to classify the alias.
-            if (usingDirective.Alias != null)
+            if (usingDirective.Identifier != default)
             {
-                var token = usingDirective.Alias.Name;
+                var token = usingDirective.Identifier;
 
                 var symbolInfo = semanticModel.GetSymbolInfo(usingDirective.NamespaceOrType, cancellationToken);
                 if (symbolInfo.Symbol is ITypeSymbol typeSymbol)

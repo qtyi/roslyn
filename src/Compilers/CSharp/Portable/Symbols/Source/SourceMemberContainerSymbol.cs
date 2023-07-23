@@ -4018,6 +4018,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 Debug.Assert(positionalMembers.All(p => p is PropertySymbol or FieldSymbol));
 
+                var System_Void = compilation.GetSpecialType(SpecialType.System_Void);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.DeconstructMethodName,
                     this,
@@ -4025,14 +4026,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     Cci.CallingConvention.HasThis,
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ctor.Parameters.SelectAsArray<ParameterSymbol, ParameterSymbol>(param => new SignatureOnlyParameterSymbol(param.TypeWithAnnotations,
+                                                                                                                              param.GetTypeWithoutUnwrappingAliasTarget(),
                                                                                                                               ImmutableArray<CustomModifier>.Empty,
                                                                                                                               isParams: false,
-                                                                                                                              RefKind.Out
-                                                                                                                              )),
+                                                                                                                              RefKind.Out)),
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_Void)),
+                    TypeWithAnnotations.Create(System_Void),
+                    TypeWithAnnotations.Create(System_Void),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4064,6 +4066,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             void addCopyCtor(bool primaryAndCopyCtorAmbiguity)
             {
                 Debug.Assert(isRecordClass);
+                var System_Void = compilation.GetSpecialType(SpecialType.System_Void);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.InstanceConstructorName,
                     this,
@@ -4072,6 +4075,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
                                                                 TypeWithAnnotations.Create(this),
+                                                                TypeWithAnnotations.Create(this),
                                                                 ImmutableArray<CustomModifier>.Empty,
                                                                 isParams: false,
                                                                 RefKind.None
@@ -4079,7 +4083,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_Void)),
+                    TypeWithAnnotations.Create(System_Void),
+                    TypeWithAnnotations.Create(System_Void),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4112,6 +4117,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             MethodSymbol addPrintMembersMethod(IEnumerable<Symbol> userDefinedMembers)
             {
+                var System_Boolean = compilation.GetSpecialType(SpecialType.System_Boolean);
+                var System_Text_StringBuilder = compilation.GetWellKnownType(WellKnownType.System_Text_StringBuilder);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.PrintMembersMethodName,
                     this,
@@ -4119,14 +4126,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     Cci.CallingConvention.HasThis,
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
-                        TypeWithAnnotations.Create(compilation.GetWellKnownType(WellKnownType.System_Text_StringBuilder)),
+                        TypeWithAnnotations.Create(System_Text_StringBuilder),
+                        TypeWithAnnotations.Create(System_Text_StringBuilder),
                         ImmutableArray<CustomModifier>.Empty,
                         isParams: false,
                         RefKind.None)),
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    returnType: TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_Boolean)),
+                    returnType: TypeWithAnnotations.Create(System_Boolean),
+                    returnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(System_Boolean),
                     refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                     explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
 
@@ -4171,6 +4180,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             void addToStringMethod(MethodSymbol printMethod)
             {
+                var System_String = compilation.GetSpecialType(SpecialType.System_String);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.ObjectToString,
                     this,
@@ -4181,7 +4191,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    returnType: TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_String)),
+                    returnType: TypeWithAnnotations.Create(System_String),
+                    returnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(System_String),
                     refCustomModifiers: ImmutableArray<CustomModifier>.Empty,
                     explicitInterfaceImplementations: ImmutableArray<MethodSymbol>.Empty);
 
@@ -4261,6 +4272,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                                                          ImmutableArray<ParameterSymbol>.Empty,
                                                                          RefKind.None,
                                                                          param.TypeWithAnnotations,
+                                                                         param.GetTypeWithoutUnwrappingAliasTarget(),
                                                                          ImmutableArray<CustomModifier>.Empty,
                                                                          isStatic: false,
                                                                          ImmutableArray<PropertySymbol>.Empty);
@@ -4345,6 +4357,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             MethodSymbol addGetHashCode(PropertySymbol? equalityContract)
             {
+                var System_Int32 = compilation.GetSpecialType(SpecialType.System_Int32);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.ObjectGetHashCode,
                     this,
@@ -4355,7 +4368,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_Int32)),
+                    TypeWithAnnotations.Create(System_Int32),
+                    TypeWithAnnotations.Create(System_Int32),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 
@@ -4380,11 +4394,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             PropertySymbol addEqualityContract()
             {
                 Debug.Assert(isRecordClass);
+                var System_Type = compilation.GetWellKnownType(WellKnownType.System_Type);
                 var targetProperty = new SignatureOnlyPropertySymbol(SynthesizedRecordEqualityContractProperty.PropertyName,
                                                                      this,
                                                                      ImmutableArray<ParameterSymbol>.Empty,
                                                                      RefKind.None,
-                                                                     TypeWithAnnotations.Create(compilation.GetWellKnownType(WellKnownType.System_Type)),
+                                                                     TypeWithAnnotations.Create(System_Type),
+                                                                     TypeWithAnnotations.Create(System_Type),
                                                                      ImmutableArray<CustomModifier>.Empty,
                                                                      isStatic: false,
                                                                      ImmutableArray<PropertySymbol>.Empty);
@@ -4438,6 +4454,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             MethodSymbol addThisEquals(PropertySymbol? equalityContract)
             {
+                var System_Boolean = compilation.GetSpecialType(SpecialType.System_Boolean);
                 var targetMethod = new SignatureOnlyMethodSymbol(
                     WellKnownMemberNames.ObjectEquals,
                     this,
@@ -4446,6 +4463,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     ImmutableArray<TypeParameterSymbol>.Empty,
                     ImmutableArray.Create<ParameterSymbol>(new SignatureOnlyParameterSymbol(
                                                                 TypeWithAnnotations.Create(this),
+                                                                TypeWithAnnotations.Create(this),
                                                                 ImmutableArray<CustomModifier>.Empty,
                                                                 isParams: false,
                                                                 RefKind.None
@@ -4453,7 +4471,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     RefKind.None,
                     isInitOnly: false,
                     isStatic: false,
-                    TypeWithAnnotations.Create(compilation.GetSpecialType(SpecialType.System_Boolean)),
+                    TypeWithAnnotations.Create(System_Boolean),
+                    TypeWithAnnotations.Create(System_Boolean),
                     ImmutableArray<CustomModifier>.Empty,
                     ImmutableArray<MethodSymbol>.Empty);
 

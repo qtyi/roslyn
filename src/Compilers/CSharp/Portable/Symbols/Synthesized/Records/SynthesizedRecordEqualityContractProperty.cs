@@ -23,6 +23,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 hasSetAccessor: false,
                 isExplicitInterfaceImplementation: false,
                 explicitInterfaceType: null,
+                explicitInterfaceTypeWithoutUnwrappingAliasTarget: null,
                 aliasQualifierOpt: null,
                 modifiers: (containingType.IsSealed, containingType.BaseTypeNoUseSiteDiagnostics.IsObjectType()) switch
                 {
@@ -71,9 +72,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw ExceptionUtilities.Unreachable();
         }
 
-        protected override (TypeWithAnnotations Type, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations Type, TypeWithAnnotations TypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindType(BindingDiagnosticBag diagnostics)
         {
-            return (TypeWithAnnotations.Create(Binder.GetWellKnownType(DeclaringCompilation, WellKnownType.System_Type, diagnostics, Location), NullableAnnotation.NotAnnotated),
+            var returnType = Binder.GetWellKnownType(DeclaringCompilation, WellKnownType.System_Type, diagnostics, Location);
+            return (TypeWithAnnotations.Create(returnType, NullableAnnotation.NotAnnotated),
+                    TypeWithAnnotations.Create(returnType, NullableAnnotation.NotAnnotated),
                     ImmutableArray<ParameterSymbol>.Empty);
         }
 

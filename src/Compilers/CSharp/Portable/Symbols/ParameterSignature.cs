@@ -16,15 +16,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal class ParameterSignature
     {
         internal readonly ImmutableArray<TypeWithAnnotations> parameterTypesWithAnnotations;
+        internal readonly ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget;
         internal readonly ImmutableArray<RefKind> parameterRefKinds;
 
         internal static readonly ParameterSignature NoParams =
-            new ParameterSignature(ImmutableArray<TypeWithAnnotations>.Empty, default(ImmutableArray<RefKind>));
+            new ParameterSignature(ImmutableArray<TypeWithAnnotations>.Empty, ImmutableArray<TypeWithAnnotations>.Empty, default(ImmutableArray<RefKind>));
 
         private ParameterSignature(ImmutableArray<TypeWithAnnotations> parameterTypesWithAnnotations,
+                                   ImmutableArray<TypeWithAnnotations> parameterTypesWithoutUnwrappingAliasTarget,
                                    ImmutableArray<RefKind> parameterRefKinds)
         {
             this.parameterTypesWithAnnotations = parameterTypesWithAnnotations;
+            this.parameterTypesWithoutUnwrappingAliasTarget = parameterTypesWithoutUnwrappingAliasTarget;
             this.parameterRefKinds = parameterRefKinds;
         }
 
@@ -36,12 +39,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             var types = ArrayBuilder<TypeWithAnnotations>.GetInstance();
+            var typesWithoutUnwrappingAliasTarget = ArrayBuilder<TypeWithAnnotations>.GetInstance();
             ArrayBuilder<RefKind> refs = null;
 
             for (int parm = 0; parm < parameters.Length; ++parm)
             {
                 var parameter = parameters[parm];
                 types.Add(parameter.TypeWithAnnotations);
+                typesWithoutUnwrappingAliasTarget.Add(parameter.GetTypeWithoutUnwrappingAliasTarget());
 
                 var refKind = parameter.RefKind;
                 if (refs == null)
@@ -59,7 +64,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             ImmutableArray<RefKind> refKinds = refs != null ? refs.ToImmutableAndFree() : default(ImmutableArray<RefKind>);
-            return new ParameterSignature(types.ToImmutableAndFree(), refKinds);
+            return new ParameterSignature(types.ToImmutableAndFree(), typesWithoutUnwrappingAliasTarget.ToImmutableAndFree(), refKinds);
         }
 
         internal static void PopulateParameterSignature(ImmutableArray<ParameterSymbol> parameters, ref ParameterSignature lazySignature)

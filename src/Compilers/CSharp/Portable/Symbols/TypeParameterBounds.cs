@@ -22,16 +22,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeParameterBounds(
             ImmutableArray<TypeWithAnnotations> constraintTypes,
+            ImmutableArray<TypeWithAnnotations> constraintTypesWithoutUnwrappingAliasTarget,
             ImmutableArray<NamedTypeSymbol> interfaces,
             NamedTypeSymbol effectiveBaseClass,
             TypeSymbol deducedBaseType)
         {
             Debug.Assert(!constraintTypes.IsDefault);
+            Debug.Assert(!constraintTypesWithoutUnwrappingAliasTarget.IsDefault);
             Debug.Assert(!interfaces.IsDefault);
             Debug.Assert((object)effectiveBaseClass != null);
             Debug.Assert((object)deducedBaseType != null);
 
             this.ConstraintTypes = constraintTypes;
+            this.ConstraintTypesWithoutUnwrappingAliasTarget = constraintTypesWithoutUnwrappingAliasTarget;
             this.Interfaces = interfaces;
             this.EffectiveBaseClass = effectiveBaseClass;
             this.DeducedBaseType = deducedBaseType;
@@ -48,6 +51,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// constraint types on the containing type parameter, with cycles removed.
         /// </summary>
         public readonly ImmutableArray<TypeWithAnnotations> ConstraintTypes;
+
+        internal readonly ImmutableArray<TypeWithAnnotations> ConstraintTypesWithoutUnwrappingAliasTarget;
 
         /// <summary>
         /// The set of interfaces explicitly declared on the containing type

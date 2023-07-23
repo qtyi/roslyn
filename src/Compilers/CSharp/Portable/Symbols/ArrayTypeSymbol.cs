@@ -339,6 +339,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool Equals(TypeSymbol? t2, TypeCompareKind comparison)
         {
+            t2 = t2?.GetUnwrappedType();
             return this.Equals(t2 as ArrayTypeSymbol, comparison);
         }
 

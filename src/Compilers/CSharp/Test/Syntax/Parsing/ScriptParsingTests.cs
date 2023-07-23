@@ -1141,14 +1141,8 @@ using (var x = bar) { }
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken);
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken);
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken);

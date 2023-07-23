@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotCreateConstructedFromNongeneric">
-        <source>Cannot create constructed generic type from non-generic type.</source>
-        <target state="translated">非ジェネリック型から、構築済みジェネリック型を作成できません。</target>
+        <source>Cannot create constructed type from non-generic type or alias.</source>
+        <target state="needs-review-translation">非ジェネリック型から、構築済みジェネリック型を作成できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_AbstractConversionNotInvolvingContainedType">
@@ -1093,8 +1093,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintCannotHaveRequiredMembers">
-        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type or or method '{0}' because '{2}' has required members.</source>
-        <target state="translated">'{2}'に必要なメンバーがあるため、'{2}' は、ジェネリック型またはメソッド '{0}'のパラメーター '{1}' の 'new()' 制約を満たすことができません。</target>
+        <source>'{2}' cannot satisfy the 'new()' constraint on parameter '{1}' in the generic type, method or alias '{0}' because '{2}' has required members.</source>
+        <target state="needs-review-translation">'{2}'に必要なメンバーがあるため、'{2}' は、ジェネリック型またはメソッド '{0}'のパラメーター '{1}' の 'new()' 制約を満たすことができません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlinesAreNotAllowedInsideANonVerbatimInterpolatedString">
@@ -1987,6 +1987,11 @@
         <target state="translated">符号なし右シフト</target>
         <note />
       </trans-unit>
+      <trans-unit id="IDS_FeatureUsingGenericAlias">
+        <source>using generic alias</source>
+        <target state="new">using generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IDS_FeatureUtf8StringLiterals">
         <source>UTF-8 string literals</source>
         <target state="translated">UTF-8 文字列リテラル</target>
@@ -2573,8 +2578,8 @@
         <note>UnmanagedCallersOnly is not localizable.</note>
       </trans-unit>
       <trans-unit id="ERR_UnmanagedConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">型 '{2}' と、入れ子になっているあらゆるレベルのすべてのフィールドは、ジェネリック型またはメソッド '{0}' のパラメーター '{1}' として使用するために、Null 非許容の値型でなければなりません</target>
+        <source>The type '{2}' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">型 '{2}' と、入れ子になっているあらゆるレベルのすべてのフィールドは、ジェネリック型またはメソッド '{0}' のパラメーター '{1}' として使用するために、Null 非許容の値型でなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedCallingConvention">
@@ -4092,33 +4097,33 @@
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
-        <target state="translated">型 '{3}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用することはできません。型引数 '{3}' の Null 許容性が制約型 '{1}' と一致しません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.</source>
+        <target state="needs-review-translation">型 '{3}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用することはできません。型引数 '{3}' の Null 許容性が制約型 '{1}' と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.</source>
-        <target state="translated">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が制約型と一致しません。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match constraint type.</source>
+        <target state="needs-review-translation">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が制約型と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
-        <target state="translated">型 '{2}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{1}' として使用することはできません。型引数 '{2}' の Null 許容性が 'notnull' 制約と一致しません。</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">型 '{2}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{1}' として使用することはできません。型引数 '{2}' の Null 許容性が 'notnull' 制約と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterNotNullConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.</source>
-        <target state="translated">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が 'notnull' 制約と一致しません。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'notnull' constraint.</source>
+        <target state="needs-review-translation">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が 'notnull' 制約と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint">
-        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type or method '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
-        <target state="translated">型 '{2}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{1}' として使用することはできません。型引数 '{2}' の Null 許容性が 'class' 制約と一致しません。</target>
+        <source>The type '{2}' cannot be used as type parameter '{1}' in the generic type, method or alias '{0}'. Nullability of type argument '{2}' doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">型 '{2}' を、ジェネリック型またはメソッド '{0}' 内で型パラメーター '{1}' として使用することはできません。型引数 '{2}' の Null 許容性が 'class' 制約と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullabilityMismatchInTypeParameterReferenceTypeConstraint_Title">
-        <source>The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.</source>
-        <target state="translated">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が 'class' 制約と一致しません。</target>
+        <source>The type cannot be used as type parameter in the generic type, method or alias. Nullability of type argument doesn't match 'class' constraint.</source>
+        <target state="needs-review-translation">この型を、ジェネリック型またはメソッド内で型パラメーターとして使用することはできません。型引数の Null 許容性が 'class' 制約と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WRN_NullableValueTypeMayBeNull">
@@ -5122,13 +5127,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingNamespace">
-        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' directive instead</source>
-        <target state="translated">using namespace' ディレクティブは名前空間に対してのみ適用できます。'{0}' は名前空間ではなく型です。代わりに 'using static' ディレクティブを使用することを検討してください。</target>
+        <source>A 'using namespace' directive can only be applied to namespaces; '{0}' is a type not a namespace. Consider a 'using static' or a 'using generic' directive instead</source>
+        <target state="needs-review-translation">using namespace' ディレクティブは名前空間に対してのみ適用できます。'{0}' は名前空間ではなく型です。代わりに 'using static' ディレクティブを使用することを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_BadUsingType">
-        <source>A 'using static' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
-        <target state="translated">using static' ディレクティブは型に対してのみ適用できます。'{0}' は型ではなく名前空間です。代わりに 'using namespace' ディレクティブを使用することを検討してください。</target>
+        <source>A 'using static' or a 'using generic' directive can only be applied to types; '{0}' is a namespace not a type. Consider a 'using namespace' directive instead</source>
+        <target state="needs-review-translation">using static' ディレクティブは型に対してのみ適用できます。'{0}' は型ではなく名前空間です。代わりに 'using namespace' ディレクティブを使用することを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NoAliasHere">
@@ -5857,33 +5862,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewConstraintNotSatisfied">
-        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">'{2}' は、ジェネリック型またはメソッド '{0}' 内でパラメーター '{1}' として使用するために、パブリック パラメーターなしのコンストラクターを持つ非抽象型でなければなりません</target>
+        <source>'{2}' must be a non-abstract type with a public parameterless constructor in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">'{2}' は、ジェネリック型またはメソッド '{0}' 内でパラメーター '{1}' として使用するために、パブリック パラメーターなしのコンストラクターを持つ非抽象型でなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedRefType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
-        <target state="translated">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' への暗黙的な参照変換がありません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' への暗黙的な参照変換がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableEnum">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
-        <target state="translated">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。Null 許容型 '{3}' は、'{1}' の制約を満たしていません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'.</source>
+        <target state="needs-review-translation">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。Null 許容型 '{3}' は、'{1}' の制約を満たしていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedNullableInterface">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
-        <target state="translated">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。Null 許容型 '{3}' は、'{1}' の制約を満たしていません。Null 許容型はインターフェイス制約を満たすことはできません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. The nullable type '{3}' does not satisfy the constraint of '{1}'. Nullable types can not satisfy any interface constraints.</source>
+        <target state="needs-review-translation">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。Null 許容型 '{3}' は、'{1}' の制約を満たしていません。Null 許容型はインターフェイス制約を満たすことはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedTyVar">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
-        <target state="translated">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' へのボックス変換または型パラメーター変換がありません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion or type parameter conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' へのボックス変換または型パラメーター変換がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_GenericConstraintNotSatisfiedValType">
-        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
-        <target state="translated">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' へのボックス変換がありません。</target>
+        <source>The type '{3}' cannot be used as type parameter '{2}' in the generic type, method or alias '{0}'. There is no boxing conversion from '{3}' to '{1}'.</source>
+        <target state="needs-review-translation">型 '{3}' はジェネリック型またはメソッド '{0}' 内で型パラメーター '{2}' として使用できません。'{3}' から '{1}' へのボックス変換がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_DuplicateGeneratedName">
@@ -6157,13 +6162,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_RefConstraintNotSatisfied">
-        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">型 '{2}' は、ジェネリック型のパラメーター '{1}'、またはメソッド '{0}' として使用するために、参照型でなければなりません</target>
+        <source>The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">型 '{2}' は、ジェネリック型のパラメーター '{1}'、またはメソッド '{0}' として使用するために、参照型でなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_ValConstraintNotSatisfied">
-        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type or method '{0}'</source>
-        <target state="translated">型 '{2}' は、ジェネリック型のパラメーター '{1}'、またはメソッド '{0}' として使用するために、Null 非許容の値型でなければなりません</target>
+        <source>The type '{2}' must be a non-nullable value type in order to use it as parameter '{1}' in the generic type, method or alias '{0}'</source>
+        <target state="needs-review-translation">型 '{2}' は、ジェネリック型のパラメーター '{1}'、またはメソッド '{0}' として使用するために、Null 非許容の値型でなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_CircularConstraint">

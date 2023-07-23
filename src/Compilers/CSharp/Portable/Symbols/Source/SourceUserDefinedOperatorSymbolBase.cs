@@ -20,11 +20,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly bool _isExpressionBodied;
 #nullable enable
         private readonly TypeSymbol? _explicitInterfaceType;
+        private readonly TypeSymbol? _explicitInterfaceTypeWithoutUnwrappingAliasTarget;
 #nullable disable
 
         protected SourceUserDefinedOperatorSymbolBase(
             MethodKind methodKind,
             TypeSymbol explicitInterfaceType,
+            TypeSymbol explicitInterfaceTypeWithoutUnwrappingAliasTarget,
             string name,
             SourceMemberContainerTypeSymbol containingType,
             Location location,
@@ -38,6 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             base(containingType, syntax.GetReference(), location, isIterator: isIterator)
         {
             _explicitInterfaceType = explicitInterfaceType;
+            _explicitInterfaceTypeWithoutUnwrappingAliasTarget = explicitInterfaceTypeWithoutUnwrappingAliasTarget;
             _name = name;
             _isExpressionBodied = isExpressionBodied;
 
@@ -213,9 +216,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        protected (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BaseMethodDeclarationSyntax declarationSyntax, TypeSyntax returnTypeSyntax, BindingDiagnosticBag diagnostics)
+        protected (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BaseMethodDeclarationSyntax declarationSyntax, TypeSyntax returnTypeSyntax, BindingDiagnosticBag diagnostics)
         {
             TypeWithAnnotations returnType;
+            TypeWithAnnotations returnTypeWithoutUnwrappingAliasTarget;
             ImmutableArray<ParameterSymbol> parameters;
 
             var binder = this.DeclaringCompilation.
@@ -247,6 +251,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             returnType = signatureBinder.BindType(returnTypeSyntax, diagnostics);
+            returnTypeWithoutUnwrappingAliasTarget = signatureBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping).BindType(returnTypeSyntax, BindingDiagnosticBag.Discarded);
 
             // restricted types cannot be returned. 
             // NOTE: Span-like types can be returned (if expression is returnable).
@@ -264,14 +269,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 diagnostics.Add(ErrorFacts.GetStaticClassReturnCode(useWarning: false), returnTypeSyntax.Location, returnType.Type);
             }
 
-            return (returnType, parameters);
+            return (returnType, returnTypeWithoutUnwrappingAliasTarget, parameters);
         }
 
         protected override void MethodChecks(BindingDiagnosticBag diagnostics)
         {
-            var (returnType, parameters) = MakeParametersAndBindReturnType(diagnostics);
+            var (returnType, returnTypeWithoutUnwrappingAliasTarget, parameters) = MakeParametersAndBindReturnType(diagnostics);
 
-            MethodChecks(returnType, parameters, diagnostics);
+            MethodChecks(returnType, returnTypeWithoutUnwrappingAliasTarget, parameters, diagnostics);
 
             // If we have a static class then we already 
             // have reported that fact as an error. No need to cascade the error further.
@@ -284,7 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CheckOperatorSignatures(diagnostics);
         }
 
-        protected abstract (TypeWithAnnotations ReturnType, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics);
+        protected abstract (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics);
 
         protected sealed override void ExtensionMethodChecks(BindingDiagnosticBag diagnostics)
         {
@@ -795,6 +800,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypes()
             => ImmutableArray<ImmutableArray<TypeWithAnnotations>>.Empty;
 
+        internal sealed override ImmutableArray<ImmutableArray<TypeWithAnnotations>> GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget()
+            => base.GetTypeParameterConstraintTypesWithoutUnwrappingAliasTarget();
+
         public sealed override ImmutableArray<TypeParameterConstraintKind> GetTypeParameterConstraintKinds()
             => ImmutableArray<TypeParameterConstraintKind>.Empty;
 
@@ -812,6 +820,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if ((object)_explicitInterfaceType != null)
             {
+                Debug.Assert((object)_explicitInterfaceTypeWithoutUnwrappingAliasTarget != null);
+
                 NameSyntax name;
 
                 switch (syntaxReferenceOpt.GetSyntax())
@@ -830,7 +840,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         throw ExceptionUtilities.Unreachable();
                 }
 
-                _explicitInterfaceType.CheckAllConstraints(DeclaringCompilation, conversions, new SourceLocation(name), diagnostics);
+                _explicitInterfaceTypeWithoutUnwrappingAliasTarget.CheckAllConstraints(DeclaringCompilation, conversions, new SourceLocation(name), diagnostics);
             }
         }
 

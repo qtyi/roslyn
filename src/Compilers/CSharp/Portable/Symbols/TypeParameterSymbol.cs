@@ -88,6 +88,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget()
+        {
+            this.EnsureAllConstraintsAreResolved();
+            return this.GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol>.Empty);
+        }
+
         internal ImmutableArray<TypeWithAnnotations> ConstraintTypesWithDefinitionUseSiteDiagnostics(ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {
             var result = ConstraintTypesNoUseSiteDiagnostics;
@@ -136,6 +142,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get
             {
                 return this.ContainingSymbol as NamedTypeSymbol;
+            }
+        }
+
+        /// <summary>
+        /// The alias that declared this type parameter, or null.
+        /// </summary>
+        public AliasSymbol DeclaringAlias
+        {
+            get
+            {
+                return this.ContainingSymbol as AliasSymbol;
             }
         }
 
@@ -381,6 +398,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         internal abstract ImmutableArray<TypeWithAnnotations> GetConstraintTypes(ConsList<TypeParameterSymbol> inProgress);
+
+        internal virtual ImmutableArray<TypeWithAnnotations> GetConstraintTypesWithoutUnwrappingAliasTarget(ConsList<TypeParameterSymbol> inProgress) => GetConstraintTypes(inProgress);
 
         internal abstract ImmutableArray<NamedTypeSymbol> GetInterfaces(ConsList<TypeParameterSymbol> inProgress);
 
@@ -642,6 +661,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
         {
+            t2 = t2?.GetUnwrappedType();
             return this.Equals(t2 as TypeParameterSymbol, comparison);
         }
 

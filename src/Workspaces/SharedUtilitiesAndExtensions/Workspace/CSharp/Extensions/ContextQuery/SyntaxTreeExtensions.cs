@@ -634,6 +634,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             }
 
             // using |
+            // or
+            // using | < T > = Bar
             // but not:
             // using | = Bar
 
@@ -643,10 +645,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             if (token.IsKind(SyntaxKind.UsingKeyword))
             {
                 var usingDirective = token.GetAncestor<UsingDirectiveSyntax>();
-                if (usingDirective != null)
+                if (usingDirective != null && usingDirective.Identifier == default)
                 {
-                    if (token.GetNextToken(includeSkipped: true).Kind() != SyntaxKind.EqualsToken &&
-                        usingDirective.Alias == null)
+                    var nextTokenKind = token.GetNextToken(includeSkipped: true).Kind();
+                    if (nextTokenKind == SyntaxKind.LessThanToken)
+                    {
+                        if (usingDirective.TypeParameterList != null)
+                        {
+                            return true;
+                        }
+                    }
+                    else if (nextTokenKind != SyntaxKind.EqualsToken)
                     {
                         return true;
                     }
