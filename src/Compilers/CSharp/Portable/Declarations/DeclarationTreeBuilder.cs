@@ -281,7 +281,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (var directive in usings)
             {
-                if (directive.Identifier != default)
+                if (directive.Identifier == default)
                 {
                     continue;
                 }

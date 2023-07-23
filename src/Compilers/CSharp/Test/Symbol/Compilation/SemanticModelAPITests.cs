@@ -1335,7 +1335,7 @@ class Test
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);
 
-            var aliasSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<NameEqualsSyntax>().Single().Name;
+            var aliasSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Single();
             Assert.Equal(SymbolInfo.None, model.GetSymbolInfo(aliasSyntax));
 
             var usingSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Single();

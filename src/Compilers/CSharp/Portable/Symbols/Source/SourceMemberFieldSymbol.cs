@@ -428,7 +428,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (!unwrapAliasTarget)
             {
-                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, unwrapAliasTarget: unwrapAliasTarget);
+                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, BindingDiagnosticBag.Discarded, unwrapAliasTarget: unwrapAliasTarget);
             }
 
             return GetTypeAndRefKind(fieldsBeingBound).Type;
@@ -444,22 +444,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             var diagnostics = BindingDiagnosticBag.GetInstance();
-            var type = BindFieldType(fieldsBeingBound, out var refKind, diagnostics);
+            // When we have multiple declarators, we report the type diagnostics on only the first.
+            var diagnosticsForFirstDeclarator = BindingDiagnosticBag.GetInstance();
+            var type = BindFieldType(fieldsBeingBound, out var refKind, diagnostics, diagnosticsForFirstDeclarator);
 
             // update the lazyType only if it contains value last seen by the current thread:
             if (Interlocked.CompareExchange(ref _lazyTypeAndRefKind, new TypeAndRefKind(refKind, type), null) == null)
             {
-                // CONSIDER: SourceEventFieldSymbol would like to suppress these diagnostics.
-                AddDeclarationDiagnostics(diagnostics);
-
                 state.NotePartComplete(CompletionPart.Type);
             }
 
             diagnostics.Free();
+            diagnosticsForFirstDeclarator.Free();
             return _lazyTypeAndRefKind;
         }
 
-        private TypeWithAnnotations BindFieldType(ConsList<FieldSymbol> fieldsBeingBound, out RefKind refKind, BindingDiagnosticBag diagnostics, bool unwrapAliasTarget = true)
+        private TypeWithAnnotations BindFieldType(ConsList<FieldSymbol> fieldsBeingBound, out RefKind refKind, BindingDiagnosticBag diagnostics, BindingDiagnosticBag diagnosticsForFirstDeclarator, bool unwrapAliasTarget = true)
         {
             Debug.Assert(fieldsBeingBound != null);
             Debug.Assert(diagnostics != null);
@@ -476,9 +476,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 diagnostics.Add(ErrorCode.ERR_BadMemberFlag, ErrorLocation, SyntaxFacts.GetText(SyntaxKind.ScopedKeyword));
             }
-
-            // When we have multiple declarators, we report the type diagnostics on only the first.
-            var diagnosticsForFirstDeclarator = BindingDiagnosticBag.GetInstance();
 
             Symbol associatedPropertyOrEvent = this.AssociatedSymbol;
             if ((object)associatedPropertyOrEvent != null && associatedPropertyOrEvent.Kind == SymbolKind.Event)
@@ -611,20 +608,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            type = type.WithModifiers(this.RequiredCustomModifiers);
+            // We do not do TypeChecks and AddDeclarationDiagnostics when binding TypeSymbol without unwrap alias target.
             if (unwrapAliasTarget)
             {
                 TypeChecks(type.Type, diagnostics);
+
+                // CONSIDER: SourceEventFieldSymbol would like to suppress these diagnostics.
+                AddDeclarationDiagnostics(diagnostics);
+
+                bool isFirstDeclarator = fieldSyntax.Declaration.Variables[0] == declarator;
+                if (isFirstDeclarator)
+                {
+                    AddDeclarationDiagnostics(diagnosticsForFirstDeclarator);
+                }
             }
 
-            bool isFirstDeclarator = fieldSyntax.Declaration.Variables[0] == declarator;
-            if (isFirstDeclarator)
-            {
-                diagnostics.AddRange(diagnosticsForFirstDeclarator.DiagnosticBag);
-            }
-
-            diagnosticsForFirstDeclarator.Free();
-            return type;
+            return type.WithModifiers(this.RequiredCustomModifiers);
         }
 
         internal bool FieldTypeInferred(ConsList<FieldSymbol> fieldsBeingBound)
