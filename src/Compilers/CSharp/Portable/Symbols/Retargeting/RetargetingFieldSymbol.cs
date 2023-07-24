@@ -57,9 +57,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             }
         }
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
-            return this.RetargetingTranslator.Retarget(_underlyingField.GetFieldType(fieldsBeingBound, unwrapAliasTarget), RetargetOptions.RetargetPrimitiveTypesByTypeCode);
+            return this.RetargetingTranslator.Retarget(_underlyingField.GetFieldType(fieldsBeingBound), RetargetOptions.RetargetPrimitiveTypesByTypeCode);
+        }
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            return this.RetargetingTranslator.Retarget(_underlyingField.GetFieldTypeWithoutUnwrappingAliasTarget(fieldsBeingBound), RetargetOptions.RetargetPrimitiveTypesByTypeCode);
         }
 
         public override Symbol ContainingSymbol

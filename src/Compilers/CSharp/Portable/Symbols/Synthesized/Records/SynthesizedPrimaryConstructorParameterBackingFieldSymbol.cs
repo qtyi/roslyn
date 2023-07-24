@@ -46,8 +46,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers => ImmutableArray<CustomModifier>.Empty;
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
             => ParameterSymbol.TypeWithAnnotations;
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+            => ParameterSymbol.GetTypeWithoutUnwrappingAliasTarget();
 
         // Some implementations (like in SourceFieldSymbolWithSyntaxReference)
         // try to detect this fact from syntax. It looks like the motivation

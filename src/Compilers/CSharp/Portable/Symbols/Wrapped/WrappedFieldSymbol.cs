@@ -169,9 +169,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
-            return _underlyingField.GetFieldType(fieldsBeingBound, unwrapAliasTarget);
+            return _underlyingField.GetFieldType(fieldsBeingBound);
+        }
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            return _underlyingField.GetFieldTypeWithoutUnwrappingAliasTarget(fieldsBeingBound);
         }
 
         public override object ConstantValue

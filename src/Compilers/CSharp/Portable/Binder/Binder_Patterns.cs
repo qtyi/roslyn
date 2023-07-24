@@ -905,7 +905,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // We should have the right binder in the chain for a script or interactive, so we use the field for the pattern.
                         Debug.Assert(designation.SyntaxTree.Options.Kind != SourceCodeKind.Regular);
                         GlobalExpressionVariable expressionVariableField = LookupDeclaredField(singleVariableDesignation);
-                        expressionVariableField.SetTypeWithAnnotations(declType, BindingDiagnosticBag.Discarded);
+                        expressionVariableField.SetTypeWithAnnotations(declType, declType, BindingDiagnosticBag.Discarded);
                         BoundExpression receiver = SynthesizeReceiver(designation, expressionVariableField, diagnostics);
 
                         variableSymbol = expressionVariableField;

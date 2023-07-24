@@ -113,8 +113,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers => _property.RefCustomModifiers;
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
             => _property.TypeWithAnnotations;
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+            => _property.GetTypeWithoutUnwrappingAliasTarget();
 
         internal override bool HasPointerType
             => _property.HasPointerType;
