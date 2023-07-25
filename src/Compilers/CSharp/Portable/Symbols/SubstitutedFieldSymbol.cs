@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _containingType = containingType;
         }
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
             if (_lazyType == null)
             {
@@ -33,6 +33,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
 
             return _lazyType.Value;
+        }
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            return _containingType.TypeSubstitution.SubstituteType(OriginalDefinition.GetFieldTypeWithoutUnwrappingAliasTarget(fieldsBeingBound));
         }
 
         public override Symbol ContainingSymbol

@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         ReportInferenceFailure(inferenceDiagnostics);
                     }
 
-                    type = fieldSymbol.SetTypeWithAnnotations(type, inferenceDiagnostics);
+                    type = fieldSymbol.SetTypeWithAnnotations(type, type, inferenceDiagnostics);
 #if DEBUG
                     Debug.Assert(inferenceDiagnostics.DependenciesBag is object);
                     Debug.Assert(inferenceDiagnostics.DependenciesBag.Count == 0);

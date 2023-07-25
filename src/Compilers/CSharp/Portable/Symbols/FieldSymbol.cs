@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal TypeWithAnnotations GetTypeWithoutUnwrappingAliasTarget()
         {
-            return GetFieldType(ConsList<FieldSymbol>.Empty, unwrapAliasTarget: false);
+            return GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol>.Empty);
         }
 
         public abstract RefKind RefKind { get; }
@@ -79,7 +79,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         public TypeSymbol Type => TypeWithAnnotations.Type;
 
-        internal abstract TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true);
+        internal abstract TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound);
+
+        internal virtual TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            return GetFieldType(fieldsBeingBound);
+        }
 
         /// <summary>
         /// If this field serves as a backing variable for an automatically generated

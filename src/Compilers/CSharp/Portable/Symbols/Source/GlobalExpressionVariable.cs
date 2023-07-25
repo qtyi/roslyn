@@ -18,6 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal class GlobalExpressionVariable : SourceMemberFieldSymbol
     {
         private TypeWithAnnotations.Boxed _lazyType;
+        private TypeWithAnnotations.Boxed _lazyTypeWithoutUnwrappingAliasTarget;
 
         /// <summary>
         /// The type syntax, if any, from source. Optional for patterns that can omit an explicit type.
@@ -66,7 +67,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public sealed override RefKind RefKind => RefKind.None;
 
-        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
             Debug.Assert(fieldsBeingBound != null);
 
@@ -75,26 +76,50 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return _lazyType.Value;
             }
 
+            MakeFieldType(fieldsBeingBound);
+            return _lazyType.Value;
+        }
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            Debug.Assert(fieldsBeingBound != null);
+
+            if (_lazyTypeWithoutUnwrappingAliasTarget != null)
+            {
+                return _lazyTypeWithoutUnwrappingAliasTarget.Value;
+            }
+
+            MakeFieldType(fieldsBeingBound);
+            return _lazyTypeWithoutUnwrappingAliasTarget.Value;
+        }
+
+        private void MakeFieldType(ConsList<FieldSymbol> fieldsBeingBound)
+        {
             var typeSyntax = TypeSyntax;
 
             var compilation = this.DeclaringCompilation;
 
             var diagnostics = BindingDiagnosticBag.GetInstance();
             TypeWithAnnotations type;
+            TypeWithAnnotations typeWithoutUnwrappingAliasTarget;
             bool isVar;
 
             var binderFactory = compilation.GetBinderFactory(SyntaxTree);
             var binder = binderFactory.GetBinder(typeSyntax ?? SyntaxNode);
+            var binderWithoutUnwrappingAliasTarget = binder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
 
             if (typeSyntax != null)
             {
-                type = binder.BindTypeOrVarKeyword(typeSyntax.SkipScoped(out _).SkipRef(), diagnostics, out isVar);
+                var typeSyntaxSkipScopedAndRef = typeSyntax.SkipScoped(out _).SkipRef();
+                type = binder.BindTypeOrVarKeyword(typeSyntaxSkipScopedAndRef, diagnostics, out isVar);
+                typeWithoutUnwrappingAliasTarget = binderWithoutUnwrappingAliasTarget.BindTypeOrVarKeyword(typeSyntaxSkipScopedAndRef, BindingDiagnosticBag.Discarded, out _);
             }
             else
             {
                 // Recursive patterns may omit the type syntax
                 isVar = true;
                 type = default;
+                typeWithoutUnwrappingAliasTarget = default;
             }
 
             Debug.Assert(type.HasType || isVar);
@@ -110,20 +135,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     diagnostics.Add(ErrorCode.ERR_RecursivelyTypedVariable, this.ErrorLocation, this);
                     type = TypeWithAnnotations.Create(binder.CreateErrorType("var"));
+                    typeWithoutUnwrappingAliasTarget = TypeWithAnnotations.Create(binderWithoutUnwrappingAliasTarget.CreateErrorType("var"));
                 }
 
-                SetType(diagnostics, type);
+                SetType(diagnostics, type, typeWithoutUnwrappingAliasTarget);
             }
 
             diagnostics.Free();
-            return _lazyType.Value;
         }
 
         /// <summary>
         /// Can add some diagnostics into <paramref name="diagnostics"/>. 
         /// Returns the type that it actually locks onto (it's possible that it had already locked onto ErrorType).
         /// </summary>
-        private TypeWithAnnotations SetType(BindingDiagnosticBag diagnostics, TypeWithAnnotations type)
+        private TypeWithAnnotations SetType(BindingDiagnosticBag diagnostics, TypeWithAnnotations type, TypeWithAnnotations typeWithoutUnwrappingAliasTarget)
         {
             var originalType = _lazyType?.Value.DefaultType;
 
@@ -136,6 +161,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (Interlocked.CompareExchange(ref _lazyType, new TypeWithAnnotations.Boxed(type), null) == null)
             {
+                Debug.Assert(Interlocked.CompareExchange(ref _lazyTypeWithoutUnwrappingAliasTarget, new TypeWithAnnotations.Boxed(typeWithoutUnwrappingAliasTarget), null) == null);
+
                 TypeChecks(type.Type, diagnostics);
 
                 AddDeclarationDiagnostics(diagnostics);
@@ -148,9 +175,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Can add some diagnostics into <paramref name="diagnostics"/>.
         /// Returns the type that it actually locks onto (it's possible that it had already locked onto ErrorType).
         /// </summary>
-        internal TypeWithAnnotations SetTypeWithAnnotations(TypeWithAnnotations type, BindingDiagnosticBag diagnostics)
+        internal TypeWithAnnotations SetTypeWithAnnotations(TypeWithAnnotations type, TypeWithAnnotations typeWithoutUnwrappingAliasTarget, BindingDiagnosticBag diagnostics)
         {
-            return SetType(diagnostics, type);
+            return SetType(diagnostics, type, typeWithoutUnwrappingAliasTarget);
         }
 
         protected virtual void InferFieldType(ConsList<FieldSymbol> fieldsBeingBound, Binder binder)

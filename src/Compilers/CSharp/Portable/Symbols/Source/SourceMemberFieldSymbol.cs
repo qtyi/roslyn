@@ -424,14 +424,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal sealed override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound, bool unwrapAliasTarget = true)
+        internal sealed override TypeWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
-            if (!unwrapAliasTarget)
-            {
-                return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, BindingDiagnosticBag.Discarded, unwrapAliasTarget: unwrapAliasTarget);
-            }
-
             return GetTypeAndRefKind(fieldsBeingBound).Type;
+        }
+
+        internal override TypeWithAnnotations GetFieldTypeWithoutUnwrappingAliasTarget(ConsList<FieldSymbol> fieldsBeingBound)
+        {
+            return BindFieldType(fieldsBeingBound, out _, BindingDiagnosticBag.Discarded, BindingDiagnosticBag.Discarded, unwrapAliasTarget: false);
         }
 
         private TypeAndRefKind GetTypeAndRefKind(ConsList<FieldSymbol> fieldsBeingBound)
