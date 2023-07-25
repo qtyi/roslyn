@@ -1,0 +1,38 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Compilers\\CSharp\\CSharpAnalyzerDriver\\CSharpAnalyzerDriver.shproj",
+      "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
+      "src\\Compilers\\Core\\AnalyzerDriver\\AnalyzerDriver.shproj",
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
+      "src\\Compilers\\Test\\Core\\Microsoft.CodeAnalysis.Test.Utilities.csproj",
+      "src\\Compilers\\Test\\Resources\\Core\\Microsoft.CodeAnalysis.Compiler.Test.Resources.csproj",
+      "src\\Compilers\\Test\\Utilities\\CSharp\\Microsoft.CodeAnalysis.CSharp.Test.Utilities.csproj",
+      "src\\Compilers\\Test\\Utilities\\VisualBasic\\Microsoft.CodeAnalysis.VisualBasic.Test.Utilities.vbproj",
+      "src\\Compilers\\VisualBasic\\BasicAnalyzerDriver\\BasicAnalyzerDriver.shproj",
+      "src\\Compilers\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.vbproj",
+      "src\\Dependencies\\CodeAnalysis.Debugging\\Microsoft.CodeAnalysis.Debugging.shproj",
+      "src\\Dependencies\\PooledObjects\\Microsoft.CodeAnalysis.PooledObjects.shproj",
+      "src\\ExpressionEvaluator\\CSharp\\Source\\ExpressionCompiler\\Microsoft.CodeAnalysis.CSharp.ExpressionCompiler.csproj",
+      "src\\ExpressionEvaluator\\CSharp\\Source\\ResultProvider\\CSharpResultProvider.shproj",
+      "src\\ExpressionEvaluator\\CSharp\\Source\\ResultProvider\\Portable\\Microsoft.CodeAnalysis.CSharp.ResultProvider.csproj",
+      "src\\ExpressionEvaluator\\CSharp\\Test\\ExpressionCompiler\\Microsoft.CodeAnalysis.CSharp.ExpressionCompiler.UnitTests.csproj",
+      "src\\ExpressionEvaluator\\CSharp\\Test\\ResultProvider\\Microsoft.CodeAnalysis.CSharp.ResultProvider.UnitTests.csproj",
+      "src\\ExpressionEvaluator\\Core\\Source\\ExpressionCompiler\\Microsoft.CodeAnalysis.ExpressionCompiler.csproj",
+      "src\\ExpressionEvaluator\\Core\\Source\\FunctionResolver\\Microsoft.CodeAnalysis.FunctionResolver.csproj",
+      "src\\ExpressionEvaluator\\Core\\Source\\ResultProvider\\Portable\\Microsoft.CodeAnalysis.ResultProvider.csproj",
+      "src\\ExpressionEvaluator\\Core\\Source\\ResultProvider\\ResultProvider.shproj",
+      "src\\ExpressionEvaluator\\Core\\Test\\ExpressionCompiler\\Microsoft.CodeAnalysis.ExpressionCompiler.Utilities.csproj",
+      "src\\ExpressionEvaluator\\Core\\Test\\FunctionResolver\\Microsoft.CodeAnalysis.FunctionResolver.UnitTests.csproj",
+      "src\\ExpressionEvaluator\\Core\\Test\\ResultProvider\\Microsoft.CodeAnalysis.ResultProvider.Utilities.csproj",
+      "src\\ExpressionEvaluator\\VisualBasic\\Source\\ExpressionCompiler\\Microsoft.CodeAnalysis.VisualBasic.ExpressionCompiler.vbproj",
+      "src\\ExpressionEvaluator\\VisualBasic\\Source\\ResultProvider\\BasicResultProvider.shproj",
+      "src\\ExpressionEvaluator\\VisualBasic\\Source\\ResultProvider\\Portable\\Microsoft.CodeAnalysis.VisualBasic.ResultProvider.vbproj",
+      "src\\ExpressionEvaluator\\VisualBasic\\Test\\ExpressionCompiler\\Microsoft.CodeAnalysis.VisualBasic.ExpressionCompiler.UnitTests.vbproj",
+      "src\\ExpressionEvaluator\\VisualBasic\\Test\\ResultProvider\\Microsoft.CodeAnalysis.VisualBasic.ResultProvider.UnitTests.vbproj",
+      "src\\Test\\PdbUtilities\\Roslyn.Test.PdbUtilities.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpSyntaxGenerator\\CSharpSyntaxGenerator.csproj"
+    ]
+  }
+}

@@ -414,7 +414,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 alias = usingAliases.Where(pair => pair.Key.Name == name).OrderBy(pair => pair.Key.Arity).Select(pair => pair.Value).FirstOrDefault();
             }
-            if (alias.Alias is not null && alias.UsingDirectiveReference is not null)
+            if (alias.Alias is not null)
             {
                 // Found a match in our list of normal aliases.  Mark the alias as being seen so that
                 // it won't be reported to the user as something that can be removed.
