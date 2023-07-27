@@ -271,16 +271,16 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
                         text = Keyword("anonymousObject");
                         return true;
                     }
-                    else if (token.Parent.Parent.IsKind(SyntaxKind.UsingDirective))
-                    {
-                        text = Keyword("using");
-                        return true;
-                    }
                     else if (token.Parent.Parent.IsKind(SyntaxKind.AttributeArgument))
                     {
                         text = Keyword("attributeNamedArgument");
                         return true;
                     }
+                }
+                else if (token.Parent.IsKind(SyntaxKind.UsingDirective))
+                {
+                    text = Keyword("using");
+                    return true;
                 }
                 else if (token.Parent.IsKind(SyntaxKind.LetClause))
                 {
