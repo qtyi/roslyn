@@ -2205,8 +2205,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             // apply to a "using Goo = ..." situation.
             if (token.IsKind(SyntaxKind.EqualsToken))
             {
-                if (token.Parent.IsKind(SyntaxKind.NameEquals) &&
-                    token.Parent.IsParentKind(SyntaxKind.UsingDirective))
+                if (token.Parent.IsKind(SyntaxKind.UsingDirective))
                 {
                     return false;
                 }

@@ -875,9 +875,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Rename
                     Contract.ThrowIfNull(tree);
 
                     var token = await tree.GetTouchingTokenAsync(location.SourceSpan.Start, cancellationToken, findInsideTrivia: true).ConfigureAwait(false);
-                    var currentUsing = (UsingDirectiveSyntax)token.Parent!.Parent!.Parent!;
+                    var currentUsing = (UsingDirectiveSyntax)token.Parent!;
 
-                    var namespaceDecl = token.Parent.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+                    var namespaceDecl = token.Parent!.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
                     SyntaxList<UsingDirectiveSyntax> usings;
                     if (namespaceDecl != null)
                     {

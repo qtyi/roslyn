@@ -1597,8 +1597,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeGeneration
                                                       SyntaxFactory.SimpleImportsClause(
                                                       SyntaxFactory.ImportAliasClause(
                                                       SyntaxFactory.Identifier(aliasIdentifierName),
+                                                      If(aliasTypeParameters Is Nothing, Nothing,
                                                       SyntaxFactory.TypeParameterList(
-                                                      SyntaxFactory.SeparatedList(aliasTypeParameters.Cast(Of TypeParameterSyntax)))),
+                                                      SyntaxFactory.SeparatedList(aliasTypeParameters.Cast(Of TypeParameterSyntax))))),
                                                       CType(name, NameSyntax))))
 
             End If

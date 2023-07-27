@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Compilers\\CSharp\\CSharpAnalyzerDriver\\CSharpAnalyzerDriver.shproj",
+      "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
+      "src\\Compilers\\CSharp\\Test\\Emit\\Microsoft.CodeAnalysis.CSharp.Emit.UnitTests.csproj",
+      "src\\Compilers\\Core\\AnalyzerDriver\\AnalyzerDriver.shproj",
+      "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
+      "src\\Compilers\\Test\\Core\\Microsoft.CodeAnalysis.Test.Utilities.csproj",
+      "src\\Compilers\\Test\\Resources\\Core\\Microsoft.CodeAnalysis.Compiler.Test.Resources.csproj",
+      "src\\Compilers\\Test\\Utilities\\CSharp\\Microsoft.CodeAnalysis.CSharp.Test.Utilities.csproj",
+      "src\\Compilers\\VisualBasic\\BasicAnalyzerDriver\\BasicAnalyzerDriver.shproj",
+      "src\\Compilers\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.vbproj",
+      "src\\Dependencies\\CodeAnalysis.Debugging\\Microsoft.CodeAnalysis.Debugging.shproj",
+      "src\\Dependencies\\PooledObjects\\Microsoft.CodeAnalysis.PooledObjects.shproj",
+      "src\\Test\\PdbUtilities\\Roslyn.Test.PdbUtilities.csproj",
+      "src\\Tools\\Source\\CompilerGeneratorTools\\Source\\CSharpSyntaxGenerator\\CSharpSyntaxGenerator.csproj"
+    ]
+  }
+}

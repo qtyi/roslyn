@@ -1,0 +1,32 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\EditorFeatures\\CSharpTest2\\Microsoft.CodeAnalysis.CSharp.EditorFeatures2.UnitTests.csproj",
+      "src\\EditorFeatures\\CSharpTest\\Microsoft.CodeAnalysis.CSharp.EditorFeatures.UnitTests.csproj",
+      "src\\EditorFeatures\\CSharp\\Microsoft.CodeAnalysis.CSharp.EditorFeatures.csproj",
+      "src\\EditorFeatures\\Core.Wpf\\Microsoft.CodeAnalysis.EditorFeatures.Wpf.csproj",
+      "src\\EditorFeatures\\Core\\Microsoft.CodeAnalysis.EditorFeatures.csproj",
+      "src\\EditorFeatures\\DiagnosticsTestUtilities\\Microsoft.CodeAnalysis.EditorFeatures.DiagnosticsTests.Utilities.csproj",
+      "src\\EditorFeatures\\Test2\\Microsoft.CodeAnalysis.EditorFeatures2.UnitTests.vbproj",
+      "src\\EditorFeatures\\TestUtilities2\\Microsoft.CodeAnalysis.EditorFeatures.Test.Utilities2.vbproj",
+      "src\\EditorFeatures\\TestUtilities\\Microsoft.CodeAnalysis.EditorFeatures.Test.Utilities.csproj",
+      "src\\EditorFeatures\\Test\\Microsoft.CodeAnalysis.EditorFeatures.UnitTests.csproj",
+      "src\\EditorFeatures\\Text\\Microsoft.CodeAnalysis.EditorFeatures.Text.csproj",
+      "src\\EditorFeatures\\VisualBasicTest\\Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.UnitTests.vbproj",
+      "src\\EditorFeatures\\VisualBasic\\Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.vbproj",
+      "src\\EditorFeatures\\XunitHook\\Microsoft.CodeAnalysis.XunitHook.csproj",
+      "src\\Features\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.Features.csproj",
+      "src\\Features\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.Features.vbproj",
+      "src\\Workspaces\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.Workspaces.csproj",
+      "src\\Workspaces\\Core\\Portable\\Microsoft.CodeAnalysis.Workspaces.csproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Compiler\\CSharp\\CSharpCompilerExtensions.shproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Compiler\\Core\\CompilerExtensions.shproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Compiler\\VisualBasic\\VisualBasicCompilerExtensions.shproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Workspace\\CSharp\\CSharpWorkspaceExtensions.shproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Workspace\\Core\\WorkspaceExtensions.shproj",
+      "src\\Workspaces\\SharedUtilitiesAndExtensions\\Workspace\\VisualBasic\\VisualBasicWorkspaceExtensions.shproj",
+      "src\\Workspaces\\VisualBasic\\Portable\\Microsoft.CodeAnalysis.VisualBasic.Workspaces.vbproj"
+    ]
+  }
+}
