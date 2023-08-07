@@ -1536,16 +1536,28 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
                 else
                 {
-                    bool isNamedType = (symbol.Kind == SymbolKind.NamedType) || (symbol.Kind == SymbolKind.ErrorType);
-
-                    if (hasTypeArguments && isNamedType)
+                    bool isAlias = false;
+                    bool isNamedType = false;
+                    if (symbol.Kind == SymbolKind.Alias)
                     {
-                        symbol = ConstructNamedTypeUnlessTypeArgumentOmitted(node, (NamedTypeSymbol)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        isAlias = true;
+                        if (hasTypeArguments)
+                        {
+                            symbol = ConstructAliasUnlessTypeArgumentOmitted(node, (AliasSymbolFromSyntax)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        }
+                    }
+                    else if (symbol.Kind is SymbolKind.NamedType or SymbolKind.ErrorType)
+                    {
+                        isNamedType = true;
+                        if (hasTypeArguments)
+                        {
+                            symbol = ConstructNamedTypeUnlessTypeArgumentOmitted(node, (NamedTypeSymbol)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        }
                     }
 
                     expression = BindNonMethod(node, symbol, diagnostics, lookupResult.Kind, indexed, isError);
 
-                    if (!isNamedType && (hasTypeArguments || node.Kind() == SyntaxKind.GenericName))
+                    if (!isAlias && !isNamedType && (hasTypeArguments || node.Kind() == SyntaxKind.GenericName))
                     {
                         Debug.Assert(isError); // Should have been reported by GetSymbolOrMethodOrPropertyGroup.
                         expression = new BoundBadExpression(

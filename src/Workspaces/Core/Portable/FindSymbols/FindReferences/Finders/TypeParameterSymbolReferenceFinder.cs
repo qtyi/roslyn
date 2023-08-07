@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +30,8 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             // parameter has a different name in different parts that we won't find it.  However,
             // this only happens in error situations.  It is not legal in C# to use a different
             // name for a type parameter in different parts.
-            return FindDocumentsAsync(project, documents, cancellationToken, symbol.Name, symbol.ContainingType.Name);
+            Debug.Assert(symbol.ContainingSymbol.Kind is SymbolKind.NamedType or SymbolKind.Alias);
+            return FindDocumentsAsync(project, documents, cancellationToken, symbol.Name, symbol.ContainingSymbol.Name);
         }
     }
 }

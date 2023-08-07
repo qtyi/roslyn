@@ -18,6 +18,25 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax
         /// </summary>
         public NameSyntax? Name => this.NamespaceOrType as NameSyntax;
 
+        /// <summary>
+        /// Returns a <see cref="NameEqualsSyntax"/> that describe the alias (if exist) of this <see cref="UsingDirectiveSyntax"/>.
+        /// This property is now only used for compatibility for Roslyn extension references, like System.Text.Json.SourceGenerator,
+        /// to test alias absence. To get alias name and equals token, use <see cref="Identifier"/> and <see cref="EqualsToken"/> instead.
+        /// </summary>
+        [System.Obsolete("This property is only used for compatibility to test alias absence. To get alias name, use Identifier instead.", error: true)]
+        public NameEqualsSyntax? Alias
+        {
+            get
+            {
+                if (((InternalSyntax.UsingDirectiveSyntax)this.CsGreen).Identifier is null)
+                {
+                    return null;
+                }
+
+                return SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName(this.Identifier), this.EqualsToken);
+            }
+        }
+
         public UsingDirectiveSyntax Update(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken equalsToken, NameSyntax name, SyntaxToken semicolonToken)
             => this.Update(this.GlobalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, constraintClauses, equalsToken, namespaceOrType: name, semicolonToken);
 
