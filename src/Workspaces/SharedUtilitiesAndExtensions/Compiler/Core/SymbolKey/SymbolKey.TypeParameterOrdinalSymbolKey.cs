@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis
@@ -10,20 +11,31 @@ namespace Microsoft.CodeAnalysis
     {
         private static class TypeParameterOrdinalSymbolKey
         {
-            public static void Create(ITypeParameterSymbol symbol, int methodIndex, SymbolKeyWriter visitor)
+            public static void Create(ITypeParameterSymbol symbol, int index, SymbolKeyWriter visitor)
             {
-                Contract.ThrowIfFalse(symbol.TypeParameterKind == TypeParameterKind.Method);
-                visitor.WriteInteger(methodIndex);
+                Contract.ThrowIfFalse(symbol.TypeParameterKind is TypeParameterKind.Method or TypeParameterKind.Alias);
+                visitor.WriteInteger((int)symbol.TypeParameterKind);
+                visitor.WriteInteger(index);
                 visitor.WriteInteger(symbol.Ordinal);
             }
 
             public static SymbolKeyResolution Resolve(SymbolKeyReader reader, out string? failureReason)
             {
-                var methodIndex = reader.ReadInteger();
+                var kind = (TypeParameterKind)reader.ReadInteger();
+                var index = reader.ReadInteger();
                 var ordinal = reader.ReadInteger();
-                var method = reader.ResolveMethod(methodIndex);
+                ITypeParameterSymbol? typeParameter;
+                if (kind == TypeParameterKind.Method)
+                {
+                    var method = reader.ResolveMethod(index);
+                    typeParameter = method?.TypeParameters[ordinal];
+                }
+                else
+                {
+                    var alias = reader.ResolveAlias(index);
+                    typeParameter = alias?.TypeParameters[ordinal];
+                }
 
-                var typeParameter = method?.TypeParameters[ordinal];
                 if (typeParameter == null)
                 {
                     failureReason = $"({nameof(TypeParameterOrdinalSymbolKey)} failed)";

@@ -1423,6 +1423,28 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        private TypeSymbol ConstructAliasUnlessTypeArgumentOmitted(SyntaxNode typeSyntax, AliasSymbolFromSyntax alias, SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax, ImmutableArray<TypeWithAnnotations> typeArguments, BindingDiagnosticBag diagnostics)
+        {
+            if (typeArgumentsSyntax.Any(SyntaxKind.OmittedTypeArgument))
+            {
+                // Note: lookup won't have reported this, since the arity was correct.
+                // CONSIDER: the text of this error message makes sense, but we might want to add a separate code.
+                Error(diagnostics, ErrorCode.ERR_BadArity, typeSyntax, alias, MessageID.IDS_SK_ALIAS.Localize(), typeArgumentsSyntax.Count);
+
+                // If the syntax looks like an unbound generic alias, then they probably wanted the target.
+                // Give an error indicating that the syntax is incorrect and then use the target.  We should not
+                // provide unbound generic alias because it is illegal.
+                Debug.Assert(alias.Target is TypeSymbol);
+                return (TypeSymbol)alias.Target;
+            }
+            else
+            {
+                // we pass an empty basesBeingResolved here because this invocation is not on any possible path of
+                // infinite recursion in binding base clauses.
+                return ConstructNamedTypeOrAlias(alias, typeSyntax, typeArgumentsSyntax, typeArguments, basesBeingResolved: null, diagnostics: diagnostics);
+            }
+        }
+
         /// <remarks>
         /// Keep check and error in sync with ConstructNamedTypeUnlessTypeArgumentOmitted.
         /// </remarks>

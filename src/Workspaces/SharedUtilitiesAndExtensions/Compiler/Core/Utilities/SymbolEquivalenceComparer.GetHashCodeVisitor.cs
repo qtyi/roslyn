@@ -38,8 +38,6 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
                 if (x == null)
                     return 0;
 
-                x = UnwrapAlias(x);
-
                 // Special case.  If we're comparing signatures then we want to compare 'object'
                 // and 'dynamic' as the same.  However, since they're different types, we don't
                 // want to bail out using the above check.
@@ -59,6 +57,7 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
             private int GetHashCodeWorker(ISymbol x, int currentHash)
                 => x.Kind switch
                 {
+                    SymbolKind.Alias => CombineHashCodes((IAliasSymbol)x, currentHash),
                     SymbolKind.ArrayType => CombineHashCodes((IArrayTypeSymbol)x, currentHash),
                     SymbolKind.Assembly => CombineHashCodes((IAssemblySymbol)x, currentHash),
                     SymbolKind.Event => CombineHashCodes((IEventSymbol)x, currentHash),
@@ -77,6 +76,13 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
                     SymbolKind.Preprocessing => CombineHashCodes((IPreprocessingSymbol)x, currentHash),
                     _ => -1,
                 };
+
+            private int CombineHashCodes(IAliasSymbol x, int currentHash)
+            {
+                return
+                    Hash.Combine(x.Arity,
+                    GetHashCode(x.Target, currentHash));
+            }
 
             private int CombineHashCodes(IArrayTypeSymbol x, int currentHash)
             {
@@ -262,6 +268,7 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
                 Debug.Assert(
                     (x.TypeParameterKind == TypeParameterKind.Method && IsConstructedFromSelf(x.DeclaringMethod!)) ||
                     (x.TypeParameterKind == TypeParameterKind.Type && IsConstructedFromSelf(x.ContainingType)) ||
+                    x.TypeParameterKind == TypeParameterKind.Alias ||
                     x.TypeParameterKind == TypeParameterKind.Cref);
 
                 currentHash =
@@ -277,6 +284,11 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
                 {
                     // Anonymous type type parameters compare by index as well to prevent
                     // recursion.
+                    return currentHash;
+                }
+
+                if (x.TypeParameterKind == TypeParameterKind.Alias)
+                {
                     return currentHash;
                 }
 

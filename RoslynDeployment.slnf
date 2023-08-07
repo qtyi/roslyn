@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "Roslyn.sln",
+    "projects": [
+      "src\\Deployment\\RoslynDeployment.csproj"
+    ]
+  }
+}

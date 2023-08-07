@@ -329,6 +329,7 @@ namespace Microsoft.CodeAnalysis
             public SymbolEquivalenceComparer Comparer { get; private set; }
 
             private readonly List<IMethodSymbol?> _methodSymbolStack = new();
+            private readonly List<IAliasSymbol?> _aliasSymbolStack = new();
             private readonly Stack<ISymbol?> _contextualSymbolStack = new();
 
             public SymbolKeyReader()
@@ -347,6 +348,7 @@ namespace Microsoft.CodeAnalysis
                 IgnoreAssemblyKey = false;
                 Comparer = null!;
                 _methodSymbolStack.Clear();
+                _aliasSymbolStack.Clear();
                 _contextualSymbolStack.Clear();
 
                 // Place us back in the pool for future use.
@@ -422,6 +424,22 @@ namespace Microsoft.CodeAnalysis
             public IMethodSymbol? ResolveMethod(int index)
                 => _methodSymbolStack[index];
 
+            public AliasPopper PushAlias(IAliasSymbol? alias)
+            {
+                _aliasSymbolStack.Add(alias);
+                return new AliasPopper(this, alias);
+            }
+
+            private void PopAlias(IAliasSymbol? alias)
+            {
+                Contract.ThrowIfTrue(_aliasSymbolStack.Count == 0);
+                Contract.ThrowIfFalse(Equals(alias, _aliasSymbolStack[^1]));
+                _aliasSymbolStack.RemoveAt(_aliasSymbolStack.Count - 1);
+            }
+
+            public IAliasSymbol? ResolveAlias(int index)
+                => _aliasSymbolStack[index];
+
             public ContextualSymbolPopper PushContextualSymbol(ISymbol? contextualSymbol)
             {
                 _contextualSymbolStack.Push(contextualSymbol);
@@ -451,6 +469,21 @@ namespace Microsoft.CodeAnalysis
 
                 public void Dispose()
                     => _reader.PopMethod(_method);
+            }
+
+            public readonly ref struct AliasPopper
+            {
+                private readonly SymbolKeyReader _reader;
+                private readonly IAliasSymbol? _alias;
+
+                public AliasPopper(SymbolKeyReader reader, IAliasSymbol? alias)
+                {
+                    _reader = reader;
+                    _alias = alias;
+                }
+
+                public void Dispose()
+                    => _reader.PopAlias(_alias);
             }
 
             public readonly ref struct ContextualSymbolPopper
