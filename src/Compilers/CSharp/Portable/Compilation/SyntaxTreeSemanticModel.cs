@@ -159,7 +159,18 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return memberModel.GetEnclosingBinder(position);
             }
 
-            return _binderFactory.GetBinder((CSharpSyntaxNode)token.Parent, position).WithAdditionalFlags(GetSemanticModelBinderFlags());
+            var binder = _binderFactory.GetBinder((CSharpSyntaxNode)token.Parent, position);
+            var usingDirective = token.Parent.FirstAncestorOrSelf<UsingDirectiveSyntax>();
+            if (usingDirective is { TypeParameterList.Parameters.Count: > 0 })
+            {
+                var aliasSymbol = this.GetDeclaredSymbol(usingDirective).GetSymbol<AliasSymbol>();
+                if (aliasSymbol is not null)
+                {
+                    binder = new WithAliasTypeParametersBinder(aliasSymbol, binder);
+                }
+            }
+
+            return binder.WithAdditionalFlags(GetSemanticModelBinderFlags());
         }
 
         internal override IOperation GetOperationWorker(CSharpSyntaxNode node, CancellationToken cancellationToken)
