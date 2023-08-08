@@ -39,6 +39,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Classification.Classifiers
             // binding to classify the alias.
             if (usingDirective.Identifier != default)
             {
+                // Classify alias name token.
                 var token = usingDirective.Identifier;
 
                 var symbolInfo = semanticModel.GetSymbolInfo(usingDirective.NamespaceOrType, cancellationToken);
@@ -53,6 +54,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Classification.Classifiers
                 else if (symbolInfo.Symbol?.Kind == SymbolKind.Namespace)
                 {
                     result.Add(new ClassifiedSpan(token.Span, ClassificationTypeNames.NamespaceName));
+                }
+
+                // Classify type parameter tokens.
+                if (usingDirective.TypeParameterList is not null)
+                {
+                    foreach (var typeParameter in usingDirective.TypeParameterList.Parameters)
+                    {
+                        result.Add(new ClassifiedSpan(typeParameter.Identifier.Span, ClassificationTypeNames.TypeParameterName));
+                    }
                 }
             }
         }

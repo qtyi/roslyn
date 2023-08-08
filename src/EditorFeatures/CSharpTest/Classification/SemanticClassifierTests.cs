@@ -74,6 +74,22 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Classification
         }
 
         [Theory, CombinatorialData]
+        public async Task UsingGenericAlias1(TestHost testHost)
+        {
+            await TestAsync(
+@"using CC<TArg, TResult> = System.Func<TArg, TArg, TResult>;",
+                testHost,
+                Delegate("CC"),
+                TypeParameter("TArg"),
+                TypeParameter("TResult"),
+                Namespace("System"),
+                Delegate("Func"),
+                TypeParameter("TArg"),
+                TypeParameter("TArg"),
+                TypeParameter("TResult"));
+        }
+
+        [Theory, CombinatorialData]
         public async Task DynamicAsTypeArgument(TestHost testHost)
         {
             await TestInMethodAsync(
