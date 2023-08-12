@@ -1993,7 +1993,7 @@ symIsHidden:;
                 var targetSymbol = aliasSymbol.GetAliasTarget(basesBeingResolved: null);
                 if (originalBinder.CanAddLookupSymbolInfo(targetSymbol, options, result, accessThroughType: null, aliasSymbol: aliasSymbol))
                 {
-                    result.AddSymbol(aliasSymbol, aliasSymbol.Name, 0);
+                    result.AddSymbol(aliasSymbol, aliasSymbol.Name, aliasSymbol.Arity);
                 }
             }
         }
