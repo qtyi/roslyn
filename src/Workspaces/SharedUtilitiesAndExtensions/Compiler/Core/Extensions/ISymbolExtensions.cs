@@ -287,6 +287,7 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
             {
                 SymbolKind.NamedType => ((INamedTypeSymbol)symbol).Arity,
                 SymbolKind.Method => ((IMethodSymbol)symbol).Arity,
+                SymbolKind.Alias => ((IAliasSymbol)symbol).Arity,
                 _ => 0,
             };
 
@@ -367,6 +368,7 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
             {
                 IMethodSymbol m => m.TypeParameters,
                 INamedTypeSymbol nt => nt.TypeParameters,
+                IAliasSymbol a => a.TypeParameters,
                 _ => ImmutableArray<ITypeParameterSymbol>.Empty,
             };
 

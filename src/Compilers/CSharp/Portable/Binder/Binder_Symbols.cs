@@ -1326,8 +1326,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 namedTypeOrAlias = namedType;
             }
-            else if (lookupResultSymbol is AliasSymbolFromSyntax alias && alias.Target is TypeSymbol)
+            else if (lookupResultSymbol is AliasSymbolFromSyntax alias)
             {
+                Debug.Assert(alias.Target.IsType);
                 namedTypeOrAlias = alias;
             }
             else
@@ -1948,6 +1949,15 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                 }
             }
+            else if (symbol.Kind == SymbolKind.Alias && UnwrapAlias(symbol, BindingDiagnosticBag.Discarded, where) is { Kind: SymbolKind.Namespace })
+            {
+                var info = diagnostics.Add(ErrorCode.ERR_BadSKknown, where.Location, where, MessageID.IDS_SK_ALIAS.Localize(), MessageID.IDS_SK_TYPE.Localize());
+                symbol = new ExtendedErrorTypeSymbol(
+                    GetContainingNamespaceOrType(symbol),
+                    simpleName,
+                    arity,
+                    info);
+            }
 
             return symbol;
 
@@ -2269,7 +2279,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         var singleResult = symbols[0];
 
                         // Cannot reference System.Void directly.
-                        var singleType = singleResult as TypeSymbol;
+                        var singleType = UnwrapAlias(singleResult, diagnostics, where) as TypeSymbol;
                         if ((object)singleType != null && singleType.PrimitiveTypeCode == Cci.PrimitiveTypeCode.Void && simpleName == "Void")
                         {
                             wasError = true;
@@ -2286,7 +2296,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 // Complain about unembeddable types from linked assemblies.
                                 if (diagnostics.DiagnosticBag is object)
                                 {
-                                    Emit.NoPia.EmbeddedTypesManager.IsValidEmbeddableType((NamedTypeSymbol)singleResult, where, diagnostics.DiagnosticBag);
+                                    Emit.NoPia.EmbeddedTypesManager.IsValidEmbeddableType((NamedTypeSymbol)singleType, where, diagnostics.DiagnosticBag);
                                 }
                             }
 
@@ -2298,7 +2308,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             {
                                 // We want to report ERR_CircularBase error on the spot to make sure
                                 // that the right location is used for it.
-                                var errorType = (ErrorTypeSymbol)singleResult;
+                                var errorType = (ErrorTypeSymbol)singleType;
 
                                 if (errorType.Unreported)
                                 {
