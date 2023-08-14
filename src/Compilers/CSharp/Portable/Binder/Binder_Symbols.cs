@@ -323,7 +323,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             // symbol must be a TypeSymbol or an Alias to a TypeSymbol
             if (symbol.IsType ||
-                (symbol.IsAlias && UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved) is TypeSymbol))
+                (symbol.IsAlias && UnwrapAliasNoDiagnostics(symbol, basesBeingResolved) is TypeSymbol))
             {
                 if (symbol.IsType)
                 {
@@ -1079,6 +1079,23 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        private static Symbol UnwrapAliasNoDiagnostics(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, ConsList<TypeSymbol> basesBeingResolved = null)
+        {
+            if (symbol.IsAlias)
+            {
+                if (symbol.Symbol.GetArity() == 0)
+                {
+                    return UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved);
+                }
+                else
+                {
+                    return symbol.TypeWithAnnotations.Type;
+                }
+            }
+
+            return symbol.Symbol;
+        }
+
         private static Symbol UnwrapAliasNoDiagnostics(Symbol symbol, ConsList<TypeSymbol> basesBeingResolved = null)
         {
             if (symbol.Kind == SymbolKind.Alias)
@@ -1093,8 +1110,14 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             if (symbol.IsAlias)
             {
-                AliasSymbol discarded;
-                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out discarded, diagnostics, syntax, basesBeingResolved));
+                if (symbol.Symbol.GetArity() == 0)
+                {
+                    return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out var _, diagnostics, syntax, basesBeingResolved));
+                }
+                else
+                {
+                    return symbol.TypeWithAnnotations;
+                }
             }
 
             return symbol;
@@ -1104,7 +1127,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             if (symbol.IsAlias)
             {
-                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
+                if (symbol.Symbol.GetArity() == 0)
+                {
+                    return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
+                }
+                else
+                {
+                    alias = (AliasSymbol)symbol.Symbol;
+                    return symbol.TypeWithAnnotations;
+                }
             }
 
             alias = null;
@@ -1145,7 +1176,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return symbol;
         }
 
-        private TypeWithAnnotations BindGenericSimpleNamespaceOrTypeOrAliasSymbol(
+        private NamespaceOrTypeOrAliasSymbolWithAnnotations BindGenericSimpleNamespaceOrTypeOrAliasSymbol(
             GenericNameSyntax node,
             BindingDiagnosticBag diagnostics,
             ConsList<TypeSymbol> basesBeingResolved,
@@ -1274,6 +1305,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     ReportUnsafeIfNotAllowed(node, diagnostics);
                 }
+
+                bool isNullableAnnotationsEnabled = AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken);
+                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateFromAlias(
+                    unconstructedTypeOrAlias.AliasSymbol,
+                    isNullableEnabled: isNullableAnnotationsEnabled,
+                    TypeWithAnnotations.Create(isNullableAnnotationsEnabled, resultType));
             }
 
             return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken), resultType);

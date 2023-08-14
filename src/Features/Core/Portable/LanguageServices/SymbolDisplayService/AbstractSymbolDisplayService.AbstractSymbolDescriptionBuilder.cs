@@ -157,17 +157,18 @@ namespace Microsoft.CodeAnalysis.LanguageService
             private async Task AddPartsAsync(ImmutableArray<ISymbol> symbols)
             {
                 var firstSymbol = symbols[0];
-                await AddDescriptionPartAsync(firstSymbol).ConfigureAwait(false);
+                var secondSymbol = symbols.Length == 1 ? null : symbols[1];
+                await AddDescriptionPartAsync(firstSymbol, secondSymbol).ConfigureAwait(false);
 
                 AddOverloadCountPart(symbols);
                 FixAllStructuralTypes(firstSymbol);
                 AddExceptions(firstSymbol);
                 AddCaptures(firstSymbol);
 
-                AddDocumentationContent(firstSymbol);
+                AddDocumentationContent(firstSymbol, secondSymbol);
             }
 
-            private void AddDocumentationContent(ISymbol symbol)
+            private void AddDocumentationContent(ISymbol symbol, ISymbol nextSymbolOpt = null)
             {
                 var formatter = Services.GetRequiredLanguageService<IDocumentationCommentFormattingService>(_semanticModel.Language);
 
@@ -182,7 +183,17 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 }
 
                 if (symbol is IAliasSymbol alias)
-                    symbol = alias.Target;
+                {
+                    if (alias.Arity == 0)
+                    {
+                        symbol = alias.Target;
+                    }
+                    else
+                    {
+                        Debug.Assert(nextSymbolOpt is null or ITypeSymbol);
+                        symbol = nextSymbolOpt ?? alias.Target;
+                    }
+                }
 
                 var original = symbol.OriginalDefinition;
                 var format = ISymbolExtensions2.CrefFormat;
@@ -333,7 +344,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 return BuildDescriptionSections();
             }
 
-            private async Task AddDescriptionPartAsync(ISymbol symbol)
+            private async Task AddDescriptionPartAsync(ISymbol symbol, ISymbol nextSymbolOpt = null)
             {
                 if (symbol.IsObsolete())
                 {
@@ -398,7 +409,15 @@ namespace Microsoft.CodeAnalysis.LanguageService
                 }
                 else if (symbol is IAliasSymbol alias)
                 {
-                    await AddDescriptionPartAsync(alias.Target).ConfigureAwait(false);
+                    if (alias.Arity == 0)
+                    {
+                        await AddDescriptionPartAsync(alias.Target).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Debug.Assert(nextSymbolOpt is null or ITypeSymbol);
+                        await AddDescriptionPartAsync(nextSymbolOpt ?? alias.Target).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
