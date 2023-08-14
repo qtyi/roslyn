@@ -289,7 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // if expression is not part of a member context then caller may really just have a
                 // reference to a type or namespace name
                 var symbol = GetSemanticInfoSymbolInNonMemberContext(node, bindVarAsAliasFirst: (options & SymbolInfoOptions.PreserveAliases) != 0);
-                result = (object)symbol != null ? GetSymbolInfoForSymbol(symbol, options) : SymbolInfo.None;
+                result = !symbol.IsDefault ? GetSymbolInfoForSymbol(symbol, options) : SymbolInfo.None;
             }
 
             return result;
@@ -327,14 +327,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // if expression is not part of a member context then caller may really just have a
                 // reference to a type or namespace name
                 var symbol = GetSemanticInfoSymbolInNonMemberContext(node, bindVarAsAliasFirst: false); // Don't care about aliases here.
-                return (object)symbol != null ? GetTypeInfoForSymbol(symbol) : CSharpTypeInfo.None;
+                return !symbol.IsDefault ? GetTypeInfoForSymbol(symbol) : CSharpTypeInfo.None;
             }
         }
 
         // Common helper method for GetSymbolInfoWorker and GetTypeInfoWorker, which is called when there is no member model for the given syntax node.
         // Even if the  expression is not part of a member context, the caller may really just have a reference to a type or namespace name.
         // If so, the methods binds the syntax as a namespace or type or alias symbol. Otherwise, it returns null.
-        private Symbol GetSemanticInfoSymbolInNonMemberContext(CSharpSyntaxNode node, bool bindVarAsAliasFirst)
+        private Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations GetSemanticInfoSymbolInNonMemberContext(CSharpSyntaxNode node, bool bindVarAsAliasFirst)
         {
             Debug.Assert(this.GetMemberModel(node) == null);
 
@@ -351,18 +351,20 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     if (SyntaxFacts.IsNamespaceAliasQualifier(type))
                     {
-                        return binder.BindNamespaceAliasSymbol(node as IdentifierNameSyntax, BindingDiagnosticBag.Discarded);
+                        return Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                            binder.AreNullableAnnotationsEnabled(node.GetFirstToken()),
+                            binder.BindNamespaceAliasSymbol(node as IdentifierNameSyntax, BindingDiagnosticBag.Discarded));
                     }
                     else if (SyntaxFacts.IsInTypeOnlyContext(type))
                     {
                         if (!type.IsVar)
                         {
-                            return binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved).Symbol;
+                            return binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved);
                         }
 
-                        Symbol result = bindVarAsAliasFirst
-                            ? binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved).Symbol
-                            : null;
+                        var result = bindVarAsAliasFirst
+                            ? binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved)
+                            : default;
 
                         // CONSIDER: we might bind "var" twice - once to see if it is an alias and again
                         // as the type of a declared field.  This should only happen for GetAliasInfo
@@ -370,7 +372,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // probably need to have the FieldSymbol retain alias info when it does its own
                         // binding and expose it to us here.
 
-                        if ((object)result == null || result.Kind == SymbolKind.ErrorType)
+                        if (result.IsDefault || (result.IsType && result.Symbol.Kind == SymbolKind.ErrorType))
                         {
                             // We might be in a field declaration with "var" keyword as the type name.
                             // Implicitly typed field symbols are not allowed in regular C#,
@@ -381,24 +383,27 @@ namespace Microsoft.CodeAnalysis.CSharp
                             var variableDecl = type.ModifyingScopedOrRefTypeOrSelf().Parent as VariableDeclarationSyntax;
                             if (variableDecl != null && variableDecl.Variables.Any())
                             {
-                                var fieldSymbol = GetDeclaredFieldSymbol(variableDecl.Variables.First());
+                                var firstVariableDecl = variableDecl.Variables.First();
+                                var fieldSymbol = GetDeclaredFieldSymbol(firstVariableDecl);
                                 if ((object)fieldSymbol != null)
                                 {
-                                    result = fieldSymbol.Type;
+                                    result = Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                                        binder.AreNullableAnnotationsEnabled(firstVariableDecl.GetFirstToken()),
+                                        fieldSymbol.Type);
                                 }
                             }
                         }
 
-                        return result ?? binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved).Symbol;
+                        return result.IsDefault ? binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved) : result;
                     }
                     else
                     {
-                        return binder.BindNamespaceOrTypeOrAliasSymbol(type, BindingDiagnosticBag.Discarded, basesBeingResolved, basesBeingResolved != null).Symbol;
+                        return binder.BindNamespaceOrTypeOrAliasSymbol(type, BindingDiagnosticBag.Discarded, basesBeingResolved, basesBeingResolved != null);
                     }
                 }
             }
 
-            return null;
+            return default;
         }
 
         internal override ImmutableArray<Symbol> GetMemberGroupWorker(CSharpSyntaxNode node, SymbolInfoOptions options, CancellationToken cancellationToken = default(CancellationToken))

@@ -2231,13 +2231,24 @@ namespace Microsoft.CodeAnalysis.CSharp
         public BoundExpression BindNamespaceOrType(ExpressionSyntax node, BindingDiagnosticBag diagnostics)
         {
             var symbol = this.BindNamespaceOrTypeOrAliasSymbol(node, diagnostics, null, false);
-            return CreateBoundNamespaceOrTypeExpression(node, symbol.Symbol);
+            return CreateBoundNamespaceOrTypeExpression(node, symbol);
         }
 
         public BoundExpression BindNamespaceAlias(IdentifierNameSyntax node, BindingDiagnosticBag diagnostics)
         {
             var symbol = this.BindNamespaceAliasSymbol(node, diagnostics);
             return CreateBoundNamespaceOrTypeExpression(node, symbol);
+        }
+
+        private static BoundExpression CreateBoundNamespaceOrTypeExpression(ExpressionSyntax node, NamespaceOrTypeOrAliasSymbolWithAnnotations symbol)
+        {
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
+            {
+                Debug.Assert(symbol.TypeWithAnnotations.HasType);
+                return new BoundTypeExpression(node, (AliasSymbol)symbol.Symbol, symbol.TypeWithAnnotations.Type);
+            }
+
+            return CreateBoundNamespaceOrTypeExpression(node, symbol.Symbol);
         }
 
         private static BoundExpression CreateBoundNamespaceOrTypeExpression(ExpressionSyntax node, Symbol symbol)

@@ -282,6 +282,25 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             builder.Add(CreatePart(SymbolDisplayPartKind.AliasName, symbol, symbol.Name));
 
+            if (symbol.Arity > 0)
+            {
+                if (format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes))
+                {
+                    builder.Add(CreatePart(InternalSymbolDisplayPartKind.Arity, null,
+                        MetadataHelpers.GetAritySuffix(symbol.Arity)));
+                }
+                else if (format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))
+                {
+                    AddPunctuation(SyntaxKind.LessThanToken);
+                    for (int i = 0; i < symbol.Arity - 1; i++)
+                    {
+                        AddPunctuation(SyntaxKind.CommaToken);
+                    }
+
+                    AddPunctuation(SyntaxKind.GreaterThanToken);
+                }
+            }
+
             if (format.LocalOptions.IncludesOption(SymbolDisplayLocalOptions.IncludeType))
             {
                 // ???
