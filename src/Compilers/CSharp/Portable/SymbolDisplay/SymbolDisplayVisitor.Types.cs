@@ -775,13 +775,21 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             ImmutableArray<ITypeSymbol> typeArguments;
 
-            if (owner.Kind == SymbolKind.Method)
+            switch (owner.Kind)
             {
-                typeArguments = ((IMethodSymbol)owner).TypeArguments;
-            }
-            else
-            {
-                typeArguments = ((INamedTypeSymbol)owner).TypeArguments;
+                case SymbolKind.Method:
+                    typeArguments = ((IMethodSymbol)owner).TypeArguments;
+                    break;
+                case SymbolKind.NamedType:
+                    typeArguments = ((INamedTypeSymbol)owner).TypeArguments;
+                    break;
+                case SymbolKind.Alias:
+                    typeArguments = StaticCast<ITypeSymbol>.From(((IAliasSymbol)owner).TypeParameters);
+                    break;
+
+                default:
+                    typeArguments = ImmutableArray<ITypeSymbol>.Empty;
+                    break;
             }
 
             if (typeArguments.Length > 0 && format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))

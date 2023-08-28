@@ -291,13 +291,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
                 else if (format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))
                 {
-                    AddPunctuation(SyntaxKind.LessThanToken);
-                    for (int i = 0; i < symbol.Arity - 1; i++)
-                    {
-                        AddPunctuation(SyntaxKind.CommaToken);
-                    }
-
-                    AddPunctuation(SyntaxKind.GreaterThanToken);
+                    AddTypeArguments(symbol, default);
+                    AddTypeParameterConstraints(StaticCast<ITypeSymbol>.From(symbol.TypeParameters));
                 }
             }
 
