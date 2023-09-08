@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 get
                 {
-                    Debug.Assert(_symbol?.Kind == SymbolKind.Alias && _symbol?.GetArity() == 0); // Not meaningful to use this property otherwise
+                    Debug.Assert(_symbol?.Kind != SymbolKind.Alias || _symbol?.GetArity() == 0); // Not meaningful to use this property otherwise
                     return _isNullableEnabled;
                 }
             }

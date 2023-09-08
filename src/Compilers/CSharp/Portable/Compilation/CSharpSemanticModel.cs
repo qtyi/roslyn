@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
@@ -155,7 +156,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <param name="binder">The binder that was used to bind the given syntax.</param>
         /// <param name="crefSymbols">The symbols used in a cref. If this is not default, then the return is null.</param>
         /// <returns>The expression that was bound. If <paramref name="crefSymbols"/> is not default, this is null.</returns>
-        internal abstract BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<Symbol> crefSymbols);
+        internal abstract BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols);
 
         /// <summary>
         /// Gets a list of method or indexed property symbols for a syntax node. This is overridden by various specializations of SemanticModel.
@@ -267,14 +268,14 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <remarks>
         /// Keep in sync with Binder.BindCrefParameterOrReturnType.
         /// </remarks>
-        protected BoundExpression GetSpeculativelyBoundExpressionWithoutNullability(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<Symbol> crefSymbols)
+        protected BoundExpression GetSpeculativelyBoundExpressionWithoutNullability(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols)
         {
             if (expression == null)
             {
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            crefSymbols = default(ImmutableArray<Symbol>);
+            crefSymbols = default(ImmutableArray<SymbolWithAdditionalSymbols>);
 
             expression = SyntaxFactory.GetStandaloneExpression(expression);
 
@@ -286,7 +287,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if (binder.Flags.Includes(BinderFlags.CrefParameterOrReturnType))
             {
-                crefSymbols = ImmutableArray.Create<Symbol>(binder.BindType(expression, BindingDiagnosticBag.Discarded).Type);
+                crefSymbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(binder.BindType(expression, BindingDiagnosticBag.Discarded).Type);
                 return null;
             }
             else if (binder.InCref)
@@ -312,10 +313,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             return boundNode;
         }
 
-        internal static ImmutableArray<Symbol> BindCref(CrefSyntax crefSyntax, Binder binder)
+        internal static ImmutableArray<SymbolWithAdditionalSymbols> BindCref(CrefSyntax crefSyntax, Binder binder)
         {
-            Symbol unusedAmbiguityWinner;
-            var symbols = binder.BindCref(crefSyntax, out unusedAmbiguityWinner, BindingDiagnosticBag.Discarded);
+            var symbols = binder.BindCref(crefSyntax, out _, BindingDiagnosticBag.Discarded);
             return symbols;
         }
 
@@ -324,7 +324,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var binder = this.GetEnclosingBinder(position);
             if (binder?.InCref == true)
             {
-                ImmutableArray<Symbol> symbols = BindCref(crefSyntax, binder);
+                ImmutableArray<SymbolWithAdditionalSymbols> symbols = BindCref(crefSyntax, binder);
                 return GetCrefSymbolInfo(symbols, options, hasParameterList);
             }
 
@@ -353,7 +353,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return false;
         }
 
-        private static SymbolInfo GetCrefSymbolInfo(ImmutableArray<Symbol> symbols, SymbolInfoOptions options, bool hasParameterList)
+        private static SymbolInfo GetCrefSymbolInfo(ImmutableArray<SymbolWithAdditionalSymbols> symbols, SymbolInfoOptions options, bool hasParameterList)
         {
             switch (symbols.Length)
             {
@@ -363,9 +363,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // Might have to expand an ExtendedErrorTypeSymbol into multiple candidates.
                     return GetSymbolInfoForSymbol(symbols[0], options);
                 default:
+                    ImmutableArray<Symbol> result;
                     if ((options & SymbolInfoOptions.ResolveAliases) == SymbolInfoOptions.ResolveAliases)
                     {
-                        symbols = UnwrapAliases(symbols);
+                        result = UnwrapAliases(symbols);
+                    }
+                    else
+                    {
+                        result = symbols.SelectAsArray(static s => s.Symbol);
                     }
 
                     LookupResultKind resultKind = LookupResultKind.Ambiguous;
@@ -373,13 +378,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // The boundary between Ambiguous and OverloadResolutionFailure is let clear-cut for crefs.
                     // We'll say that overload resolution failed if the syntax has a parameter list and if
                     // all of the candidates have the same kind.
-                    SymbolKind firstCandidateKind = symbols[0].Kind;
-                    if (hasParameterList && symbols.All(s => s.Kind == firstCandidateKind))
+                    SymbolKind firstCandidateKind = result[0].Kind;
+                    if (hasParameterList && result.All(s => s.Kind == firstCandidateKind))
                     {
                         resultKind = LookupResultKind.OverloadResolutionFailure;
                     }
 
-                    return SymbolInfoFactory.Create(symbols, resultKind, isDynamic: false);
+                    return SymbolInfoFactory.Create(result, resultKind, isDynamic: false);
             }
         }
 
@@ -709,7 +714,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             if (!CanGetSemanticInfo(expression, isSpeculative: true)) return SymbolInfo.None;
 
             Binder binder;
-            ImmutableArray<Symbol> crefSymbols;
+            ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols;
             BoundNode boundNode = GetSpeculativelyBoundExpression(position, expression, bindingOption, out binder, out crefSymbols); //calls CheckAndAdjustPosition
             Debug.Assert(boundNode == null || crefSymbols.IsDefault);
             if (boundNode == null)
@@ -1039,7 +1044,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return CSharpTypeInfo.None;
             }
 
-            ImmutableArray<Symbol> crefSymbols;
+            ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols;
             BoundNode boundNode = GetSpeculativelyBoundExpression(position, expression, bindingOption, out _, out crefSymbols); //calls CheckAndAdjustPosition
             Debug.Assert(boundNode == null || crefSymbols.IsDefault);
             if (boundNode == null)
@@ -1201,13 +1206,13 @@ namespace Microsoft.CodeAnalysis.CSharp
         public IAliasSymbol GetSpeculativeAliasInfo(int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
         {
             Binder binder;
-            ImmutableArray<Symbol> crefSymbols;
+            ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols;
             BoundNode boundNode = GetSpeculativelyBoundExpression(position, nameSyntax, bindingOption, out binder, out crefSymbols); //calls CheckAndAdjustPosition
             Debug.Assert(boundNode == null || crefSymbols.IsDefault);
             if (boundNode == null)
             {
                 return !crefSymbols.IsDefault && crefSymbols.Length == 1
-                    ? (crefSymbols[0] as AliasSymbol).GetPublicSymbol()
+                    ? (crefSymbols[0].Symbol as AliasSymbol).GetPublicSymbol()
                     : null;
             }
 
@@ -2329,12 +2334,13 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         // Gets symbol info for a type or namespace or alias reference. It is assumed that any error cases will come in
         // as a type whose OriginalDefinition is an error symbol from which the ResultKind can be retrieved.
-        internal static SymbolInfo GetSymbolInfoForSymbol(Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, SymbolInfoOptions options)
+        internal static SymbolInfo GetSymbolInfoForSymbol(SymbolWithAdditionalSymbols symbol, SymbolInfoOptions options)
         {
             Debug.Assert(!symbol.IsDefault);
 
             // Determine type. Dig through aliases if necessary.
-            Symbol unwrapped = UnwrapAlias(symbol);
+            AliasSymbol alias;
+            Symbol unwrapped = symbol.UnwrapAlias(out alias);
             TypeSymbol type = unwrapped as TypeSymbol;
 
             // Determine symbols and resultKind.
@@ -2361,21 +2367,13 @@ namespace Microsoft.CodeAnalysis.CSharp
             else
             {
                 // Non-error case. Use constructor that doesn't require creation of a Symbol array.
-                var symbolToReturn = ((options & SymbolInfoOptions.ResolveAliases) != 0) ? unwrapped : symbol.Symbol;
+                var symbolToReturn = ((options & SymbolInfoOptions.ResolveAliases) != 0) ? unwrapped : (alias ?? symbol.Symbol);
                 return new SymbolInfo(symbolToReturn.GetPublicSymbol());
             }
         }
 
-        internal static SymbolInfo GetSymbolInfoForSymbol(Symbol symbol, SymbolInfoOptions options)
-        {
-            Debug.Assert(symbol is not null);
-
-            Debug.Assert(symbol.Kind != SymbolKind.Alias || symbol.GetArity() == 0, "Not implemented for generic alias.");
-            return GetSymbolInfoForSymbol(Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(false, symbol), options);
-        }
-
         // Gets TypeInfo for a type or namespace or alias reference.
-        internal static CSharpTypeInfo GetTypeInfoForSymbol(Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations symbol)
+        internal static CSharpTypeInfo GetTypeInfoForSymbol(SymbolWithAdditionalSymbols symbol)
         {
             Debug.Assert(!symbol.IsDefault);
 
@@ -2385,45 +2383,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             return new CSharpTypeInfo(type, type, default, default, Conversion.Identity);
         }
 
-        internal static CSharpTypeInfo GetTypeInfoForSymbol(Symbol symbol)
-        {
-            Debug.Assert(symbol is not null);
-
-            Debug.Assert(symbol.Kind != SymbolKind.Alias || symbol.GetArity() == 0, "Not implemented for generic alias.");
-            return GetTypeInfoForSymbol(Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(false, symbol));
-        }
-
-        protected static Symbol UnwrapAlias(Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations symbol)
-        {
-            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
-            {
-                Debug.Assert(symbol.TypeWithAnnotations.HasType);
-                return symbol.TypeWithAnnotations.Type;
-            }
-            else
-            {
-                return UnwrapAlias(symbol.Symbol);
-            }
-        }
-
         protected static Symbol UnwrapAlias(Symbol symbol)
         {
-            return symbol is AliasSymbol aliasSym ? aliasSym.Target : symbol;
+            return symbol.UnwrapAlias(out _);
         }
 
         protected static Symbol UnwrapAlias(SymbolWithAdditionalSymbols symbol)
         {
-            if (symbol.Symbol is AliasSymbol aliasSym && aliasSym.Arity > 0)
-            {
-                const string message = "Generic alias target symbol expected.";
-                Debug.Assert(!symbol.AdditionalSymbol.IsDefaultOrEmpty, message);
-                var target = symbol.AdditionalSymbol[0] as TypeSymbol;
-                Debug.Assert(target is not null, message);
-
-                return target;
-            }
-
-            return UnwrapAlias(symbol.Symbol);
+            return symbol.UnwrapAlias(out _);
         }
 
         protected static ImmutableArray<Symbol> UnwrapAliases(ImmutableArray<Symbol> symbols)
@@ -2432,7 +2399,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (Symbol symbol in symbols)
             {
-                if (symbol.Kind == SymbolKind.Alias)
+                if (symbol.MayBeAlias(out _))
                     anyAliases = true;
             }
 
@@ -2456,7 +2423,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (SymbolWithAdditionalSymbols symbol in symbols)
             {
-                if (symbol.Symbol.Kind == SymbolKind.Alias)
+                if (symbol.Symbol.MayBeAlias(out _))
                     anyAliases = true;
             }
 

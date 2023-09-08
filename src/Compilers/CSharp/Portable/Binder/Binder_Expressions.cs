@@ -2253,9 +2253,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         private static BoundExpression CreateBoundNamespaceOrTypeExpression(ExpressionSyntax node, Symbol symbol)
         {
-            var alias = symbol as AliasSymbol;
-
-            if ((object)alias != null)
+            // try get alias if `symbol` is error type and it may be an alias.
+            if (symbol.MayBeAlias(out var alias))
             {
                 symbol = alias.Target;
             }

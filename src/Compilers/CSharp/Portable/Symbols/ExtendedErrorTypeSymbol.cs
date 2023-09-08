@@ -245,6 +245,39 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return null;
         }
 
+        /// <summary>
+        /// If (we believe) we know which symbol the user intended, then we should retain that information
+        /// in the corresponding error symbol - it can be useful for deciding how to handle the error.
+        /// For example, we might want to know whether (we believe) the error type was supposed to be an
+        /// alias, so that we can offer it from SemanticModel.GetAliasInfo.
+        /// </summary>
+        internal static AliasSymbol? ExtractAlias(TypeSymbol? oldSymbol)
+        {
+            if ((object?)oldSymbol == null || oldSymbol.TypeKind != TypeKind.Error)
+            {
+                return null;
+            }
+
+            // At this point, we know that oldSymbol is a non-null type symbol with kind error.
+            // Hence, it is either an ErrorTypeSymbol or it has an ErrorTypeSymbol as its
+            // original definition.  In the former case, it is its own original definition.
+            // Thus, if there's a CSErrorTypeSymbol in there somewhere, it's returned by
+            // OriginalDefinition.
+            ExtendedErrorTypeSymbol? oldError = oldSymbol.OriginalDefinition as ExtendedErrorTypeSymbol;
+
+            // If the original definition isn't a CSErrorTypeSymbol, then we don't know how to
+            // pull out an alias.  If it is, then if there is an alias inside it,
+            // use that.
+            if ((object?)oldError != null && !oldError._candidateSymbols.IsDefault && oldError._candidateSymbols.Length == 1)
+            {
+                AliasSymbol? alias = oldError._candidateSymbols[0] as AliasSymbol;
+                if ((object?)alias != null)
+                    return alias;
+            }
+
+            return null;
+        }
+
         // Get the type kind of a symbol, going to candidates if possible.
         internal static TypeKind ExtractNonErrorTypeKind(TypeSymbol oldSymbol)
         {
@@ -318,6 +351,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     return ((NamedTypeSymbol)symbol).Arity;
                 case SymbolKind.Method:
                     return ((MethodSymbol)symbol).Arity;
+                case SymbolKind.Alias:
+                    return ((AliasSymbol)symbol).Arity;
                 default:
                     return 0;
             }
