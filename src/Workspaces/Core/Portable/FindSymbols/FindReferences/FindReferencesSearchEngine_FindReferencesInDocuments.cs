@@ -124,9 +124,9 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                     foreach (var token in tokens)
                     {
                         var parent = state.SyntaxFacts.TryGetBindableParent(token) ?? token.GetRequiredParent();
-                        var symbolInfo = state.Cache.GetSymbolInfo(parent, cancellationToken);
+                        var (symbolInfo, aliasInfo) = state.Cache.GetSymbolInfo(parent, cancellationToken);
 
-                        var (matched, candidate, candidateReason) = await HasInheritanceRelationshipAsync(symbol, symbolInfo).ConfigureAwait(false);
+                        var (matched, candidate, candidateReason) = await HasInheritanceRelationshipAsync(symbol, symbolInfo, aliasInfo).ConfigureAwait(false);
                         if (matched)
                         {
                             // Ensure we report this new symbol/group in case it's the first time we're seeing it.
@@ -140,7 +140,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             }
 
             async ValueTask<(bool matched, ISymbol candidate, CandidateReason candidateReason)> HasInheritanceRelationshipAsync(
-                ISymbol symbol, SymbolInfo symbolInfo)
+                ISymbol symbol, SymbolInfo symbolInfo, IAliasSymbol? aliasInfo)
             {
                 if (await HasInheritanceRelationshipSingleAsync(symbol, symbolInfo.Symbol).ConfigureAwait(false))
                     return (matched: true, symbolInfo.Symbol!, CandidateReason.None);
@@ -150,6 +150,10 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                     if (await HasInheritanceRelationshipSingleAsync(symbol, candidate).ConfigureAwait(false))
                         return (matched: true, candidate, symbolInfo.CandidateReason);
                 }
+
+                if (aliasInfo is not null &&
+                    await HasInheritanceRelationshipSingleAsync(symbol, aliasInfo).ConfigureAwait(false))
+                    return (matched: true, aliasInfo, CandidateReason.None);
 
                 return default;
             }

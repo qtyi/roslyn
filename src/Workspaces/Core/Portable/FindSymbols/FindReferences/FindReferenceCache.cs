@@ -28,8 +28,11 @@ namespace Microsoft.CodeAnalysis.FindSymbols
 
         private readonly SemanticModel _semanticModel;
 
-        private readonly ConcurrentDictionary<SyntaxNode, SymbolInfo> _symbolInfoCache = new();
+        private readonly ConcurrentDictionary<SyntaxNode, (SymbolInfo symbolInfo, IAliasSymbol? aliasInfo)> _symbolInfoCache = new();
         private readonly ConcurrentDictionary<string, ImmutableArray<SyntaxToken>> _identifierCache;
+        private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _tupleTypeCache;
+        private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _arrayTypeCache;
+        private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _pointerTypeCache; // pointer type for key 0; function pointer type for key (parameter count + 1).
 
         private ImmutableHashSet<string>? _aliasNameSet;
         private ImmutableArray<SyntaxToken> _constructorInitializerCache;
@@ -43,11 +46,26 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 LanguageNames.CSharp => StringComparer.Ordinal,
                 _ => throw ExceptionUtilities.UnexpectedValue(semanticModel.Language)
             });
+            _tupleTypeCache = new();
+            _arrayTypeCache = new();
+            _pointerTypeCache = new();
         }
 
-        public SymbolInfo GetSymbolInfo(SyntaxNode node, CancellationToken cancellationToken)
+        public (SymbolInfo symbolInfo, IAliasSymbol? aliasInfo) GetSymbolInfo(SyntaxNode node, CancellationToken cancellationToken)
         {
-            return _symbolInfoCache.GetOrAdd(node, static (n, arg) => arg._semanticModel.GetSymbolInfo(n, arg.cancellationToken), (_semanticModel, cancellationToken));
+            return _symbolInfoCache.GetOrAdd(
+                node,
+                static (n, arg) =>
+                {
+                    var (semanticModel, cancellationToken) = arg;
+
+                    var symbolInfo = semanticModel.GetSymbolInfo(n, cancellationToken);
+                    var aliasInfo =
+                        semanticModel.GetAliasInfo(n, cancellationToken) ??
+                        semanticModel.GetDeclaredSymbol(n, cancellationToken) as IAliasSymbol;
+                    return (symbolInfo, aliasInfo);
+                },
+                (_semanticModel, cancellationToken));
         }
 
         public IAliasSymbol? GetAliasInfo(
@@ -61,6 +79,18 @@ namespace Microsoft.CodeAnalysis.FindSymbols
 
             if (_aliasNameSet.Contains(token.ValueText))
                 return _semanticModel.GetAliasInfo(token.GetRequiredParent(), cancellationToken);
+
+            return null;
+        }
+
+        public IAliasSymbol? GetAliasInfo(
+            ISemanticFactsService semanticFacts, SyntaxNode node, CancellationToken cancellationToken)
+        {
+            var tokens = node.DescendantTokens();
+            if (tokens.IsSingle())
+            {
+                return GetAliasInfo(semanticFacts, tokens.Single(), cancellationToken);
+            }
 
             return null;
         }
@@ -153,6 +183,146 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 }
 
                 return result.ToImmutable();
+            }
+        }
+
+        public async Task<ImmutableArray<SyntaxNode>> FindMatchingTupleTypeNodesAsync(
+            Document document,
+            int tupleElementCount,
+            CancellationToken cancellationToken)
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            var root = await _semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+
+            return _tupleTypeCache.GetOrAdd(tupleElementCount, _ => FindMatchingTupleTypeNodesFromTree());
+
+            ImmutableArray<SyntaxNode> FindMatchingTupleTypeNodesFromTree()
+            {
+                using var _ = ArrayBuilder<SyntaxNode>.GetInstance(out var result);
+                Recurse(root);
+                return result.ToImmutable();
+
+                void Recurse(SyntaxNode node)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    foreach (var child in node.ChildNodes())
+                    {
+                        if (syntaxFacts.IsTupleType(child))
+                        {
+                            syntaxFacts.GetPartsOfTupleType<SyntaxNode>(child, out var _, out var elements, out var _);
+                            if (elements.Count == tupleElementCount)
+                            {
+                                result.Add(child);
+                            }
+                        }
+
+                        Recurse(child);
+                    }
+                }
+            }
+        }
+
+        public async Task<ImmutableArray<SyntaxNode>> FindMatchingArrayTypeNodesAsync(
+            Document document,
+            int rank,
+            CancellationToken cancellationToken)
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            var root = await _semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+
+            return _arrayTypeCache.GetOrAdd(rank, _ => FindMatchingArrayTypeNodesFromTree());
+
+            ImmutableArray<SyntaxNode> FindMatchingArrayTypeNodesFromTree()
+            {
+                using var _ = ArrayBuilder<SyntaxNode>.GetInstance(out var result);
+                Recurse(root);
+                return result.ToImmutable();
+
+                void Recurse(SyntaxNode node)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    foreach (var child in node.ChildNodes())
+                    {
+                        if (syntaxFacts.IsArrayType(child))
+                        {
+                            syntaxFacts.GetPartsOfArrayType<SyntaxNode>(child, out var _, out var rankSpecifiers);
+                            syntaxFacts.GetRankOfArrayRankSpecifier(rankSpecifiers[0], out var arrayRank);
+                            if (arrayRank == rank)
+                            {
+                                result.Add(child);
+                            }
+                        }
+
+                        Recurse(child);
+                    }
+                }
+            }
+        }
+
+        public async Task<ImmutableArray<SyntaxNode>> FindMatchingPointerTypeNodesAsync(
+            Document document,
+            CancellationToken cancellationToken)
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            var root = await _semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+
+            return _pointerTypeCache.GetOrAdd(0, _ => FindMatchingPointerTypeNodesFromTree());
+
+            ImmutableArray<SyntaxNode> FindMatchingPointerTypeNodesFromTree()
+            {
+                using var _ = ArrayBuilder<SyntaxNode>.GetInstance(out var result);
+                Recurse(root);
+                return result.ToImmutable();
+
+                void Recurse(SyntaxNode node)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    foreach (var child in node.ChildNodes())
+                    {
+                        if (syntaxFacts.IsPointerType(child))
+                        {
+                            result.Add(child);
+                        }
+
+                        Recurse(child);
+                    }
+                }
+            }
+        }
+
+        public async Task<ImmutableArray<SyntaxNode>> FindMatchingFunctionPointerTypeNodesAsync(
+            Document document,
+            int parameterCount,
+            CancellationToken cancellationToken)
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            var root = await _semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+
+            return _pointerTypeCache.GetOrAdd(parameterCount + 1, _ => FindMatchingFunctionPointerTypeNodesFromTree());
+
+            ImmutableArray<SyntaxNode> FindMatchingFunctionPointerTypeNodesFromTree()
+            {
+                using var _ = ArrayBuilder<SyntaxNode>.GetInstance(out var result);
+                Recurse(root);
+                return result.ToImmutable();
+
+                void Recurse(SyntaxNode node)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    foreach (var child in node.ChildNodes())
+                    {
+                        if (syntaxFacts.IsFunctionPointerType(child))
+                        {
+                            syntaxFacts.GetParametersOfFunctionPointerType<SyntaxNode>(child, out var parameters);
+                            if (parameters.Count == parameterCount + 1)
+                            {
+                                result.Add(child);
+                            }
+                        }
+
+                        Recurse(child);
+                    }
+                }
             }
         }
 

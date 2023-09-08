@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 }
 
                 initialReferences.AddRange(await FindLocalAliasReferencesAsync(
-                    initialReferences, symbol, state, cancellationToken).ConfigureAwait(false));
+                    initialReferences.ToImmutable(), symbol, state, cancellationToken).ConfigureAwait(false));
 
                 initialReferences.AddRange(await FindReferencesInDocumentInsideGlobalSuppressionsAsync(
                     symbol, state, cancellationToken).ConfigureAwait(false));

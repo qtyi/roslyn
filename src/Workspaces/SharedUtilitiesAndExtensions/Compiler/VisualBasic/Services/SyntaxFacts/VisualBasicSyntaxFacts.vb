@@ -1439,6 +1439,40 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
             closeParen = tupleExpr.CloseParenToken
         End Sub
 
+        Public Sub GetPartsOfTupleType(Of TElementSyntax As SyntaxNode)(node As SyntaxNode, ByRef openParen As SyntaxToken, ByRef elements As SeparatedSyntaxList(Of TElementSyntax), ByRef closeParen As SyntaxToken) Implements ISyntaxFacts.GetPartsOfTupleType
+            Dim tupleType = DirectCast(node, TupleTypeSyntax)
+            openParen = tupleType.OpenParenToken
+            elements = CType(CType(tupleType.Elements, SeparatedSyntaxList(Of SyntaxNode)), SeparatedSyntaxList(Of TElementSyntax))
+            closeParen = tupleType.CloseParenToken
+        End Sub
+
+        Public Sub GetPartsOfArrayType(Of TArrayRankSpecifier As SyntaxNode)(node As SyntaxNode, ByRef elementType As SyntaxNode, ByRef rankSpecifiers As SyntaxList(Of TArrayRankSpecifier)) Implements ISyntaxFacts.GetPartsOfArrayType
+            Dim arrayType = DirectCast(node, ArrayTypeSyntax)
+            elementType = arrayType.ElementType
+            rankSpecifiers = CType(CType(arrayType.RankSpecifiers, SyntaxList(Of SyntaxNode)), SyntaxList(Of TArrayRankSpecifier))
+        End Sub
+
+        Public Sub GetRankOfArrayRankSpecifier(node As SyntaxNode, ByRef rank As Integer) Implements ISyntaxFacts.GetRankOfArrayRankSpecifier
+            Dim rankSpecifier = DirectCast(node, ArrayRankSpecifierSyntax)
+            rank = rankSpecifier.Rank
+        End Sub
+
+        Public Function IsDynamicType(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsDynamicType
+            Return False
+        End Function
+
+        Public Function IsPointerType(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsPointerType
+            Return False
+        End Function
+
+        Public Function IsFunctionPointerType(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsFunctionPointerType
+            Return False
+        End Function
+
+        Public Sub GetParametersOfFunctionPointerType(Of TParameter As SyntaxNode)(node As SyntaxNode, ByRef parameters As SeparatedSyntaxList(Of TParameter)) Implements ISyntaxFacts.GetParametersOfFunctionPointerType
+            parameters = Nothing
+        End Sub
+
         Public Function IsPreprocessorDirective(trivia As SyntaxTrivia) As Boolean Implements ISyntaxFacts.IsPreprocessorDirective
             Return SyntaxFacts.IsPreprocessorDirective(trivia.Kind())
         End Function
@@ -1573,17 +1607,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
         Public Sub GetPartsOfUsingAliasDirective(
                 node As SyntaxNode,
                 ByRef globalKeyword As SyntaxToken,
-                ByRef [alias] As SyntaxToken,
+                ByRef aliasIdentifier As SyntaxToken,
+                ByRef aliasTypeParameters As SeparatedSyntaxList(Of SyntaxNode),
                 ByRef name As SyntaxNode) Implements ISyntaxFacts.GetPartsOfUsingAliasDirective
             Dim importStatement = DirectCast(node, ImportsStatementSyntax)
             For Each importsClause In importStatement.ImportsClauses
-
                 If importsClause.Kind = SyntaxKind.SimpleImportsClause Then
                     Dim simpleImportsClause = DirectCast(importsClause, SimpleImportsClauseSyntax)
 
                     If simpleImportsClause.Alias IsNot Nothing Then
                         globalKeyword = Nothing
-                        [alias] = simpleImportsClause.Alias.Identifier
+                        aliasIdentifier = simpleImportsClause.Alias.Identifier
+                        aliasTypeParameters = If(simpleImportsClause.Alias.TypeParameterList Is Nothing, Nothing, simpleImportsClause.Alias.TypeParameterList.Parameters)
                         name = simpleImportsClause.Name
                         Return
                     End If

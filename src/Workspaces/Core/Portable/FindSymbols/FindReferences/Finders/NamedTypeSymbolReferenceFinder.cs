@@ -14,7 +14,7 @@ using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.FindSymbols.Finders
 {
-    internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<INamedTypeSymbol>
+    internal sealed class NamedTypeSymbolReferenceFinder : WithAliasSymbolReferenceFinder<INamedTypeSymbol>
     {
         protected override bool CanFind(INamedTypeSymbol symbol)
             => symbol.TypeKind != TypeKind.Error;
@@ -62,8 +62,13 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             await AddDocumentsToSearchAsync(symbol.Name, project, documents, result, cancellationToken).ConfigureAwait(false);
             if (globalAliases != null)
             {
-                foreach (var alias in globalAliases)
-                    await AddDocumentsToSearchAsync(alias, project, documents, result, cancellationToken).ConfigureAwait(false);
+                foreach (var globalAlias in globalAliases)
+                    await AddDocumentsToSearchAsync(globalAlias, project, documents, result, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (symbol.IsTupleType)
+            {
+                result.AddRange(await FindDocumentsWithTupleTypeAsync(project, documents, cancellationToken).ConfigureAwait(false));
             }
 
             result.AddRange(await FindDocumentsAsync(
@@ -99,6 +104,13 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             result.AddRange(documentsWithAttribute);
         }
 
+        private static Task<ImmutableArray<Document>> FindDocumentsWithTupleTypeAsync(
+            Project project, IImmutableSet<Document>? documents, CancellationToken cancellationToken)
+        {
+            return FindDocumentsWithPredicateAsync(
+                project, documents, static index => index.ContainsTupleExpressionOrTupleType, cancellationToken);
+        }
+
         private static bool IsPotentialReference(
             PredefinedType predefinedType,
             ISyntaxFactsService syntaxFacts,
@@ -109,11 +121,20 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 predefinedType == actualType;
         }
 
-        protected override async ValueTask<ImmutableArray<FinderLocation>> FindReferencesInDocumentAsync(
-            INamedTypeSymbol namedType,
-            FindReferencesDocumentState state,
-            FindReferencesSearchOptions options,
-            CancellationToken cancellationToken)
+        protected override async ValueTask<ImmutableArray<FinderLocation>> FindReferencesInDocumentAsync(INamedTypeSymbol namedType, FindReferencesDocumentState state, FindReferencesSearchOptions options, CancellationToken cancellationToken)
+        {
+            var result = await base.FindReferencesInDocumentAsync(namedType, state, options, cancellationToken).ConfigureAwait(false);
+
+            // Remove those reference to tuple type node.
+            if (namedType.IsTupleType)
+            {
+                result = result.WhereAsArray(static (loc, _syntaxFacts) => !_syntaxFacts.IsTupleType(loc.Node), state.SyntaxFacts);
+            }
+
+            return result;
+        }
+
+        protected override async ValueTask<ImmutableArray<FinderLocation>> FindAllNonLocalAliaseReferencesAsync(INamedTypeSymbol namedType, FindReferencesDocumentState state, CancellationToken cancellationToken)
         {
             using var _ = ArrayBuilder<FinderLocation>.GetInstance(out var initialReferences);
 
@@ -122,17 +143,13 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             await AddReferencesToTypeOrGlobalAliasToItAsync(
                 namedType, state, initialReferences, cancellationToken).ConfigureAwait(false);
 
-            // This named type may end up being locally aliased as well.  If so, now find all the references
-            // to the local alias.
-
-            initialReferences.AddRange(await FindLocalAliasReferencesAsync(
-                initialReferences, state, cancellationToken).ConfigureAwait(false));
-
             initialReferences.AddRange(await FindPredefinedTypeReferencesAsync(
                 namedType, state, cancellationToken).ConfigureAwait(false));
 
-            initialReferences.AddRange(await FindReferencesInDocumentInsideGlobalSuppressionsAsync(
-                namedType, state, cancellationToken).ConfigureAwait(false));
+            if (namedType.IsTupleType)
+            {
+                initialReferences.AddRange(await FindTupleTypeReferencesAsync(namedType, namedType.TupleElements.Length, state, cancellationToken).ConfigureAwait(false));
+            }
 
             return initialReferences.ToImmutable();
         }
@@ -220,6 +237,32 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             return TryGetNameWithoutAttributeSuffix(name, state.SyntaxFacts, out var nameWithoutSuffix)
                 ? FindReferencesInDocumentUsingIdentifierAsync(namedType, nameWithoutSuffix, state, cancellationToken)
                 : new(ImmutableArray<FinderLocation>.Empty);
+        }
+
+        private static async ValueTask<ImmutableArray<FinderLocation>> FindTupleTypeReferencesAsync(
+            INamedTypeSymbol namedType,
+            int tupleElementCount,
+            FindReferencesDocumentState state,
+            CancellationToken cancellationToken)
+        {
+            var nodes = await state.Cache.FindMatchingTupleTypeNodesAsync(state.Document, tupleElementCount, cancellationToken).ConfigureAwait(false);
+
+            using var _ = ArrayBuilder<FinderLocation>.GetInstance(out var locations);
+            foreach (var node in nodes)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var (matched, reason) = await SymbolsMatchAsync(
+                    namedType, state, node, cancellationToken).ConfigureAwait(false);
+                if (matched)
+                {
+                    var finderLocation = CreateFinderLocation(state, node, reason, cancellationToken);
+
+                    locations.Add(finderLocation);
+                }
+            }
+
+            return locations.ToImmutable();
         }
     }
 }

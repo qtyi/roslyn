@@ -127,7 +127,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 methodSymbol.ContainingType, state, typeReferences, cancellationToken).ConfigureAwait(false);
 
             var aliasReferences = await FindLocalAliasReferencesAsync(
-                typeReferences, methodSymbol, state, cancellationToken).ConfigureAwait(false);
+                typeReferences.ToImmutable(), methodSymbol, state, cancellationToken).ConfigureAwait(false);
 
             // Finally, look for constructor references to predefined types (like `new int()`),
             // implicit object references, and inside global suppression attributes.

@@ -34,7 +34,9 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 bool containsGlobalSuppressMessageAttribute,
                 bool containsConversion,
                 bool containsGlobalKeyword,
-                bool containsCollectionInitializer)
+                bool containsCollectionInitializer,
+                bool containsArrayCreationExpressionOrArrayType,
+                bool containsPointerType)
                 : this(predefinedTypes, predefinedOperators,
                        ConvertToContainingNodeFlag(
                          containsForEachStatement,
@@ -52,7 +54,9 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                          containsGlobalSuppressMessageAttribute,
                          containsConversion,
                          containsGlobalKeyword,
-                         containsCollectionInitializer))
+                         containsCollectionInitializer,
+                         containsArrayCreationExpressionOrArrayType,
+                         containsPointerType))
             {
             }
 
@@ -79,7 +83,9 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 bool containsGlobalSuppressMessageAttribute,
                 bool containsConversion,
                 bool containsGlobalKeyword,
-                bool containsCollectionInitializer)
+                bool containsCollectionInitializer,
+                bool containsArrayCreationExpressionOrArrayType,
+                bool containsPointerType)
             {
                 var containingNodes = ContainingNodes.None;
 
@@ -99,6 +105,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 containingNodes |= containsConversion ? ContainingNodes.ContainsConversion : 0;
                 containingNodes |= containsGlobalKeyword ? ContainingNodes.ContainsGlobalKeyword : 0;
                 containingNodes |= containsCollectionInitializer ? ContainingNodes.ContainsCollectionInitializer : 0;
+                containingNodes |= containsArrayCreationExpressionOrArrayType ? ContainingNodes.ContainsArrayCreationExpressionOrArrayType : 0;
 
                 return containingNodes;
             }
@@ -157,6 +164,12 @@ namespace Microsoft.CodeAnalysis.FindSymbols
             public bool ContainsCollectionInitializer
                 => (_containingNodes & ContainingNodes.ContainsCollectionInitializer) == ContainingNodes.ContainsCollectionInitializer;
 
+            public bool ContainsArrayCreationExpressionOrArrayType
+                => (_containingNodes & ContainingNodes.ContainsArrayCreationExpressionOrArrayType) == ContainingNodes.ContainsArrayCreationExpressionOrArrayType;
+
+            public bool ContainsPointerType
+                => (_containingNodes & ContainingNodes.ContainsPointerType) == ContainingNodes.ContainsPointerType;
+
             public void WriteTo(ObjectWriter writer)
             {
                 writer.WriteInt32(_predefinedTypes);
@@ -201,6 +214,8 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 ContainsConversion = 1 << 13,
                 ContainsGlobalKeyword = 1 << 14,
                 ContainsCollectionInitializer = 1 << 15,
+                ContainsArrayCreationExpressionOrArrayType = 1 << 16,
+                ContainsPointerType = 1 << 17,
             }
         }
     }
