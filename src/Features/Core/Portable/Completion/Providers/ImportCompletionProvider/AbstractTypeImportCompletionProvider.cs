@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Completion.Providers
             foreach (var aliasNode in aliasDeclarations)
             {
                 var symbol = syntaxContext.SemanticModel.GetDeclaredSymbol(aliasNode, cancellationToken);
-                if (symbol is IAliasSymbol { Target: ITypeSymbol { TypeKind: not TypeKind.Error } target })
+                if (symbol is IAliasSymbol { Target: ITypeSymbol { TypeKind: not TypeKind.Error, ContainingNamespace: not null, Name: not "" } target })
                 {
                     // If the target type is a type constructs from generics type, e.g.
                     // using AliasBar = Bar<int>
