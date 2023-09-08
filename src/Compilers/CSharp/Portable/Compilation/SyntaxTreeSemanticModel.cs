@@ -334,7 +334,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         // Common helper method for GetSymbolInfoWorker and GetTypeInfoWorker, which is called when there is no member model for the given syntax node.
         // Even if the  expression is not part of a member context, the caller may really just have a reference to a type or namespace name.
         // If so, the methods binds the syntax as a namespace or type or alias symbol. Otherwise, it returns null.
-        private Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations GetSemanticInfoSymbolInNonMemberContext(CSharpSyntaxNode node, bool bindVarAsAliasFirst)
+        private SymbolWithAdditionalSymbols GetSemanticInfoSymbolInNonMemberContext(CSharpSyntaxNode node, bool bindVarAsAliasFirst)
         {
             Debug.Assert(this.GetMemberModel(node) == null);
 
@@ -351,9 +351,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     if (SyntaxFacts.IsNamespaceAliasQualifier(type))
                     {
-                        return Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
-                            binder.AreNullableAnnotationsEnabled(node.GetFirstToken()),
-                            binder.BindNamespaceAliasSymbol(node as IdentifierNameSyntax, BindingDiagnosticBag.Discarded));
+                        return binder.BindNamespaceAliasSymbol(node as IdentifierNameSyntax, BindingDiagnosticBag.Discarded);
                     }
                     else if (SyntaxFacts.IsInTypeOnlyContext(type))
                     {
@@ -362,7 +360,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             return binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved);
                         }
 
-                        var result = bindVarAsAliasFirst
+                        SymbolWithAdditionalSymbols result = bindVarAsAliasFirst
                             ? binder.BindTypeOrAlias(type, BindingDiagnosticBag.Discarded, basesBeingResolved)
                             : default;
 
@@ -372,7 +370,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // probably need to have the FieldSymbol retain alias info when it does its own
                         // binding and expose it to us here.
 
-                        if (result.IsDefault || (result.IsType && result.Symbol.Kind == SymbolKind.ErrorType))
+                        if (result.IsDefault || result.Symbol.Kind == SymbolKind.ErrorType)
                         {
                             // We might be in a field declaration with "var" keyword as the type name.
                             // Implicitly typed field symbols are not allowed in regular C#,
@@ -387,9 +385,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 var fieldSymbol = GetDeclaredFieldSymbol(firstVariableDecl);
                                 if ((object)fieldSymbol != null)
                                 {
-                                    result = Binder.NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
-                                        binder.AreNullableAnnotationsEnabled(firstVariableDecl.GetFirstToken()),
-                                        fieldSymbol.Type);
+                                    result = fieldSymbol.Type;
                                 }
                             }
                         }
@@ -747,7 +743,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return false;
         }
 
-        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<Symbol> crefSymbols)
+        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols)
         {
             if (expression == null)
             {

@@ -1061,10 +1061,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return ToBadCrefString(crefSyntax);
             }
 
-            Symbol ambiguityWinner;
-            ImmutableArray<Symbol> symbols = binder.BindCref(crefSyntax, out ambiguityWinner, diagnostics);
+            SymbolWithAdditionalSymbols ambiguityWinner;
+            ImmutableArray<SymbolWithAdditionalSymbols> symbols = binder.BindCref(crefSyntax, out ambiguityWinner, diagnostics);
 
-            Symbol symbol;
+            SymbolWithAdditionalSymbols symbol;
             switch (symbols.Length)
             {
                 case 0:
@@ -1074,26 +1074,23 @@ namespace Microsoft.CodeAnalysis.CSharp
                     break;
                 default:
                     symbol = ambiguityWinner;
-                    Debug.Assert((object)symbol != null);
+                    Debug.Assert(!symbol.IsDefault);
                     break;
             }
 
-            if (symbol.Kind == SymbolKind.Alias)
-            {
-                symbol = ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved: null);
-            }
+            var unwrapped = symbol.UnwrapAlias(out _);
 
-            if (symbol is NamespaceSymbol ns)
+            if (unwrapped is NamespaceSymbol ns)
             {
                 Debug.Assert(!ns.IsGlobalNamespace);
                 diagnostics.AddAssembliesUsedByNamespaceReference(ns);
             }
             else
             {
-                diagnostics.AddDependencies(symbol as TypeSymbol ?? symbol.ContainingType);
+                diagnostics.AddDependencies(unwrapped as TypeSymbol ?? unwrapped.ContainingType);
             }
 
-            return symbol.OriginalDefinition.GetDocumentationCommentId();
+            return unwrapped.OriginalDefinition.GetDocumentationCommentId();
         }
 
         /// <summary>

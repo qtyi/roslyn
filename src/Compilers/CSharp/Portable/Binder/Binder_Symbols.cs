@@ -1081,19 +1081,26 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         private static Symbol UnwrapAliasNoDiagnostics(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias)
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
             {
-                if (symbol.Symbol.GetArity() == 0)
+                return symbol.TypeWithAnnotations.Type;
+            }
+
+            return UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved);
+        }
+
+        private static Symbol UnwrapAliasNoDiagnostics(in SymbolWithAdditionalSymbols symbol, ConsList<TypeSymbol> basesBeingResolved = null)
+        {
+            if (symbol.Symbol.Kind == SymbolKind.Alias)
+            {
+                AliasSymbol aliasSymbol = (AliasSymbol)symbol.Symbol;
+                if (aliasSymbol.Arity > 0 && !symbol.AdditionalSymbols.IsDefaultOrEmpty)
                 {
-                    return UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved);
-                }
-                else
-                {
-                    return symbol.TypeWithAnnotations.Type;
+                    return symbol.AdditionalSymbols[0];
                 }
             }
 
-            return symbol.Symbol;
+            return UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved);
         }
 
         private static Symbol UnwrapAliasNoDiagnostics(Symbol symbol, ConsList<TypeSymbol> basesBeingResolved = null)
@@ -1102,50 +1109,37 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 return ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved);
             }
+            else if (symbol.Kind == SymbolKind.ErrorType)
+            {
+                var alias = ExtendedErrorTypeSymbol.ExtractAlias((TypeSymbol)symbol);
+                if (alias is not null)
+                {
+                    return alias.GetAliasTarget(basesBeingResolved);
+                }
+            }
 
             return symbol;
         }
 
         private NamespaceOrTypeOrAliasSymbolWithAnnotations UnwrapAlias(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias)
-            {
-                if (symbol.Symbol.GetArity() == 0)
-                {
-                    return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out var _, diagnostics, syntax, basesBeingResolved));
-                }
-                else
-                {
-                    return symbol.TypeWithAnnotations;
-                }
-            }
-
-            return symbol;
+            return UnwrapAlias(symbol, out _, diagnostics, syntax, basesBeingResolved);
         }
 
         private NamespaceOrTypeOrAliasSymbolWithAnnotations UnwrapAlias(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, out AliasSymbol alias, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias)
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
             {
-                if (symbol.Symbol.GetArity() == 0)
-                {
-                    return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
-                }
-                else
-                {
-                    alias = (AliasSymbol)symbol.Symbol;
-                    return symbol.TypeWithAnnotations;
-                }
+                alias = (AliasSymbol)symbol.Symbol;
+                return symbol.TypeWithAnnotations;
             }
 
-            alias = null;
-            return symbol;
+            return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
         }
 
         private Symbol UnwrapAlias(Symbol symbol, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            AliasSymbol discarded;
-            return UnwrapAlias(symbol, out discarded, diagnostics, syntax, basesBeingResolved);
+            return UnwrapAlias(symbol, out _, diagnostics, syntax, basesBeingResolved);
         }
 
         private Symbol UnwrapAlias(Symbol symbol, out AliasSymbol alias, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
@@ -1153,9 +1147,15 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(syntax != null);
             Debug.Assert(diagnostics != null);
 
-            if (symbol.Kind == SymbolKind.Alias)
+            alias = symbol.Kind switch
             {
-                alias = (AliasSymbol)symbol;
+                SymbolKind.Alias => (AliasSymbol)symbol,
+                SymbolKind.ErrorType => ExtendedErrorTypeSymbol.ExtractAlias((TypeSymbol)symbol),
+                _ => null,
+            };
+
+            if (alias != null)
+            {
                 var result = alias.GetAliasTarget(basesBeingResolved);
                 var type = result as TypeSymbol;
                 if ((object)type != null)
@@ -1172,7 +1172,6 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return result;
             }
 
-            alias = null;
             return symbol;
         }
 
@@ -1935,7 +1934,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return memberSymbol;
         }
 
-        private class ConsistentSymbolOrder : IComparer<Symbol>
+        private class ConsistentSymbolOrder : IComparer<Symbol>, IComparer<SymbolWithAdditionalSymbols>
         {
             public static readonly ConsistentSymbolOrder Instance = new ConsistentSymbolOrder();
             public int Compare(Symbol fst, Symbol snd)
@@ -1956,6 +1955,27 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (!la.IsInSource) return containerResult;
                 if (containerResult == 0 && la.SourceTree == lb.SourceTree) return lb.SourceSpan.Start - la.SourceSpan.Start;
                 return containerResult;
+            }
+
+            public int Compare(SymbolWithAdditionalSymbols fst, SymbolWithAdditionalSymbols snd)
+            {
+                int result = Compare(fst.Symbol, snd.Symbol);
+                if (result != 0) return result;
+                if (fst.IsDefault) return 0;
+
+                int index = 0;
+                int aAdditionalSymbolCount = fst.AdditionalSymbols.IsDefaultOrEmpty ? 0 : fst.AdditionalSymbols.Length;
+                int bAdditionalSymbolCount = snd.AdditionalSymbols.IsDefaultOrEmpty ? 0 : snd.AdditionalSymbols.Length;
+                int maxAdditionalSymbolCount = aAdditionalSymbolCount < bAdditionalSymbolCount ? bAdditionalSymbolCount : aAdditionalSymbolCount;
+                while (index < maxAdditionalSymbolCount)
+                {
+                    result = Compare(
+                        index < aAdditionalSymbolCount ? fst.AdditionalSymbols[index] : null,
+                        index < bAdditionalSymbolCount ? snd.AdditionalSymbols[index] : null);
+                    if (result != 0) return result;
+                    index++;
+                }
+                return 0;
             }
         }
 

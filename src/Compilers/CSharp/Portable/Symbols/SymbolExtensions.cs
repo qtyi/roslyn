@@ -218,6 +218,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 case SymbolKind.Method:
                     return ((MethodSymbol)symbol).ConstructedFrom;
 
+                case SymbolKind.Alias when symbol.GetArity() > 0:
+                    return symbol;
+
                 default:
                     throw ExceptionUtilities.UnexpectedValue(symbol.Kind);
             }
@@ -577,6 +580,42 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 SymbolKind.Event => ((EventSymbol)symbol).RequiresInstanceReceiver,
                 _ => throw new ArgumentException("only methods, properties, fields and events can take a receiver", nameof(symbol)),
             };
+        }
+
+        internal static Symbol UnwrapAlias(this Symbol symbol, out AliasSymbol? aliasSymbol)
+        {
+            return symbol.MayBeAlias(out aliasSymbol) ? aliasSymbol.Target : symbol;
+        }
+
+        internal static Symbol UnwrapAlias(this SymbolWithAdditionalSymbols symbol, out AliasSymbol? aliasSymbol)
+        {
+            if (symbol.Symbol is AliasSymbol)
+            {
+                aliasSymbol = (AliasSymbol)symbol.Symbol;
+
+                if (aliasSymbol.Arity > 0 && !symbol.AdditionalSymbols.IsDefaultOrEmpty)
+                {
+                    return symbol.AdditionalSymbols[0];
+                }
+
+                return UnwrapAlias(aliasSymbol, out _);
+            }
+            else
+            {
+                return UnwrapAlias(symbol.Symbol, out aliasSymbol);
+            }
+        }
+
+        internal static bool MayBeAlias(this Symbol symbol, [NotNullWhen(true)] out AliasSymbol? aliasSymbol)
+        {
+            aliasSymbol = symbol.Kind switch
+            {
+                SymbolKind.Alias => (AliasSymbol)symbol,
+                SymbolKind.ErrorType => ExtendedErrorTypeSymbol.ExtractAlias((TypeSymbol)symbol),
+                _ => null
+            };
+
+            return aliasSymbol is not null;
         }
 
         [return: NotNullIfNotNull(nameof(symbol))]

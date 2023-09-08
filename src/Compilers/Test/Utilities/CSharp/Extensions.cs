@@ -893,7 +893,9 @@ internal static class Extensions
 
     public static ImmutableArray<Symbol> BindCref(this Microsoft.CodeAnalysis.CSharp.Binder binder, CrefSyntax syntax, out Symbol ambiguityWinner, DiagnosticBag diagnostics)
     {
-        return binder.BindCref(syntax, out ambiguityWinner, new Microsoft.CodeAnalysis.CSharp.BindingDiagnosticBag(diagnostics));
+        var result = binder.BindCref(syntax, out var _ambiguityWinner, new Microsoft.CodeAnalysis.CSharp.BindingDiagnosticBag(diagnostics));
+        ambiguityWinner = _ambiguityWinner.IsDefault ? null : _ambiguityWinner.Symbol;
+        return result.SelectAsArray(static s => s.Symbol);
     }
 
     public static BoundBlock BindEmbeddedBlock(this Microsoft.CodeAnalysis.CSharp.Binder binder, BlockSyntax node, DiagnosticBag diagnostics)

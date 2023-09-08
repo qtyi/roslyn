@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return false;
         }
 
-        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<Symbol> crefSymbols)
+        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<SymbolWithAdditionalSymbols> crefSymbols)
         {
             if (expression == null)
             {
