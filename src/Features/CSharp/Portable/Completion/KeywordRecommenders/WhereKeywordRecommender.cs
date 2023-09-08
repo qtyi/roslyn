@@ -35,11 +35,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Completion.KeywordRecommenders
             //   delegate void D<T> where T : IGoo |
             //   void Goo<T>() |
             //   void Goo<T>() where T : IGoo |
+            //   using A<T> |
 
             var token = context.TargetToken;
 
             // class C<T> |
-
+            // using A<T> |
             if (token.Kind() == SyntaxKind.GreaterThanToken)
             {
                 var typeParameters = token.GetAncestor<TypeParameterListSyntax>();
@@ -47,6 +48,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Completion.KeywordRecommenders
                 {
                     var decl = typeParameters.GetAncestorOrThis<TypeDeclarationSyntax>();
                     if (decl != null && decl.TypeParameterList == typeParameters)
+                    {
+                        return true;
+                    }
+
+                    var directive = typeParameters.GetAncestorOrThis<UsingDirectiveSyntax>();
+                    if (directive != null && directive.TypeParameterList == typeParameters)
                     {
                         return true;
                     }
@@ -66,7 +73,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Completion.KeywordRecommenders
             }
 
             // void Goo<T>() |
-
             if (token.Kind() == SyntaxKind.CloseParenToken &&
                 token.Parent.IsKind(SyntaxKind.ParameterList) &&
                 token.Parent.IsParentKind(SyntaxKind.MethodDeclaration))
