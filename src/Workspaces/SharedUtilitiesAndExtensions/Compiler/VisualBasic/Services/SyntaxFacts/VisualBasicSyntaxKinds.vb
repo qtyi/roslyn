@@ -71,6 +71,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
         Public ReadOnly Property QualifiedName As Integer = SyntaxKind.QualifiedName Implements ISyntaxKinds.QualifiedName
 
         Public ReadOnly Property TupleType As Integer = SyntaxKind.TupleType Implements ISyntaxKinds.TupleType
+        Public ReadOnly Property ArrayType As Integer = SyntaxKind.ArrayType Implements ISyntaxKinds.ArrayType
 
         Public ReadOnly Property CharacterLiteralExpression As Integer = SyntaxKind.CharacterLiteralExpression Implements ISyntaxKinds.CharacterLiteralExpression
         Public ReadOnly Property DefaultLiteralExpression As Integer = SyntaxKind.NothingLiteralExpression Implements ISyntaxKinds.DefaultLiteralExpression

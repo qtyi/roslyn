@@ -68,6 +68,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
         public int QualifiedName => (int)SyntaxKind.QualifiedName;
 
         public int TupleType => (int)SyntaxKind.TupleType;
+        public int ArrayType => (int)SyntaxKind.ArrayType;
 
         public int CharacterLiteralExpression => (int)SyntaxKind.CharacterLiteralExpression;
         public int DefaultLiteralExpression => (int)SyntaxKind.DefaultLiteralExpression;

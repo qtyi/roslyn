@@ -53,13 +53,13 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
         protected static ValueTask<(bool matched, CandidateReason reason)> SymbolsMatchAsync(
             ISymbol searchSymbol, FindReferencesDocumentState state, SyntaxNode node, CancellationToken cancellationToken)
         {
-            var symbolInfo = state.Cache.GetSymbolInfo(node, cancellationToken);
+            var (symbolInfo, aliasInfo) = state.Cache.GetSymbolInfo(node, cancellationToken);
 
-            return MatchesAsync(searchSymbol, state, symbolInfo, cancellationToken);
+            return MatchesAsync(searchSymbol, state, symbolInfo, aliasInfo, cancellationToken);
         }
 
         protected static async ValueTask<(bool matched, CandidateReason reason)> MatchesAsync(
-            ISymbol searchSymbol, FindReferencesDocumentState state, SymbolInfo symbolInfo, CancellationToken cancellationToken)
+            ISymbol searchSymbol, FindReferencesDocumentState state, SymbolInfo symbolInfo, IAliasSymbol? aliasInfo, CancellationToken cancellationToken)
         {
             if (await SymbolFinder.OriginalSymbolsMatchAsync(state.Solution, searchSymbol, symbolInfo.Symbol, cancellationToken).ConfigureAwait(false))
                 return (matched: true, CandidateReason.None);
@@ -69,6 +69,10 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 if (await SymbolFinder.OriginalSymbolsMatchAsync(state.Solution, searchSymbol, candidate, cancellationToken).ConfigureAwait(false))
                     return (matched: true, symbolInfo.CandidateReason);
             }
+
+            if (aliasInfo is not null &&
+                await SymbolFinder.OriginalSymbolsMatchAsync(state.Solution, searchSymbol, aliasInfo, cancellationToken).ConfigureAwait(false))
+                return (matched: true, CandidateReason.None);
 
             return default;
         }
@@ -209,6 +213,9 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
         protected static FinderLocation CreateFinderLocation(FindReferencesDocumentState state, SyntaxToken token, CandidateReason reason, CancellationToken cancellationToken)
             => new(token.GetRequiredParent(), CreateReferenceLocation(state, token, reason, cancellationToken));
 
+        protected static FinderLocation CreateFinderLocation(FindReferencesDocumentState state, SyntaxNode node, CandidateReason reason, CancellationToken cancellationToken)
+            => new(node, CreateReferenceLocation(state, node, reason, cancellationToken));
+
         public static ReferenceLocation CreateReferenceLocation(FindReferencesDocumentState state, SyntaxToken token, CandidateReason reason, CancellationToken cancellationToken)
             => new(
                 state.Document,
@@ -217,6 +224,16 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 isImplicit: false,
                 GetSymbolUsageInfo(token.GetRequiredParent(), state, cancellationToken),
                 GetAdditionalFindUsagesProperties(token.GetRequiredParent(), state),
+                reason);
+
+        public static ReferenceLocation CreateReferenceLocation(FindReferencesDocumentState state, SyntaxNode node, CandidateReason reason, CancellationToken cancellationToken)
+            => new(
+                state.Document,
+                state.Cache.GetAliasInfo(state.SemanticFacts, node, cancellationToken),
+                node.GetLocation(),
+                isImplicit: false,
+                GetSymbolUsageInfo(node, state, cancellationToken),
+                GetAdditionalFindUsagesProperties(node, state),
                 reason);
 
         private static IAliasSymbol? GetAliasSymbol(
@@ -246,7 +263,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
         }
 
         protected static async Task<ImmutableArray<FinderLocation>> FindLocalAliasReferencesAsync(
-            ArrayBuilder<FinderLocation> initialReferences,
+            ImmutableArray<FinderLocation> initialReferences,
             ISymbol symbol,
             FindReferencesDocumentState state,
             CancellationToken cancellationToken)
@@ -258,7 +275,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
         }
 
         protected static async Task<ImmutableArray<FinderLocation>> FindLocalAliasReferencesAsync(
-            ArrayBuilder<FinderLocation> initialReferences,
+            ImmutableArray<FinderLocation> initialReferences,
             FindReferencesDocumentState state,
             CancellationToken cancellationToken)
         {
@@ -270,7 +287,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
 
         private static ImmutableArray<IAliasSymbol> GetLocalAliasSymbols(
             FindReferencesDocumentState state,
-            ArrayBuilder<FinderLocation> initialReferences,
+            ImmutableArray<FinderLocation> initialReferences,
             CancellationToken cancellationToken)
         {
             using var aliasSymbols = TemporaryArray<IAliasSymbol>.Empty;
@@ -902,8 +919,8 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             foreach (var document in await project.GetAllRegularAndSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false))
             {
                 var index = await SyntaxTreeIndex.GetRequiredIndexAsync(document, cancellationToken).ConfigureAwait(false);
-                foreach (var alias in index.GetGlobalAliases(name, arity))
-                    result.Add(alias);
+                var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+                result.AddRange(index.GetGlobalAliasesByName(name, arity, syntaxFacts));
             }
 
             return result.ToImmutableAndClear();

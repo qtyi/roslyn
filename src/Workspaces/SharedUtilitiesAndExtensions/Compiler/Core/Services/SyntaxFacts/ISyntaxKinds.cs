@@ -104,6 +104,8 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         int TupleType { get; }
 
+        int ArrayType { get; }
+
         #endregion
 
         #region literal expressions

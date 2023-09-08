@@ -14,14 +14,14 @@ namespace Microsoft.CodeAnalysis.FindSymbols
         private readonly LiteralInfo _literalInfo;
         private readonly IdentifierInfo _identifierInfo;
         private readonly ContextInfo _contextInfo;
-        private readonly HashSet<(string alias, string name, int arity)>? _globalAliasInfo;
+        private readonly HashSet<AliasInfo>? _globalAliasInfo;
 
         private SyntaxTreeIndex(
             Checksum? checksum,
             LiteralInfo literalInfo,
             IdentifierInfo identifierInfo,
             ContextInfo contextInfo,
-            HashSet<(string alias, string name, int arity)>? globalAliasInfo)
+            HashSet<AliasInfo>? globalAliasInfo)
             : base(checksum)
         {
             _literalInfo = literalInfo;

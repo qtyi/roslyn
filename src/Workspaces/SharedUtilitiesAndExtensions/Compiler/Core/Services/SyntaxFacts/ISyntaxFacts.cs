@@ -202,6 +202,19 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         void GetPartsOfTupleExpression<TArgumentSyntax>(SyntaxNode node,
             out SyntaxToken openParen, out SeparatedSyntaxList<TArgumentSyntax> arguments, out SyntaxToken closeParen) where TArgumentSyntax : SyntaxNode;
+        void GetPartsOfTupleType<TElementSyntax>(SyntaxNode node,
+            out SyntaxToken openParen, out SeparatedSyntaxList<TElementSyntax> elements, out SyntaxToken closeParen) where TElementSyntax : SyntaxNode;
+
+        void GetPartsOfArrayType<TArrayRankSpecifier>(SyntaxNode node,
+            out SyntaxNode elementType, out SyntaxList<TArrayRankSpecifier> rankSpecifiers) where TArrayRankSpecifier : SyntaxNode;
+        void GetRankOfArrayRankSpecifier(SyntaxNode node, out int rank);
+
+        bool IsDynamicType(SyntaxNode node);
+
+        bool IsPointerType(SyntaxNode node);
+        bool IsFunctionPointerType(SyntaxNode node);
+        void GetParametersOfFunctionPointerType<TParameter>(SyntaxNode node,
+            out SeparatedSyntaxList<TParameter> parameters) where TParameter : SyntaxNode;
 
         bool IsVerbatimInterpolatedStringExpression(SyntaxNode node);
 
@@ -527,7 +540,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
         void GetPartsOfParenthesizedExpression(SyntaxNode node, out SyntaxToken openParen, out SyntaxNode expression, out SyntaxToken closeParen);
         void GetPartsOfPrefixUnaryExpression(SyntaxNode node, out SyntaxToken operatorToken, out SyntaxNode operand);
         void GetPartsOfQualifiedName(SyntaxNode node, out SyntaxNode left, out SyntaxToken dotToken, out SyntaxNode right);
-        void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken alias, out SyntaxNode name);
+        void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken identifier, out SeparatedSyntaxList<SyntaxNode> typeParameters, out SyntaxNode name);
 
         #endregion
 

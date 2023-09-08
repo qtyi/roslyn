@@ -735,6 +735,9 @@ namespace Microsoft.CodeAnalysis.LanguageService
         public static bool IsTupleType(this ISyntaxFacts syntaxFacts, [NotNullWhen(true)] SyntaxNode? node)
             => node?.RawKind == syntaxFacts.SyntaxKinds.TupleType;
 
+        public static bool IsArrayType(this ISyntaxFacts syntaxFacts, [NotNullWhen(true)] SyntaxNode? node)
+            => node?.RawKind == syntaxFacts.SyntaxKinds.ArrayType;
+
         #endregion
 
         #region literal expressions
