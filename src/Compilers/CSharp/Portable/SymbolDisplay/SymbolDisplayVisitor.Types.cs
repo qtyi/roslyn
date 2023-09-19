@@ -781,6 +781,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     typeArguments = ((IMethodSymbol)owner).TypeArguments;
                     break;
                 case SymbolKind.NamedType:
+                case SymbolKind.ErrorType:
                     typeArguments = ((INamedTypeSymbol)owner).TypeArguments;
                     break;
                 case SymbolKind.Alias:
@@ -788,8 +789,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     break;
 
                 default:
-                    typeArguments = ImmutableArray<ITypeSymbol>.Empty;
-                    break;
+                    throw ExceptionUtilities.UnexpectedValue(owner.Kind);
             }
 
             if (typeArguments.Length > 0 && format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))

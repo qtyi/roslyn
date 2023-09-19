@@ -134,30 +134,30 @@ public unsafe class Test
                 // (11,12): warning CS0169: The field 'Test.x1' is never used
                 //     X<int> x1;      // primitive value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x1").WithArguments("Test.x1").WithLocation(11, 12),
-                // (12,15): error CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (12,15): error CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<string> x2;   // primitive reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x2").WithArguments("X", "T", "string").WithLocation(12, 15),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x2").WithArguments("X<T>", "T", "string").WithLocation(12, 15),
                 // (12,15): warning CS0169: The field 'Test.x2' is never used
                 //     X<string> x2;   // primitive reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x2").WithArguments("Test.x2").WithLocation(12, 15),
                 // (13,10): warning CS0169: The field 'Test.x3' is never used
                 //     X<S> x3;        // value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x3").WithArguments("Test.x3").WithLocation(13, 10),
-                // (14,10): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (14,10): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<C> x4;        // reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x4").WithArguments("X", "T", "C").WithLocation(14, 10),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x4").WithArguments("X<T>", "T", "C").WithLocation(14, 10),
                 // (14,10): warning CS0169: The field 'Test.x4' is never used
                 //     X<C> x4;        // reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x4").WithArguments("Test.x4").WithLocation(14, 10),
-                // (15,11): error CS8377: The type 'S?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (15,11): error CS8377: The type 'S?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<S?> x5;       // nullable value type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x5").WithArguments("X", "T", "S?").WithLocation(15, 11),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x5").WithArguments("X<T>", "T", "S?").WithLocation(15, 11),
                 // (15,11): warning CS0169: The field 'Test.x5' is never used
                 //     X<S?> x5;       // nullable value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x5").WithArguments("Test.x5").WithLocation(15, 11),
-                // (16,11): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (16,11): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<C?> x6;       // nullable reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x6").WithArguments("X", "T", "C").WithLocation(16, 11),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x6").WithArguments("X<T>", "T", "C").WithLocation(16, 11),
                 // (16,11): warning CS0169: The field 'Test.x6' is never used
                 //     X<C?> x6;       // nullable reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x6").WithArguments("Test.x6").WithLocation(16, 11));
@@ -186,27 +186,27 @@ public unsafe class Test
                 // (2,14): warning CS8500: This takes the address of, gets the size of, or declares a pointer to a managed type ('T')
                 // using unsafe X<T> where T : class = T*;
                 Diagnostic(ErrorCode.WRN_ManagedAddr, "X").WithArguments("T").WithLocation(2, 14),
-                // (11,12): error CS0452: The type 'int' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (11,12): error CS0452: The type 'int' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<int> x1;      // primitive value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x1").WithArguments("X", "T", "int").WithLocation(11, 12),
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x1").WithArguments("X<T>", "T", "int").WithLocation(11, 12),
                 // (11,12): warning CS0169: The field 'Test.x1' is assigned but its value is never used
                 //     X<int> x1;      // primitive value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x1").WithArguments("Test.x1").WithLocation(11, 12),
                 // (12,15): warning CS0169: The field 'Test.x2' is assigned but its value is never used
                 //     X<string> x2;   // primitive reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x2").WithArguments("Test.x2").WithLocation(12, 15),
-                // (13,10): error CS0452: The type 'S' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (13,10): error CS0452: The type 'S' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<S> x3;        // value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x3").WithArguments("X", "T", "S").WithLocation(13, 10),
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x3").WithArguments("X<T>", "T", "S").WithLocation(13, 10),
                 // (13,10): warning CS0169: The field 'Test.x3' is assigned but its value is never used
                 //     X<S> x3;        // value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x3").WithArguments("Test.x3").WithLocation(13, 10),
                 // (14,10): warning CS0169: The field 'Test.x4' is assigned but its value is never used
                 //     X<C> x4;        // reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x4").WithArguments("Test.x4").WithLocation(14, 10),
-                // (15,11): error CS0452: The type 'S?' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (15,11): error CS0452: The type 'S?' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<S?> x5;       // nullable value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x5").WithArguments("X", "T", "S?").WithLocation(15, 11),
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x5").WithArguments("X<T>", "T", "S?").WithLocation(15, 11),
                 // (15,11): warning CS0169: The field 'Test.x5' is assigned but its value is never used
                 //     X<S?> x5;       // nullable value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x5").WithArguments("Test.x5").WithLocation(15, 11),
@@ -293,15 +293,15 @@ public class Test
                 // (4,31): error CS0453: The type 'T' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'Nullable<T>'
                 // using X<T> where T : class? = T?;
                 Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "T?").WithArguments("System.Nullable<T>", "T", "T").WithLocation(4, 31),
-                // (13,10): error CS0452: The type 'S' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (13,10): error CS0452: The type 'S' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<S> x3;        // value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x3").WithArguments("X", "T", "S").WithLocation(13, 10),
-                // (15,11): error CS0452: The type 'S?' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x3").WithArguments("X<T>", "T", "S").WithLocation(13, 10),
+                // (15,11): error CS0452: The type 'S?' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<S?> x5;       // nullable value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x5").WithArguments("X", "T", "S?").WithLocation(15, 11),
-                // (11,12): error CS0452: The type 'int' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x5").WithArguments("X<T>", "T", "S?").WithLocation(15, 11),
+                // (11,12): error CS0452: The type 'int' must be a reference type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<int> x1;      // primitive value type
-                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x1").WithArguments("X", "T", "int").WithLocation(11, 12),
+                Diagnostic(ErrorCode.ERR_RefConstraintNotSatisfied, "x1").WithArguments("X<T>", "T", "int").WithLocation(11, 12),
                 // (12,15): warning CS8618: Non-nullable field 'x2' must contain a non-null value when exiting constructor. Consider declaring the field as nullable.
                 //     X<string> x2;   // primitive reference type
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "x2").WithArguments("field", "x2").WithLocation(12, 15),
@@ -354,30 +354,30 @@ public class Test
                 // (11,12): warning CS0169: The field 'Test.x1' is never used
                 //     X<int> x1;      // primitive value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x1").WithArguments("Test.x1").WithLocation(11, 12),
-                // (12,15): error CS0453: The type 'string' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (12,15): error CS0453: The type 'string' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<string> x2;   // primitive reference type
-                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x2").WithArguments("X", "T", "string").WithLocation(12, 15),
+                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x2").WithArguments("X<T>", "T", "string").WithLocation(12, 15),
                 // (12,15): warning CS0169: The field 'Test.x2' is never used
                 //     X<string> x2;   // primitive reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x2").WithArguments("Test.x2").WithLocation(12, 15),
                 // (13,10): warning CS0169: The field 'Test.x3' is never used
                 //     X<S> x3;        // value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x3").WithArguments("Test.x3").WithLocation(13, 10),
-                // (14,10): error CS0453: The type 'C' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (14,10): error CS0453: The type 'C' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<C> x4;        // reference type
-                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x4").WithArguments("X", "T", "C").WithLocation(14, 10),
+                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x4").WithArguments("X<T>", "T", "C").WithLocation(14, 10),
                 // (14,10): warning CS0169: The field 'Test.x4' is never used
                 //     X<C> x4;        // reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x4").WithArguments("Test.x4").WithLocation(14, 10),
-                // (15,11): error CS0453: The type 'S?' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (15,11): error CS0453: The type 'S?' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<S?> x5;       // nullable value type
-                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x5").WithArguments("X", "T", "S?").WithLocation(15, 11),
+                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x5").WithArguments("X<T>", "T", "S?").WithLocation(15, 11),
                 // (15,11): warning CS0169: The field 'Test.x5' is never used
                 //     X<S?> x5;       // nullable value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x5").WithArguments("Test.x5").WithLocation(15, 11),
-                // (16,11): error CS0453: The type 'C' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X'
+                // (16,11): error CS0453: The type 'C' must be a non-nullable value type in order to use it as parameter 'T' in the generic type, method or alias 'X<T>'
                 //     X<C?> x6;       // nullable reference type
-                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x6").WithArguments("X", "T", "C").WithLocation(16, 11),
+                Diagnostic(ErrorCode.ERR_ValConstraintNotSatisfied, "x6").WithArguments("X<T>", "T", "C").WithLocation(16, 11),
                 // (16,11): warning CS0169: The field 'Test.x6' is never used
                 //     X<C?> x6;       // nullable reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x6").WithArguments("Test.x6").WithLocation(16, 11));
@@ -415,42 +415,42 @@ public class Test
                 // (15,12): warning CS0169: The field 'Test.x1' is never used
                 //     X<int> x1;      // primitive unmanaged type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x1").WithArguments("Test.x1").WithLocation(15, 12),
-                // (16,15): error CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (16,15): error CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<string> x2;   // primitive reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x2").WithArguments("X", "T", "string").WithLocation(16, 15),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x2").WithArguments("X<T>", "T", "string").WithLocation(16, 15),
                 // (16,15): warning CS0169: The field 'Test.x2' is never used
                 //     X<string> x2;   // primitive reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x2").WithArguments("Test.x2").WithLocation(16, 15),
                 // (17,10): warning CS0169: The field 'Test.x3' is never used
                 //     X<U> x3;        // unmanaged type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x3").WithArguments("Test.x3").WithLocation(17, 10),
-                // (18,10): error CS8377: The type 'S' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (18,10): error CS8377: The type 'S' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<S> x4;        // value type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x4").WithArguments("X", "T", "S").WithLocation(18, 10),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x4").WithArguments("X<T>", "T", "S").WithLocation(18, 10),
                 // (18,10): warning CS0169: The field 'Test.x4' is never used
                 //     X<S> x4;        // value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x4").WithArguments("Test.x4").WithLocation(18, 10),
-                // (19,10): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (19,10): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<C> x5;        // reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x5").WithArguments("X", "T", "C").WithLocation(19, 10),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x5").WithArguments("X<T>", "T", "C").WithLocation(19, 10),
                 // (19,10): warning CS0169: The field 'Test.x5' is never used
                 //     X<C> x5;        // reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x5").WithArguments("Test.x5").WithLocation(19, 10),
-                // (20,11): error CS8377: The type 'U?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (20,11): error CS8377: The type 'U?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<U?> x6;       // nullable unmanaged type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x6").WithArguments("X", "T", "U?").WithLocation(20, 11),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x6").WithArguments("X<T>", "T", "U?").WithLocation(20, 11),
                 // (20,11): warning CS0169: The field 'Test.x6' is never used
                 //     X<U?> x6;       // nullable unmanaged type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x6").WithArguments("Test.x6").WithLocation(20, 11),
-                // (21,11): error CS8377: The type 'S?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (21,11): error CS8377: The type 'S?' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<S?> x7;       // nullable value type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x7").WithArguments("X", "T", "S?").WithLocation(21, 11),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x7").WithArguments("X<T>", "T", "S?").WithLocation(21, 11),
                 // (21,11): warning CS0169: The field 'Test.x7' is never used
                 //     X<S?> x7;       // nullable value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x7").WithArguments("Test.x7").WithLocation(21, 11),
-                // (22,11): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X'
+                // (22,11): error CS8377: The type 'C' must be a non-nullable value type, along with all fields at any level of nesting, in order to use it as parameter T' in the generic type, method or alias 'X<T>'
                 //     X<C?> x8;       // nullable reference type
-                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x8").WithArguments("X", "T", "C").WithLocation(22, 11),
+                Diagnostic(ErrorCode.ERR_UnmanagedConstraintNotSatisfied, "x8").WithArguments("X<T>", "T", "C").WithLocation(22, 11),
                 // (22,11): warning CS0169: The field 'Test.x8' is never used
                 //     X<C?> x8;       // nullable reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x8").WithArguments("Test.x8").WithLocation(22, 11));
@@ -497,15 +497,15 @@ public class Test
                 // (14,10): warning CS0169: The field 'Test.x4' is never used
                 //     X<C> x4;        // reference type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x4").WithArguments("Test.x4").WithLocation(14, 10),
-                // (15,11): warning CS8714: The type 'S?' cannot be used as type parameter 'T' in the generic type, method or alias 'X'. Nullability of type argument 'S?' doesn't match 'notnull' constraint.
+                // (15,11): warning CS8714: The type 'S?' cannot be used as type parameter 'T' in the generic type, method or alias 'X<T>'. Nullability of type argument 'S?' doesn't match 'notnull' constraint.
                 //     X<S?> x5;       // nullable value type
-                Diagnostic(ErrorCode.WRN_NullabilityMismatchInTypeParameterNotNullConstraint, "x5").WithArguments("X", "T", "S?").WithLocation(15, 11),
+                Diagnostic(ErrorCode.WRN_NullabilityMismatchInTypeParameterNotNullConstraint, "x5").WithArguments("X<T>", "T", "S?").WithLocation(15, 11),
                 // (15,11): warning CS0169: The field 'Test.x5' is never used
                 //     X<S?> x5;       // nullable value type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "x5").WithArguments("Test.x5").WithLocation(15, 11),
-                // (16,11): warning CS8714: The type 'C?' cannot be used as type parameter 'T' in the generic type, method or alias 'X'. Nullability of type argument 'C?' doesn't match 'notnull' constraint.
+                // (16,11): warning CS8714: The type 'C?' cannot be used as type parameter 'T' in the generic type, method or alias 'X<T>'. Nullability of type argument 'C?' doesn't match 'notnull' constraint.
                 //     X<C?> x6;       // nullable reference type
-                Diagnostic(ErrorCode.WRN_NullabilityMismatchInTypeParameterNotNullConstraint, "x6").WithArguments("X", "T", "C?").WithLocation(16, 11),
+                Diagnostic(ErrorCode.WRN_NullabilityMismatchInTypeParameterNotNullConstraint, "x6").WithArguments("X<T>", "T", "C?").WithLocation(16, 11),
                 // (16,11): warning CS8618: Non-nullable field 'x6' must contain a non-null value when exiting constructor. Consider declaring the field as nullable.
                 //     X<C?> x6;       // nullable reference type
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "x6").WithArguments("field", "x6").WithLocation(16, 11),
@@ -535,30 +535,30 @@ public class Test
     EnumDictionary<D, D> dDic;                      // delegate type
     EnumDictionary<System.Enum, System.Enum> dic;   // base type
 }").VerifyDiagnostics(
-                // (12,26): error CS0315: The type 'S' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary'. There is no boxing conversion from 'S' to 'System.Enum'.
+                // (12,26): error CS0315: The type 'S' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary<TKey, TValue>'. There is no boxing conversion from 'S' to 'System.Enum'.
                 //     EnumDictionary<S, S> sDic;                      // struct type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "sDic").WithArguments("EnumDictionary", "System.Enum", "TKey", "S").WithLocation(12, 26),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "sDic").WithArguments("EnumDictionary<TKey, TValue>", "System.Enum", "TKey", "S").WithLocation(12, 26),
                 // (12,26): warning CS0169: The field 'Test.sDic' is never used
                 //     EnumDictionary<S, S> sDic;                      // struct type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "sDic").WithArguments("Test.sDic").WithLocation(12, 26),
-                // (13,26): error CS0311: The type 'C' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary'. There is no implicit reference conversion from 'C' to 'System.Enum'.
+                // (13,26): error CS0311: The type 'C' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary<TKey, TValue>'. There is no implicit reference conversion from 'C' to 'System.Enum'.
                 //     EnumDictionary<C, C> cDic;                      // class type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cDic").WithArguments("EnumDictionary", "System.Enum", "TKey", "C").WithLocation(13, 26),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cDic").WithArguments("EnumDictionary<TKey, TValue>", "System.Enum", "TKey", "C").WithLocation(13, 26),
                 // (13,26): warning CS0169: The field 'Test.cDic' is never used
                 //     EnumDictionary<C, C> cDic;                      // class type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "cDic").WithArguments("Test.cDic").WithLocation(13, 26),
                 // (14,26): warning CS0169: The field 'Test.eDic' is never used
                 //     EnumDictionary<E, E> eDic;                      // enum type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "eDic").WithArguments("Test.eDic").WithLocation(14, 26),
-                // (15,26): error CS0311: The type 'I' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary'. There is no implicit reference conversion from 'I' to 'System.Enum'.
+                // (15,26): error CS0311: The type 'I' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary<TKey, TValue>'. There is no implicit reference conversion from 'I' to 'System.Enum'.
                 //     EnumDictionary<I, I> iDic;                      // interface type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "iDic").WithArguments("EnumDictionary", "System.Enum", "TKey", "I").WithLocation(15, 26),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "iDic").WithArguments("EnumDictionary<TKey, TValue>", "System.Enum", "TKey", "I").WithLocation(15, 26),
                 // (15,26): warning CS0169: The field 'Test.iDic' is never used
                 //     EnumDictionary<I, I> iDic;                      // interface type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "iDic").WithArguments("Test.iDic").WithLocation(15, 26),
-                // (16,26): error CS0311: The type 'D' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary'. There is no implicit reference conversion from 'D' to 'System.Enum'.
+                // (16,26): error CS0311: The type 'D' cannot be used as type parameter 'TKey' in the generic type, method or alias 'EnumDictionary<TKey, TValue>'. There is no implicit reference conversion from 'D' to 'System.Enum'.
                 //     EnumDictionary<D, D> dDic;                      // delegate type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "dDic").WithArguments("EnumDictionary", "System.Enum", "TKey", "D").WithLocation(16, 26),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "dDic").WithArguments("EnumDictionary<TKey, TValue>", "System.Enum", "TKey", "D").WithLocation(16, 26),
                 // (16,26): warning CS0169: The field 'Test.dDic' is never used
                 //     EnumDictionary<D, D> dDic;                      // delegate type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "dDic").WithArguments("Test.dDic").WithLocation(16, 26),
@@ -592,15 +592,15 @@ public class Test
                 // (13,22): warning CS0169: The field 'Test.sInter' is never used
                 //     DeepInterface<S> sInter;        // struct type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "sInter").WithArguments("Test.sInter").WithLocation(13, 22),
-                // (14,22): error CS0311: The type 'C' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface'. There is no implicit reference conversion from 'C' to 'I'.
+                // (14,22): error CS0311: The type 'C' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface<TInterface>'. There is no implicit reference conversion from 'C' to 'I'.
                 //     DeepInterface<C> cInter;        // class type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cInter").WithArguments("DeepInterface", "I", "TInterface", "C").WithLocation(14, 22),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cInter").WithArguments("DeepInterface<TInterface>", "I", "TInterface", "C").WithLocation(14, 22),
                 // (14,22): warning CS0169: The field 'Test.cInter' is never used
                 //     DeepInterface<C> cInter;        // class type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "cInter").WithArguments("Test.cInter").WithLocation(14, 22),
-                // (15,22): error CS0315: The type 'E' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface'. There is no boxing conversion from 'E' to 'I'.
+                // (15,22): error CS0315: The type 'E' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface<TInterface>'. There is no boxing conversion from 'E' to 'I'.
                 //     DeepInterface<E> eInter;        // enum type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "eInter").WithArguments("DeepInterface", "I", "TInterface", "E").WithLocation(15, 22),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "eInter").WithArguments("DeepInterface<TInterface>", "I", "TInterface", "E").WithLocation(15, 22),
                 // (15,22): warning CS0169: The field 'Test.eInter' is never used
                 //     DeepInterface<E> eInter;        // enum type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "eInter").WithArguments("Test.eInter").WithLocation(15, 22),
@@ -610,9 +610,9 @@ public class Test
                 // (17,25): warning CS0169: The field 'Test.inter' is never used
                 //     DeepInterface<I<I>> inter;      // generic interface type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "inter").WithArguments("Test.inter").WithLocation(17, 25),
-                // (18,22): error CS0311: The type 'D' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface'. There is no implicit reference conversion from 'D' to 'I'.
+                // (18,22): error CS0311: The type 'D' cannot be used as type parameter 'TInterface' in the generic type, method or alias 'DeepInterface<TInterface>'. There is no implicit reference conversion from 'D' to 'I'.
                 //     DeepInterface<D> dInter;        // delegate type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "dInter").WithArguments("DeepInterface", "I", "TInterface", "D").WithLocation(18, 22),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "dInter").WithArguments("DeepInterface<TInterface>", "I", "TInterface", "D").WithLocation(18, 22),
                 // (18,22): warning CS0169: The field 'Test.dInter' is never used
                 //     DeepInterface<D> dInter;        // delegate type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "dInter").WithArguments("Test.dInter").WithLocation(18, 22));
@@ -639,27 +639,27 @@ public class Test
     ActionWithCallback<D> dAct;                 // delegate type
     ActionWithCallback<System.Delegate> act;    // base type
 }").VerifyDiagnostics(
-                // (12,27): error CS0315: The type 'S' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback'. There is no boxing conversion from 'S' to 'System.Delegate'.
+                // (12,27): error CS0315: The type 'S' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback<TCallback>'. There is no boxing conversion from 'S' to 'System.Delegate'.
                 //     ActionWithCallback<S> sAct;                 // struct type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "sAct").WithArguments("ActionWithCallback", "System.Delegate", "TCallback", "S").WithLocation(12, 27),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "sAct").WithArguments("ActionWithCallback<TCallback>", "System.Delegate", "TCallback", "S").WithLocation(12, 27),
                 // (12,27): warning CS0169: The field 'Test.sAct' is never used
                 //     ActionWithCallback<S> sAct;                 // struct type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "sAct").WithArguments("Test.sAct").WithLocation(12, 27),
-                // (13,27): error CS0311: The type 'C' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback'. There is no implicit reference conversion from 'C' to 'System.Delegate'.
+                // (13,27): error CS0311: The type 'C' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback<TCallback>'. There is no implicit reference conversion from 'C' to 'System.Delegate'.
                 //     ActionWithCallback<C> cAct;                 // class type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cAct").WithArguments("ActionWithCallback", "System.Delegate", "TCallback", "C").WithLocation(13, 27),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "cAct").WithArguments("ActionWithCallback<TCallback>", "System.Delegate", "TCallback", "C").WithLocation(13, 27),
                 // (13,27): warning CS0169: The field 'Test.cAct' is never used
                 //     ActionWithCallback<C> cAct;                 // class type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "cAct").WithArguments("Test.cAct").WithLocation(13, 27),
-                // (14,27): error CS0315: The type 'E' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback'. There is no boxing conversion from 'E' to 'System.Delegate'.
+                // (14,27): error CS0315: The type 'E' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback<TCallback>'. There is no boxing conversion from 'E' to 'System.Delegate'.
                 //     ActionWithCallback<E> eAct;                 // enum type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "eAct").WithArguments("ActionWithCallback", "System.Delegate", "TCallback", "E").WithLocation(14, 27),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedValType, "eAct").WithArguments("ActionWithCallback<TCallback>", "System.Delegate", "TCallback", "E").WithLocation(14, 27),
                 // (14,27): warning CS0169: The field 'Test.eAct' is never used
                 //     ActionWithCallback<E> eAct;                 // enum type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "eAct").WithArguments("Test.eAct").WithLocation(14, 27),
-                // (15,27): error CS0311: The type 'I' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback'. There is no implicit reference conversion from 'I' to 'System.Delegate'.
+                // (15,27): error CS0311: The type 'I' cannot be used as type parameter 'TCallback' in the generic type, method or alias 'ActionWithCallback<TCallback>'. There is no implicit reference conversion from 'I' to 'System.Delegate'.
                 //     ActionWithCallback<I> iAct;                 // interface type
-                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "iAct").WithArguments("ActionWithCallback", "System.Delegate", "TCallback", "I").WithLocation(15, 27),
+                Diagnostic(ErrorCode.ERR_GenericConstraintNotSatisfiedRefType, "iAct").WithArguments("ActionWithCallback<TCallback>", "System.Delegate", "TCallback", "I").WithLocation(15, 27),
                 // (15,27): warning CS0169: The field 'Test.iAct' is never used
                 //     ActionWithCallback<I> iAct;                 // interface type
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "iAct").WithArguments("Test.iAct").WithLocation(15, 27),

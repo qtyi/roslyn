@@ -1169,7 +1169,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return null;
 
             SymbolInfo info = GetSymbolInfoWorker(nameSyntax, SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases, cancellationToken);
-            return info.Symbol as IAliasSymbol;
+
+            return GetAliasSymbolFromSymbolInfo(info);
         }
 
         /// <summary>
@@ -1184,7 +1185,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return null;
 
             SymbolInfo info = GetSymbolInfoWorker(nameSyntax, SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases, cancellationToken);
-            return info.Symbol as IAliasSymbol;
+
+            return GetAliasSymbolFromSymbolInfo(info);
         }
 
         /// <summary>
@@ -1219,7 +1221,22 @@ namespace Microsoft.CodeAnalysis.CSharp
             var symbolInfo = this.GetSymbolInfoForNode(SymbolInfoOptions.PreferTypeToConstructors | SymbolInfoOptions.PreserveAliases,
                 boundNode, boundNode, boundNodeForSyntacticParent: null, binderOpt: binder);
 
-            return symbolInfo.Symbol as IAliasSymbol;
+            return GetAliasSymbolFromSymbolInfo(symbolInfo);
+        }
+
+        private static IAliasSymbol GetAliasSymbolFromSymbolInfo(SymbolInfo symbolInfo)
+        {
+            IAliasSymbol aliasSymbol = symbolInfo.Symbol as IAliasSymbol;
+
+            // If we have only one alias symbol as candidate symbol, but with
+            // wrong arity, we use that as result symbol.
+            if ((object)aliasSymbol == null &&
+                symbolInfo.CandidateReason == CandidateReason.WrongArity && symbolInfo.CandidateSymbols.Length == 1)
+            {
+                aliasSymbol = symbolInfo.CandidateSymbols[0] as IAliasSymbol;
+            }
+
+            return aliasSymbol;
         }
 
         /// <summary>
