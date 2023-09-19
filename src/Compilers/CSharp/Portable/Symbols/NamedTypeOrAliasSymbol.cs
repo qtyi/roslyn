@@ -42,7 +42,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public NamedTypeOrAliasSymbol(AliasSymbolFromSyntax aliasSymbol)
         {
-            Debug.Assert(aliasSymbol.Target is TypeSymbol);
             AliasSymbol = aliasSymbol;
         }
 

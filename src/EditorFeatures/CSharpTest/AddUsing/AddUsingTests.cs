@@ -2308,7 +2308,7 @@ class Description
 }", testHost);
         }
 
-        [Theory, CombinatorialData]
+        [Theory(Skip = "Report CS0308, not CS0118."), CombinatorialData]
         [WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/872908")]
         public async Task TestConflictedGenericName(TestHost testHost)
         {

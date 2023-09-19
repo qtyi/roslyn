@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Test.Utilities;
@@ -525,6 +526,14 @@ namespace @foreach { }
             Assert.Equal("@for", alias.ToString());
         }
 
+        public static readonly IEnumerable<object[]> WrongArityTestArguments = new[]
+        {
+            new[]{ string.Empty, "<object>" },
+            new[]{ "<T>", string.Empty },
+            new[]{ "<T>", "<object, object>" },
+            new[]{ "<T1, T2>","<object>" }
+        };
+
         [WorkItem(541937, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541937")]
         [Fact]
         public void LocalDeclaration()
@@ -603,6 +612,27 @@ class Program
             IdentifierNameSyntax exprSyntaxToBind = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
             Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Kind);
             Assert.Equal("(System.Int32, System.Int32)", model.GetAliasInfo(exprSyntaxToBind).Target.ToTestDisplayString());
+        }
+
+        [Theory, MemberData(nameof(WrongArityTestArguments))]
+        public void LocalDeclaration_WrongArity(string declarationTypeParameterList, string callSiteTypeArgumentList)
+        {
+            var text = $@"
+using GIBBERISH{declarationTypeParameterList} = object;
+class Program
+{{
+    static void Main()
+    {{
+        /*<bind>*/GIBBERISH{callSiteTypeArgumentList}/*</bind>*/ x;
+    }}
+}}";
+            SyntaxTree syntaxTree = Parse(text);
+            CSharpCompilation comp = CreateCompilation(syntaxTree);
+            var model = comp.GetSemanticModel(syntaxTree);
+            UsingDirectiveSyntax aliasDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Single();
+            ExpressionSyntax exprSyntaxToBind = GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
+            Assert.IsType(string.IsNullOrWhiteSpace(callSiteTypeArgumentList) ? typeof(IdentifierNameSyntax) : typeof(GenericNameSyntax), exprSyntaxToBind);
+            Assert.Equal(model.GetDeclaredSymbol(aliasDeclaration), model.GetAliasInfo(exprSyntaxToBind));
         }
 
         [WorkItem(576809, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/576809")]

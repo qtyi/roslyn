@@ -92,12 +92,9 @@ namespace N
                 // (4,26): error CS7007: A 'using static' or a 'using generic' directive can only be applied to types; 'System' is a namespace not a type. Consider a 'using namespace' directive instead
                 // using A<TArg, TResult> = System;
                 Diagnostic(ErrorCode.ERR_BadUsingType, "System").WithArguments("System").WithLocation(4, 26),
-                // (8,15): error CS0118: 'A<object, bool>' is a using alias but is used like a type
-                //     using B = A<object, bool>;
-                Diagnostic(ErrorCode.ERR_BadSKknown, "A<object, bool>").WithArguments("A<object, bool>", "using alias", "type").WithLocation(8, 15),
-                // (9,18): error CS0118: 'A<T, bool>' is a using alias but is used like a type
+                // (9,18): error CS7007: A 'using static' or a 'using generic' directive can only be applied to types; 'System' is a namespace not a type. Consider a 'using namespace' directive instead
                 //     using B<T> = A<T, bool>;
-                Diagnostic(ErrorCode.ERR_BadSKknown, "A<T, bool>").WithArguments("A<T, bool>", "using alias", "type").WithLocation(9, 18));
+                Diagnostic(ErrorCode.ERR_BadUsingType, "A<T, bool>").WithArguments("System").WithLocation(9, 18));
         }
     }
 }

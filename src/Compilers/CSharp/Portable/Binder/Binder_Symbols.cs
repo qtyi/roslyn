@@ -1128,13 +1128,20 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         private NamespaceOrTypeOrAliasSymbolWithAnnotations UnwrapAlias(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, out AliasSymbol alias, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0
+                && symbol.TypeWithAnnotations.HasType)
             {
                 alias = (AliasSymbol)symbol.Symbol;
                 return symbol.TypeWithAnnotations;
             }
+            else if (symbol.IsType)
+            {
+                alias = null;
+                return symbol.TypeWithAnnotations;
+            }
 
-            return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
+            var unwrapped = (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved);
+            return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsAlias ? symbol.IsNullableEnabled : false, unwrapped);
         }
 
         private Symbol UnwrapAlias(Symbol symbol, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
@@ -1147,14 +1154,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(syntax != null);
             Debug.Assert(diagnostics != null);
 
-            alias = symbol.Kind switch
-            {
-                SymbolKind.Alias => (AliasSymbol)symbol,
-                SymbolKind.ErrorType => ExtendedErrorTypeSymbol.ExtractAlias((TypeSymbol)symbol),
-                _ => null,
-            };
-
-            if (alias != null)
+            alias = symbol as AliasSymbol;
+            if ((object)alias != null)
             {
                 var result = alias.GetAliasTarget(basesBeingResolved);
                 var type = result as TypeSymbol;
@@ -1234,8 +1235,16 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool isUnboundTypeOrAliasExpr = node.IsUnboundGenericName;
             LookupOptions options = GetSimpleNameLookupOptions(node, isVerbatimIdentifier: false);
 
-            NamedTypeOrAliasSymbol unconstructedTypeOrAlias = LookupGenericTypeName(
+            NamedTypeOrAliasSymbol unconstructedTypeOrAlias = LookupGenericTypeOrAliasName(
                 diagnostics, basesBeingResolved, qualifierOpt, node, plainName, node.Arity, options);
+
+            if (unconstructedTypeOrAlias.IsAlias && unconstructedTypeOrAlias.AliasSymbol.Target.IsNamespace)
+            {
+                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                    AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken),
+                    unconstructedTypeOrAlias.AliasSymbol);
+            }
+
             TypeSymbol resultType;
             if (isUnboundTypeOrAliasExpr)
             {
@@ -1306,16 +1315,16 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
 
                 bool isNullableAnnotationsEnabled = AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken);
-                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateFromAlias(
+                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                    isNullableAnnotationsEnabled,
                     unconstructedTypeOrAlias.AliasSymbol,
-                    isNullableEnabled: isNullableAnnotationsEnabled,
                     TypeWithAnnotations.Create(isNullableAnnotationsEnabled, resultType));
             }
 
             return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken), resultType);
         }
 
-        private NamedTypeOrAliasSymbol LookupGenericTypeName(
+        private NamedTypeOrAliasSymbol LookupGenericTypeOrAliasName(
             BindingDiagnosticBag diagnostics,
             ConsList<TypeSymbol> basesBeingResolved,
             NamespaceOrTypeSymbol qualifierOpt,
@@ -1364,14 +1373,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
             else if (lookupResultSymbol is AliasSymbolFromSyntax alias)
             {
-                Debug.Assert(alias.Target.IsType);
                 namedTypeOrAlias = alias;
             }
             else
             {
                 // We did a lookup with a generic arity, filtered to types and aliases (target to types or namespaces). If
-                // we got back something other than a type or an alias targets to type, there had better be an error info
-                // for us.
+                // we got back something other than a type or an alias, there had better be an error info for us.
                 Debug.Assert(lookupResult.Error != null);
                 namedTypeOrAlias = new ExtendedErrorTypeSymbol(
                     GetContainingNamespaceOrType(lookupResultSymbol),
@@ -2005,15 +2012,6 @@ namespace Microsoft.CodeAnalysis.CSharp
                         diagnostics.AddDependency(container);
                     }
                 }
-            }
-            else if (symbol.Kind == SymbolKind.Alias && UnwrapAlias(symbol, BindingDiagnosticBag.Discarded, where) is { Kind: SymbolKind.Namespace })
-            {
-                var info = diagnostics.Add(ErrorCode.ERR_BadSKknown, where.Location, where, MessageID.IDS_SK_ALIAS.Localize(), MessageID.IDS_SK_TYPE.Localize());
-                symbol = new ExtendedErrorTypeSymbol(
-                    GetContainingNamespaceOrType(symbol),
-                    simpleName,
-                    arity,
-                    info);
             }
 
             return symbol;
