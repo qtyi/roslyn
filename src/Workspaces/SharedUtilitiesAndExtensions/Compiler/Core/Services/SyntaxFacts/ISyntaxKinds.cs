@@ -106,6 +106,10 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         int ArrayType { get; }
 
+        int? PointerType { get; }
+
+        int? FunctionPointerType { get; }
+
         #endregion
 
         #region literal expressions

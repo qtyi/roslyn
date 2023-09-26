@@ -415,7 +415,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
                     }
                     else
                     {
-                        Debug.Assert(nextSymbolOpt is null or ITypeSymbol);
+                        Debug.Assert(nextSymbolOpt is null or INamespaceOrTypeSymbol or IAliasSymbol);
                         await AddDescriptionPartAsync(nextSymbolOpt ?? alias.Target).ConfigureAwait(false);
                     }
                 }

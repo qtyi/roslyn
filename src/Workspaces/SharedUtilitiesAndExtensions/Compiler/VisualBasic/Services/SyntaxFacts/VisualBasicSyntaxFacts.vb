@@ -1461,12 +1461,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
             Return False
         End Function
 
-        Public Function IsPointerType(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsPointerType
-            Return False
+        Public Function IsTupleElement(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsTupleElement
+            Return TypeOf node Is TupleElementSyntax
         End Function
 
-        Public Function IsFunctionPointerType(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsFunctionPointerType
-            Return False
+        Public Function GetNameOfTupleElement(node As SyntaxNode) As String Implements ISyntaxFacts.GetNameOfTupleElement
+            Dim tupleElement = DirectCast(node, TupleElementSyntax)
+            Return If(TypeOf tupleElement Is NamedTupleElementSyntax, DirectCast(tupleElement, NamedTupleElementSyntax).Identifier.ValueText, Nothing)
         End Function
 
         Public Sub GetParametersOfFunctionPointerType(Of TParameter As SyntaxNode)(node As SyntaxNode, ByRef parameters As SeparatedSyntaxList(Of TParameter)) Implements ISyntaxFacts.GetParametersOfFunctionPointerType

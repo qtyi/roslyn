@@ -1393,14 +1393,15 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
                 SyntaxFacts.IsInTypeOnlyContext(identifierName) && identifierName.Identifier.Text == "dynamic";
         }
 
-        public bool IsPointerType(SyntaxNode node)
+        public bool IsTupleElement(SyntaxNode node)
         {
-            return node.IsKind(SyntaxKind.PointerType);
+            return node is TupleElementSyntax;
         }
 
-        public bool IsFunctionPointerType(SyntaxNode node)
+        public string? GetNameOfTupleElement(SyntaxNode node)
         {
-            return node.IsKind(SyntaxKind.FunctionPointerType);
+            var tupleElement = (TupleElementSyntax)node;
+            return tupleElement.Identifier == default ? null : tupleElement.Identifier.ValueText;
         }
 
         public void GetParametersOfFunctionPointerType<TParameter>(SyntaxNode node,

@@ -738,6 +738,12 @@ namespace Microsoft.CodeAnalysis.LanguageService
         public static bool IsArrayType(this ISyntaxFacts syntaxFacts, [NotNullWhen(true)] SyntaxNode? node)
             => node?.RawKind == syntaxFacts.SyntaxKinds.ArrayType;
 
+        public static bool IsPointerType(this ISyntaxFacts syntaxFacts, [NotNullWhen(true)] SyntaxNode? node)
+            => node?.RawKind == syntaxFacts.SyntaxKinds.PointerType;
+
+        public static bool IsFunctionPointerType(this ISyntaxFacts syntaxFacts, [NotNullWhen(true)] SyntaxNode? node)
+            => node?.RawKind == syntaxFacts.SyntaxKinds.FunctionPointerType;
+
         #endregion
 
         #region literal expressions

@@ -50,7 +50,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
             CancellationToken cancellationToken)
         {
             // Alias type parameters are like locals.  They are only in scope in the bounds of the using
-            // directive they're declared within.  We could improve perf by limiting our search by only looking within the
+            // directive they're declared within.  We improve perf by limiting our search by only looking within the
             // using directive's span. 
 
             using var _ = ArrayBuilder<FinderLocation>.GetInstance(out var result);

@@ -121,19 +121,6 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders
                 predefinedType == actualType;
         }
 
-        protected override async ValueTask<ImmutableArray<FinderLocation>> FindReferencesInDocumentAsync(INamedTypeSymbol namedType, FindReferencesDocumentState state, FindReferencesSearchOptions options, CancellationToken cancellationToken)
-        {
-            var result = await base.FindReferencesInDocumentAsync(namedType, state, options, cancellationToken).ConfigureAwait(false);
-
-            // Remove those reference to tuple type node.
-            if (namedType.IsTupleType)
-            {
-                result = result.WhereAsArray(static (loc, _syntaxFacts) => !_syntaxFacts.IsTupleType(loc.Node), state.SyntaxFacts);
-            }
-
-            return result;
-        }
-
         protected override async ValueTask<ImmutableArray<FinderLocation>> FindAllNonLocalAliaseReferencesAsync(INamedTypeSymbol namedType, FindReferencesDocumentState state, CancellationToken cancellationToken)
         {
             using var _ = ArrayBuilder<FinderLocation>.GetInstance(out var initialReferences);

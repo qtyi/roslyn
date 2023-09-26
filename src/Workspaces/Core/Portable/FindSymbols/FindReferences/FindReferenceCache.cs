@@ -60,9 +60,7 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                     var (semanticModel, cancellationToken) = arg;
 
                     var symbolInfo = semanticModel.GetSymbolInfo(n, cancellationToken);
-                    var aliasInfo =
-                        semanticModel.GetAliasInfo(n, cancellationToken) ??
-                        semanticModel.GetDeclaredSymbol(n, cancellationToken) as IAliasSymbol;
+                    var aliasInfo = semanticModel.GetAliasInfo(n, cancellationToken);
                     return (symbolInfo, aliasInfo);
                 },
                 (_semanticModel, cancellationToken));
