@@ -211,8 +211,9 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         bool IsDynamicType(SyntaxNode node);
 
-        bool IsPointerType(SyntaxNode node);
-        bool IsFunctionPointerType(SyntaxNode node);
+        bool IsTupleElement(SyntaxNode node);
+        string? GetNameOfTupleElement(SyntaxNode node);
+
         void GetParametersOfFunctionPointerType<TParameter>(SyntaxNode node,
             out SeparatedSyntaxList<TParameter> parameters) where TParameter : SyntaxNode;
 

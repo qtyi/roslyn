@@ -141,6 +141,33 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
             return ImmutableArray<ReferencedSymbol>.Empty;
         }
 
+        public static ImmutableArray<ReferencedSymbol> FilterToNamedTypeMatches(
+            this ImmutableArray<ReferencedSymbol> result,
+            INamedTypeSymbol? namedTypeSymbol)
+        {
+            if (namedTypeSymbol == null)
+            {
+                return result;
+            }
+
+            if (!namedTypeSymbol.IsTupleType)
+            {
+                return result;
+            }
+
+            var q = from r in result
+                    let namedTypeLocations = r.Locations.Where(loc =>
+                    {
+                        var syntaxFacts = loc.Document.GetRequiredLanguageService<ISyntaxFactsService>();
+                        var node = loc.Location.FindNode(getInnermostNodeForTie: true, default);
+                        return !syntaxFacts.IsTupleType(node);
+                    }).ToImmutableArray()
+                    where namedTypeLocations.Any()
+                    select new ReferencedSymbol(r.Definition, namedTypeLocations);
+
+            return q.ToImmutableArray();
+        }
+
         public static ImmutableArray<ReferencedSymbol> FilterToPointerTypeMatches(
             this ImmutableArray<ReferencedSymbol> result,
             IPointerTypeSymbol? pointerTypeSymbol)

@@ -3,14 +3,12 @@
     "path": "Roslyn.sln",
     "projects": [
       "src\\Compilers\\CSharp\\Portable\\Microsoft.CodeAnalysis.CSharp.csproj",
-      "src\\Compilers\\CSharp\\Test\\Semantic\\Microsoft.CodeAnalysis.CSharp.Semantic.UnitTests.csproj",
-      "src\\Compilers\\CSharp\\Test\\Symbol\\Microsoft.CodeAnalysis.CSharp.Symbol.UnitTests.csproj",
       "src\\Compilers\\Core\\Portable\\Microsoft.CodeAnalysis.csproj",
-      "src\\Deployment\\RoslynDeployment.csproj",
       "src\\EditorFeatures\\CSharpTest\\Microsoft.CodeAnalysis.CSharp.EditorFeatures.UnitTests.csproj",
       "src\\EditorFeatures\\CSharp\\Microsoft.CodeAnalysis.CSharp.EditorFeatures.csproj",
       "src\\EditorFeatures\\Core\\Microsoft.CodeAnalysis.EditorFeatures.csproj",
       "src\\EditorFeatures\\TestUtilities\\Microsoft.CodeAnalysis.EditorFeatures.Test.Utilities.csproj",
+      "src\\Features\\Core\\Portable\\Microsoft.CodeAnalysis.Features.csproj",
       "src\\Workspaces\\Core\\Portable\\Microsoft.CodeAnalysis.Workspaces.csproj",
       "src\\Workspaces\\SharedUtilitiesAndExtensions\\Compiler\\Core\\CompilerExtensions.shproj"
     ]
