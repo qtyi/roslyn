@@ -1704,14 +1704,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             ReportDiagnosticsIfObsolete(diagnostics, left, leftName, hasBaseReceiver: false);
 
             bool isLeftUnboundGenericType = left.Kind == SymbolKind.NamedType &&
-                ((NamedTypeSymbol)left).IsUnboundGenericType;
+                ((TypeSymbol)left).GetUnwrappedType<NamedTypeSymbol>().IsUnboundGenericType;
 
             if (isLeftUnboundGenericType)
             {
                 // If left name bound to an unbound generic type,
                 // we want to perform right name lookup within
                 // left's original named type definition.
-                left = ((NamedTypeSymbol)left).OriginalDefinition;
+                left = ((TypeSymbol)left).GetUnwrappedType<NamedTypeSymbol>().OriginalDefinition;
             }
 
             // since the name is qualified, it cannot result in a using alias symbol, only a type or namespace
