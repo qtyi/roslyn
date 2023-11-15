@@ -456,49 +456,22 @@ namespace Microsoft.CodeAnalysis
             public ISymbol? CurrentContextualSymbol
                 => _contextualSymbolStack.Count == 0 ? null : _contextualSymbolStack.Peek();
 
-            public readonly ref struct MethodPopper
+            public readonly ref struct MethodPopper(SymbolKeyReader reader, IMethodSymbol? method)
             {
-                private readonly SymbolKeyReader _reader;
-                private readonly IMethodSymbol? _method;
-
-                public MethodPopper(SymbolKeyReader reader, IMethodSymbol? method)
-                {
-                    _reader = reader;
-                    _method = method;
-                }
-
                 public void Dispose()
-                    => _reader.PopMethod(_method);
+                    => reader.PopMethod(method);
             }
 
-            public readonly ref struct AliasPopper
+            public readonly ref struct AliasPopper(SymbolKeyReader reader, IAliasSymbol? alias)
             {
-                private readonly SymbolKeyReader _reader;
-                private readonly IAliasSymbol? _alias;
-
-                public AliasPopper(SymbolKeyReader reader, IAliasSymbol? alias)
-                {
-                    _reader = reader;
-                    _alias = alias;
-                }
-
                 public void Dispose()
-                    => _reader.PopAlias(_alias);
+                    => reader.PopAlias(alias);
             }
 
-            public readonly ref struct ContextualSymbolPopper
+            public readonly ref struct ContextualSymbolPopper(SymbolKeyReader reader, ISymbol? contextualSymbol)
             {
-                private readonly SymbolKeyReader _reader;
-                private readonly ISymbol? _contextualSymbol;
-
-                public ContextualSymbolPopper(SymbolKeyReader reader, ISymbol? contextualSymbol)
-                {
-                    _reader = reader;
-                    _contextualSymbol = contextualSymbol;
-                }
-
                 public void Dispose()
-                    => _reader.PopContextualSymbol(_contextualSymbol);
+                    => reader.PopContextualSymbol(contextualSymbol);
             }
 
             internal SyntaxTree? GetSyntaxTree(string filePath)

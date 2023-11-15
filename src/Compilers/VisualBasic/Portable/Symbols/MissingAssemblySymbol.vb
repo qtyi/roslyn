@@ -120,6 +120,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()
         End Function
 
+        Friend Overrides Function GetInternalsVisibleToAssemblyNames() As IEnumerable(Of String)
+            Return SpecializedCollections.EmptyEnumerable(Of String)()
+        End Function
+
         Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
             Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()
         End Function

@@ -122,6 +122,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols.Metadata.PE
             Return Assembly.GetInternalsVisibleToPublicKeys(simpleName)
         End Function
 
+        Friend Overrides Function GetInternalsVisibleToAssemblyNames() As IEnumerable(Of String)
+            Return Assembly.GetInternalsVisibleToAssemblyNames()
+        End Function
+
         Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
             ' TODO: We propably should return public keys in IgnoresAccessChecksTo attribute.
             Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()

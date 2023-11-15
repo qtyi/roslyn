@@ -890,7 +890,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 var unusedDiagnostics =
 #if DEBUG
-                    new BindingDiagnosticBag(DiagnosticBag.GetInstance());
+                    BindingDiagnosticBag.GetInstance(withDiagnostics: true, withDependencies: false);
                 Debug.Assert(unusedDiagnostics.DiagnosticBag is object);
 #else
                     BindingDiagnosticBag.Discarded;
@@ -911,7 +911,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 #endif
                 }
 #if DEBUG
-                unusedDiagnostics.DiagnosticBag.Free();
+                unusedDiagnostics.Free();
 #endif
 
                 if (symbol.Symbol.Kind == SymbolKind.Method)
@@ -976,8 +976,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 parameterOrReturnTypeBinder = parameterOrReturnTypeBinder.WithAdditionalFlags(BinderFlags.SuppressAliasTargetUnwrapping);
             }
 
-            var localDiagnostics = new BindingDiagnosticBag(DiagnosticBag.GetInstance(), // Examined, but not reported.
-                                                            diagnostics.DependenciesBag);
+            var localDiagnostics = BindingDiagnosticBag.GetInstance(withDiagnostics: true, // Examined, but not reported.
+                                                                    withDependencies: diagnostics.AccumulatesDependencies);
             Debug.Assert(localDiagnostics.DiagnosticBag is object);
 
             TypeSymbol type = parameterOrReturnTypeBinder.BindType(typeSyntax, localDiagnostics).Type;
@@ -1003,7 +1003,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 Debug.Assert(type.GetUnwrappedTypeKind() != TypeKind.Error || typeSyntax.ContainsDiagnostics || !typeSyntax.SyntaxTree.ReportDocumentationCommentDiagnostics(), "Why wasn't there a diagnostic?");
             }
 
-            localDiagnostics.DiagnosticBag.Free();
+            diagnostics.AddDependencies(localDiagnostics);
+            localDiagnostics.Free();
 
             return type;
         }

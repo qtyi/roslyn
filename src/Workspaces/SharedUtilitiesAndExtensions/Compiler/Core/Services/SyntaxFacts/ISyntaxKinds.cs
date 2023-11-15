@@ -33,9 +33,14 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         int SingleLineDocCommentTrivia { get; }
         int? MultiLineDocCommentTrivia { get; }
-        int? ShebangDirectiveTrivia { get; }
 
         int IfDirectiveTrivia { get; }
+        int ElifDirectiveTrivia { get; }
+        int ElseDirectiveTrivia { get; }
+        int EndIfDirectiveTrivia { get; }
+        int EndRegionDirectiveTrivia { get; }
+        int RegionDirectiveTrivia { get; }
+        int? ShebangDirectiveTrivia { get; }
 
         #endregion
 
@@ -164,6 +169,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
         int? AndPattern { get; }
         int? ConstantPattern { get; }
         int? DeclarationPattern { get; }
+        int? ListPattern { get; }
         int? NotPattern { get; }
         int? OrPattern { get; }
         int? ParenthesizedPattern { get; }
@@ -178,6 +184,7 @@ namespace Microsoft.CodeAnalysis.LanguageService
 
         int ExpressionStatement { get; }
         int ForEachStatement { get; }
+        int ForStatement { get; }
         int IfStatement { get; }
         int LocalDeclarationStatement { get; }
         int? LocalFunctionStatement { get; }

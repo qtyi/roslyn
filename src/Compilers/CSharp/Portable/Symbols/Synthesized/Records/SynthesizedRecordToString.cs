@@ -22,13 +22,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     internal sealed class SynthesizedRecordToString : SynthesizedRecordObjectMethod
     {
         private readonly MethodSymbol _printMethod;
-        public SynthesizedRecordToString(SourceMemberContainerTypeSymbol containingType, MethodSymbol printMethod, int memberOffset, bool isReadOnly, BindingDiagnosticBag diagnostics)
+        public SynthesizedRecordToString(SourceMemberContainerTypeSymbol containingType, MethodSymbol printMethod, int memberOffset)
             : base(
                   containingType,
                   WellKnownMemberNames.ObjectToString,
                   memberOffset,
-                  isReadOnly: isReadOnly,
-                  diagnostics)
+                  isReadOnly: printMethod.IsEffectivelyReadOnly)
         {
             Debug.Assert(printMethod is object);
             _printMethod = printMethod;
@@ -36,7 +35,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override SpecialMember OverriddenSpecialMember => SpecialMember.System_Object__ToString;
 
-        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters, bool IsVararg, ImmutableArray<TypeParameterConstraintClause> DeclaredConstraintsForOverrideOrImplementation) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
+        protected override (TypeWithAnnotations ReturnType, TypeWithAnnotations ReturnTypeWithoutUnwrappingAliasTarget, ImmutableArray<ParameterSymbol> Parameters) MakeParametersAndBindReturnType(BindingDiagnosticBag diagnostics)
         {
             var compilation = DeclaringCompilation;
             var location = ReturnTypeLocation;
@@ -44,9 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var returnType = Binder.GetSpecialType(compilation, SpecialType.System_String, location, diagnostics);
             return (ReturnType: TypeWithAnnotations.Create(returnType, annotation),
                     ReturnTypeWithoutUnwrappingAliasTarget: TypeWithAnnotations.Create(returnType, annotation),
-                    Parameters: ImmutableArray<ParameterSymbol>.Empty,
-                    IsVararg: false,
-                    DeclaredConstraintsForOverrideOrImplementation: ImmutableArray<TypeParameterConstraintClause>.Empty);
+                    Parameters: ImmutableArray<ParameterSymbol>.Empty);
         }
 
         protected override int GetParameterCountFromSyntax() => 0;

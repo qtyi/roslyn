@@ -262,7 +262,7 @@ namespace Microsoft.CodeAnalysis.Rename
                 }
             }
 
-            var sourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
+            var sourceText = await document.GetValueTextAsync(cancellationToken).ConfigureAwait(false);
             var triggerText = sourceText.ToString(triggerToken.Span);
 
             return new SymbolicRenameInfo(

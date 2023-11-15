@@ -1064,7 +1064,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
             return constructors;
         }
 
-        private void AppendConstructors(SyntaxList<MemberDeclarationSyntax> members, List<SyntaxNode> constructors, CancellationToken cancellationToken)
+        private static void AppendConstructors(SyntaxList<MemberDeclarationSyntax> members, List<SyntaxNode> constructors, CancellationToken cancellationToken)
         {
             foreach (var member in members)
             {
@@ -1360,7 +1360,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
         {
             var tupleExpression = (TupleExpressionSyntax)node;
             openParen = tupleExpression.OpenParenToken;
-            arguments = (SeparatedSyntaxList<SyntaxNode>)tupleExpression.Arguments;
+            arguments = (SeparatedSyntaxList<TArgumentSyntax>)(SeparatedSyntaxList<SyntaxNode>)tupleExpression.Arguments;
             closeParen = tupleExpression.CloseParenToken;
         }
 
@@ -1369,7 +1369,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
         {
             var tupleType = (TupleTypeSyntax)node;
             openParen = tupleType.OpenParenToken;
-            elements = (SeparatedSyntaxList<SyntaxNode>)tupleType.Elements;
+            elements = (SeparatedSyntaxList<TElementSyntax>)(SeparatedSyntaxList<SyntaxNode>)tupleType.Elements;
             closeParen = tupleType.CloseParenToken;
         }
 
@@ -1378,7 +1378,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
         {
             var arrayType = (ArrayTypeSyntax)node;
             elementType = arrayType.ElementType;
-            rankSpecifiers = (SyntaxList<SyntaxNode>)arrayType.RankSpecifiers;
+            rankSpecifiers = (SyntaxList<TArrayRankSpecifier>)(SyntaxList<SyntaxNode>)arrayType.RankSpecifiers;
         }
 
         public void GetRankOfArrayRankSpecifier(SyntaxNode node, out int rank)
@@ -1408,7 +1408,7 @@ namespace Microsoft.CodeAnalysis.CSharp.LanguageService
             out SeparatedSyntaxList<TParameter> parameters) where TParameter : SyntaxNode
         {
             var functionPointerType = (FunctionPointerTypeSyntax)node;
-            parameters = (SeparatedSyntaxList<SyntaxNode>)functionPointerType.ParameterList.Parameters;
+            parameters = (SeparatedSyntaxList<TParameter>)(SeparatedSyntaxList<SyntaxNode>)functionPointerType.ParameterList.Parameters;
         }
 
         public bool IsPreprocessorDirective(SyntaxTrivia trivia)

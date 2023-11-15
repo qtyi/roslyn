@@ -2224,7 +2224,7 @@ enum E$$ : {underlyingTypeName}
         [InlineData("")]
         [InlineData(": int")]
         [InlineData(": System.Int32")]
-        public async Task EnumNonDefaultUnderlyingType_DontShowForDefaultType(string defaultType)
+        public async Task EnumNonDefaultUnderlyingType_DoNotShowForDefaultType(string defaultType)
         {
             await TestInClassAsync(@$"
 enum E$$ {defaultType}
@@ -4225,7 +4225,7 @@ class myClass
         }
 
         [Fact]
-        public async Task DontRemoveAttributeSuffixAndProduceInvalidIdentifier1()
+        public async Task DoNotRemoveAttributeSuffixAndProduceInvalidIdentifier1()
         {
             await TestAsync(
 @"using System;
@@ -4238,7 +4238,7 @@ class classAttribute : Attribute
         }
 
         [Fact, WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544026")]
-        public async Task DontRemoveAttributeSuffix2()
+        public async Task DoNotRemoveAttributeSuffix2()
         {
             await TestAsync(
 @"using System;

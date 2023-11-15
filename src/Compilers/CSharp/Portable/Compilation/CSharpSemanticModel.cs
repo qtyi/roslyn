@@ -325,7 +325,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             if (binder?.InCref == true)
             {
                 ImmutableArray<SymbolWithAdditionalSymbols> symbols = BindCref(crefSyntax, binder);
-                return GetCrefSymbolInfo(symbols, options, hasParameterList);
+                return GetCrefSymbolInfo(OneOrMany.Create(symbols), options, hasParameterList);
             }
 
             return SymbolInfo.None;
@@ -353,9 +353,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             return false;
         }
 
-        private static SymbolInfo GetCrefSymbolInfo(ImmutableArray<SymbolWithAdditionalSymbols> symbols, SymbolInfoOptions options, bool hasParameterList)
+        private static SymbolInfo GetCrefSymbolInfo(OneOrMany<SymbolWithAdditionalSymbols> symbols, SymbolInfoOptions options, bool hasParameterList)
         {
-            switch (symbols.Length)
+            switch (symbols.Count)
             {
                 case 0:
                     return SymbolInfo.None;
@@ -363,14 +363,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // Might have to expand an ExtendedErrorTypeSymbol into multiple candidates.
                     return GetSymbolInfoForSymbol(symbols[0], options);
                 default:
-                    ImmutableArray<Symbol> result;
+                    OneOrMany<Symbol> result;
                     if ((options & SymbolInfoOptions.ResolveAliases) == SymbolInfoOptions.ResolveAliases)
                     {
                         result = UnwrapAliases(symbols);
                     }
                     else
                     {
-                        result = symbols.SelectAsArray(static s => s.Symbol);
+                        result = symbols.Select(static s => s.Symbol);
                     }
 
                     LookupResultKind resultKind = LookupResultKind.Ambiguous;
@@ -719,7 +719,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             Debug.Assert(boundNode == null || crefSymbols.IsDefault);
             if (boundNode == null)
             {
-                return crefSymbols.IsDefault ? SymbolInfo.None : GetCrefSymbolInfo(crefSymbols, SymbolInfoOptions.DefaultOptions, hasParameterList: false);
+                return crefSymbols.IsDefault ? SymbolInfo.None : GetCrefSymbolInfo(OneOrMany.Create(crefSymbols), SymbolInfoOptions.DefaultOptions, hasParameterList: false);
             }
 
             var symbolInfo = this.GetSymbolInfoForNode(SymbolInfoOptions.DefaultOptions, boundNode, boundNode, boundNodeForSyntacticParent: null, binderOpt: binder);
@@ -1948,7 +1948,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             // Get symbols and result kind from the lowest and highest nodes associated with the
             // syntax node.
-            ImmutableArray<SymbolWithAdditionalSymbols> symbols = GetSemanticSymbols(
+            OneOrMany<SymbolWithAdditionalSymbols> symbols = GetSemanticSymbols(
                 boundExpr, boundNodeForSyntacticParent, binderOpt, options, out bool isDynamic, out LookupResultKind resultKind, out ImmutableArray<Symbol> unusedMemberGroup);
 
             if (highestBoundNode is BoundExpression highestBoundExpr)
@@ -1956,10 +1956,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 LookupResultKind highestResultKind;
                 bool highestIsDynamic;
                 ImmutableArray<Symbol> unusedHighestMemberGroup;
-                ImmutableArray<SymbolWithAdditionalSymbols> highestSymbols = GetSemanticSymbols(
+                OneOrMany<SymbolWithAdditionalSymbols> highestSymbols = GetSemanticSymbols(
                     highestBoundExpr, boundNodeForSyntacticParent, binderOpt, options, out highestIsDynamic, out highestResultKind, out unusedHighestMemberGroup);
 
-                if ((symbols.Length != 1 || resultKind == LookupResultKind.OverloadResolutionFailure) && highestSymbols.Length > 0)
+                if ((symbols.Count != 1 || resultKind == LookupResultKind.OverloadResolutionFailure) && highestSymbols.Count > 0)
                 {
                     symbols = highestSymbols;
                     resultKind = highestResultKind;
@@ -2001,26 +2001,26 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 // Caas clients don't want ErrorTypeSymbol in the symbols, but the best guess
                 // instead. If no best guess, then nothing is returned.
-                var builder = ArrayBuilder<SymbolWithAdditionalSymbols>.GetInstance(symbols.Length);
+                var builder = ArrayBuilder<SymbolWithAdditionalSymbols>.GetInstance(symbols.Count);
                 foreach (SymbolWithAdditionalSymbols symbol in symbols)
                 {
                     AddUnwrappingErrorTypes(builder, symbol);
                 }
 
-                symbols = builder.ToImmutableAndFree();
+                symbols = builder.ToOneOrManyAndFree();
             }
 
-            ImmutableArray<Symbol> result;
+            OneOrMany<Symbol> result;
             if ((options & SymbolInfoOptions.ResolveAliases) != 0)
             {
                 result = UnwrapAliases(symbols);
             }
             else
             {
-                result = symbols.SelectAsArray(static s => s.Symbol);
+                result = symbols.Select(static s => s.Symbol);
             }
 
-            if (resultKind == LookupResultKind.Viable && result.Length > 1)
+            if (resultKind == LookupResultKind.Viable && result.Count > 1)
             {
                 resultKind = LookupResultKind.OverloadResolutionFailure;
             }
@@ -2229,6 +2229,24 @@ namespace Microsoft.CodeAnalysis.CSharp
                         conversion = Conversion.Identity;
                     }
                 }
+                else if (boundExpr is BoundCollectionLiteralExpression convertedCollection)
+                {
+                    type = null;
+                    if (highestBoundExpr is BoundConversion { ConversionKind: ConversionKind.CollectionLiteral or ConversionKind.NoConversion, Conversion: var convertedCollectionConversion })
+                    {
+                        convertedType = highestBoundExpr.Type;
+                        convertedNullability = convertedCollection.TopLevelNullability;
+                        conversion = convertedCollectionConversion;
+                    }
+                    else
+                    {
+                        // There was an explicit cast on top of this.
+                        (convertedType, convertedNullability) = (convertedCollection.Type, nullability);
+                        conversion = convertedCollection.CollectionTypeKind == CollectionLiteralTypeKind.None
+                            ? Conversion.NoConversion
+                            : Conversion.CollectionLiteral;
+                    }
+                }
                 else if (highestBoundExpr != null && highestBoundExpr != boundExpr && highestBoundExpr.HasExpressionType())
                 {
                     (convertedType, convertedNullability) = getTypeAndNullability(highestBoundExpr);
@@ -2366,12 +2384,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             if ((object)originalErrorSymbol != null)
             {
                 // Error case.
-                var symbols = ImmutableArray<Symbol>.Empty;
+                var symbols = OneOrMany<Symbol>.Empty;
 
                 LookupResultKind resultKind = originalErrorSymbol.ResultKind;
                 if (resultKind != LookupResultKind.Empty)
                 {
-                    symbols = originalErrorSymbol.CandidateSymbols;
+                    symbols = OneOrMany.Create(originalErrorSymbol.CandidateSymbols);
                 }
 
                 if ((options & SymbolInfoOptions.ResolveAliases) != 0)
@@ -2410,7 +2428,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return symbol.UnwrapAlias(out _);
         }
 
-        protected static ImmutableArray<Symbol> UnwrapAliases(ImmutableArray<Symbol> symbols)
+        protected static OneOrMany<Symbol> UnwrapAliases(OneOrMany<Symbol> symbols)
         {
             bool anyAliases = false;
 
@@ -2431,10 +2449,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 AddUnwrappingErrorTypes(builder, UnwrapAlias(symbol));
             }
 
-            return builder.ToImmutableAndFree();
+            return builder.ToOneOrManyAndFree();
         }
 
-        protected static ImmutableArray<Symbol> UnwrapAliases(ImmutableArray<SymbolWithAdditionalSymbols> symbols)
+        protected static OneOrMany<Symbol> UnwrapAliases(OneOrMany<SymbolWithAdditionalSymbols> symbols)
         {
             bool anyAliases = false;
 
@@ -2445,7 +2463,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             if (!anyAliases)
-                return symbols.SelectAsArray(static s => s.Symbol);
+                return symbols.Select(static s => s.Symbol);
 
             ArrayBuilder<Symbol> builder = ArrayBuilder<Symbol>.GetInstance();
             foreach (SymbolWithAdditionalSymbols symbol in symbols)
@@ -2455,7 +2473,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 AddUnwrappingErrorTypes(builder, UnwrapAlias(symbol));
             }
 
-            return builder.ToImmutableAndFree();
+            return builder.ToOneOrManyAndFree();
         }
 
         // This is used by other binding APIs to invoke the right binder API
@@ -3407,7 +3425,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         // Get the symbols and possible method or property group associated with a bound node, as
         // they should be exposed through GetSemanticInfo.
         // NB: It is not safe to pass a null binderOpt during speculative binding.
-        private ImmutableArray<SymbolWithAdditionalSymbols> GetSemanticSymbols(
+        private OneOrMany<SymbolWithAdditionalSymbols> GetSemanticSymbols(
             BoundExpression boundNode,
             BoundNode boundNodeForSyntacticParent,
             Binder binderOpt,
@@ -3417,18 +3435,18 @@ namespace Microsoft.CodeAnalysis.CSharp
             out ImmutableArray<Symbol> memberGroup)
         {
             memberGroup = ImmutableArray<Symbol>.Empty;
-            ImmutableArray<SymbolWithAdditionalSymbols> symbols = ImmutableArray<SymbolWithAdditionalSymbols>.Empty;
+            OneOrMany<SymbolWithAdditionalSymbols> symbols = OneOrMany<SymbolWithAdditionalSymbols>.Empty;
             resultKind = LookupResultKind.Viable;
             isDynamic = false;
 
             switch (boundNode.Kind)
             {
                 case BoundKind.MethodGroup:
-                    symbols = GetMethodGroupSemanticSymbols((BoundMethodGroup)boundNode, boundNodeForSyntacticParent, binderOpt, out resultKind, out isDynamic, out memberGroup).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    symbols = GetMethodGroupSemanticSymbols((BoundMethodGroup)boundNode, boundNodeForSyntacticParent, binderOpt, out resultKind, out isDynamic, out memberGroup).Select(SymbolWithAdditionalSymbols.FromSymbol);
                     break;
 
                 case BoundKind.PropertyGroup:
-                    symbols = GetPropertyGroupSemanticSymbols((BoundPropertyGroup)boundNode, boundNodeForSyntacticParent, binderOpt, out resultKind, out memberGroup).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    symbols = GetPropertyGroupSemanticSymbols((BoundPropertyGroup)boundNode, boundNodeForSyntacticParent, binderOpt, out resultKind, out memberGroup).Select(SymbolWithAdditionalSymbols.FromSymbol);
                     break;
 
                 case BoundKind.BadExpression:
@@ -3440,7 +3458,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         {
                             if (resultKind == LookupResultKind.NotCreatable)
                             {
-                                return expr.Symbols.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                                return OneOrMany.Create(expr.Symbols).Select(SymbolWithAdditionalSymbols.FromSymbol);
                             }
                             else if (expr.Type.IsDelegateType())
                             {
@@ -3451,7 +3469,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             memberGroup = expr.Symbols;
                         }
 
-                        return expr.Symbols.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        return OneOrMany.Create(expr.Symbols).Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
 
                 case BoundKind.DelegateCreationExpression:
@@ -3478,17 +3496,17 @@ namespace Microsoft.CodeAnalysis.CSharp
                         if ((object)originalErrorType != null)
                         {
                             resultKind = originalErrorType.ResultKind;
-                            symbols = originalErrorType.CandidateSymbols.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                            symbols = OneOrMany.Create(originalErrorType.CandidateSymbols).Select(SymbolWithAdditionalSymbols.FromSymbol);
                         }
                         else
                         {
                             if (boundType.AliasOpt is not null)
                             {
-                                symbols = ImmutableArray.Create(SymbolWithAdditionalSymbols.FromAlias(boundType.AliasOpt, boundType.Type));
+                                symbols = OneOrMany.Create(SymbolWithAdditionalSymbols.FromAlias(boundType.AliasOpt, boundType.Type));
                             }
                             else
                             {
-                                symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(typeSymbol);
+                                symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(typeSymbol);
                             }
                         }
                     }
@@ -3516,13 +3534,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                         {
                             if ((object)call.Method != null)
                             {
-                                symbols = CreateReducedExtensionMethodIfPossible(call).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                                symbols = CreateReducedExtensionMethodIfPossible(call).Select(SymbolWithAdditionalSymbols.FromSymbol);
                                 resultKind = call.ResultKind;
                             }
                         }
                         else
                         {
-                            symbols = CreateReducedExtensionMethodsFromOriginalsIfNecessary(call, Compilation).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                            symbols = CreateReducedExtensionMethodsFromOriginalsIfNecessary(call, Compilation).Select(SymbolWithAdditionalSymbols.FromSymbol);
                             resultKind = call.ResultKind;
                         }
                     }
@@ -3531,7 +3549,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case BoundKind.FunctionPointerInvocation:
                     {
                         var invocation = (BoundFunctionPointerInvocation)boundNode;
-                        symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(invocation.FunctionPointer);
+                        symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(invocation.FunctionPointer);
                         resultKind = invocation.ResultKind;
                         break;
                     }
@@ -3546,7 +3564,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // group result in the call below.
                         symbols = GetMethodGroupSemanticSymbols(
                             ((BoundUnconvertedAddressOfOperator)boundNode).Operand,
-                            boundNodeForSyntacticParent, binderOpt, out resultKind, out isDynamic, methodGroup: out _).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                            boundNodeForSyntacticParent, binderOpt, out resultKind, out isDynamic, methodGroup: out _).Select(SymbolWithAdditionalSymbols.FromSymbol);
                         break;
                     }
 
@@ -3560,7 +3578,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         resultKind = indexerAccess.ResultKind;
 
                         ImmutableArray<PropertySymbol> originalIndexersOpt = indexerAccess.OriginalIndexersOpt;
-                        symbols = originalIndexersOpt.IsDefault ? ImmutableArray.Create<SymbolWithAdditionalSymbols>(indexerAccess.Indexer) : originalIndexersOpt.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = originalIndexersOpt.IsDefault ? OneOrMany.Create<SymbolWithAdditionalSymbols>(indexerAccess.Indexer) : OneOrMany.Create(originalIndexersOpt.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol));
                     }
                     break;
 
@@ -3575,12 +3593,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                     var methodSymbol = eventAssignment.IsAddition ? eventSymbol.AddMethod : eventSymbol.RemoveMethod;
                     if ((object)methodSymbol == null)
                     {
-                        symbols = ImmutableArray<SymbolWithAdditionalSymbols>.Empty;
+                        symbols = OneOrMany<SymbolWithAdditionalSymbols>.Empty;
                         resultKind = LookupResultKind.Empty;
                     }
                     else
                     {
-                        symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(methodSymbol);
+                        symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(methodSymbol);
                         resultKind = eventAssignment.ResultKind;
                     }
                     break;
@@ -3592,7 +3610,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // When we're looking at the left-hand side of an event assignment, we synthesize a BoundEventAccess node. This node does not have
                     // nullability information, however, so if we're in that case then we need to grab the event symbol from the parent event assignment
                     // which does have the nullability-reinferred symbol
-                    symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(parentOperator.Event);
+                    symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(parentOperator.Event);
                     resultKind = parentOperator.ResultKind;
                     break;
 
@@ -3605,14 +3623,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                         {
                             var symbol = conversion.SymbolOpt;
                             Debug.Assert((object)symbol != null);
-                            symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(ReducedExtensionMethodSymbol.Create(symbol));
+                            symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(ReducedExtensionMethodSymbol.Create(symbol));
                             resultKind = conversion.ResultKind;
                         }
                         else if (conversion.ConversionKind.IsUserDefinedConversion())
                         {
-                            ImmutableArray<Symbol> symbolArray;
+                            OneOrMany<Symbol> symbolArray;
                             GetSymbolsAndResultKind(conversion, conversion.SymbolOpt, conversion.OriginalUserDefinedConversionsOpt, out symbolArray, out resultKind);
-                            symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                            symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                         }
                         else
                         {
@@ -3624,18 +3642,18 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case BoundKind.BinaryOperator:
                     {
                         Debug.Assert(symbols.IsEmpty);
-                        ImmutableArray<Symbol> symbolArray = ImmutableArray<Symbol>.Empty;
+                        OneOrMany<Symbol> symbolArray = OneOrMany<Symbol>.Empty;
                         GetSymbolsAndResultKind((BoundBinaryOperator)boundNode, out isDynamic, ref resultKind, ref symbolArray);
-                        symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
                 case BoundKind.UnaryOperator:
                     {
                         Debug.Assert(symbols.IsEmpty);
-                        ImmutableArray<Symbol> symbolArray = ImmutableArray<Symbol>.Empty;
+                        OneOrMany<Symbol> symbolArray = OneOrMany<Symbol>.Empty;
                         GetSymbolsAndResultKind((BoundUnaryOperator)boundNode, out isDynamic, ref resultKind, ref symbolArray);
-                        symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
@@ -3643,27 +3661,27 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         var @operator = (BoundUserDefinedConditionalLogicalOperator)boundNode;
                         isDynamic = false;
-                        ImmutableArray<Symbol> symbolArray;
+                        OneOrMany<Symbol> symbolArray;
                         GetSymbolsAndResultKind(@operator, @operator.LogicalOperator, @operator.OriginalUserDefinedOperatorsOpt, out symbolArray, out resultKind);
-                        symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
                 case BoundKind.CompoundAssignmentOperator:
                     {
                         Debug.Assert(symbols.IsEmpty);
-                        ImmutableArray<Symbol> symbolArray = ImmutableArray<Symbol>.Empty;
+                        OneOrMany<Symbol> symbolArray = OneOrMany<Symbol>.Empty;
                         GetSymbolsAndResultKind((BoundCompoundAssignmentOperator)boundNode, out isDynamic, ref resultKind, ref symbolArray);
-                        symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
                 case BoundKind.IncrementOperator:
                     {
                         Debug.Assert(symbols.IsEmpty);
-                        ImmutableArray<Symbol> symbolArray = ImmutableArray<Symbol>.Empty;
+                        OneOrMany<Symbol> symbolArray = OneOrMany<Symbol>.Empty;
                         GetSymbolsAndResultKind((BoundIncrementOperator)boundNode, out isDynamic, ref resultKind, ref symbolArray);
-                        symbols = symbolArray.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = symbolArray.Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
@@ -3704,7 +3722,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             }
                             else
                             {
-                                symbols = candidateSymbols.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                                symbols = OneOrMany.Create(candidateSymbols).Select(SymbolWithAdditionalSymbols.FromSymbol);
                                 break;
                             }
                         }
@@ -3720,28 +3738,31 @@ namespace Microsoft.CodeAnalysis.CSharp
                         if (query.Operation != null && (object)query.Operation.ExpressionSymbol != null) builder.Add(query.Operation.ExpressionSymbol);
                         if ((object)query.DefinedSymbol != null) builder.Add(query.DefinedSymbol);
                         if (query.Cast != null && (object)query.Cast.ExpressionSymbol != null) builder.Add(query.Cast.ExpressionSymbol);
-                        symbols = builder.ToImmutableAndFree().SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = builder.ToOneOrManyAndFree().Select(SymbolWithAdditionalSymbols.FromSymbol);
                     }
                     break;
 
                 case BoundKind.DynamicInvocation:
                     var dynamicInvocation = (BoundDynamicInvocation)boundNode;
                     Debug.Assert(dynamicInvocation.ExpressionSymbol is null);
-                    symbols = (memberGroup = dynamicInvocation.ApplicableMethods.Cast<MethodSymbol, Symbol>()).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    memberGroup = dynamicInvocation.ApplicableMethods.Cast<MethodSymbol, Symbol>();
+                    symbols = OneOrMany.Create(memberGroup.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol));
                     isDynamic = true;
                     break;
 
                 case BoundKind.DynamicCollectionElementInitializer:
                     var collectionInit = (BoundDynamicCollectionElementInitializer)boundNode;
                     Debug.Assert(collectionInit.ExpressionSymbol is null);
-                    symbols = (memberGroup = collectionInit.ApplicableMethods.Cast<MethodSymbol, Symbol>()).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    memberGroup = collectionInit.ApplicableMethods.Cast<MethodSymbol, Symbol>();
+                    symbols = OneOrMany.Create(memberGroup.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol));
                     isDynamic = true;
                     break;
 
                 case BoundKind.DynamicIndexerAccess:
                     var dynamicIndexer = (BoundDynamicIndexerAccess)boundNode;
                     Debug.Assert(dynamicIndexer.ExpressionSymbol is null);
-                    symbols = (memberGroup = dynamicIndexer.ApplicableIndexers.Cast<PropertySymbol, Symbol>()).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    memberGroup = dynamicIndexer.ApplicableIndexers.Cast<PropertySymbol, Symbol>();
+                    symbols = OneOrMany.Create(memberGroup.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol));
                     isDynamic = true;
                     break;
 
@@ -3752,7 +3773,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 case BoundKind.DynamicObjectCreationExpression:
                     var objectCreation = (BoundDynamicObjectCreationExpression)boundNode;
-                    symbols = (memberGroup = objectCreation.ApplicableMethods.Cast<MethodSymbol, Symbol>()).SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    memberGroup = objectCreation.ApplicableMethods.Cast<MethodSymbol, Symbol>();
+                    symbols = OneOrMany.Create(memberGroup.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol));
                     isDynamic = true;
                     break;
 
@@ -3762,11 +3784,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                     if ((object)boundObjectCreation.Constructor != null)
                     {
                         Debug.Assert(boundObjectCreation.ConstructorsGroup.Contains(boundObjectCreation.Constructor));
-                        symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(boundObjectCreation.Constructor);
+                        symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(boundObjectCreation.Constructor);
                     }
                     else if (boundObjectCreation.ConstructorsGroup.Length > 0)
                     {
-                        symbols = boundObjectCreation.ConstructorsGroup.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                        symbols = StaticCast<Symbol>.From(OneOrMany.Create(boundObjectCreation.ConstructorsGroup)).Select(SymbolWithAdditionalSymbols.FromSymbol);
                         resultKind = resultKind.WorseResultKind(LookupResultKind.OverloadResolutionFailure);
                     }
 
@@ -3781,7 +3803,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         var containingMember = binder.ContainingMember();
 
                         var thisParam = GetThisParameter(boundNode.Type, containingType, containingMember, out resultKind);
-                        symbols = thisParam != null ? ImmutableArray.Create<SymbolWithAdditionalSymbols>(thisParam) : ImmutableArray<SymbolWithAdditionalSymbols>.Empty;
+                        symbols = thisParam != null ? OneOrMany.Create<SymbolWithAdditionalSymbols>(thisParam) : OneOrMany<SymbolWithAdditionalSymbols>.Empty;
                     }
                     break;
 
@@ -3790,7 +3812,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         var fromEndIndexExpression = (BoundFromEndIndexExpression)boundNode;
                         if ((object)fromEndIndexExpression.MethodOpt != null)
                         {
-                            symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(fromEndIndexExpression.MethodOpt);
+                            symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(fromEndIndexExpression.MethodOpt);
                         }
                         break;
                     }
@@ -3800,7 +3822,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         var rangeExpression = (BoundRangeExpression)boundNode;
                         if ((object)rangeExpression.MethodOpt != null)
                         {
-                            symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(rangeExpression.MethodOpt);
+                            symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(rangeExpression.MethodOpt);
                         }
                         break;
                     }
@@ -3809,7 +3831,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         if (boundNode.ExpressionSymbol is Symbol symbol)
                         {
-                            symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(symbol);
+                            symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(symbol);
                             resultKind = boundNode.ResultKind;
                         }
                     }
@@ -3888,7 +3910,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return thisParam;
         }
 
-        private static void GetSymbolsAndResultKind(BoundUnaryOperator unaryOperator, out bool isDynamic, ref LookupResultKind resultKind, ref ImmutableArray<Symbol> symbols)
+        private static void GetSymbolsAndResultKind(BoundUnaryOperator unaryOperator, out bool isDynamic, ref LookupResultKind resultKind, ref OneOrMany<Symbol> symbols)
         {
             UnaryOperatorKind operandType = unaryOperator.OperatorKind.OperandTypes();
             isDynamic = unaryOperator.OperatorKind.IsDynamic();
@@ -3904,14 +3926,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 Debug.Assert((object)unaryOperator.MethodOpt == null && unaryOperator.OriginalUserDefinedOperatorsOpt.IsDefaultOrEmpty);
                 UnaryOperatorKind op = unaryOperator.OperatorKind.Operator();
-                symbols = ImmutableArray.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(unaryOperator.Operand.Type.StrippedType(),
-                                                                                                 OperatorFacts.UnaryOperatorNameFromOperatorKind(op, isChecked: unaryOperator.OperatorKind.IsChecked()),
-                                                                                                 unaryOperator.Type.StrippedType()));
+                symbols = OneOrMany.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(unaryOperator.Operand.Type.StrippedType(),
+                                                                                          OperatorFacts.UnaryOperatorNameFromOperatorKind(op, isChecked: unaryOperator.OperatorKind.IsChecked()),
+                                                                                          unaryOperator.Type.StrippedType()));
                 resultKind = unaryOperator.ResultKind;
             }
         }
 
-        private static void GetSymbolsAndResultKind(BoundIncrementOperator increment, out bool isDynamic, ref LookupResultKind resultKind, ref ImmutableArray<Symbol> symbols)
+        private static void GetSymbolsAndResultKind(BoundIncrementOperator increment, out bool isDynamic, ref LookupResultKind resultKind, ref OneOrMany<Symbol> symbols)
         {
             UnaryOperatorKind operandType = increment.OperatorKind.OperandTypes();
             isDynamic = increment.OperatorKind.IsDynamic();
@@ -3927,14 +3949,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 Debug.Assert((object)increment.MethodOpt == null && increment.OriginalUserDefinedOperatorsOpt.IsDefaultOrEmpty);
                 UnaryOperatorKind op = increment.OperatorKind.Operator();
-                symbols = ImmutableArray.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(increment.Operand.Type.StrippedType(),
-                                                                                                 OperatorFacts.UnaryOperatorNameFromOperatorKind(op, isChecked: increment.OperatorKind.IsChecked()),
-                                                                                                 increment.Type.StrippedType()));
+                symbols = OneOrMany.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(increment.Operand.Type.StrippedType(),
+                                                                                          OperatorFacts.UnaryOperatorNameFromOperatorKind(op, isChecked: increment.OperatorKind.IsChecked()),
+                                                                                          increment.Type.StrippedType()));
                 resultKind = increment.ResultKind;
             }
         }
 
-        private static void GetSymbolsAndResultKind(BoundBinaryOperator binaryOperator, out bool isDynamic, ref LookupResultKind resultKind, ref ImmutableArray<Symbol> symbols)
+        private static void GetSymbolsAndResultKind(BoundBinaryOperator binaryOperator, out bool isDynamic, ref LookupResultKind resultKind, ref OneOrMany<Symbol> symbols)
         {
             BinaryOperatorKind operandType = binaryOperator.OperatorKind.OperandTypes();
             BinaryOperatorKind op = binaryOperator.OperatorKind.Operator();
@@ -3960,18 +3982,18 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // Comparison of a nullable type with null, return corresponding operator for Object.
                     var objectType = binaryOperator.Type.ContainingAssembly.GetSpecialType(SpecialType.System_Object);
 
-                    symbols = ImmutableArray.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(objectType,
-                                                                                             OperatorFacts.BinaryOperatorNameFromOperatorKind(op, isChecked: binaryOperator.OperatorKind.IsChecked()),
-                                                                                             objectType,
-                                                                                             binaryOperator.Type));
+                    symbols = OneOrMany.Create<Symbol>(new SynthesizedIntrinsicOperatorSymbol(objectType,
+                                                                                              OperatorFacts.BinaryOperatorNameFromOperatorKind(op, isChecked: binaryOperator.OperatorKind.IsChecked()),
+                                                                                              objectType,
+                                                                                              binaryOperator.Type));
                 }
                 else
                 {
-                    symbols = ImmutableArray.Create(GetIntrinsicOperatorSymbol(op, isDynamic,
-                                                                             binaryOperator.Left.Type,
-                                                                             binaryOperator.Right.Type,
-                                                                             binaryOperator.Type,
-                                                                             binaryOperator.OperatorKind.IsChecked()));
+                    symbols = OneOrMany.Create(GetIntrinsicOperatorSymbol(op, isDynamic,
+                                                                          binaryOperator.Left.Type,
+                                                                          binaryOperator.Right.Type,
+                                                                          binaryOperator.Type,
+                                                                          binaryOperator.OperatorKind.IsChecked()));
                 }
 
                 resultKind = binaryOperator.ResultKind;
@@ -4007,7 +4029,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                                           returnType);
         }
 
-        private static void GetSymbolsAndResultKind(BoundCompoundAssignmentOperator compoundAssignment, out bool isDynamic, ref LookupResultKind resultKind, ref ImmutableArray<Symbol> symbols)
+        private static void GetSymbolsAndResultKind(BoundCompoundAssignmentOperator compoundAssignment, out bool isDynamic, ref LookupResultKind resultKind, ref OneOrMany<Symbol> symbols)
         {
             BinaryOperatorKind operandType = compoundAssignment.Operator.Kind.OperandTypes();
             BinaryOperatorKind op = compoundAssignment.Operator.Kind.Operator();
@@ -4024,30 +4046,30 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 Debug.Assert((object)compoundAssignment.Operator.Method == null && compoundAssignment.OriginalUserDefinedOperatorsOpt.IsDefaultOrEmpty);
 
-                symbols = ImmutableArray.Create(GetIntrinsicOperatorSymbol(op, isDynamic,
-                                                                             compoundAssignment.Operator.LeftType,
-                                                                             compoundAssignment.Operator.RightType,
-                                                                             compoundAssignment.Operator.ReturnType,
-                                                                             compoundAssignment.Operator.Kind.IsChecked()));
+                symbols = OneOrMany.Create(GetIntrinsicOperatorSymbol(op, isDynamic,
+                                                                      compoundAssignment.Operator.LeftType,
+                                                                      compoundAssignment.Operator.RightType,
+                                                                      compoundAssignment.Operator.ReturnType,
+                                                                      compoundAssignment.Operator.Kind.IsChecked()));
                 resultKind = compoundAssignment.ResultKind;
             }
         }
 
-        private static void GetSymbolsAndResultKind(BoundExpression node, Symbol symbolOpt, ImmutableArray<MethodSymbol> originalCandidates, out ImmutableArray<Symbol> symbols, out LookupResultKind resultKind)
+        private static void GetSymbolsAndResultKind(BoundExpression node, Symbol symbolOpt, ImmutableArray<MethodSymbol> originalCandidates, out OneOrMany<Symbol> symbols, out LookupResultKind resultKind)
         {
             if (!ReferenceEquals(symbolOpt, null))
             {
-                symbols = ImmutableArray.Create(symbolOpt);
+                symbols = OneOrMany.Create(symbolOpt);
                 resultKind = node.ResultKind;
             }
             else if (!originalCandidates.IsDefault)
             {
-                symbols = StaticCast<Symbol>.From(originalCandidates);
+                symbols = StaticCast<Symbol>.From(OneOrMany.Create(originalCandidates));
                 resultKind = node.ResultKind;
             }
             else
             {
-                symbols = ImmutableArray<Symbol>.Empty;
+                symbols = OneOrMany<Symbol>.Empty;
                 resultKind = LookupResultKind.Empty;
             }
         }
@@ -4060,7 +4082,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             BoundNode boundNodeForSyntacticParent,
             Binder binderOpt,
             ref LookupResultKind resultKind,
-            ref ImmutableArray<SymbolWithAdditionalSymbols> symbols,
+            ref OneOrMany<SymbolWithAdditionalSymbols> symbols,
             ref ImmutableArray<Symbol> memberGroup)
         {
             NamedTypeSymbol typeSymbol = null;
@@ -4079,7 +4101,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     case BoundKind.Attribute:
                         BoundAttribute boundAttribute = (BoundAttribute)boundNodeForSyntacticParent;
 
-                        if (unwrappedSymbols.Length == 1 && unwrappedSymbols[0].Kind == SymbolKind.NamedType)
+                        if (unwrappedSymbols.Count == 1 && unwrappedSymbols[0].Kind == SymbolKind.NamedType)
                         {
                             Debug.Assert(resultKind != LookupResultKind.Viable ||
                                 TypeSymbol.Equals((TypeSymbol)unwrappedSymbols[0], boundAttribute.Type.GetNonErrorGuess(), TypeCompareKind.ConsiderEverything2));
@@ -4092,7 +4114,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     case BoundKind.BadExpression:
                         BoundBadExpression boundBadExpression = (BoundBadExpression)boundNodeForSyntacticParent;
-                        if (unwrappedSymbols.Length == 1)
+                        if (unwrappedSymbols.Count == 1)
                         {
                             resultKind = resultKind.WorseResultKind(boundBadExpression.ResultKind);
                             typeSymbol = unwrappedSymbols[0] as NamedTypeSymbol;
@@ -4113,7 +4135,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             MethodSymbol constructorOpt,
             Binder binderOpt,
             ref LookupResultKind resultKind,
-            ref ImmutableArray<SymbolWithAdditionalSymbols> symbols,
+            ref OneOrMany<SymbolWithAdditionalSymbols> symbols,
             ref ImmutableArray<Symbol> memberGroup)
         {
             Debug.Assert(lowestBoundNode != null);
@@ -4154,11 +4176,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if ((object)constructorOpt != null)
                 {
                     Debug.Assert(candidateConstructors.Contains(constructorOpt));
-                    symbols = ImmutableArray.Create<SymbolWithAdditionalSymbols>(constructorOpt);
+                    symbols = OneOrMany.Create<SymbolWithAdditionalSymbols>(constructorOpt);
                 }
                 else if (candidateConstructors.Length > 0)
                 {
-                    symbols = candidateConstructors.SelectAsArray(SymbolWithAdditionalSymbols.FromSymbol);
+                    symbols = StaticCast<Symbol>.From(OneOrMany.Create(candidateConstructors)).Select(SymbolWithAdditionalSymbols.FromSymbol);
                     Debug.Assert(resultKind != LookupResultKind.Viable);
                     resultKind = resultKind.WorseResultKind(LookupResultKind.OverloadResolutionFailure);
                 }
@@ -4323,7 +4345,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         // If the parent node of the method group syntax node provides information (such as arguments) 
         // that allows us to return more specific symbols (a specific overload or applicable candidates)
         // we return these. The complete set of symbols of the method group is then returned in methodGroup parameter.
-        private ImmutableArray<Symbol> GetMethodGroupSemanticSymbols(
+        private OneOrMany<Symbol> GetMethodGroupSemanticSymbols(
             BoundMethodGroup boundNode,
             BoundNode boundNodeForSyntacticParent,
             Binder binderOpt,
@@ -4333,7 +4355,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             Debug.Assert(binderOpt != null || IsInTree(boundNode.Syntax));
 
-            ImmutableArray<Symbol> symbols = ImmutableArray<Symbol>.Empty;
+            OneOrMany<Symbol> symbols = OneOrMany<Symbol>.Empty;
 
             resultKind = boundNode.ResultKind;
             if (resultKind == LookupResultKind.Empty)
@@ -4398,7 +4420,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 method = ReducedExtensionMethodSymbol.Create(method);
                             }
 
-                            symbols = ImmutableArray.Create((Symbol)method);
+                            symbols = OneOrMany.Create((Symbol)method);
                             resultKind = conversion.ResultKind;
                         }
                         else
@@ -4410,7 +4432,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     case BoundKind.DynamicInvocation:
                         var dynamicInvocation = (BoundDynamicInvocation)boundNodeForSyntacticParent;
-                        symbols = dynamicInvocation.ApplicableMethods.Cast<MethodSymbol, Symbol>();
+                        symbols = OneOrMany.Create(dynamicInvocation.ApplicableMethods.Cast<MethodSymbol, Symbol>());
                         isDynamic = true;
                         break;
 
@@ -4418,7 +4440,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // If the bad expression has symbol(s) from this method group, it better indicates any problems.
                         ImmutableArray<Symbol> myMethodGroup = methodGroup;
 
-                        symbols = ((BoundBadExpression)boundNodeForSyntacticParent).Symbols.WhereAsArray((sym, myMethodGroup) => myMethodGroup.Contains(sym), myMethodGroup);
+                        symbols = OneOrMany.Create(((BoundBadExpression)boundNodeForSyntacticParent).Symbols.WhereAsArray((sym, myMethodGroup) => myMethodGroup.Contains(sym), myMethodGroup));
                         if (symbols.Any())
                         {
                             resultKind = ((BoundBadExpression)boundNodeForSyntacticParent).ResultKind;
@@ -4426,13 +4448,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                         break;
 
                     case BoundKind.NameOfOperator:
-                        symbols = methodGroup;
+                        symbols = OneOrMany.Create(methodGroup);
                         resultKind = resultKind.WorseResultKind(LookupResultKind.MemberGroup);
                         break;
 
                     default:
-                        symbols = methodGroup;
-                        if (symbols.Length > 0)
+                        symbols = OneOrMany.Create(methodGroup);
+                        if (symbols.Count > 0)
                         {
                             resultKind = resultKind.WorseResultKind(LookupResultKind.OverloadResolutionFailure);
                         }
@@ -4446,8 +4468,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // not specified (see SemanticModel.GetSymbolInfoForNode). However, if there's exactly
                 // one candidate, then we should probably succeed.
 
-                symbols = methodGroup;
-                if (symbols.Length > 0)
+                symbols = OneOrMany.Create(methodGroup);
+                if (symbols.Count > 0)
                 {
                     resultKind = resultKind.WorseResultKind(LookupResultKind.OverloadResolutionFailure);
                 }
@@ -4458,7 +4480,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // If we didn't find a better set of symbols, then assume this is a method group that didn't
                 // get resolved. Return all members of the method group, with a resultKind of OverloadResolutionFailure
                 // (unless the method group already has a worse result kind).
-                symbols = methodGroup;
+                symbols = OneOrMany.Create(methodGroup);
                 if (!isDynamic && resultKind > LookupResultKind.OverloadResolutionFailure)
                 {
                     resultKind = LookupResultKind.OverloadResolutionFailure;
@@ -4469,7 +4491,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         // NB: It is not safe to pass a null binderOpt during speculative binding.
-        private ImmutableArray<Symbol> GetPropertyGroupSemanticSymbols(
+        private OneOrMany<Symbol> GetPropertyGroupSemanticSymbols(
             BoundPropertyGroup boundNode,
             BoundNode boundNodeForSyntacticParent,
             Binder binderOpt,
@@ -4478,7 +4500,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             Debug.Assert(binderOpt != null || IsInTree(boundNode.Syntax));
 
-            ImmutableArray<Symbol> symbols = ImmutableArray<Symbol>.Empty;
+            OneOrMany<Symbol> symbols = OneOrMany<Symbol>.Empty;
 
             resultKind = boundNode.ResultKind;
             if (resultKind == LookupResultKind.Empty)
@@ -4504,13 +4526,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                             if (indexer.OriginalIndexersOpt.IsDefault)
                             {
                                 // Overload resolution succeeded.
-                                symbols = ImmutableArray.Create<Symbol>(indexer.Indexer);
+                                symbols = OneOrMany.Create<Symbol>(indexer.Indexer);
                                 resultKind = LookupResultKind.Viable;
                             }
                             else
                             {
                                 resultKind = indexer.ResultKind.WorseResultKind(LookupResultKind.OverloadResolutionFailure);
-                                symbols = StaticCast<Symbol>.From(indexer.OriginalIndexersOpt);
+                                symbols = StaticCast<Symbol>.From(OneOrMany.Create(indexer.OriginalIndexersOpt));
                             }
                         }
                         break;
@@ -4519,7 +4541,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // If the bad expression has symbol(s) from this property group, it better indicates any problems.
                         ImmutableArray<Symbol> myPropertyGroup = propertyGroup;
 
-                        symbols = ((BoundBadExpression)boundNodeForSyntacticParent).Symbols.WhereAsArray((sym, myPropertyGroup) => myPropertyGroup.Contains(sym), myPropertyGroup);
+                        symbols = OneOrMany.Create(((BoundBadExpression)boundNodeForSyntacticParent).Symbols.WhereAsArray((sym, myPropertyGroup) => myPropertyGroup.Contains(sym), myPropertyGroup));
                         if (symbols.Any())
                         {
                             resultKind = ((BoundBadExpression)boundNodeForSyntacticParent).ResultKind;
@@ -4535,7 +4557,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // one candidate, then we should probably succeed.
 
                 // If we're speculatively binding and there's exactly one candidate, then we should probably succeed.
-                symbols = propertyGroup;
+                symbols = OneOrMany.Create(propertyGroup);
             }
 
             if (!symbols.Any())
@@ -4543,7 +4565,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // If we didn't find a better set of symbols, then assume this is a property group that didn't
                 // get resolved. Return all members of the property group, with a resultKind of OverloadResolutionFailure
                 // (unless the property group already has a worse result kind).
-                symbols = propertyGroup;
+                symbols = OneOrMany.Create(propertyGroup);
                 if (resultKind > LookupResultKind.OverloadResolutionFailure)
                 {
                     resultKind = LookupResultKind.OverloadResolutionFailure;
@@ -4828,7 +4850,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// If the call represents an extension method invocation with an explicit receiver, return the original
         /// methods as ReducedExtensionMethodSymbols. Otherwise, return the original methods unchanged.
         /// </summary>
-        private static ImmutableArray<MethodSymbol> CreateReducedExtensionMethodsFromOriginalsIfNecessary(BoundCall call, CSharpCompilation compilation)
+        private static OneOrMany<MethodSymbol> CreateReducedExtensionMethodsFromOriginalsIfNecessary(BoundCall call, CSharpCompilation compilation)
         {
             var methods = call.OriginalMethodsOpt;
             TypeSymbol extensionThisType = null;
@@ -4857,7 +4879,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 AddReducedAndFilteredMethodGroupSymbol(methodBuilder, filteredMethodBuilder, method, default(ImmutableArray<TypeWithAnnotations>), extensionThisType, compilation);
             }
             methodBuilder.Free();
-            return filteredMethodBuilder.ToImmutableAndFree();
+            return filteredMethodBuilder.ToOneOrManyAndFree();
         }
 
         /// <summary>
@@ -4865,7 +4887,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// ReducedExtensionMethodSymbol if it can be constructed. Otherwise, return the 
         /// original call method.
         /// </summary>
-        private ImmutableArray<Symbol> CreateReducedExtensionMethodIfPossible(BoundCall call)
+        private OneOrMany<Symbol> CreateReducedExtensionMethodIfPossible(BoundCall call)
         {
             var method = call.Method;
             Debug.Assert((object)method != null);
@@ -4879,10 +4901,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // type, we should also return the original call method.
                 method = reduced ?? method;
             }
-            return ImmutableArray.Create<Symbol>(method);
+            return OneOrMany.Create<Symbol>(method);
         }
 
-        private ImmutableArray<Symbol> CreateReducedExtensionMethodIfPossible(BoundDelegateCreationExpression delegateCreation, BoundExpression receiverOpt)
+        private OneOrMany<Symbol> CreateReducedExtensionMethodIfPossible(BoundDelegateCreationExpression delegateCreation, BoundExpression receiverOpt)
         {
             var method = delegateCreation.MethodOpt;
             Debug.Assert((object)method != null);
@@ -4892,7 +4914,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 MethodSymbol reduced = method.ReduceExtensionMethod(receiverOpt.Type, Compilation);
                 method = reduced ?? method;
             }
-            return ImmutableArray.Create<Symbol>(method);
+            return OneOrMany.Create<Symbol>(method);
         }
 
         /// <summary>
@@ -5259,13 +5281,36 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return this.GetDeclaredSymbols(field, cancellationToken);
             }
 
-            var symbol = GetDeclaredSymbolCore(declaration, cancellationToken);
-            if (symbol != null)
+            // If the type decl has a primary constructor, return that symbol as well.  This is needed so that if the
+            // 'suppression' or 'generated code' attribute is on the primary constructor (i.e. by using `[method:
+            // SuppressMessage(...)]`, it will be found when walking up to the type declaration.
+            if (declaration is TypeDeclarationSyntax typeDeclaration)
             {
-                return ImmutableArray.Create(symbol);
+                var namedType = GetDeclaredSymbol(typeDeclaration, cancellationToken);
+                var primaryConstructor = TryGetSynthesizedPrimaryConstructor(
+                    typeDeclaration, namedType.GetSymbol<NamedTypeSymbol>());
+
+                return primaryConstructor is null
+                    ? ImmutableArray.Create<ISymbol>(namedType)
+                    : ImmutableArray.Create<ISymbol>(namedType, primaryConstructor.GetPublicSymbol());
             }
 
-            return ImmutableArray.Create<ISymbol>();
+            var symbol = GetDeclaredSymbolCore(declaration, cancellationToken);
+            return symbol != null
+                ? ImmutableArray.Create(symbol)
+                : ImmutableArray<ISymbol>.Empty;
+        }
+
+        protected static SynthesizedPrimaryConstructor TryGetSynthesizedPrimaryConstructor(TypeDeclarationSyntax node, NamedTypeSymbol type)
+        {
+            if (type is SourceMemberContainerTypeSymbol { PrimaryConstructor: { } primaryConstructor }
+                && primaryConstructor.SyntaxRef.SyntaxTree == node.SyntaxTree
+                && primaryConstructor.GetSyntax() == node)
+            {
+                return primaryConstructor;
+            }
+
+            return null;
         }
 
         internal override void ComputeDeclarationsInSpan(TextSpan span, bool getSymbol, ArrayBuilder<DeclarationInfo> builder, CancellationToken cancellationToken)

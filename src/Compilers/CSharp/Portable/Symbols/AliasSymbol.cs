@@ -272,7 +272,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 var corLibrary = this.ContainingAssembly.CorLibrary;
                 var conversions = new TypeConversions(corLibrary);
-                target.CheckAllConstraints(DeclaringCompilation, conversions, Locations[0], diagnostics);
+                target.CheckAllConstraints(DeclaringCompilation, conversions, GetFirstLocation(), diagnostics);
             }
         }
 
@@ -291,12 +291,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             AliasSymbol? other = obj as AliasSymbol;
 
             return (object?)other != null &&
-                Equals(this.Locations.FirstOrDefault(), other.Locations.FirstOrDefault()) &&
+                Equals(this.TryGetFirstLocation(), other.TryGetFirstLocation()) &&
                 Equals(this.ContainingSymbol, other.ContainingSymbol, compareKind);
         }
 
         public override int GetHashCode()
-            => this.Locations.FirstOrDefault()?.GetHashCode() ?? Name.GetHashCode();
+            => this.TryGetFirstLocation()?.GetHashCode() ?? Name.GetHashCode();
 
         internal abstract override bool RequiresCompletion
         {

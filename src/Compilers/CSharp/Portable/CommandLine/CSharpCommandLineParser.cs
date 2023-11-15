@@ -137,6 +137,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool publicSign = false;
             string? sourceLink = null;
             string? ruleSetPath = null;
+            bool reportIVTs = false;
 
             // Process ruleset files first so that diagnostic severity settings specified on the command line via
             // /nowarn and /warnaserror can override diagnostic severity settings specified in the ruleset file.
@@ -1360,6 +1361,17 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 AddDiagnostic(diagnostics, ErrorCode.ERR_StdInOptionProvidedButConsoleInputIsNotRedirected);
                             }
                             continue;
+
+                        case "reportivts":
+                        case "reportivts+":
+                            if (valueMemory is not null) break;
+                            reportIVTs = true;
+                            continue;
+
+                        case "reportivts-":
+                            if (valueMemory is not null) break;
+                            reportIVTs = false;
+                            continue;
                     }
                 }
 
@@ -1587,7 +1599,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 PreferredUILang = preferredUILang,
                 ReportAnalyzer = reportAnalyzer,
                 SkipAnalyzers = skipAnalyzers,
-                EmbeddedFiles = embeddedFiles.AsImmutable()
+                EmbeddedFiles = embeddedFiles.AsImmutable(),
+                ReportInternalsVisibleToAttributes = reportIVTs,
             };
         }
 

@@ -14,8 +14,8 @@ namespace Microsoft.CodeAnalysis.Simplification
     {
         public const string Kind = "SymbolId";
 
-        public static SyntaxAnnotation Create(ISymbol symbol)
-            => new(Kind, DocumentationCommentId.CreateReferenceId(symbol));
+        public static SyntaxAnnotation? Create(ISymbol symbol)
+            => DocumentationCommentId.CreateReferenceId(symbol) is { } referenceId ? new(Kind, referenceId) : null;
 
         public static ISymbol? GetSymbol(SyntaxAnnotation annotation, Compilation compilation)
             => GetSymbols(annotation, compilation).FirstOrDefault();

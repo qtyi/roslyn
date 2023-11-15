@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return UnderlyingType.GetTypeMembers();
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(string name)
+        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             return UnderlyingType.GetTypeMembers(name);
         }
@@ -182,6 +182,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal override IEnumerable<(MethodSymbol Body, MethodSymbol Implemented)> SynthesizedInterfaceMethodImpls()
         {
             return UnderlyingType.SynthesizedInterfaceMethodImpls();
+        }
+
+        internal override bool HasInlineArrayAttribute(out int length)
+        {
+            return UnderlyingType.HasInlineArrayAttribute(out length);
         }
 
         protected override ITypeSymbol CreateITypeSymbol(CodeAnalysis.NullableAnnotation nullableAnnotation)

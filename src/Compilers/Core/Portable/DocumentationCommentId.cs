@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis
         /// Creates an id string used by external documentation comment files to identify declarations
         /// of types, namespaces, methods, properties, etc.
         /// </summary>
-        public static string CreateDeclarationId(ISymbol symbol)
+        public static string? CreateDeclarationId(ISymbol symbol)
         {
             if (symbol == null)
             {
@@ -53,7 +53,10 @@ namespace Microsoft.CodeAnalysis
 
             var builder = new StringBuilder();
             var generator = new DeclarationGenerator(builder);
-            generator.Visit(symbol);
+            if (!generator.Visit(symbol))
+            {
+                return null;
+            }
             return builder.ToString();
         }
 
@@ -61,7 +64,7 @@ namespace Microsoft.CodeAnalysis
         /// Creates an id string used to reference type symbols (not strictly declarations, includes
         /// arrays, pointers, type parameters, etc.)
         /// </summary>
-        public static string CreateReferenceId(ISymbol symbol)
+        public static string? CreateReferenceId(ISymbol symbol)
         {
             if (symbol == null)
             {
@@ -75,7 +78,10 @@ namespace Microsoft.CodeAnalysis
 
             var builder = new StringBuilder();
             var generator = new ReferenceGenerator(builder, typeParameterContext: null);
-            generator.Visit(symbol);
+            if (!generator.Visit(symbol))
+            {
+                return null;
+            }
             return builder.ToString();
         }
 
@@ -301,7 +307,7 @@ namespace Microsoft.CodeAnalysis
             return name;
         }
 
-        private class DeclarationGenerator : SymbolVisitor
+        private class DeclarationGenerator : SymbolVisitor<bool>
         {
             private readonly StringBuilder _builder;
             private readonly Generator _generator;
@@ -312,45 +318,76 @@ namespace Microsoft.CodeAnalysis
                 _generator = new Generator(builder);
             }
 
-            public override void DefaultVisit(ISymbol symbol)
+            public override bool VisitEvent(IEventSymbol symbol)
             {
-                throw new InvalidOperationException("Cannot generated a documentation comment id for symbol.");
-            }
-
-            public override void VisitEvent(IEventSymbol symbol)
-            {
+                var mark = _builder.Length;
                 _builder.Append("E:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
-            public override void VisitField(IFieldSymbol symbol)
+            public override bool VisitField(IFieldSymbol symbol)
             {
+                var mark = _builder.Length;
                 _builder.Append("F:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
-            public override void VisitProperty(IPropertySymbol symbol)
+            public override bool VisitProperty(IPropertySymbol symbol)
             {
+                var mark = _builder.Length;
                 _builder.Append("P:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
-            public override void VisitMethod(IMethodSymbol symbol)
+            public override bool VisitMethod(IMethodSymbol symbol)
             {
+                var mark = _builder.Length;
                 _builder.Append("M:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
-            public override void VisitNamespace(INamespaceSymbol symbol)
+            public override bool VisitNamespace(INamespaceSymbol symbol)
             {
+                var mark = _builder.Length;
                 _builder.Append("N:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
-            public override void VisitNamedType(INamedTypeSymbol symbol)
+            public override bool VisitNamedType(INamedTypeSymbol symbol)
             {
+                var mark = _builder.Length;
                 _builder.Append("T:");
-                _generator.Visit(symbol);
+                if (!_generator.Visit(symbol))
+                {
+                    _builder.Length = mark;
+                    return false;
+                }
+                return true;
             }
 
             private class Generator : SymbolVisitor<bool>
@@ -371,11 +408,6 @@ namespace Microsoft.CodeAnalysis
                     }
 
                     return _referenceGenerator;
-                }
-
-                public override bool DefaultVisit(ISymbol symbol)
-                {
-                    throw new InvalidOperationException("Cannot generated a documentation comment id for symbol.");
                 }
 
                 public override bool VisitEvent(IEventSymbol symbol)
@@ -546,6 +578,7 @@ namespace Microsoft.CodeAnalysis
             public override bool VisitNamedType(INamedTypeSymbol symbol)
             {
                 this.BuildDottedName(symbol);
+                var mark = _builder.Length;
 
                 if (symbol.IsGenericType)
                 {
@@ -565,7 +598,14 @@ namespace Microsoft.CodeAnalysis
                                 _builder.Append(",");
                             }
 
-                            this.Visit(symbol.TypeArguments[i]);
+                            // If we cannot generate type argument, we use OriginalDefinition.
+                            if (!this.Visit(symbol.TypeArguments[i]))
+                            {
+                                _builder.Length = mark;
+                                _builder.Append("`");
+                                _builder.Append(symbol.OriginalDefinition.TypeParameters.Length);
+                                return true;
+                            }
                         }
 
                         _builder.Append("}");
@@ -584,7 +624,10 @@ namespace Microsoft.CodeAnalysis
 
             public override bool VisitArrayType(IArrayTypeSymbol symbol)
             {
-                this.Visit(symbol.ElementType);
+                if (!this.Visit(symbol.ElementType))
+                {
+                    return false;
+                }
 
                 _builder.Append("[");
 
@@ -605,7 +648,11 @@ namespace Microsoft.CodeAnalysis
 
             public override bool VisitPointerType(IPointerTypeSymbol symbol)
             {
-                this.Visit(symbol.PointedAtType);
+                if (!this.Visit(symbol.PointedAtType))
+                {
+                    return false;
+                }
+
                 _builder.Append("*");
                 return true;
             }
@@ -616,7 +663,10 @@ namespace Microsoft.CodeAnalysis
                 {
                     // reference to type parameter not in scope, make explicit scope reference
                     var declarer = new DeclarationGenerator(_builder);
-                    declarer.Visit(symbol.ContainingSymbol);
+                    if (!declarer.Visit(symbol.ContainingSymbol))
+                    {
+                        return false;
+                    }
                     _builder.Append(":");
                 }
 

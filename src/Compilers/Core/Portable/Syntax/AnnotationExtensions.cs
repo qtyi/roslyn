@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -14,10 +15,10 @@ namespace Microsoft.CodeAnalysis
         /// </summary>
         /// <param name="node">Original node.</param>
         /// <param name="annotations">Annotations to be added to the new node.</param>
-        public static TNode WithAdditionalAnnotations<TNode>(this TNode node, params SyntaxAnnotation[] annotations)
+        public static TNode WithAdditionalAnnotations<TNode>(this TNode node, params SyntaxAnnotation?[] annotations)
             where TNode : SyntaxNode
         {
-            return (TNode)node.WithAdditionalAnnotationsInternal(annotations);
+            return (TNode)node.WithAdditionalAnnotationsInternal(annotations.WhereNotNull());
         }
 
         /// <summary>
@@ -25,10 +26,10 @@ namespace Microsoft.CodeAnalysis
         /// </summary>
         /// <param name="node">Original node.</param>
         /// <param name="annotations">Annotations to be added to the new node.</param>
-        public static TNode WithAdditionalAnnotations<TNode>(this TNode node, IEnumerable<SyntaxAnnotation> annotations)
+        public static TNode WithAdditionalAnnotations<TNode>(this TNode node, IEnumerable<SyntaxAnnotation?> annotations)
             where TNode : SyntaxNode
         {
-            return (TNode)node.WithAdditionalAnnotationsInternal(annotations);
+            return (TNode)node.WithAdditionalAnnotationsInternal(annotations.WhereNotNull());
         }
 
         /// <summary>
@@ -36,10 +37,10 @@ namespace Microsoft.CodeAnalysis
         /// </summary>
         /// <param name="node">Original node.</param>
         /// <param name="annotations">Annotations to be removed from the new node.</param>
-        public static TNode WithoutAnnotations<TNode>(this TNode node, params SyntaxAnnotation[] annotations)
+        public static TNode WithoutAnnotations<TNode>(this TNode node, params SyntaxAnnotation?[] annotations)
             where TNode : SyntaxNode
         {
-            return (TNode)node.GetNodeWithoutAnnotations(annotations);
+            return (TNode)node.GetNodeWithoutAnnotations(annotations.WhereNotNull());
         }
 
         /// <summary>
@@ -47,10 +48,10 @@ namespace Microsoft.CodeAnalysis
         /// </summary>
         /// <param name="node">Original node.</param>
         /// <param name="annotations">Annotations to be removed from the new node.</param>
-        public static TNode WithoutAnnotations<TNode>(this TNode node, IEnumerable<SyntaxAnnotation> annotations)
+        public static TNode WithoutAnnotations<TNode>(this TNode node, IEnumerable<SyntaxAnnotation?> annotations)
             where TNode : SyntaxNode
         {
-            return (TNode)node.GetNodeWithoutAnnotations(annotations);
+            return (TNode)node.GetNodeWithoutAnnotations(annotations.WhereNotNull());
         }
 
         /// <summary>

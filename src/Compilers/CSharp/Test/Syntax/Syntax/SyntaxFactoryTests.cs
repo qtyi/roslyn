@@ -28,6 +28,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         }
 
         [Fact]
+        public void UsingDirective()
+        {
+            var someValidName = SyntaxFactory.ParseName("System.String");
+            var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.Token(SyntaxKind.StaticKeyword), default, null, default, default, someValidName);
+            Assert.NotNull(usingDirective);
+            Assert.Equal(SyntaxKind.StaticKeyword, usingDirective.StaticKeyword.Kind());
+            Assert.Equal(default, usingDirective.Identifier);
+            Assert.Equal("System.String", usingDirective.Name.ToFullString());
+            Assert.Equal(SyntaxKind.SemicolonToken, usingDirective.SemicolonToken.Kind());
+        }
+
+        [Fact]
         public void SyntaxTree()
         {
             var text = SyntaxFactory.SyntaxTree(SyntaxFactory.CompilationUnit(), encoding: null).GetText();
