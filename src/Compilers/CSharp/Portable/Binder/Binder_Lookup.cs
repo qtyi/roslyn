@@ -208,6 +208,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                     result.Clear();
                     break;
 
+                case TypeKindInternal.AliasTargetType:
+                    this.LookupMembersInType(result, type.GetUnwrappedType(), name, arity, basesBeingResolved, options, originalBinder, diagnose, ref useSiteInfo);
+                    break;
+
                 case TypeKind.Unknown:
                 default:
                     throw ExceptionUtilities.UnexpectedValue(type.TypeKind);
@@ -1906,6 +1910,10 @@ symIsHidden:;
                 case TypeKind.Dynamic:
                 case TypeKind.Submission:
                     this.AddMemberLookupSymbolsInfoInClass(result, type, options, originalBinder, type);
+                    break;
+
+                case TypeKindInternal.AliasTargetType:
+                    this.AddMemberLookupSymbolsInfoInType(result, type.GetUnwrappedType(), options, originalBinder);
                     break;
             }
         }
