@@ -1003,7 +1003,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
 
                 var corLibrary = compilation.SourceAssembly.CorLibrary;
-                var conversions = new TypeConversions(corLibrary);
+                var conversions = corLibrary.TypeConversions;
                 foreach (var @using in usingsAndDiagnostics.UsingNamespacesOrTypes)
                 {
                     if (@using.UsingDirectiveReference!.SyntaxTree != declarationSyntax.SyntaxTree)

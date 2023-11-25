@@ -8755,16 +8755,16 @@ unsafe class C
             CreateCompilation(text, options: TestOptions.UnsafeReleaseDll).VerifyDiagnostics(
                 // (7,35): error CS0266: Cannot implicitly convert type 'long' to 'int'. An explicit conversion exists (are you missing a cast?)
                 //         { int* p = stackalloc int[1L]; } //CS0266 (could cast), even though constant value is fine
-                Diagnostic(ErrorCode.ERR_NoImplicitConvCast, "1L").WithArguments("long", "int"),
+                Diagnostic(ErrorCode.ERR_NoImplicitConvCast, "1L").WithArguments("long", "int").WithLocation(7, 35),
                 // (9,35): error CS0029: Cannot implicitly convert type 'string' to 'int'
                 //         { int* p = stackalloc int["hello"]; } // CS0029 (no conversion)
-                Diagnostic(ErrorCode.ERR_NoImplicitConv, @"""hello""").WithArguments("string", "int"),
+                Diagnostic(ErrorCode.ERR_NoImplicitConv, @"""hello""").WithArguments("string", "int").WithLocation(9, 35),
                 // (10,35): error CS0428: Cannot convert method group 'Main' to non-delegate type 'int'. Did you intend to invoke the method?
                 //         { int* p = stackalloc int[Main]; } //CS0428 (method group conversion)
-                Diagnostic(ErrorCode.ERR_MethGrpToNonDel, "Main").WithArguments("Main", "int"),
-                // (11,35): error CS1660: Cannot convert lambda expression to type 'int' because it is not a delegate type
+                Diagnostic(ErrorCode.ERR_MethGrpToNonDel, "Main").WithArguments("Main", "int").WithLocation(10, 35),
+                // (11,37): error CS1660: Cannot convert lambda expression to type 'int' because it is not a delegate type
                 //         { int* p = stackalloc int[x => x]; } //CS1660 (lambda conversion)
-                Diagnostic(ErrorCode.ERR_AnonMethToNonDel, "x => x").WithArguments("lambda expression", "int"));
+                Diagnostic(ErrorCode.ERR_AnonMethToNonDel, "=>").WithArguments("lambda expression", "int").WithLocation(11, 37));
         }
 
         [Fact]
@@ -9092,8 +9092,8 @@ class C<T> : A
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(8, 30)
             };
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
         }
 
         [Fact, WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544003")]
@@ -9131,9 +9131,9 @@ unsafe class C<T> : A
 
             CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular11).VerifyDiagnostics(expectedWithUnsafe);
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
 
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expectedWithUnsafe);
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expectedWithUnsafe);
 
             CreateCompilation(text).VerifyDiagnostics(expected);
 
@@ -9211,8 +9211,8 @@ class C<T> : A
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 30)
             };
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
         }
 
         [WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544003")]
@@ -9276,7 +9276,7 @@ unsafe class C<T> : A
                 //     private static C<T*[]> c;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "c").WithArguments("C<T>.c").WithLocation(17, 28));
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(
                 // (6,14): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // unsafe class C<T> : A
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "C").WithLocation(6, 14),
@@ -9295,7 +9295,7 @@ unsafe class C<T> : A
                 // (10,30): warning CS0169: The field 'C<T>.b' is never used
                 //     private static C<T*[]>.B b;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 30));
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(
                 // (10,30): warning CS0169: The field 'C<T>.b' is never used
                 //     private static C<T*[]>.B b;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 30),
@@ -9368,8 +9368,8 @@ class C<T> : A
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 35)
             };
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(expected);
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(expected);
         }
 
         [WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/544003")]
@@ -9417,7 +9417,7 @@ unsafe class C<T> : A
                 //     private static C<string*[]> c;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "c").WithArguments("C<T>.c").WithLocation(13, 33));
 
-            CreateCompilation(text, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
+            CreateCompilation(text, parseOptions: TestOptions.Regular12).VerifyDiagnostics(
                 // (6,14): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // unsafe class C<T> : A
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "C").WithLocation(6, 14),
@@ -9430,7 +9430,7 @@ unsafe class C<T> : A
                 // (10,35): warning CS0169: The field 'C<T>.b' is never used
                 //     private static C<string*[]>.B b;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 35));
-            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.RegularNext).VerifyDiagnostics(
+            CreateCompilation(text, options: TestOptions.UnsafeReleaseDll, parseOptions: TestOptions.Regular12).VerifyDiagnostics(
                 // (10,35): warning CS0169: The field 'C<T>.b' is never used
                 //     private static C<string*[]>.B b;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "b").WithArguments("C<T>.b").WithLocation(10, 35),
@@ -10439,9 +10439,9 @@ using unsafe X = int*;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = int*;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = int*;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int*;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = int*;
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7));
@@ -10458,9 +10458,9 @@ using unsafe X = int;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = int;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = int;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = int;
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7));
@@ -10477,9 +10477,9 @@ using unsafe X = int*;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = int*;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = int*;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int*;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7));
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7));
         }
 
         [Fact]
@@ -10493,9 +10493,9 @@ using unsafe X = int;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = int;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = int;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7));
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7));
         }
 
         [Fact]
@@ -10509,9 +10509,9 @@ using unsafe X = System.String;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = System.String;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = System.String;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.String;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = System.String;
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7));
@@ -10528,9 +10528,9 @@ using unsafe X = System.String;
                 // (2,1): hidden CS8019: Unnecessary using directive.
                 // using unsafe X = System.String;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe X = System.String;").WithLocation(2, 1),
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.String;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7));
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7));
         }
 
         [Fact]
@@ -11020,10 +11020,10 @@ using X = System.Collections.Generic.List<int*>;
                 Diagnostic(ErrorCode.ERR_UnsafeNeeded, "int*").WithLocation(2, 43)
             };
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
 
-            comp = CreateCompilation(csharp, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
         }
 
@@ -11075,10 +11075,10 @@ class C
                 Diagnostic(ErrorCode.ERR_BadTypeArgument, "x").WithArguments("int*").WithLocation(6, 14)
             };
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
 
-            comp = CreateCompilation(csharp, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
         }
 
@@ -11116,7 +11116,7 @@ class C
                 //     unsafe void M(X x)
                 Diagnostic(ErrorCode.ERR_BadTypeArgument, "x").WithArguments("int*").WithLocation(6, 21));
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(
                 // (2,7): error CS0306: The type 'int*' may not be used as a type argument
                 // using X = System.Collections.Generic.List<int*>;
@@ -11128,7 +11128,7 @@ class C
                 //     unsafe void M(X x)
                 Diagnostic(ErrorCode.ERR_BadTypeArgument, "x").WithArguments("int*").WithLocation(6, 21));
 
-            comp = CreateCompilation(csharp, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(
                 // (2,7): error CS0306: The type 'int*' may not be used as a type argument
                 // using X = System.Collections.Generic.List<int*>;
@@ -11301,9 +11301,9 @@ class C
 ";
             var comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7),
@@ -11334,9 +11334,9 @@ class C
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (6,5): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
                 //     X M(X x) => throw null; // 1
                 Diagnostic(ErrorCode.ERR_UnsafeNeeded, "X").WithLocation(6, 5),
@@ -11390,7 +11390,7 @@ class C
                 Diagnostic(ErrorCode.ERR_UnsafeNeeded, "y = delegate { throw null; }").WithLocation(12, 9)
             };
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);
@@ -11419,9 +11419,9 @@ class C
 
             var comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int*[];
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = int*[];
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7),
@@ -11461,9 +11461,9 @@ class C
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int*[];
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (6,5): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
                 //     X M(X x) => throw null; // 1
                 Diagnostic(ErrorCode.ERR_UnsafeNeeded, "X").WithLocation(6, 5),
@@ -11535,7 +11535,7 @@ class C
                 Diagnostic(ErrorCode.ERR_UnsafeNeeded, "x").WithLocation(13, 32)
             };
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics(expected);
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);
@@ -11562,9 +11562,9 @@ unsafe class C
 ";
             var comp = CreateCompilation(csharp, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7),
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7),
                 // (2,7): error CS0227: Unsafe code may only appear if compiling with /unsafe
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
                 Diagnostic(ErrorCode.ERR_IllegalUnsafe, "unsafe").WithLocation(2, 7),
@@ -11574,11 +11574,11 @@ unsafe class C
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = System.Collections.Generic.List<int*[]>;
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7));
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7));
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics();
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);
@@ -11606,12 +11606,12 @@ unsafe class C
 ";
             var comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular11);
             comp.VerifyDiagnostics(
-                // (2,7): error CS8652: The feature 'using type alias' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version.
+                // (2,7): error CS9058: Feature 'using type alias' is not available in C# 11.0. Please use language version 12.0 or greater.
                 // using unsafe X = int*[];
-                Diagnostic(ErrorCode.ERR_FeatureInPreview, "unsafe").WithArguments("using type alias").WithLocation(2, 7)
+                Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion11, "unsafe").WithArguments("using type alias", "12.0").WithLocation(2, 7)
                 );
 
-            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularNext);
+            comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.Regular12);
             comp.VerifyDiagnostics();
 
             comp = CreateCompilation(csharp, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);

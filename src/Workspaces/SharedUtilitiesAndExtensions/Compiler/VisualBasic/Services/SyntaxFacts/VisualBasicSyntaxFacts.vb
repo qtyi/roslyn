@@ -1424,10 +1424,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
             Return node IsNot Nothing AndAlso TryCast(node.Parent, ForEachStatementSyntax)?.Expression Is node
         End Function
 
-        Public Function GetExpressionOfForeachStatement(node As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetExpressionOfForeachStatement
-            Return DirectCast(node, ForEachStatementSyntax).Expression
-        End Function
-
         Public Function GetExpressionOfExpressionStatement(node As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetExpressionOfExpressionStatement
             Return DirectCast(node, ExpressionStatementSyntax).Expression
         End Function
@@ -1516,6 +1512,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
 
         Public Function GetInitializerOfVariableDeclarator(node As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetInitializerOfVariableDeclarator
             Return DirectCast(node, VariableDeclaratorSyntax).Initializer
+        End Function
+
+        Public Function GetInitializerOfPropertyDeclaration(node As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetInitializerOfPropertyDeclaration
+            Return DirectCast(node, PropertyBlockSyntax).PropertyStatement.Initializer
         End Function
 
         Public Function GetTypeOfVariableDeclarator(node As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetTypeOfVariableDeclarator
@@ -1780,6 +1780,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
             Return TypeOf node Is MemberAccessExpressionSyntax
         End Function
 
+        Public Function IsMethodDeclaration(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsMethodDeclaration
+            Return TypeOf node Is MethodBlockSyntax
+        End Function
+
         Public Function IsSimpleName(node As SyntaxNode) As Boolean Implements ISyntaxFacts.IsSimpleName
             Return TypeOf node Is SimpleNameSyntax
         End Function
@@ -1844,6 +1848,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.LanguageService
             whenTrue = conditionalExpression.WhenTrue
             whenFalse = conditionalExpression.WhenFalse
         End Sub
+
+        Public Function GetExpressionOfForeachStatement(statement As SyntaxNode) As SyntaxNode Implements ISyntaxFacts.GetExpressionOfForeachStatement
+            Return DirectCast(statement, ForEachStatementSyntax).Expression
+        End Function
 
         Public Sub GetPartsOfInterpolationExpression(node As SyntaxNode, ByRef stringStartToken As SyntaxToken, ByRef contents As SyntaxList(Of SyntaxNode), ByRef stringEndToken As SyntaxToken) Implements ISyntaxFacts.GetPartsOfInterpolationExpression
             Dim interpolatedStringExpression = DirectCast(node, InterpolatedStringExpressionSyntax)

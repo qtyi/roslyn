@@ -528,6 +528,7 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_NullablePublicOnlyAttribute,
                          WellKnownType.System_Span_T,
                          WellKnownType.System_ReadOnlySpan_T,
+                         WellKnownType.System_Collections_Immutable_ImmutableArray_T,
                          WellKnownType.System_Index,
                          WellKnownType.System_Range,
                          WellKnownType.System_Runtime_CompilerServices_AsyncIteratorStateMachineAttribute,
@@ -560,6 +561,9 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute,
                          WellKnownType.System_Runtime_InteropServices_MemoryMarshal,
                          WellKnownType.System_Runtime_CompilerServices_Unsafe,
+                         WellKnownType.System_Runtime_CompilerServices_RequiresLocationAttribute,
+                         WellKnownType.System_Runtime_InteropServices_CollectionsMarshal,
+                         WellKnownType.System_Runtime_InteropServices_ImmutableCollectionsMarshal,
                          WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute
                         ' Not available on all platforms.
                         Continue For
@@ -607,6 +611,7 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_NullablePublicOnlyAttribute,
                          WellKnownType.System_Span_T,
                          WellKnownType.System_ReadOnlySpan_T,
+                         WellKnownType.System_Collections_Immutable_ImmutableArray_T,
                          WellKnownType.System_Index,
                          WellKnownType.System_Range,
                          WellKnownType.System_Runtime_CompilerServices_AsyncIteratorStateMachineAttribute,
@@ -638,6 +643,9 @@ End Namespace
                          WellKnownType.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute,
                          WellKnownType.System_Runtime_InteropServices_MemoryMarshal,
                          WellKnownType.System_Runtime_CompilerServices_Unsafe,
+                         WellKnownType.System_Runtime_CompilerServices_RequiresLocationAttribute,
+                         WellKnownType.System_Runtime_InteropServices_CollectionsMarshal,
+                         WellKnownType.System_Runtime_InteropServices_ImmutableCollectionsMarshal,
                          WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute
                         ' Not available on all platforms.
                         Continue For
@@ -741,8 +749,9 @@ End Namespace
                          WellKnownMember.System_Runtime_CompilerServices_CompilerFeatureRequiredAttribute__ctor,
                          WellKnownMember.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute__ctor,
-                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
-                         WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle
+                         WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle,
+                         WellKnownMember.System_Runtime_CompilerServices_RequiresLocationAttribute__ctor,
+                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor
                         ' Not available yet, but will be in upcoming release.
                         Continue For
                     Case WellKnownMember.Microsoft_CodeAnalysis_Runtime_Instrumentation__CreatePayloadForMethodsSpanningSingleFile,
@@ -800,7 +809,10 @@ End Namespace
                          WellKnownMember.System_Runtime_InteropServices_MemoryMarshal__CreateSpan,
                          WellKnownMember.System_Runtime_CompilerServices_Unsafe__Add_T,
                          WellKnownMember.System_Runtime_CompilerServices_Unsafe__As_T,
-                         WellKnownMember.System_Runtime_CompilerServices_Unsafe__AsRef_T
+                         WellKnownMember.System_Runtime_CompilerServices_Unsafe__AsRef_T,
+                         WellKnownMember.System_Runtime_InteropServices_CollectionsMarshal__AsSpan_T,
+                         WellKnownMember.System_Runtime_InteropServices_CollectionsMarshal__SetCount_T,
+                         WellKnownMember.System_Runtime_InteropServices_ImmutableCollectionsMarshal__AsImmutableArray_T
                         ' Not always available.
                         Continue For
                 End Select
@@ -938,8 +950,9 @@ End Namespace
                          WellKnownMember.System_Runtime_CompilerServices_CompilerFeatureRequiredAttribute__ctor,
                          WellKnownMember.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute__ctor,
                          WellKnownMember.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute__ctor,
-                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
-                         WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle
+                         WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle,
+                         WellKnownMember.System_Runtime_CompilerServices_RequiresLocationAttribute__ctor,
+                         WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor
                         ' Not available yet, but will be in upcoming release.
                         Continue For
                     Case WellKnownMember.Microsoft_CodeAnalysis_Runtime_Instrumentation__CreatePayloadForMethodsSpanningSingleFile,
@@ -997,7 +1010,10 @@ End Namespace
                          WellKnownMember.System_Runtime_InteropServices_MemoryMarshal__CreateSpan,
                          WellKnownMember.System_Runtime_CompilerServices_Unsafe__Add_T,
                          WellKnownMember.System_Runtime_CompilerServices_Unsafe__As_T,
-                         WellKnownMember.System_Runtime_CompilerServices_Unsafe__AsRef_T
+                         WellKnownMember.System_Runtime_CompilerServices_Unsafe__AsRef_T,
+                         WellKnownMember.System_Runtime_InteropServices_CollectionsMarshal__AsSpan_T,
+                         WellKnownMember.System_Runtime_InteropServices_CollectionsMarshal__SetCount_T,
+                         WellKnownMember.System_Runtime_InteropServices_ImmutableCollectionsMarshal__AsImmutableArray_T
                         ' Not always available.
                         Continue For
                 End Select
