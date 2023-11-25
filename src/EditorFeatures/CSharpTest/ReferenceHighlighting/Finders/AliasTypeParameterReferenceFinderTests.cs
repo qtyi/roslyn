@@ -171,11 +171,11 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.ReferenceHighlighting
         {
             await TestAsync(
                 """
-                using X<{|Cursor:T|}> = [|T|];
+                using X<T> = T;
 
                 namespace N
                 {
-                    using Y<T> = [|X|]<T>;
+                    using Y<T> = X<{|Cursor:[|T|]|}>;
                 }
                 """);
         }
@@ -185,11 +185,25 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.ReferenceHighlighting
         {
             await TestAsync(
                 """
-                using {|Cursor:X|}<T> = [|T|];
+                using X<T> = [|T|];
                 
                 namespace N
                 {
-                    using Y<T> = [|X|]<T>;
+                    using Y<T> = {|Cursor:[|X|]|}<T>;
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task TestUsingOuterAliasWhichUsingItsTypeParameter3()
+        {
+            await TestAsync(
+                """
+                using X<T> = T;
+                
+                namespace N
+                {
+                    using {|Cursor:Y|}<T> = X<[|T|]>;
                 }
                 """);
         }

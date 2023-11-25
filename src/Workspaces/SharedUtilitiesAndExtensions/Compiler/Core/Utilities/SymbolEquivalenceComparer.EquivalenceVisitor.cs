@@ -633,7 +633,7 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
 
                 if (x.TypeParameterKind == TypeParameterKind.Alias)
                 {
-                    return true;
+                    return ReferenceEquals(x.ContainingSymbol, y.ContainingSymbol);
                 }
 
                 if (x.TypeParameterKind == TypeParameterKind.Cref)
