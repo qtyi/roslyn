@@ -5170,6 +5170,14 @@ namespace Microsoft.CodeAnalysis
                     (byte)SignatureTypeCode.TypeHandle, (byte)WellKnownType.System_Linq_Expressions_Expression,
                     (byte)SignatureTypeCode.TypeHandle, (byte)WellKnownType.System_Linq_Expressions_Expression,
                     (byte)SignatureTypeCode.TypeHandle, (byte)WellKnownType.System_Reflection_MethodInfo,
+
+                // IgnoresAccessChecksToAttribute__ctor
+                (byte)MemberFlags.Constructor,                                                                                               // Flags
+                (byte)WellKnownType.ExtSentinel, (byte)(WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute - WellKnownType.ExtSentinel), // DeclaringTypeId
+                 0,                                                                                                                          // Arity
+                    1,                                                                                                                       // Method Signature
+                    (byte)SignatureTypeCode.TypeHandle, (byte)SpecialType.System_Void,                                                       // Return Type
+                    (byte)SignatureTypeCode.TypeHandle, (byte)SpecialType.System_String,
             };
 
             string[] allNames = new string[(int)WellKnownMember.Count]
@@ -5793,6 +5801,7 @@ namespace Microsoft.CodeAnalysis
                 "GreaterThanOrEqual",                       // System_Linq_Expressions_Expression__GreaterThanOrEqual_MethodInfo,
                 "Default",                                  // System_Linq_Expressions_Expression__Default
                 "Power",                                    // System_Linq_Expressions_Expression__Power_MethodInfo,
+                ".ctor",                                    // System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute
             };
 
             s_descriptors = MemberDescriptor.InitializeFromStream(new System.IO.MemoryStream(initializationBytes, writable: false), allNames);

@@ -5624,10 +5624,7 @@ record C1
             comp.VerifyEmitDiagnostics(
                 // (4,12): error CS0246: The type or namespace name 'Error' could not be found (are you missing a using directive or an assembly reference?)
                 //     public Error field;
-                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "Error").WithArguments("Error").WithLocation(4, 12),
-                // (4,18): warning CS0649: Field 'C1.field' is never assigned to, and will always have its default value null
-                //     public Error field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("C1.field", "null").WithLocation(4, 18)
+                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "Error").WithArguments("Error").WithLocation(4, 12)
                 );
         }
 
@@ -5655,19 +5652,7 @@ record C1
             comp.VerifyEmitDiagnostics(
                 // (10,20): warning CS0169: The field 'C1.field3' is never used
                 //     private string field3;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "field3").WithArguments("C1.field3").WithLocation(10, 20),
-                // (11,21): warning CS0649: Field 'C1.field4' is never assigned to, and will always have its default value null
-                //     internal string field4;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field4").WithArguments("C1.field4", "null").WithLocation(11, 21),
-                // (12,22): warning CS0649: Field 'C1.field5' is never assigned to, and will always have its default value null
-                //     protected string field5;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field5").WithArguments("C1.field5", "null").WithLocation(12, 22),
-                // (13,31): warning CS0649: Field 'C1.field6' is never assigned to, and will always have its default value null
-                //     protected internal string field6;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field6").WithArguments("C1.field6", "null").WithLocation(13, 31),
-                // (14,30): warning CS0649: Field 'C1.field7' is never assigned to, and will always have its default value null
-                //     private protected string field7;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field7").WithArguments("C1.field7", "null").WithLocation(14, 30)
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "field3").WithArguments("C1.field3").WithLocation(10, 20)
                 );
             var v = CompileAndVerify(comp, expectedOutput: "C1 { field1 = hi, field2 =  }");
 
@@ -5718,10 +5703,7 @@ record C1(int Property)
             comp.VerifyEmitDiagnostics(
                 // (7,17): warning CS0169: The field 'C1.Property2' is never used
                 //     private int Property2;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "Property2").WithArguments("C1.Property2").WithLocation(7, 17),
-                // (8,18): warning CS0649: Field 'C1.Property3' is never assigned to, and will always have its default value 0
-                //     internal int Property3;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Property3").WithArguments("C1.Property3", "0").WithLocation(8, 18)
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "Property2").WithArguments("C1.Property2").WithLocation(7, 17)
                 );
             var v = CompileAndVerify(comp, expectedOutput: "C1 { Property = 42 }", verify: Verification.Skipped /* init-only */);
 
@@ -26118,7 +26100,7 @@ class Attr3 : System.Attribute {}
 
             var analyzer = new AnalyzerActions_01_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount0);
             Assert.Equal(1, analyzer.FireCount1);
@@ -26485,7 +26467,7 @@ record C
 
             var analyzer = new AnalyzerActions_02_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -26570,7 +26552,7 @@ record C
 
             var analyzer = new AnalyzerActions_03_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -26725,7 +26707,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_04_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(0, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -26941,7 +26923,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_05_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -27047,7 +27029,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_06_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount200);
@@ -27255,7 +27237,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_07_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -27360,7 +27342,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_08_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount200);
@@ -27573,7 +27555,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_09_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -29341,10 +29323,7 @@ record A(int X)
             comp.VerifyEmitDiagnostics(
                 // (2,14): warning CS8907: Parameter 'X' is unread. Did you forget to use it to initialize the property with that name?
                 // record A(int X)
-                Diagnostic(ErrorCode.WRN_UnreadRecordParameter, "X").WithArguments("X").WithLocation(2, 14),
-                // (4,16): warning CS0649: Field 'A.X' is never assigned to, and will always have its default value 0
-                //     public int X;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "X").WithArguments("A.X", "0").WithLocation(4, 16)
+                Diagnostic(ErrorCode.WRN_UnreadRecordParameter, "X").WithArguments("X").WithLocation(2, 14)
                 );
         }
 

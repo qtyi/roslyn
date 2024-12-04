@@ -202,6 +202,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             return _underlyingAssembly.GetInternalsVisibleToAssemblyNames();
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            return _underlyingAssembly.GetFriendAccessibleAssemblyPublicKeys(simpleName);
+        }
+
+        internal override IEnumerable<string> GetFriendAccessibleAssemblyNames()
+        {
+            return _underlyingAssembly.GetFriendAccessibleAssemblyNames();
+        }
+
         internal override bool AreInternalsVisibleToThisAssembly(AssemblySymbol other)
         {
             return _underlyingAssembly.AreInternalsVisibleToThisAssembly(other);

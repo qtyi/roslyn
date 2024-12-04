@@ -4676,10 +4676,7 @@ class Program
 }
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseExe);
-            var verifier = CompileAndVerify(comp, expectedOutput: "111", verify: Verification.Fails).VerifyDiagnostics(
-                // (6,45): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public readonly Buffer10<Buffer10<int>> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(6, 45));
+            var verifier = CompileAndVerify(comp, expectedOutput: "111", verify: Verification.Fails).VerifyDiagnostics();
 
             verifier.VerifyIL("Program.<M1>d__1.System.Runtime.CompilerServices.IAsyncStateMachine.MoveNext",
 @"
@@ -4835,9 +4832,6 @@ class Program
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseExe);
             comp.VerifyEmitDiagnostics(
-                // (8,45): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public readonly Buffer10<Buffer10<int>> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(8, 45),
                 // (20,12): error CS4007: Instance of type 'System.ReadOnlySpan<Buffer10<int>>' cannot be preserved across 'await' or 'yield' boundary.
                 //         => MemoryMarshal.CreateReadOnlySpan(
                 Diagnostic(ErrorCode.ERR_ByRefTypeAndAwait, @"MemoryMarshal.CreateReadOnlySpan(
@@ -4893,9 +4887,6 @@ class Program
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseExe);
             comp.VerifyEmitDiagnostics(
-                // (8,45): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public readonly Buffer10<Buffer10<int>> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(8, 45),
                 // (20,12): error CS4007: Instance of type 'System.ReadOnlySpan<int>' cannot be preserved across 'await' or 'yield' boundary.
                 //         => MemoryMarshal.CreateReadOnlySpan(
                 Diagnostic(ErrorCode.ERR_ByRefTypeAndAwait, @"MemoryMarshal.CreateReadOnlySpan(
@@ -4949,9 +4940,6 @@ class Program
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseExe);
             comp.VerifyEmitDiagnostics(
-                // (8,45): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public readonly Buffer10<Buffer10<int>> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(8, 45),
                 // (20,12): error CS8178: A reference returned by a call to 'Program.GetItem(ReadOnlySpan<Buffer10<int>>, int)' cannot be preserved across 'await' or 'yield' boundary.
                 //         => GetItem(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<Buffer10<Buffer10<int>>, Buffer10<int>>(ref Unsafe.AsRef(in GetC(x).F)),10), Get01())[await FromResult(Get02(x))];
                 Diagnostic(ErrorCode.ERR_RefReturningCallAndAwait, "GetItem(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<Buffer10<Buffer10<int>>, Buffer10<int>>(ref Unsafe.AsRef(in GetC(x).F)),10), Get01())").WithArguments("Program.GetItem(System.ReadOnlySpan<Buffer10<int>>, int)").WithLocation(20, 12)
@@ -11673,11 +11661,7 @@ class C
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseDll);
 
-            comp.VerifyDiagnostics(
-                // (4,26): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public Buffer10<int> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(4, 26)
-                );
+            comp.VerifyDiagnostics();
         }
 
         [Fact]
@@ -11831,11 +11815,7 @@ class Program
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseDll);
 
-            comp.VerifyDiagnostics(
-                // (4,35): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public readonly Buffer10<int> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(4, 35)
-                );
+            comp.VerifyDiagnostics();
         }
 
         [Fact]
@@ -11857,11 +11837,7 @@ class Program
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseDll);
 
-            comp.VerifyDiagnostics(
-                // (4,26): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public Buffer10<int> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(4, 26)
-                );
+            comp.VerifyDiagnostics();
         }
 
         [Fact]
@@ -11903,11 +11879,7 @@ class Program
 }
 ";
             var comp = CreateCompilation(src + Buffer10Definition, targetFramework: TargetFramework.Net80, options: TestOptions.ReleaseDll);
-            comp.VerifyDiagnostics(
-                // (4,26): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 
-                //     public Buffer10<int> F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "").WithLocation(4, 26)
-                );
+            comp.VerifyDiagnostics();
         }
 
         [Fact]

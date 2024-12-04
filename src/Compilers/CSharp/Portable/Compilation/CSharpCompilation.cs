@@ -503,7 +503,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             else
             {
                 _referenceManager = new ReferenceManager(
-                    MakeSourceAssemblySimpleName(),
+                    this,
                     this.Options.AssemblyIdentityComparer,
                     observedMetadata: referenceManager?.ObservedMetadata);
             }
@@ -4723,6 +4723,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                 }
             }
+        }
+
+        internal bool ShouldEmitIgnoresAccessToAttribute()
+        {
+            return SourceAssembly.ImportsInternals;
         }
 
         internal override AnalyzerDriver CreateAnalyzerDriver(ImmutableArray<DiagnosticAnalyzer> analyzers, AnalyzerManager analyzerManager, SeverityFilter severityFilter)

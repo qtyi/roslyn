@@ -43,7 +43,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Public Sub New(embeddedKind As EmbeddedSymbolKind, span As TextSpan)
             Debug.Assert(embeddedKind = EmbeddedSymbolKind.VbCore OrElse
                          embeddedKind = EmbeddedSymbolKind.XmlHelper OrElse
-                         embeddedKind = EmbeddedSymbolKind.EmbeddedAttribute)
+                         embeddedKind = EmbeddedSymbolKind.EmbeddedAttribute OrElse
+                         embeddedKind = EmbeddedSymbolKind.IgnoresAccessChecksToAttribute)
 
             _embeddedKind = embeddedKind
             _span = span

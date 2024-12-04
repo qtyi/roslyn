@@ -86,9 +86,6 @@ class C
 }";
             var comp = CreateCompilation(source, parseOptions: TestOptions.Regular7);
             comp.VerifyDiagnostics(
-                // (3,21): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "null").WithLocation(3, 21),
                 // (4,19): warning CS0169: The field 'C.G' is never used
                 //     static object G;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "G").WithArguments("C.G").WithLocation(4, 19));
@@ -109,9 +106,6 @@ class C
                 // (3,2): error CS8107: Feature 'nullable reference types' is not available in C# 7.0. Please use language version 8.0 or greater.
                 // #nullable enable
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion7, "nullable").WithArguments("nullable reference types", "8.0").WithLocation(3, 2),
-                // (4,21): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "null").WithLocation(4, 21),
                 // (5,19): warning CS0169: The field 'C.G' is never used
                 //     static object G;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "G").WithArguments("C.G").WithLocation(5, 19));
@@ -131,9 +125,6 @@ class C
                 // (3,21): warning CS8618: Non-nullable field 'F' is uninitialized. Consider declaring the field as nullable.
                 //     internal object F;
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "F").WithArguments("field", "F").WithLocation(3, 21),
-                // (3,21): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "null").WithLocation(3, 21),
                 // (4,19): warning CS8618: Non-nullable field 'G' is uninitialized. Consider declaring the field as nullable.
                 //     static object G;
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "G").WithArguments("field", "G").WithLocation(4, 19),
@@ -238,9 +229,6 @@ struct S
                 // (3,16): warning CS8618: Non-nullable field 'F1' is uninitialized. Consider declaring the field as nullable.
                 //     internal T F1;
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "F1").WithArguments("field", "F1").WithLocation(3, 16),
-                // (3,16): warning CS0649: Field 'C<T>.F1' is never assigned to, and will always have its default value 
-                //     internal T F1;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F1").WithArguments("C<T>.F1", "").WithLocation(3, 16),
                 // (5,21): warning CS8601: Possible null reference assignment.
                 //     internal T F3 = default;
                 Diagnostic(ErrorCode.WRN_NullReferenceAssignment, "default").WithLocation(5, 21),

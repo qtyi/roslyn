@@ -1141,7 +1141,7 @@ class C
             var comp = CreateCompilation(source, options: WithNullableEnable());
 
             comp.VerifyDiagnostics();
-            comp.VerifyAnalyzerDiagnostics(new[] { new NullabilityPrinter() }, null, null,
+            comp.VerifyAnalyzerDiagnostics(new DiagnosticAnalyzer[] { new NullabilityPrinter() }, null, null,
                 Diagnostic("CA9998_NullabilityPrinter", "o = null").WithArguments("o", "Annotated").WithLocation(6, 17),
                 Diagnostic("CA9998_NullabilityPrinter", "o1 = o").WithArguments("o1", "Annotated").WithLocation(7, 13),
                 Diagnostic("CA9999_NullabilityPrinter", "o").WithArguments("o", "MaybeNull", "Annotated", "MaybeNull").WithLocation(7, 18),
@@ -1821,7 +1821,7 @@ class C
                 );
 
             var analyzer = new CSharp73ProvidesNullableSemanticInfo_Analyzer();
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }).Verify();
             Assert.Equal(1, analyzer.HitCount);
         }
 
@@ -2771,10 +2771,7 @@ class C<T>
             comp.VerifyDiagnostics(
                     // (4,14): warning CS8618: Non-nullable field 'GetT' is uninitialized. Consider declaring the field as nullable.
                     //     public T GetT;
-                    Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "GetT").WithArguments("field", "GetT").WithLocation(4, 14),
-                    // (4,14): warning CS0649: Field 'C<T>.GetT' is never assigned to, and will always have its default value 
-                    //     public T GetT;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "GetT").WithArguments("C<T>.GetT", "").WithLocation(4, 14));
+                    Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "GetT").WithArguments("field", "GetT").WithLocation(4, 14));
 
             var syntaxTree = comp.SyntaxTrees[0];
             var root = syntaxTree.GetRoot();
@@ -4877,7 +4874,7 @@ class C
             comp.VerifyDiagnostics();
 
             var analyzer = new AutoPropInitializer_02_Analyzer();
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }).Verify();
             Assert.Equal(2, analyzer.HitCount);
         }
 

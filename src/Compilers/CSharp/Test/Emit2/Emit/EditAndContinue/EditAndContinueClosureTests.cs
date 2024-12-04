@@ -5485,7 +5485,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000007
                           IL_000b:  throw
@@ -6533,7 +6533,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F5
+                          IL_0000:  ldstr      0x700000B5
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000005
                           IL_000b:  throw
@@ -6672,7 +6672,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000007
                           IL_000b:  throw
@@ -8827,7 +8827,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x0600000A
                           IL_000b:  throw
@@ -9463,7 +9463,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000008
                           IL_000b:  throw

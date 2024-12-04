@@ -51,6 +51,11 @@ namespace Microsoft.CodeAnalysis
     internal partial class CommonReferenceManager<TCompilation, TAssemblySymbol> : CommonReferenceManager
     {
         /// <summary>
+        /// The compilation being build.
+        /// </summary>
+        internal readonly TCompilation Compilation;
+
+        /// <summary>
         /// If the compilation being built represents an assembly its assembly name.
         /// If the compilation being built represents a module, the name of the 
         /// containing assembly or <see cref="Compilation.UnspecifiedModuleAssemblyName"/>
@@ -192,12 +197,13 @@ namespace Microsoft.CodeAnalysis
         /// </summary>
         private ImmutableArray<UnifiedAssembly<TAssemblySymbol>> _lazyUnifiedAssemblies;
 
-        public CommonReferenceManager(string simpleAssemblyName, AssemblyIdentityComparer identityComparer, Dictionary<MetadataReference, MetadataOrDiagnostic>? observedMetadata)
+        public CommonReferenceManager(TCompilation compilation, AssemblyIdentityComparer identityComparer, Dictionary<MetadataReference, MetadataOrDiagnostic>? observedMetadata)
         {
-            Debug.Assert(simpleAssemblyName != null);
+            Debug.Assert(compilation != null);
             Debug.Assert(identityComparer != null);
 
-            this.SimpleAssemblyName = simpleAssemblyName;
+            this.Compilation = compilation;
+            this.SimpleAssemblyName = compilation.MakeSourceAssemblySimpleName();
             this.IdentityComparer = identityComparer;
             this.ObservedMetadata = observedMetadata ?? new Dictionary<MetadataReference, MetadataOrDiagnostic>();
         }

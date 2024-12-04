@@ -1507,21 +1507,48 @@ symIsHidden:;
                     unwrappedSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
                     && !options.IsAttributeTypeLookup())
                 {
-                    var assemblyName = this.Compilation.AssemblyName;
-                    if (assemblyName == null)
+                    // NOTE: Check if any [InternalsVisibleTo] attribute in the containing assembly of unwrappedSymbol matches this assembly.
                     {
-                        return false;
-                    }
-                    var keys = unwrappedSymbol.ContainingAssembly.GetInternalsVisibleToPublicKeys(assemblyName);
-                    if (!keys.Any())
-                    {
-                        return false;
+                        var assemblyName = this.Compilation.AssemblyName;
+                        if (assemblyName != null)
+                        {
+                            var keys = unwrappedSymbol.ContainingAssembly.GetInternalsVisibleToPublicKeys(assemblyName);
+                            if (keys.Any())
+                            {
+                                ImmutableArray<byte> publicKey = this.Compilation.Assembly.PublicKey;
+
+                                if (publicKey.IsDefaultOrEmpty)
+                                {
+                                    return true;
+                                }
+
+                                foreach (ImmutableArray<byte> key in keys)
+                                {
+                                    if (key.SequenceEqual(publicKey))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
                     }
 
-                    ImmutableArray<byte> publicKey = this.Compilation.Assembly.PublicKey;
-
-                    if (!publicKey.IsDefault)
+                    // NOTE: Check if any friend accessible assembly matches the containing assembly of unwrappedSymbol.
                     {
+                        var assemblyName = unwrappedSymbol.ContainingAssembly.Name;
+                        var keys = this.Compilation.SourceAssembly.GetFriendAccessibleAssemblyPublicKeys(assemblyName);
+                        if (!keys.Any())
+                        {
+                            return false;
+                        }
+
+                        ImmutableArray<byte> publicKey = unwrappedSymbol.ContainingAssembly.PublicKey;
+
+                        if (publicKey.IsDefaultOrEmpty)
+                        {
+                            return !this.Compilation.Assembly.PublicKey.IsDefaultOrEmpty;
+                        }
+
                         foreach (ImmutableArray<byte> key in keys)
                         {
                             if (key.SequenceEqual(publicKey))

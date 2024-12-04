@@ -3498,10 +3498,7 @@ internal class AnyClass : AnyBaseClass
                 Diagnostic(ErrorCode.ERR_DottedTypeNameNotFoundInAgg, "Val").WithArguments("Val", "MyNamespace.AnyClass.AnyEnum").WithLocation(2, 43),
                 // (6,27): error CS0246: The type or namespace name 'AnyBaseClass' could not be found (are you missing a using directive or an assembly reference?)
                 // internal class AnyClass : AnyBaseClass
-                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "AnyBaseClass").WithArguments("AnyBaseClass").WithLocation(6, 27),
-                // (10,29): warning CS0649: Field 'AnyClass.AnyEnum.Val' is never assigned to, and will always have its default value 0
-                //         static internal int Val;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Val").WithArguments("MyNamespace.AnyClass.AnyEnum.Val", "0").WithLocation(10, 29)
+                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "AnyBaseClass").WithArguments("AnyBaseClass").WithLocation(6, 27)
                 );
         }
 

@@ -4778,9 +4778,9 @@ public class RemoveUnnecessaryCastTests
                 Sources = { fixedSource },
                 ExpectedDiagnostics =
                 {
-                    // /0/Test0.cs(9,10): error CS0118: 'x' is a variable but is used like a type
+                    // /0/Test0.cs(8, 10, 8, 11): error CS0118: 'x' is a variable but is used like a type
                     DiagnosticResult.CompilerError("CS0118").WithSpan(8, 10, 8, 11).WithArguments("x", "variable", "type"),
-                    // /0/Test0.cs(9,20): error CS1525: Invalid expression term ')'
+                    // /0/Test0.cs(8, 20, 8, 21): error CS1525: Invalid expression term ')'
                     DiagnosticResult.CompilerError("CS1525").WithSpan(8, 20, 8, 21).WithArguments(")"),
                 },
             },

@@ -31,6 +31,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End Get
         End Property
 
+        Private Shared s_ignoresAccessChecksToAttribute As String
+        Public Shared ReadOnly Property IgnoresAccessChecksToAttribute As String
+            Get
+                If s_ignoresAccessChecksToAttribute Is Nothing Then
+                    s_ignoresAccessChecksToAttribute = GetManifestResourceString("IgnoresAccessChecksToAttribute.vb")
+                End If
+
+                Return s_ignoresAccessChecksToAttribute
+            End Get
+        End Property
+
         Private Shared s_vbCoreSourceText As String
         Public Shared ReadOnly Property VbCoreSourceText As String
             Get

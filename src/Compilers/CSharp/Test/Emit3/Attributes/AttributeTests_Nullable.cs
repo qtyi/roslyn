@@ -2672,9 +2672,18 @@ internal class InternalTypes
     Base()
 PublicTypes
     [Nullable({ 0, 1, 2 })] PublicTypes.Public
+    [Nullable({ 0, 1, 2 })] PublicTypes.Internal
     [Nullable({ 0, 1, 2 })] PublicTypes.Protected
     [Nullable({ 0, 1, 2 })] PublicTypes.ProtectedInternal
+    [Nullable({ 0, 1, 2 })] PublicTypes.PrivateProtected
+InternalTypes
+    [Nullable({ 0, 1, 2 })] InternalTypes.Public
+    [Nullable({ 0, 1, 2 })] InternalTypes.Internal
+    [Nullable({ 0, 1, 2 })] InternalTypes.Protected
+    [Nullable({ 0, 1, 2 })] InternalTypes.ProtectedInternal
+    [Nullable({ 0, 1, 2 })] InternalTypes.PrivateProtected
 [Nullable({ 0, 1, 2 })] Namespace.Public
+[Nullable({ 0, 1, 2 })] Namespace.Internal
 ";
             var expectedPublicAndInternal = @"
 [NullableContext(2)] [Nullable(0)] Base<T, U>
@@ -2734,6 +2743,12 @@ InternalTypes
             var expectedPublicOnly = @"
 Program
     Program.ProtectedDelegate
+        [NullableContext(1)] System.Object! Invoke(System.Object? arg)
+            [Nullable(2)] System.Object? arg
+        System.IAsyncResult BeginInvoke(System.Object? arg, System.AsyncCallback callback, System.Object @object)
+            [Nullable(2)] System.Object? arg
+        [Nullable(1)] System.Object! EndInvoke(System.IAsyncResult result)
+    Program.InternalDelegate
         [NullableContext(1)] System.Object! Invoke(System.Object? arg)
             [Nullable(2)] System.Object? arg
         System.IAsyncResult BeginInvoke(System.Object? arg, System.AsyncCallback callback, System.Object @object)
@@ -2804,6 +2819,10 @@ public class Program
         void PublicEvent.remove
             D<System.Object?>? value
     [Nullable(1)] event D<System.Object!>! InternalEvent
+        [NullableContext(1)] void InternalEvent.add
+            D<System.Object!>! value
+        [NullableContext(1)] void InternalEvent.remove
+            D<System.Object!>! value
     [Nullable({ 1, 2 })] event D<System.Object?>! ProtectedEvent
         void ProtectedEvent.add
             [Nullable({ 1, 2 })] D<System.Object?>! value
@@ -2815,6 +2834,10 @@ public class Program
         void ProtectedInternalEvent.remove
             [Nullable({ 1, 2 })] D<System.Object?>! value
     [Nullable({ 2, 1 })] event D<System.Object!>? PrivateProtectedEvent
+        void PrivateProtectedEvent.add
+            [Nullable({ 2, 1 })] D<System.Object!>? value
+        void PrivateProtectedEvent.remove
+            [Nullable({ 2, 1 })] D<System.Object!>? value
 ";
             var expectedPublicAndInternal = @"
 [NullableContext(2)] [Nullable(0)] Program
@@ -2896,10 +2919,12 @@ public class Program
     private object? PrivateField;
 }";
             var expectedPublicOnly = @"
-[NullableContext(1)] [Nullable(0)] Program
-    System.Object! PublicField
-    System.Object! ProtectedField
-    [Nullable(2)] System.Object? ProtectedInternalField
+[NullableContext(2)] [Nullable(0)] Program
+    [Nullable(1)] System.Object! PublicField
+    System.Object? InternalField
+    [Nullable(1)] System.Object! ProtectedField
+    System.Object? ProtectedInternalField
+    System.Object? PrivateProtectedField
     Program()
 ";
             var expectedPublicAndInternal = @"
@@ -2938,12 +2963,16 @@ public class Program
     private object? PrivateMethod(object? arg) => null;
 }";
             var expectedPublicOnly = @"
-[NullableContext(1)] [Nullable(0)] Program
-    void PublicMethod(System.Object! arg)
+[NullableContext(2)] [Nullable(0)] Program
+    [NullableContext(1)] void PublicMethod(System.Object! arg)
         System.Object! arg
-    System.Object! ProtectedMethod(System.Object? arg)
+    System.Object? InternalMethod(System.Object? arg)
+        System.Object? arg
+    [NullableContext(1)] System.Object! ProtectedMethod(System.Object? arg)
         [Nullable(2)] System.Object? arg
-    [NullableContext(2)] System.Object? ProtectedInternalMethod(System.Object? arg)
+    System.Object? ProtectedInternalMethod(System.Object? arg)
+        System.Object? arg
+    void PrivateProtectedMethod(System.Object? arg)
         System.Object? arg
     Program()
 ";
@@ -2998,10 +3027,14 @@ public class Program
     Program()
     [Nullable(1)] System.Object! PublicProperty { get; }
         [NullableContext(1)] System.Object! PublicProperty.get
+    System.Object? InternalProperty { get; }
+        System.Object? InternalProperty.get
     [Nullable(1)] System.Object! ProtectedProperty { get; }
         [NullableContext(1)] System.Object! ProtectedProperty.get
     System.Object? ProtectedInternalProperty { get; }
         System.Object? ProtectedInternalProperty.get
+    System.Object? PrivateProtectedProperty { get; }
+        System.Object? PrivateProtectedProperty.get
 ";
             var expectedPublicAndInternal = @"
 [NullableContext(2)] [Nullable(0)] Program
@@ -3068,9 +3101,9 @@ public class Program
     }
 }";
             var expectedPublicOnly = @"
-[NullableContext(2)] [Nullable(0)] Program
+[NullableContext(1)] [Nullable(0)] Program
     Program()
-    [Nullable(0)] Program.PublicType
+    [NullableContext(2)] [Nullable(0)] Program.PublicType
         PublicType()
         System.Object? this[System.Object? x, System.Object! y] { get; }
             System.Object? x
@@ -3078,7 +3111,19 @@ public class Program
             System.Object? this[System.Object? x, System.Object! y].get
                 System.Object? x
                 [Nullable(1)] System.Object! y
-    [Nullable(0)] Program.ProtectedType
+    [Nullable(0)] Program.InternalType
+        InternalType()
+        System.Object! this[System.Object! x, System.Object! y] { get; set; }
+            System.Object! x
+            System.Object! y
+            System.Object! this[System.Object! x, System.Object! y].get
+                System.Object! x
+                System.Object! y
+            void this[System.Object! x, System.Object! y].set
+                System.Object! x
+                System.Object! y
+                System.Object! value
+    [NullableContext(2)] [Nullable(0)] Program.ProtectedType
         ProtectedType()
         System.Object? this[System.Object! x, System.Object? y] { get; set; }
             [Nullable(1)] System.Object! x
@@ -3090,7 +3135,7 @@ public class Program
                 [Nullable(1)] System.Object! x
                 System.Object? y
                 System.Object? value
-    [NullableContext(1)] [Nullable(0)] Program.ProtectedInternalType
+    [Nullable(0)] Program.ProtectedInternalType
         ProtectedInternalType()
         System.Object! this[System.Object! x, System.Object! y] { set; }
             System.Object! x
@@ -3099,6 +3144,14 @@ public class Program
                 System.Object! x
                 System.Object! y
                 System.Object! value
+    [Nullable(0)] Program.PrivateProtectedType
+        PrivateProtectedType()
+        System.Object! this[System.Object! x, System.Object! y] { get; }
+            System.Object! x
+            System.Object! y
+            System.Object! this[System.Object! x, System.Object! y].get
+                System.Object! x
+                System.Object! y
 ";
             var expectedPublicAndInternal = @"
 [NullableContext(1)] [Nullable(0)] Program
@@ -3241,10 +3294,14 @@ public class Program
     }
 }";
             var expectedPublicOnly = @"
-Program
-    [NullableContext(1)] void ProtectedMethod<T, U>() where T : notnull where U : class!
+[NullableContext(1)] [Nullable(0)] Program
+    void ProtectedMethod<T, U>() where T : notnull where U : class!
         T
         U
+    void InternalMethod<T, U>() where T : notnull where U : class!
+        T
+        U
+    Program()
 ";
             var expectedPublicAndInternal = @"
 [NullableContext(1)] [Nullable(0)] Program
@@ -3607,6 +3664,27 @@ internal class B : I<object>
                 // (10,30): warning CS8618: Non-nullable event 'E' is uninitialized. Consider declaring the event as nullable.
                 //     private event D<object?> E;
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "E").WithArguments("event", "E").WithLocation(10, 30),
+                // (18,19): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                // internal delegate T D<T>();
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "T").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(18, 19),
+                // (18,23): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                // internal delegate T D<T>();
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "T").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(18, 23),
+                // (19,22): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                // internal interface I<T> { }
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "T").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(19, 22),
+                // (20,16): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                // internal class B : I<object>
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "B").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(20, 16),
+                // (22,19): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                //     public static object operator!(B b) => b;
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "object").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(22, 19),
+                // (22,36): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                //     public static object operator!(B b) => b;
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "B b").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(22, 36),
+                // (23,29): error CS0656: Missing compiler required member 'System.Runtime.CompilerServices.NullableAttribute..ctor'
+                //     public event D<object?> E;
+                Diagnostic(ErrorCode.ERR_MissingPredefinedMember, "E").WithArguments("System.Runtime.CompilerServices.NullableAttribute", ".ctor").WithLocation(23, 29),
                 // (23,29): warning CS8618: Non-nullable event 'E' is uninitialized. Consider declaring the event as nullable.
                 //     public event D<object?> E;
                 Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "E").WithArguments("event", "E").WithLocation(23, 29)

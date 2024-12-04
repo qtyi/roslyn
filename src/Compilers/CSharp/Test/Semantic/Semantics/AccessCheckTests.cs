@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -322,9 +323,6 @@ class E: D
                 // (74,9): error CS0122: 'C.N4' is inaccessible due to its protection level
                 //         N4.n4_pub = 1;
                 Diagnostic(ErrorCode.ERR_BadAccess, "N4").WithArguments("C.N4"),
-                // (14,30): warning CS0649: Field 'C.N3.n3_pro' is never assigned to, and will always have its default value 0
-                //         static protected int n3_pro;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "n3_pro").WithArguments("C.N3.n3_pro", "0"),
                 // (16,28): warning CS0169: The field 'C.N3.n3_priv' is never used
                 //         static private int n3_priv;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "n3_priv").WithArguments("C.N3.n3_priv"),
@@ -1396,10 +1394,7 @@ internal abstract class Class1
         System.Console.WriteLine(_UnAssignedField1);
     }
 }";
-            CompileAndVerify(text).VerifyDiagnostics(
-                // (4,18): warning CS0649: Field 'Class1._UnAssignedField1' is never assigned to, and will always have its default value 0
-                //     internal int _UnAssignedField;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "_UnAssignedField1").WithArguments("Class1._UnAssignedField1", "0").WithLocation(4, 19));
+            CompileAndVerify(text).VerifyDiagnostics();
         }
 
         [Fact, WorkItem(13652, "https://github.com/dotnet/roslyn/issues/13652")]
@@ -1524,6 +1519,47 @@ unsafe class A
 
             Assert.Throws<ArgumentException>(() => ((Compilation)comp2).IsSymbolAccessibleWithin(ptr1, b));
             Assert.Throws<ArgumentException>(() => ((Compilation)comp2).IsSymbolAccessibleWithin(ptr2, b));
+        }
+
+        [Fact]
+        public void AccessCheckInternalViaInternalsVisibleFrom()
+        {
+            CSharpCompilation other = CreateCompilation(@"
+public class C
+{
+    static public int c_pub;
+    static internal int c_int;
+    static protected int c_pro;
+    static internal protected int c_intpro;
+    static private int c_priv;
+}
+
+internal class D
+{
+    static public int d_pub;
+}", assemblyName: "other");
+
+            CSharpCompilation c = CreateCompilation(@"
+public class A
+{
+    public void m() {
+        int a = C.c_pub;
+        int b = C.c_int;
+        int c = C.c_pro;
+        int d = C.c_intpro;
+        int e = C.c_priv;
+        int f = D.d_pub;
+    }
+}", assemblyName: "c", references: new List<MetadataReference>() { new CSharpCompilationReference(other) }, options: TestOptions.DebugDll.WithFriendAccessibleAssemblyPublicKeys("other", ImmutableArray<byte>.Empty));
+
+            c.VerifyDiagnostics(
+                // (7,19): error CS0122: 'C.c_pro' is inaccessible due to its protection level
+                //         int c = C.c_pro;
+                Diagnostic(ErrorCode.ERR_BadAccess, "c_pro").WithArguments("C.c_pro").WithLocation(7, 19),
+                // (9,19): error CS0122: 'C.c_priv' is inaccessible due to its protection level
+                //         int e = C.c_priv;
+                Diagnostic(ErrorCode.ERR_BadAccess, "c_priv").WithArguments("C.c_priv").WithLocation(9, 19)
+                );
         }
     }
 }

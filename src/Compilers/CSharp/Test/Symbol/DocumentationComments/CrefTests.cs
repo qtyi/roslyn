@@ -1930,10 +1930,7 @@ class Other
 ";
 
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
-            compilation.VerifyDiagnostics(
-                // (4,26): warning CS0649: Field 'Base.F' is never assigned to, and will always have its default value 0
-                //     protected static int F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("Base.F", "0"));
+            compilation.VerifyDiagnostics();
 
             var crefSyntax = GetCrefSyntaxes(compilation).First();
 
@@ -1965,10 +1962,7 @@ class Other
 ";
 
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
-            compilation.VerifyDiagnostics(
-                // (4,26): warning CS0649: Field 'Base.F' is never assigned to, and will always have its default value 0
-                //     protected static int F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("Base.F", "0"));
+            compilation.VerifyDiagnostics();
 
             var crefSyntax = GetCrefSyntaxes(compilation).First();
 

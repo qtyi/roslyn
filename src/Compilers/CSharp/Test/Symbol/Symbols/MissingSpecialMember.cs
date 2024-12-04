@@ -646,6 +646,7 @@ namespace System
                     case WellKnownType.System_Runtime_InteropServices_MemoryMarshal:
                     case WellKnownType.System_Runtime_CompilerServices_Unsafe:
                     case WellKnownType.System_Runtime_CompilerServices_ParamCollectionAttribute:
+                    case WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute:
                         // Not yet in the platform.
                         continue;
                     case WellKnownType.Microsoft_CodeAnalysis_Runtime_Instrumentation:
@@ -1014,6 +1015,7 @@ namespace System
                     case WellKnownMember.System_Runtime_CompilerServices_CompilerFeatureRequiredAttribute__ctor:
                     case WellKnownMember.System_Diagnostics_CodeAnalysis_UnscopedRefAttribute__ctor:
                     case WellKnownMember.System_Runtime_CompilerServices_MetadataUpdateOriginalTypeAttribute__ctor:
+                    case WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor:
                     case WellKnownMember.System_Runtime_CompilerServices_RuntimeHelpers__CreateSpanRuntimeFieldHandle:
                     case WellKnownMember.System_Runtime_InteropServices_MemoryMarshal__CreateReadOnlySpan:
                     case WellKnownMember.System_Runtime_InteropServices_MemoryMarshal__CreateSpan:

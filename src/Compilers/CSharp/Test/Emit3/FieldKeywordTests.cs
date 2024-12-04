@@ -4210,9 +4210,6 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             if (includeStructInitializationWarnings)
             {
                 verifier.VerifyDiagnostics(
-                    // (4,16): warning CS0649: Field 'S1.F1' is never assigned to, and will always have its default value 0
-                    //     public int F1;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F1").WithArguments("S1.F1", "0").WithLocation(4, 16),
                     // (6,12): warning CS9021: Control is returned to caller before auto-implemented property 'S1.P1' is explicitly assigned, causing a preceding implicit assignment of 'default'.
                     //     public S1(int unused) { _ = P1; }
                     Diagnostic(ErrorCode.WRN_UnassignedThisAutoPropertySupportedVersion, "S1").WithArguments("S1.P1").WithLocation(6, 12),
@@ -4222,22 +4219,13 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     // (6,33): warning CS9018: Auto-implemented property 'P1' is read before being explicitly assigned, causing a preceding implicit assignment of 'default'.
                     //     public S1(int unused) { _ = P1; }
                     Diagnostic(ErrorCode.WRN_UseDefViolationPropertySupportedVersion, "P1").WithArguments("P1").WithLocation(6, 33),
-                    // (10,16): warning CS0649: Field 'S2.F2' is never assigned to, and will always have its default value 0
-                    //     public int F2;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F2").WithArguments("S2.F2", "0").WithLocation(10, 16),
                     // (12,33): warning CS9020: The 'this' object is read before all of its fields have been assigned, causing preceding implicit assignments of 'default' to non-explicitly assigned fields.
                     //     public S2(int unused) { _ = P2; }
                     Diagnostic(ErrorCode.WRN_UseDefViolationThisSupportedVersion, "P2").WithLocation(12, 33));
             }
             else
             {
-                verifier.VerifyDiagnostics(
-                    // (4,16): warning CS0649: Field 'S1.F1' is never assigned to, and will always have its default value 0
-                    //     public int F1;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F1").WithArguments("S1.F1", "0").WithLocation(4, 16),
-                    // (10,16): warning CS0649: Field 'S2.F2' is never assigned to, and will always have its default value 0
-                    //     public int F2;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F2").WithArguments("S2.F2", "0").WithLocation(10, 16));
+                verifier.VerifyDiagnostics();
             }
             verifier.VerifyIL("S1..ctor", $$"""
                 {
@@ -4476,28 +4464,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             if (includeStructInitializationWarnings)
             {
                 verifier.VerifyDiagnostics(
-                    // (4,16): warning CS0649: Field 'S3.F3' is never assigned to, and will always have its default value 0
-                    //     public int F3;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F3").WithArguments("S3.F3", "0").WithLocation(4, 16),
                     // (6,12): warning CS9022: Control is returned to caller before field 'S3.F3' is explicitly assigned, causing a preceding implicit assignment of 'default'.
                     //     public S3(int i) { P3 = i; }
                     Diagnostic(ErrorCode.WRN_UnassignedThisSupportedVersion, "S3").WithArguments("S3.F3").WithLocation(6, 12),
-                    // (10,16): warning CS0649: Field 'S4.F4' is never assigned to, and will always have its default value 0
-                    //     public int F4;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F4").WithArguments("S4.F4", "0").WithLocation(10, 16),
                     // (12,24): warning CS9020: The 'this' object is read before all of its fields have been assigned, causing preceding implicit assignments of 'default' to non-explicitly assigned fields.
                     //     public S4(int i) { P4 = i; }
                     Diagnostic(ErrorCode.WRN_UseDefViolationThisSupportedVersion, "P4").WithLocation(12, 24));
             }
             else
             {
-                verifier.VerifyDiagnostics(
-                    // (4,16): warning CS0649: Field 'S3.F3' is never assigned to, and will always have its default value 0
-                    //     public int F3;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F3").WithArguments("S3.F3", "0").WithLocation(4, 16),
-                    // (10,16): warning CS0649: Field 'S4.F4' is never assigned to, and will always have its default value 0
-                    //     public int F4;
-                    Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F4").WithArguments("S4.F4", "0").WithLocation(10, 16));
+                verifier.VerifyDiagnostics();
             }
             verifier.VerifyIL("S3..ctor", $$"""
                 {

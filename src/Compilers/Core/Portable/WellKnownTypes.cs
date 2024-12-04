@@ -355,6 +355,8 @@ namespace Microsoft.CodeAnalysis
         System_Linq_Expressions_NewArrayExpression,
         System_Linq_Expressions_DefaultExpression,
 
+        System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute,
+
         NextAvailable,
         // Remember to update the AllWellKnownTypes tests when making changes here
     }
@@ -695,6 +697,8 @@ namespace Microsoft.CodeAnalysis
             "System.Linq.Expressions.InvocationExpression",
             "System.Linq.Expressions.NewArrayExpression",
             "System.Linq.Expressions.DefaultExpression",
+
+            "System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute",
         };
 
         private static readonly Dictionary<string, WellKnownType> s_nameToTypeIdMap = new Dictionary<string, WellKnownType>((int)Count);

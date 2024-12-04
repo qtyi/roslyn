@@ -54,6 +54,10 @@ namespace Microsoft.CodeAnalysis
         //key, the list contains one element with an empty value
         private Dictionary<string, List<ImmutableArray<byte>>> _lazyInternalsVisibleToMap;
 
+        //Maps from simple name to list of public keys. If an IACT attribute specifies no public
+        //key, the list contains one element with an empty value
+        private Dictionary<string, List<ImmutableArray<byte>>> _lazyIgnoresAccessChecksToMap;
+
         /// <exception cref="BadImageFormatException"/>
         internal PEAssembly(AssemblyMetadata owner, ImmutableArray<PEModule> modules)
         {
@@ -129,10 +133,10 @@ namespace Microsoft.CodeAnalysis
             return _lazyContainsNoPiaLocalTypes == ThreeState.True;
         }
 
-        private Dictionary<string, List<ImmutableArray<byte>>> BuildInternalsVisibleToMap()
+        private Dictionary<string, List<ImmutableArray<byte>>> BuildAttributeMap(ImmutableArray<string> attrValues)
         {
             var ivtMap = new Dictionary<string, List<ImmutableArray<byte>>>(StringComparer.OrdinalIgnoreCase);
-            foreach (string attrVal in Modules[0].GetInternalsVisibleToAttributeValues(Handle))
+            foreach (string attrVal in attrValues)
             {
                 AssemblyIdentity identity;
                 if (AssemblyIdentity.TryParseDisplayName(attrVal, out identity))
@@ -177,10 +181,34 @@ namespace Microsoft.CodeAnalysis
             return _lazyInternalsVisibleToMap.Keys;
         }
 
+        internal IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            EnsureIgnoresAccessChecksToMapInitialized();
+
+            List<ImmutableArray<byte>> result;
+
+            _lazyIgnoresAccessChecksToMap.TryGetValue(simpleName, out result);
+
+            return result ?? SpecializedCollections.EmptyEnumerable<ImmutableArray<byte>>();
+        }
+
+        internal IEnumerable<string> GetFriendAccessibleAssemblyNames()
+        {
+            EnsureIgnoresAccessChecksToMapInitialized();
+
+            return _lazyIgnoresAccessChecksToMap.Keys;
+        }
+
         private void EnsureInternalsVisibleToMapInitialized()
         {
             if (_lazyInternalsVisibleToMap == null)
-                Interlocked.CompareExchange(ref _lazyInternalsVisibleToMap, BuildInternalsVisibleToMap(), null);
+                Interlocked.CompareExchange(ref _lazyInternalsVisibleToMap, BuildAttributeMap(Modules[0].GetInternalsVisibleToAttributeValues(Handle)), null);
+        }
+
+        private void EnsureIgnoresAccessChecksToMapInitialized()
+        {
+            if (_lazyIgnoresAccessChecksToMap == null)
+                Interlocked.CompareExchange(ref _lazyIgnoresAccessChecksToMap, BuildAttributeMap(Modules[0].GetIgnoresAccessChecksToAttributeValues(Handle)), null);
         }
 
         internal bool DeclaresTheObjectClass

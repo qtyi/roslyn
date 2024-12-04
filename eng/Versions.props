@@ -2,6 +2,15 @@
 <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the LICENSE file in the project root for more information. -->
 <Project>
   <!--
+    Official build settings
+  -->
+  <PropertyGroup>
+    <OfficialBuild>true</OfficialBuild>
+    <VisualStudioDropName>Products/Qtyi/Roslyn/VS17.13P1</VisualStudioDropName>
+    <RepositoryName>qtyi/roslyn</RepositoryName>
+    <GenerateReadyToRun>false</GenerateReadyToRun>
+  </PropertyGroup>
+  <!--
     Roslyn version
   -->
   <PropertyGroup>

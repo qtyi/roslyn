@@ -713,6 +713,8 @@ namespace Microsoft.CodeAnalysis
         System_Linq_Expressions_Expression__GreaterThanOrEqual_MethodInfo,
         System_Linq_Expressions_Expression__Default,
         System_Linq_Expressions_Expression__Power_MethodInfo,
+        
+        System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor,
 
         Count,
 

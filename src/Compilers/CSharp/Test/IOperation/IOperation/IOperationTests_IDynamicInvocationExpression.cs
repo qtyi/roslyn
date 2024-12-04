@@ -244,11 +244,7 @@ IDynamicInvocationOperation (OperationKind.DynamicInvocation, Type: dynamic) (Sy
   ArgumentNames(0)
   ArgumentRefKinds(0)
 ";
-            var expectedDiagnostics = new DiagnosticDescription[] {
-                // (6,14): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value null
-                //     public D F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "null").WithLocation(6, 14)
-            };
+            var expectedDiagnostics = new DiagnosticDescription[] {};
 
             VerifyOperationTreeAndDiagnosticsForTest<InvocationExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
         }

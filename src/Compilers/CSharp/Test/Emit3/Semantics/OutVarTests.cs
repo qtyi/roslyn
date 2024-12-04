@@ -18786,7 +18786,7 @@ public class Cls
 
             var analyzer = new ConstructorInitializers_08_SyntaxAnalyzer();
             CreateCompilation(text, options: TestOptions.ReleaseExe, parseOptions: TestOptions.Regular)
-                .GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+                .GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.True(analyzer.ActionFired);
         }

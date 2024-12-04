@@ -36,6 +36,7 @@ namespace Microsoft.CodeAnalysis.UnitTests
                 "Errors",
                 "DebugPlusMode",
                 "Features",
+                "FriendAccessibleAssemblyPublicKeys",
                 "GeneralDiagnosticOption",
                 "MainTypeName",
                 "MetadataImportOptions",

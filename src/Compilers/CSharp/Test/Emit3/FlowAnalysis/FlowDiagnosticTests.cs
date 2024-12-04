@@ -1006,12 +1006,6 @@ partial struct S
 }";
             CreateCompilation(program)
                 .VerifyDiagnostics(
-                // (4,23): warning CS0649: Field 'S.x' is never assigned to, and will always have its default value 0
-                //     public static int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("S.x", "0"),
-                // (9,23): warning CS0649: Field 'S.y' is never assigned to, and will always have its default value 0
-                //     public static int y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "y").WithArguments("S.y", "0")
                 );
         }
 
@@ -1048,12 +1042,6 @@ partial struct S2
                 // (11,16): warning CS0282: There is no defined ordering between fields in multiple declarations of partial struct 'S2'. To specify an ordering, all instance fields must be in the same declaration.
                 // partial struct S2
                 Diagnostic(ErrorCode.WRN_SequentialOnPartialClass, "S2").WithArguments("S2"),
-                // (3,16): warning CS0649: Field 'S1.x' is never assigned to, and will always have its default value 0
-                //     public int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("S1.x", "0"),
-                // (13,16): warning CS0649: Field 'S2.x' is never assigned to, and will always have its default value 0
-                //     public int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("S2.x", "0"),
                 // (19,20): warning CS0067: The event 'S2.y' is never used
                 //     public event D y;
                 Diagnostic(ErrorCode.WRN_UnreferencedEvent, "y").WithArguments("S2.y")
@@ -1125,10 +1113,7 @@ class Program
                 .VerifyDiagnostics(
                 // (12,15): error CS0165: Use of unassigned local variable 's'
                 //         S t = s;
-                Diagnostic(ErrorCode.ERR_UseDefViolation, "s").WithArguments("s"),
-                // (4,19): warning CS0649: Field 'S.y' is never assigned to, and will always have its default value 0
-                //     public int x, y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "y").WithArguments("S.y", "0")
+                Diagnostic(ErrorCode.ERR_UseDefViolation, "s").WithArguments("s")
                 );
         }
 
@@ -1154,11 +1139,7 @@ class Program
 }
 ";
             CreateCompilation(program)
-                .VerifyDiagnostics(
-                // (4,19): warning CS0649: Field 'S.y' is never assigned to, and will always have its default value 0
-                //     public int x, y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "y").WithArguments("S.y", "0")
-                );
+                .VerifyDiagnostics();
         }
 
         [Fact]
@@ -1761,10 +1742,7 @@ struct Program
                 Diagnostic(ErrorCode.ERR_UseDefViolationThisUnsupportedVersion, "Goo").WithArguments("11.0").WithLocation(16, 9),
                 // (17,17): error CS9014: Use of possibly unassigned auto-implemented property 'x2'. Consider updating to language version '11.0' to auto-default the property.
                 //         Goo(out x2);
-                Diagnostic(ErrorCode.ERR_UseDefViolationPropertyUnsupportedVersion, "x2").WithArguments("x2", "11.0").WithLocation(17, 17),
-                // (6,20): warning CS0649: Field 'Program.S1.x' is never assigned to, and will always have its default value 0
-                //         public int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("Program.S1.x", "0").WithLocation(6, 20)
+                Diagnostic(ErrorCode.ERR_UseDefViolationPropertyUnsupportedVersion, "x2").WithArguments("x2", "11.0").WithLocation(17, 17)
                 );
 
             comp = CreateCompilation(text, parseOptions: TestOptions.Regular11);
@@ -1783,10 +1761,7 @@ struct Program
                 Diagnostic(ErrorCode.ERR_RefProperty, "x2").WithLocation(18, 17),
                 // (20,17): error CS1620: Argument 1 must be passed with the 'out' keyword
                 //         Goo(ref x3);
-                Diagnostic(ErrorCode.ERR_BadArgRef, "x3").WithArguments("1", "out").WithLocation(20, 17),
-                // (6,20): warning CS0649: Field 'Program.S1.x' is never assigned to, and will always have its default value 0
-                //         public int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("Program.S1.x", "0").WithLocation(6, 20)
+                Diagnostic(ErrorCode.ERR_BadArgRef, "x3").WithArguments("1", "out").WithLocation(20, 17)
                 );
         }
 
@@ -2048,13 +2023,7 @@ struct S<T>
             CreateCompilation(program).VerifyDiagnostics(
                 // (12,17): error CS0170: Use of possibly unassigned field 'X'
                 //             if (s.X < 3)
-                Diagnostic(ErrorCode.ERR_UseDefViolationField, "s.X").WithArguments("X"),
-                // (3,18): warning CS0649: Field 'S.X' is never assigned to, and will always have its default value 0
-                //     public float X;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "X").WithArguments("S.X", "0"),
-                // (4,18): warning CS0649: Field 'S.Y' is never assigned to, and will always have its default value 0
-                //     public float Y;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Y").WithArguments("S.Y", "0")
+                Diagnostic(ErrorCode.ERR_UseDefViolationField, "s.X").WithArguments("X")
                 );
         }
 
@@ -2127,10 +2096,7 @@ abstract class AbstractType
     public int Kind;
 }";
 
-            CreateCompilation(text).VerifyDiagnostics(
-                // (4,16): warning CS0649: Field 'AbstractType.Kind' is never assigned to, and will always have its default value 0
-                //     public int Kind;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Kind").WithArguments("AbstractType.Kind", "0").WithLocation(4, 16));
+            CreateCompilation(text).VerifyDiagnostics();
         }
 
         [Fact, WorkItem(545347, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/545347")]
