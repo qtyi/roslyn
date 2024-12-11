@@ -275,7 +275,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' Unfortunately, this will only work for VB symbols.  The degraded experience for non-VB symbols seems acceptable for now.
             Dim isMissingMetadataType As Boolean = TypeOf symbol Is MissingMetadataTypeSymbol
 
-            If Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes) Then
+            If Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases) Then
                 ' Only the compiler can set the internal option and the compiler doesn't use other implementations of INamedTypeSymbol.
                 If DirectCast(symbol, NamedTypeSymbol).MangleName Then
                     Debug.Assert(symbol.Arity > 0)

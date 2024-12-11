@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis
         /// "List`1" instead of "List&lt;T&gt;" ("List(of T)" in VB). Overrides GenericsOptions on
         /// types.
         /// </summary>
-        UseArityForGenericTypes = 1 << 1,
+        UseArityForGenericTypesAndAliases = 1 << 1,
 
         /// <summary>
         /// Append "[Missing]" to missing Metadata types (for testing).

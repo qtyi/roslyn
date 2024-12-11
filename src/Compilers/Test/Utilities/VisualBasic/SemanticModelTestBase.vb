@@ -91,11 +91,11 @@ Public MustInherit Class SemanticModelTestBase : Inherits BasicTestBase
                "    Location2.SourceSpan.Start : " & tpSymbol.Locations.Item(0).SourceSpan.Start
     End Function
 
-    Friend Function GetAliasInfoForTest(compilation As Compilation, fileName As String, Optional which As Integer = 0) As AliasSymbol
+    Friend Function GetAliasInfoForTest(compilation As Compilation, fileName As String, Optional which As Integer = 0) As AliasInfo
         Dim node As IdentifierNameSyntax = CompilationUtils.FindBindingText(Of IdentifierNameSyntax)(compilation, fileName, which)
         Dim tree = (From t In compilation.SyntaxTrees Where t.FilePath = fileName).Single()
         Dim semanticModel = DirectCast(compilation.GetSemanticModel(tree), VBSemanticModel)
-        Return DirectCast(semanticModel.GetAliasInfo(node), AliasSymbol)
+        Return semanticModel.GetAliasInfo(node)
     End Function
 
     Protected Function GetBlockOrStatementInfoForTest(Of StmtSyntax As SyntaxNode)(compilation As Compilation, fileName As String, Optional which As Integer = 0, Optional useParent As Boolean = False) As Object

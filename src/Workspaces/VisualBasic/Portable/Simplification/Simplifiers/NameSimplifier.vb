@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
@@ -72,7 +73,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
                 If Not name.IsRightSideOfDot() Then
 
                     Dim aliasReplacement As IAliasSymbol = Nothing
-                    If TryReplaceWithAlias(name, semanticModel, aliasReplacement) Then
+                    Dim aliasTypeArguments As ImmutableArray(Of ITypeSymbol) = Nothing
+                    If TryReplaceWithAlias(name, semanticModel, aliasReplacement, aliasTypeArguments) Then
                         Dim identifierToken = SyntaxFactory.Identifier(
                                 name.GetLeadingTrivia(),
                                 aliasReplacement.Name,
@@ -152,7 +154,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
                     ' Don't simplify to predefined type if name is part of a QualifiedName.
                     ' QualifiedNames can't contain PredefinedTypeNames (although MemberAccessExpressions can).
                     ' In other words, the left side of a QualifiedName can't be a PredefinedTypeName.
-                    If nameHasNoAlias AndAlso aliasInfo Is Nothing AndAlso
+                    If nameHasNoAlias AndAlso aliasInfo.Alias Is Nothing AndAlso
                         Not name.Parent.IsKind(SyntaxKind.QualifiedName) AndAlso
                         Not name.Parent.IsKind(SyntaxKind.NameOfExpression) Then
 
@@ -196,7 +198,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
                     ' Don't rewrite in the case where Nullable(Of Integer) is part of some qualified name like Nullable(Of Integer).Something
                     If (symbol.Kind = SymbolKind.NamedType) AndAlso (Not name.IsLeftSideOfQualifiedName) Then
                         Dim type = DirectCast(symbol, INamedTypeSymbol)
-                        If aliasInfo Is Nothing AndAlso CanSimplifyNullable(type, name) Then
+                        If aliasInfo.Alias Is Nothing AndAlso CanSimplifyNullable(type, name) Then
                             Dim genericName As GenericNameSyntax
                             If name.Kind = SyntaxKind.QualifiedName Then
                                 genericName = DirectCast(DirectCast(name, QualifiedNameSyntax).Right, GenericNameSyntax)
@@ -361,8 +363,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
 
                 ' When the replacement is an Alias we don't want the "Attribute" Suffix to be removed because this will result in symbol change
                 Dim aliasSymbol = semanticModel.GetAliasInfo(name, cancellationToken)
-                If aliasSymbol IsNot Nothing AndAlso
-                   String.Compare(aliasSymbol.Name, identifierToken.ValueText, StringComparison.OrdinalIgnoreCase) = 0 Then
+                If aliasSymbol.Alias IsNot Nothing AndAlso
+                   String.Compare(aliasSymbol.Alias.Name, identifierToken.ValueText, StringComparison.OrdinalIgnoreCase) = 0 Then
                     Return False
                 End If
 

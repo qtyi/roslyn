@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.LanguageService;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Shared.Utilities;
 
@@ -18,7 +20,18 @@ internal partial struct SymbolKey
         public sealed override void Create(IAliasSymbol symbol, SymbolKeyWriter visitor)
         {
             visitor.WriteString(symbol.Name);
+            visitor.WriteInteger(symbol.Arity);
+
+            // Mark that we're writing out an alias.  This way if we hit a alias type parameter
+            // in our target, we won't recurse into it, but will instead only write out the type
+            // parameter ordinal.  This happens with cases like Goo<T> = T;
+            visitor.PushAlias(symbol);
+
             visitor.WriteSymbolKey(symbol.Target);
+
+            // Done writing this alias.  Remove it from the set of aliases we're writing.
+            visitor.PopAlias(symbol);
+
             visitor.WriteString(symbol.DeclaringSyntaxReferences.FirstOrDefault()?.SyntaxTree.FilePath ?? "");
         }
 
@@ -26,7 +39,15 @@ internal partial struct SymbolKey
             SymbolKeyReader reader, IAliasSymbol? contextualSymbol, out string? failureReason)
         {
             var name = reader.ReadRequiredString();
-            var targetResolution = reader.ReadSymbolKey(contextualSymbol?.Target, out var targetFailureReason);
+            var arity = reader.ReadInteger();
+
+            SymbolKeyResolution targetResolution;
+            string? targetFailureReason;
+            using (reader.PushAlias(contextualSymbol))
+            {
+                targetResolution = reader.ReadSymbolKey(contextualSymbol?.Target, out targetFailureReason);
+            }
+
             var filePath = reader.ReadRequiredString();
 
             if (targetFailureReason != null)
@@ -42,7 +63,7 @@ internal partial struct SymbolKey
                 if (target != null)
                 {
                     var semanticModel = reader.Compilation.GetSemanticModel(syntaxTree);
-                    var result = Resolve(semanticModel, syntaxTree.GetRoot(reader.CancellationToken), name, target, reader.CancellationToken);
+                    var result = Resolve(semanticModel, syntaxTree.GetRoot(reader.CancellationToken), name, arity, target, reader.CancellationToken);
                     if (result.HasValue)
                     {
                         failureReason = null;
@@ -51,12 +72,12 @@ internal partial struct SymbolKey
                 }
             }
 
-            failureReason = $"({nameof(AliasSymbolKey)} '{name}' not found)";
+            failureReason = $"({nameof(AliasSymbolKey)} '{name}{(arity == 0 ? string.Empty : "`" + arity)}' not found)";
             return default;
         }
 
         private static SymbolKeyResolution? Resolve(
-            SemanticModel semanticModel, SyntaxNode syntaxNode, string name, ISymbol target,
+            SemanticModel semanticModel, SyntaxNode syntaxNode, string name, int arity, ISymbol target,
             CancellationToken cancellationToken)
         {
             var symbol = semanticModel.GetDeclaredSymbol(syntaxNode, cancellationToken);
@@ -66,6 +87,7 @@ internal partial struct SymbolKey
                 {
                     var aliasSymbol = (IAliasSymbol)symbol;
                     if (aliasSymbol.Name == name &&
+                        aliasSymbol.Arity == arity &&
                         SymbolEquivalenceComparer.Instance.Equals(aliasSymbol.Target, target))
                     {
                         return new SymbolKeyResolution(aliasSymbol);
@@ -83,7 +105,7 @@ internal partial struct SymbolKey
             {
                 if (child.AsNode(out var childNode))
                 {
-                    var result = Resolve(semanticModel, childNode, name, target, cancellationToken);
+                    var result = Resolve(semanticModel, childNode, name, arity, target, cancellationToken);
                     if (result.HasValue)
                     {
                         return result;

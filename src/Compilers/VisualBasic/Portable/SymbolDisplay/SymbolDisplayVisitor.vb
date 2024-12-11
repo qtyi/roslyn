@@ -189,6 +189,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Public Overrides Sub VisitAlias(symbol As IAliasSymbol)
             Builder.Add(CreatePart(SymbolDisplayPartKind.LocalName, symbol, symbol.Name, False))
 
+            If Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases) Then
+                ' Only the compiler can set the internal option and the compiler doesn't use other implementations of INamedTypeSymbol.
+                If symbol.Arity > 0 Then
+                    Builder.Add(CreatePart(InternalSymbolDisplayPartKind.Arity, Nothing,
+                                           MetadataHelpers.GenericTypeNameManglingChar & symbol.Arity.ToString(), False))
+                End If
+            ElseIf symbol.Arity > 0 AndAlso Format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters) Then
+                AddTypeArguments(StaticCast(Of ITypeSymbol).From(symbol.TypeParameters))
+            End If
+
             If Format.LocalOptions.IncludesOption(SymbolDisplayLocalOptions.IncludeType) Then
                 AddPunctuation(SyntaxKind.EqualsToken)
                 symbol.Target.Accept(Me)

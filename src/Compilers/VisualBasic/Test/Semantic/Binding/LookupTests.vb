@@ -45,20 +45,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             Assert.False(r1.HasDiagnostic)
             Assert.False(r1.StopFurtherLookup)
 
-            Dim r2 = SingleLookupResult.Good(sym1)
+            Dim r2 = SingleLookupResult.Good(sym1.WithDefaultAnnotationSymbols())
             Dim _r2 = New LookupResult()
             _r2.SetFrom(r2)
             Assert.True(_r2.HasSymbol)
             Assert.True(_r2.IsGood)
-            Assert.Same(sym1, _r2.SingleSymbol)
+            Assert.Same(sym1, _r2.SingleSymbol.Symbol)
             Assert.False(_r2.HasDiagnostic)
             Assert.True(_r2.StopFurtherLookup)
 
             Dim r3 = New LookupResult()
-            r3.SetFrom(SingleLookupResult.Ambiguous(ImmutableArray.Create(Of Symbol)(sym1, sym2, sym3), AddressOf GenerateAmbiguity))
+            r3.SetFrom(SingleLookupResult.Ambiguous(ImmutableArray.Create(Of Symbol)(sym1, sym2, sym3).WithDefaultAnnotationSymbols(), AddressOf GenerateAmbiguity))
             Assert.True(r3.HasSymbol)
             Assert.False(r3.IsGood)
-            Assert.Same(sym1, r3.SingleSymbol)
+            Assert.Same(sym1, r3.SingleSymbol.Symbol)
             Assert.True(r3.HasDiagnostic)
             Assert.True(r3.StopFurtherLookup)
             Dim diag3 = DirectCast(r3.Diagnostic, AmbiguousSymbolDiagnostic)
@@ -67,10 +67,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             Assert.Same(sym3, diag3.AmbiguousSymbols.Item(2))
 
             Dim r4 = New LookupResult()
-            r4.SetFrom(SingleLookupResult.Inaccessible(sym2, New BadSymbolDiagnostic(sym2, ERRID.ERR_InaccessibleSymbol2, sym2)))
+            r4.SetFrom(SingleLookupResult.Inaccessible(sym2.WithDefaultAnnotationSymbols(), New BadSymbolDiagnostic(sym2, ERRID.ERR_InaccessibleSymbol2, sym2)))
             Assert.True(r4.HasSymbol)
             Assert.False(r4.IsGood)
-            Assert.Same(sym2, r4.SingleSymbol)
+            Assert.Same(sym2, r4.SingleSymbol.Symbol)
             Assert.True(r4.HasDiagnostic)
             Assert.False(r4.StopFurtherLookup)
             Dim diag4 = DirectCast(r4.Diagnostic, BadSymbolDiagnostic)
@@ -78,10 +78,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             Assert.Same(sym2, diag4.BadSymbol)
 
             Dim r5 = New LookupResult()
-            r5.SetFrom(SingleLookupResult.WrongArity(sym3, ERRID.ERR_IndexedNotArrayOrProc))
+            r5.SetFrom(SingleLookupResult.WrongArity(sym3.WithDefaultAnnotationSymbols(), ERRID.ERR_IndexedNotArrayOrProc))
             Assert.True(r5.HasSymbol)
             Assert.False(r5.IsGood)
-            Assert.Same(sym3, r5.SingleSymbol)
+            Assert.Same(sym3, r5.SingleSymbol.Symbol)
             Assert.True(r5.HasDiagnostic)
             Assert.False(r5.StopFurtherLookup)
             Dim diag5 = r5.Diagnostic
@@ -91,7 +91,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r6.MergePrioritized(r1)
             r6.MergePrioritized(r2)
             Assert.True(r6.HasSymbol)
-            Assert.Same(sym1, r6.SingleSymbol)
+            Assert.Same(sym1, r6.SingleSymbol.Symbol)
             Assert.False(r6.HasDiagnostic)
             Assert.True(r6.StopFurtherLookup)
             r6.Free()
@@ -100,17 +100,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r7.MergePrioritized(r2)
             r7.MergePrioritized(r1)
             Assert.True(r7.HasSymbol)
-            Assert.Same(sym1, r7.SingleSymbol)
+            Assert.Same(sym1, r7.SingleSymbol.Symbol)
             Assert.False(r7.HasDiagnostic)
             Assert.True(r7.StopFurtherLookup)
 
             Dim r8 = New LookupResult()
-            r8.SetFrom(SingleLookupResult.Good(sym4))
+            r8.SetFrom(SingleLookupResult.Good(sym4.WithDefaultAnnotationSymbols()))
             Dim r9 = New LookupResult()
             r9.SetFrom(r2)
             r9.MergePrioritized(r8)
             Assert.True(r9.HasSymbol)
-            Assert.Same(sym1, r9.SingleSymbol)
+            Assert.Same(sym1, r9.SingleSymbol.Symbol)
             Assert.False(r9.HasDiagnostic)
             Assert.True(r9.StopFurtherLookup)
 
@@ -119,7 +119,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r10.MergePrioritized(r8)
             r10.MergePrioritized(r2)
             Assert.True(r10.HasSymbol)
-            Assert.Same(sym1, r10.SingleSymbol)
+            Assert.Same(sym1, r10.SingleSymbol.Symbol)
             Assert.True(r10.HasDiagnostic)
             Assert.True(r10.StopFurtherLookup)
             Dim diag10 = DirectCast(r10.Diagnostic, AmbiguousSymbolDiagnostic)
@@ -134,7 +134,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r11.MergePrioritized(r8)
             r11.MergePrioritized(r2)
             Assert.True(r11.HasSymbol)
-            Assert.Same(sym1, r11.SingleSymbol)
+            Assert.Same(sym1, r11.SingleSymbol.Symbol)
             Assert.True(r11.HasDiagnostic)
             Assert.True(r11.StopFurtherLookup)
             Dim diag11 = DirectCast(r11.Diagnostic, AmbiguousSymbolDiagnostic)
@@ -155,7 +155,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r13.MergePrioritized(r5)
             r13.MergePrioritized(r4)
             Assert.True(r13.HasSymbol)
-            Assert.Same(sym2, r13.SingleSymbol)
+            Assert.Same(sym2, r13.SingleSymbol.Symbol)
             Assert.True(r13.HasDiagnostic)
             Assert.False(r13.StopFurtherLookup)
             Dim diag13 = DirectCast(r13.Diagnostic, BadSymbolDiagnostic)
@@ -167,7 +167,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r14.MergeAmbiguous(r5, AddressOf GenerateAmbiguity)
             r14.MergeAmbiguous(r4, AddressOf GenerateAmbiguity)
             Assert.True(r14.HasSymbol)
-            Assert.Same(sym2, r14.SingleSymbol)
+            Assert.Same(sym2, r14.SingleSymbol.Symbol)
             Assert.True(r14.HasDiagnostic)
             Assert.False(r14.StopFurtherLookup)
             Dim diag14 = DirectCast(r14.Diagnostic, BadSymbolDiagnostic)
@@ -180,7 +180,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             r15.MergeAmbiguous(r3, AddressOf GenerateAmbiguity)
             r15.MergeAmbiguous(r14, AddressOf GenerateAmbiguity)
             Assert.True(r15.HasSymbol)
-            Assert.Same(sym4, r15.SingleSymbol)
+            Assert.Same(sym4, r15.SingleSymbol.Symbol)
             Assert.True(r15.HasDiagnostic)
             Assert.True(r15.StopFurtherLookup)
             Dim diag15 = DirectCast(r15.Diagnostic, AmbiguousSymbolDiagnostic)
@@ -189,11 +189,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             Assert.Same(sym2, diag15.AmbiguousSymbols.Item(2))
             Assert.Same(sym3, diag15.AmbiguousSymbols.Item(3))
 
-            Dim r16 = SingleLookupResult.Good(meth1)
+            Dim r16 = SingleLookupResult.Good(meth1.WithDefaultAnnotationSymbols())
 
-            Dim r17 = SingleLookupResult.Good(meth2)
+            Dim r17 = SingleLookupResult.Good(meth2.WithDefaultAnnotationSymbols())
 
-            Dim r18 = SingleLookupResult.Good(meth3)
+            Dim r18 = SingleLookupResult.Good(meth3.WithDefaultAnnotationSymbols())
 
             Dim r19 = New LookupResult()
             r19.MergeMembersOfTheSameType(r16, False)
@@ -218,15 +218,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UnitTests
             Assert.True(r19.HasDiagnostic)
             Dim diag19 = DirectCast(r19.Diagnostic, AmbiguousSymbolDiagnostic)
             Assert.Equal(4, diag19.AmbiguousSymbols.Length)
-            Assert.Equal(r16.Symbol, diag19.AmbiguousSymbols(0))
-            Assert.Equal(r17.Symbol, diag19.AmbiguousSymbols(1))
-            Assert.Equal(r18.Symbol, diag19.AmbiguousSymbols(2))
-            Assert.Equal(r2.Symbol, diag19.AmbiguousSymbols(3))
+            Assert.Equal(r16.Symbol.Symbol, diag19.AmbiguousSymbols(0))
+            Assert.Equal(r17.Symbol.Symbol, diag19.AmbiguousSymbols(1))
+            Assert.Equal(r18.Symbol.Symbol, diag19.AmbiguousSymbols(2))
+            Assert.Equal(r2.Symbol.Symbol, diag19.AmbiguousSymbols(3))
 
         End Sub
 
-        Private Function GenerateAmbiguity(syms As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
-            Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInModules2, syms, New FormattedSymbolList(syms.AsEnumerable))
+        Private Function GenerateAmbiguity(syms As ImmutableArray(Of SymbolWithAnnotationSymbols(Of Symbol))) As AmbiguousSymbolDiagnostic
+            Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInModules2, syms.WithoutAnnotationSymbols(), New FormattedSymbolList(syms.WithoutAnnotationSymbols().AsEnumerable))
         End Function
 
         <Fact()>
@@ -325,7 +325,7 @@ End Module
             context.LookupMember(lr, classC, "M1", 0, Nothing, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(classC_M1, lr.Symbols.Single())
+            Assert.Equal(classC_M1, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             ' method found with arity 1
@@ -333,7 +333,7 @@ End Module
             context.LookupMember(lr, classC, "M1", 1, Nothing, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(methB_M1, lr.Symbols.Single())
+            Assert.Equal(methB_M1, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             ' generic class shadows with arity 1
@@ -341,7 +341,7 @@ End Module
             context.LookupMember(lr, classC, "M2", 1, Nothing, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(classC_M2, lr.Symbols.Single())
+            Assert.Equal(classC_M2, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             ' method found with arity 0
@@ -349,7 +349,7 @@ End Module
             context.LookupMember(lr, classC, "M2", 0, Nothing, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(methB_M2, lr.Symbols.Single())
+            Assert.Equal(methB_M2, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             ' field shadows with arity 1
@@ -357,7 +357,7 @@ End Module
             context.LookupMember(lr, classC, "M3", 1, Nothing, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(fieldB_M3, lr.Symbols.Single())
+            Assert.Equal(fieldB_M3, lr.Symbols.Single().Symbol)
             Assert.True(lr.HasDiagnostic)
 
             ' should collection all overloads of M4
@@ -365,10 +365,10 @@ End Module
             context.LookupMember(lr, classC, "M4", 1, LookupOptions.AllMethodsOfAnyArity, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(4, lr.Symbols.Count)
-            Assert.Contains(methA_M4, lr.Symbols)
-            Assert.Contains(methB_M4, lr.Symbols)
-            Assert.Contains(methC_M4_0, lr.Symbols)
-            Assert.Contains(methC_M4_1, lr.Symbols)
+            Assert.Contains(methA_M4, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methB_M4, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methC_M4_0, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methC_M4_1, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
             Assert.False(lr.HasDiagnostic)
 
             ' shouldn't get A.M5 because B.M5 is marked Shadows
@@ -376,10 +376,10 @@ End Module
             context.LookupMember(lr, classC, "M5", 1, LookupOptions.AllMethodsOfAnyArity, Nothing)
             Assert.True(lr.StopFurtherLookup)
             Assert.Equal(3, lr.Symbols.Count)
-            Assert.DoesNotContain(methA_M5, lr.Symbols)
-            Assert.Contains(methB_M5, lr.Symbols)
-            Assert.Contains(methC_M5_0, lr.Symbols)
-            Assert.Contains(methC_M5_1, lr.Symbols)
+            Assert.DoesNotContain(methA_M5, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methB_M5, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methC_M5_0, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
+            Assert.Contains(methC_M5_1, lr.Symbols.ToImmutable().WithoutAnnotationSymbols())
             Assert.False(lr.HasDiagnostic)
 
             CompilationUtils.AssertNoDeclarationDiagnostics(compilation)
@@ -584,7 +584,7 @@ End Namespace
 
             CompilationUtils.AssertTheseDiagnostics(compilation,
 <expected>
-BC32045: 'System' has no type parameters and so cannot have type arguments.
+BC32045: 'P' has no type parameters and so cannot have type arguments.
         Dim x As P(Of Integer)
                  ~~~~~~~~~~~~~
 </expected>)
@@ -1503,7 +1503,7 @@ End Module
             lr = New LookupResult()
             context.LookupMember(lr, classA, "GooShared", 0, LookupOptions.MustNotBeInstance, Nothing)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(gooShared, lr.Symbols.Single())
+            Assert.Equal(gooShared, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             lr = New LookupResult()
@@ -1514,7 +1514,7 @@ End Module
             lr = New LookupResult()
             context.LookupMember(lr, classA, "GooInstance", 0, LookupOptions.MustBeInstance, Nothing)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(gooInstance, lr.Symbols.Single())
+            Assert.Equal(gooInstance, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             lr = New LookupResult()
@@ -1528,7 +1528,7 @@ End Module
             lr = New LookupResult()
             context.LookupMember(lr, interfaceI, "GooInstance", 0, LookupOptions.MustBeInstance, Nothing)
             Assert.Equal(1, lr.Symbols.Count)
-            Assert.Equal(ifooInstance, lr.Symbols.Single())
+            Assert.Equal(ifooInstance, lr.Symbols.Single().Symbol)
             Assert.False(lr.HasDiagnostic)
 
             CompilationUtils.AssertNoDeclarationDiagnostics(compilation)

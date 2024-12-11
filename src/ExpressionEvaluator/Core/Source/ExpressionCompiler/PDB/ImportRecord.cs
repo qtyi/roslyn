@@ -10,7 +10,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
     internal readonly struct ImportRecord
     {
         public readonly ImportTargetKind TargetKind;
-        public readonly string? Alias;
+        public readonly NameWithArity? Alias;
 
         // target type of a type import (C#)
         public readonly ITypeSymbolInternal? TargetType;
@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator
 
         public ImportRecord(
             ImportTargetKind targetKind,
-            string? alias = null,
+            NameWithArity? alias = null,
             ITypeSymbolInternal? targetType = null,
             string? targetString = null,
             IAssemblySymbolInternal? targetAssembly = null,

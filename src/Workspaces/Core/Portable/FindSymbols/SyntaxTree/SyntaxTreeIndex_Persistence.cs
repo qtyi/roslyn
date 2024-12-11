@@ -31,12 +31,40 @@ internal sealed partial class SyntaxTreeIndex
         writer.WriteInt32(_aliasInfo?.Count ?? 0);
         if (_aliasInfo != null)
         {
-            foreach (var (alias, name, arity, isGlobal) in _aliasInfo)
+            foreach (var info in _aliasInfo)
             {
-                writer.WriteString(alias);
-                writer.WriteString(name);
-                writer.WriteInt32(arity);
-                writer.WriteBoolean(isGlobal);
+                writer.WriteString(info.AliasName);
+                writer.WriteInt32(info.AliasArity);
+                writer.WriteByte((byte)info.TargetKind);
+                switch (info.TargetKind)
+                {
+                    case AliasTargetKind.Name:
+                        writer.WriteString(info.TargetName);
+                        writer.WriteInt32(info.TargetArity);
+                        break;
+
+                    case AliasTargetKind.TypeParameter:
+                        writer.WriteString(info.TargetName);
+                        break;
+
+                    case AliasTargetKind.Dynamic:
+                        break;
+
+                    case AliasTargetKind.Array:
+                        writer.WriteInt32(info.TargetArity);
+                        break;
+
+                    case AliasTargetKind.Pointer:
+                        break;
+
+                    case AliasTargetKind.FunctionPointer:
+                        writer.WriteInt32(info.TargetArity);
+                        break;
+
+                    default:
+                        throw ExceptionUtilities.UnexpectedValue(info.TargetKind);
+                }
+                writer.WriteBoolean(info.IsGlobal);
             }
         }
 
@@ -64,7 +92,7 @@ internal sealed partial class SyntaxTreeIndex
             return null;
 
         var aliasInfoCount = reader.ReadInt32();
-        HashSet<(string alias, string name, int arity, bool isGlobal)>? aliasInfo = null;
+        HashSet<AliasInfo>? aliasInfo = null;
 
         if (aliasInfoCount > 0)
         {
@@ -72,11 +100,53 @@ internal sealed partial class SyntaxTreeIndex
 
             for (var i = 0; i < aliasInfoCount; i++)
             {
-                aliasInfo.Add((
-                    reader.ReadRequiredString(),
-                    reader.ReadRequiredString(),
-                    reader.ReadInt32(),
-                    reader.ReadBoolean()));
+                var aliasName = reader.ReadRequiredString();
+                var aliasArity = reader.ReadInt32();
+                var targetKind = (AliasTargetKind)reader.ReadByte();
+
+                AliasInfo info;
+                switch (targetKind)
+                {
+                    case AliasTargetKind.Name:
+                        info = AliasInfo.CreateName(aliasName, aliasArity,
+                            reader.ReadRequiredString(),
+                            reader.ReadInt32(),
+                            reader.ReadBoolean());
+                        break;
+
+                    case AliasTargetKind.TypeParameter:
+                        info = AliasInfo.CreateTypeParameter(aliasName, aliasArity,
+                            reader.ReadRequiredString(),
+                            reader.ReadBoolean());
+                        break;
+
+                    case AliasTargetKind.Dynamic:
+                        info = AliasInfo.CreateDynamic(aliasName, aliasArity,
+                            reader.ReadBoolean());
+                        break;
+
+                    case AliasTargetKind.Array:
+                        info = AliasInfo.CreateArray(aliasName, aliasArity,
+                            reader.ReadInt32(),
+                            reader.ReadBoolean());
+                        break;
+
+                    case AliasTargetKind.Pointer:
+                        info = AliasInfo.CreatePointer(aliasName, aliasArity,
+                            reader.ReadBoolean());
+                        break;
+
+                    case AliasTargetKind.FunctionPointer:
+                        info = AliasInfo.CreateFunctionPointer(aliasName, aliasArity,
+                            reader.ReadInt32(),
+                            reader.ReadBoolean());
+                        break;
+
+                    default:
+                        throw ExceptionUtilities.UnexpectedValue(targetKind);
+                }
+
+                aliasInfo.Add(info);
             }
         }
 

@@ -43,7 +43,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Public ReadOnly MemberImportsSyntax As ImmutableArray(Of SyntaxReference)
 
             ' Can be Nothing if no alias imports. May contain alias whose target is an error type.
-            Public ReadOnly AliasImportsOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition)
+            Public ReadOnly AliasImportsOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition)
 
             ' Can be Nothing if no xmlns imports.
             Public ReadOnly XmlNamespacesOpt As IReadOnlyDictionary(Of String, XmlNamespaceAndImportsClausePosition)
@@ -56,7 +56,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
             Public Sub New(memberImports As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
                            memberImportsSyntax As ImmutableArray(Of SyntaxReference),
-                           importAliasesOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition),
+                           importAliasesOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition),
                            xmlNamespacesOpt As IReadOnlyDictionary(Of String, XmlNamespaceAndImportsClausePosition),
                            optionStrict As Boolean?,
                            optionInfer As Boolean?,
@@ -174,7 +174,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
             Dim importMembersOf As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
             Dim importMembersOfSyntax As ImmutableArray(Of SyntaxReference) = Nothing
-            Dim importAliasesOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim importAliasesOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
             Dim xmlNamespacesOpt As IReadOnlyDictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
 
             BindImports(compilationUnitSyntax.Imports, binder, diagBag, importMembersOf, importMembersOfSyntax, importAliasesOpt, xmlNamespacesOpt, cancellationToken, filterSpan)
@@ -241,7 +241,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                                        diagBag As DiagnosticBag,
                                        <Out> ByRef importMembersOf As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
                                        <Out> ByRef importMembersOfSyntax As ImmutableArray(Of SyntaxReference),
-                                       <Out> ByRef importAliasesOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition),
+                                       <Out> ByRef importAliasesOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition),
                                        <Out> ByRef xmlNamespacesOpt As IReadOnlyDictionary(Of String, XmlNamespaceAndImportsClausePosition),
                                        cancellationToken As CancellationToken,
                                        Optional filterSpan As TextSpan? = Nothing)
@@ -290,7 +290,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Private ReadOnly _membersSyntaxBuilder As ArrayBuilder(Of SyntaxReference)
 
             Public Sub New(membersBuilder As ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition), membersSyntaxBuilder As ArrayBuilder(Of SyntaxReference))
-                MyBase.New(New HashSet(Of NamespaceOrTypeSymbol), New Dictionary(Of String, AliasAndImportsClausePosition)(IdentifierComparison.Comparer), New Dictionary(Of String, XmlNamespaceAndImportsClausePosition))
+                MyBase.New(New HashSet(Of NamespaceOrTypeSymbol), New Dictionary(Of NameWithArity, AliasAndImportsClausePosition)(New NameWithArityComparer(IdentifierComparison.Comparer)), New Dictionary(Of String, XmlNamespaceAndImportsClausePosition))
                 _membersBuilder = membersBuilder
                 _membersSyntaxBuilder = membersSyntaxBuilder
             End Sub
@@ -312,8 +312,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 _membersSyntaxBuilder.Add(syntaxRef)
             End Sub
 
-            Public Overrides Sub AddAlias(syntaxRef As SyntaxReference, name As String, [alias] As AliasSymbol, importsClausePosition As Integer, dependencies As IReadOnlyCollection(Of AssemblySymbol))
-                Aliases.Add(name, New AliasAndImportsClausePosition([alias], importsClausePosition, syntaxRef, dependencies.ToImmutableArray()))
+            Public Overrides Sub AddAlias(syntaxRef As SyntaxReference, name As String, arity As Integer, [alias] As AliasSymbol, importsClausePosition As Integer, dependencies As IReadOnlyCollection(Of AssemblySymbol))
+                Aliases.Add(New NameWithArity(name, arity), New AliasAndImportsClausePosition([alias], importsClausePosition, syntaxRef, dependencies.ToImmutableArray()))
             End Sub
         End Class
 
@@ -325,7 +325,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Private Shared Sub ValidateImports(compilation As VisualBasicCompilation,
                                            memberImports As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
                                            memberImportsSyntax As ImmutableArray(Of SyntaxReference),
-                                           aliasImportsOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition),
+                                           aliasImportsOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition),
                                            diagnostics As BindingDiagnosticBag)
             ' TODO: Dev10 reports error on specific type parts rather than the import
             ' (reporting error on Object rather than C in C = A(Of Object) for instance).
@@ -399,7 +399,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         ''' Return the alias imports for this file. May return Nothing if there are no alias imports.
         ''' May contain aliases with error type targets.
         ''' </summary>
-        Public ReadOnly Property AliasImportsOpt As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition)
+        Public ReadOnly Property AliasImportsOpt As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition)
             Get
                 Return BoundInformation.AliasImportsOpt
             End Get

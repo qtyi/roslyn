@@ -26,7 +26,7 @@ internal abstract class AbstractMemberScopedReferenceFinder<TSymbol> : AbstractR
 
     protected sealed override Task DetermineDocumentsToSearchAsync<TData>(
         TSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

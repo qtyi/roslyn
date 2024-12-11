@@ -6,6 +6,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,10 +65,13 @@ internal sealed class FindReferenceCache
     private readonly SemanticModel _nullableEnabledSemanticModel;
 #pragma warning restore IDE0052 // Remove unread private members
 
-    private readonly ConcurrentDictionary<SyntaxNode, SymbolInfo> _symbolInfoCache = [];
-    private readonly ConcurrentDictionary<string, ImmutableArray<SyntaxToken>> _identifierCache;
+    private readonly ConcurrentDictionary<SyntaxNode, (SymbolInfo symbolInfo, AliasInfo aliasInfo)> _symbolInfoCache = [];
+    private readonly ConcurrentDictionary<NameWithArity, ImmutableArray<SyntaxToken>> _identifierCache;
+    private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _tupleTypeCache = [];
+    private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _arrayTypeCache = [];
+    private readonly ConcurrentDictionary<int, ImmutableArray<SyntaxNode>> _pointerTypeCache = []; // pointer type for key 0; function pointer type for key (parameter count + 1).
 
-    private ImmutableHashSet<string>? _aliasNameSet;
+    private ImmutableHashSet<NameWithArity>? _aliasSet;
     private ImmutableArray<SyntaxToken> _constructorInitializerCache;
     private ImmutableArray<SyntaxToken> _newKeywordsCache;
 
@@ -81,35 +86,66 @@ internal sealed class FindReferenceCache
         SyntaxTreeIndex = syntaxTreeIndex;
         SyntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
 
-        _identifierCache = new(comparer: semanticModel.Language switch
+        _identifierCache = new(comparer: new NameWithArityComparer(semanticModel.Language switch
         {
             LanguageNames.VisualBasic => StringComparer.OrdinalIgnoreCase,
             LanguageNames.CSharp => StringComparer.Ordinal,
             _ => throw ExceptionUtilities.UnexpectedValue(semanticModel.Language)
-        });
+        }));
     }
 
-    public SymbolInfo GetSymbolInfo(SyntaxNode node, CancellationToken cancellationToken)
-        => _symbolInfoCache.GetOrAdd(node, static (n, arg) => arg.SemanticModel.GetSymbolInfo(n, arg.cancellationToken), (SemanticModel, cancellationToken));
+    public (SymbolInfo symbolInfo, AliasInfo aliasInfo) GetSymbolInfo(SyntaxNode node, CancellationToken cancellationToken)
+    {
+        return _symbolInfoCache.GetOrAdd(
+            node,
+            static (n, arg) =>
+            {
+                var (semanticModel, cancellationToken) = arg;
 
-    public IAliasSymbol? GetAliasInfo(
+                var symbolInfo = semanticModel.GetSymbolInfo(n, cancellationToken);
+                var aliasInfo = semanticModel.GetAliasInfo(n, cancellationToken);
+                return (symbolInfo, aliasInfo);
+            },
+            (SemanticModel, cancellationToken));
+    }
+
+    public AliasInfo GetAliasInfo(
         ISemanticFactsService semanticFacts, SyntaxToken token, CancellationToken cancellationToken)
     {
-        if (_aliasNameSet == null)
+        if (_aliasSet == null)
         {
-            var set = semanticFacts.GetAliasNameSet(SemanticModel, cancellationToken);
-            Interlocked.CompareExchange(ref _aliasNameSet, set, null);
+            var set = semanticFacts.GetAliasSet(SemanticModel, cancellationToken);
+            Interlocked.CompareExchange(ref _aliasSet, set, null);
         }
 
-        if (_aliasNameSet.Contains(token.ValueText))
+        if (_aliasSet.Contains(token.ValueText))
             return SemanticModel.GetAliasInfo(token.GetRequiredParent(), cancellationToken);
 
-        return null;
+        return default; // AliasInfo.None
     }
 
+    public AliasInfo GetAliasInfo(
+        ISemanticFactsService semanticFacts, SyntaxNode node, CancellationToken cancellationToken)
+    {
+        var tokens = node.DescendantTokens();
+        if (tokens.IsSingle())
+        {
+            return GetAliasInfo(semanticFacts, tokens.Single(), cancellationToken);
+        }
+
+        return default; // AliasInfo.None
+    }
     public ImmutableArray<SyntaxToken> FindMatchingIdentifierTokens(
         string identifier, CancellationToken cancellationToken)
     {
+        return FindMatchingIdentifierTokens(identifier, arity: 0, cancellationToken);
+    }
+
+    public ImmutableArray<SyntaxToken> FindMatchingIdentifierTokens(
+        string identifier, int arity, CancellationToken cancellationToken)
+    {
+        Debug.Assert(arity >= 0);
+
         if (identifier == "")
         {
             // Certain symbols don't have a name, so we return without further searching since the text-based index
@@ -120,7 +156,7 @@ internal sealed class FindReferenceCache
             return [];
         }
 
-        if (_identifierCache.TryGetValue(identifier, out var result))
+        if (_identifierCache.TryGetValue(new NameWithArity(identifier, arity), out var result))
             return result;
 
         // If this document doesn't even contain this identifier (escaped or non-escaped) we don't have to search it at all.
@@ -134,23 +170,47 @@ internal sealed class FindReferenceCache
         if (this.SyntaxTreeIndex.ProbablyContainsEscapedIdentifier(identifier))
         {
             return _identifierCache.GetOrAdd(
-                identifier,
-                identifier => FindMatchingIdentifierTokensFromTree(identifier, cancellationToken));
+                new NameWithArity(identifier, arity),
+                nameWithArity => FindMatchingIdentifierTokensFromTree(nameWithArity.Name, nameWithArity.Arity, cancellationToken));
         }
 
         return _identifierCache.GetOrAdd(
-            identifier,
-            identifier => FindMatchingTokensFromText(
-                identifier,
-                static (identifier, token, @this) => @this.IsMatch(identifier, token),
+            new NameWithArity(identifier, arity),
+            nameWithArity => FindMatchingTokensFromText(
+                nameWithArity.Name,
+                nameWithArity.Arity,
+                static (identifier, arity, token, @this) => @this.IsMatch(identifier, arity, token),
                 this, cancellationToken));
     }
 
-    private bool IsMatch(string identifier, SyntaxToken token)
-        => !token.IsMissing && this.SyntaxFacts.IsIdentifier(token) && this.SyntaxFacts.TextMatch(token.ValueText, identifier);
+    private bool IsMatch(string identifier, int arity, SyntaxToken token)
+    {
+        if (token.IsMissing || !this.SyntaxFacts.IsIdentifier(token) || !this.SyntaxFacts.TextMatch(token.ValueText, identifier))
+        {
+            return false;
+        }
+
+        if (arity > 0)
+        {
+            if (this.SyntaxFacts.IsGenericName(token.Parent))
+            {
+                this.SyntaxFacts.GetPartsOfGenericName(token.Parent, out _, out var typeArguments);
+                return typeArguments.Count == arity;
+            }
+            else if (this.SyntaxFacts.IsUsingAliasDirective(token.Parent))
+            {
+                this.SyntaxFacts.GetPartsOfUsingAliasDirective(token.Parent, out _, out _, out var typeParameters, out _);
+                return typeParameters.Count == arity;
+            }
+
+            // If there are other occations that using the wrong arity, we will remove them not here, but later.
+        }
+
+        return true;
+    }
 
     private ImmutableArray<SyntaxToken> FindMatchingIdentifierTokensFromTree(
-        string identifier, CancellationToken cancellationToken)
+        string identifier, int arity, CancellationToken cancellationToken)
     {
         using var _ = ArrayBuilder<SyntaxToken>.GetInstance(out var result);
         using var obj = SharedPools.Default<Stack<SyntaxNodeOrToken>>().GetPooledObject();
@@ -169,7 +229,7 @@ internal sealed class FindReferenceCache
             else if (current.IsToken)
             {
                 var token = current.AsToken();
-                if (IsMatch(identifier, token))
+                if (IsMatch(identifier, arity, token))
                     result.Add(token);
 
                 if (token.HasStructuredTrivia)
@@ -188,7 +248,7 @@ internal sealed class FindReferenceCache
     }
 
     private ImmutableArray<SyntaxToken> FindMatchingTokensFromText<TArgs>(
-        string text, Func<string, SyntaxToken, TArgs, bool> isMatch, TArgs args, CancellationToken cancellationToken)
+        string text, int arity, Func<string, int, SyntaxToken, TArgs, bool> isMatch, TArgs args, CancellationToken cancellationToken)
     {
         using var _ = ArrayBuilder<SyntaxToken>.GetInstance(out var result);
 
@@ -199,7 +259,7 @@ internal sealed class FindReferenceCache
 
             var token = this.Root.FindToken(index, findInsideTrivia: true);
             var span = token.Span;
-            if (span.Start == index && span.Length == text.Length && isMatch(text, token, args))
+            if (span.Start == index && span.Length == text.Length && isMatch(text, arity, token, args))
                 result.Add(token);
 
             var nextIndex = index + text.Length;
@@ -208,6 +268,112 @@ internal sealed class FindReferenceCache
         }
 
         return result.ToImmutableAndClear();
+    }
+
+    public ImmutableArray<SyntaxNode> FindMatchingTupleTypeNodes(
+        Document document,
+        int tupleElementCount,
+        CancellationToken cancellationToken)
+    {
+        return _tupleTypeCache.GetOrAdd(tupleElementCount, _ =>
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            return Root.DescendantNodes().WhereAsArray((SyntaxNode node, object? _) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!syntaxFacts.IsTupleType(node))
+                {
+                    return false;
+                }
+
+                syntaxFacts.GetPartsOfTupleType<SyntaxNode>(node, out var _, out var elements, out var _);
+                if (elements.Count != tupleElementCount)
+                {
+                    return false;
+                }
+
+                return true;
+            }, null).ToImmutableArrayOrEmpty();
+        });
+    }
+
+    public ImmutableArray<SyntaxNode> FindMatchingArrayTypeNodes(
+        Document document,
+        int rank,
+        CancellationToken cancellationToken)
+    {
+        return _arrayTypeCache.GetOrAdd(rank, _ =>
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            return Root.DescendantNodes().WhereAsArray((SyntaxNode node, object? _) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!syntaxFacts.IsArrayType(node))
+                {
+                    return false;
+                }
+
+                syntaxFacts.GetPartsOfArrayType<SyntaxNode>(node, out var _, out var rankSpecifiers);
+                syntaxFacts.GetRankOfArrayRankSpecifier(rankSpecifiers[0], out var arrayRank);
+                if (arrayRank != rank)
+                {
+                    return false;
+                }
+
+                return true;
+            }, null).ToImmutableArrayOrEmpty();
+        });
+    }
+
+    public ImmutableArray<SyntaxNode> FindMatchingPointerTypeNodes(
+        Document document,
+        CancellationToken cancellationToken)
+    {
+        return _pointerTypeCache.GetOrAdd(0, _ =>
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            return Root.DescendantNodes().WhereAsArray((SyntaxNode node, object? _) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!syntaxFacts.IsPointerType(node))
+                {
+                    return false;
+                }
+
+                return true;
+            }, null).ToImmutableArrayOrEmpty();
+        });
+    }
+
+    public ImmutableArray<SyntaxNode> FindMatchingFunctionPointerTypeNodes(
+        Document document,
+        int parameterCount,
+        CancellationToken cancellationToken)
+    {
+        return _pointerTypeCache.GetOrAdd(parameterCount + 1, _ =>
+        {
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            return Root.DescendantNodes().WhereAsArray((SyntaxNode node, object? _) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!syntaxFacts.IsFunctionPointerType(node))
+                {
+                    return false;
+                }
+
+                syntaxFacts.GetParametersOfFunctionPointerType<SyntaxNode>(node, out var parameters);
+                if (parameters.Count != parameterCount + 1)
+                {
+                    return false;
+                }
+
+                return true;
+            }, null).ToImmutableArrayOrEmpty();
+        });
     }
 
     public ImmutableArray<SyntaxToken> GetConstructorInitializerTokens(CancellationToken cancellationToken)
@@ -247,7 +413,8 @@ internal sealed class FindReferenceCache
         {
             return this.FindMatchingTokensFromText(
                 this.SyntaxFacts.GetText(this.SyntaxFacts.SyntaxKinds.NewKeyword),
-                static (_, token, syntaxKinds) => token.RawKind == syntaxKinds.NewKeyword,
+                arity: 0,
+                static (_, _, token, syntaxKinds) => token.RawKind == syntaxKinds.NewKeyword,
                 this.SyntaxFacts.SyntaxKinds,
                 cancellationToken);
         }

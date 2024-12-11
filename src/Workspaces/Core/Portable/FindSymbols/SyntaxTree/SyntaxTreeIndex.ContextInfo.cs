@@ -35,7 +35,9 @@ internal sealed partial class SyntaxTreeIndex
             bool containsConversion,
             bool containsGlobalKeyword,
             bool containsCollectionInitializer,
-            bool containsAttribute)
+            bool containsAttribute,
+            bool containsArrayCreationExpressionOrArrayType,
+            bool containsPointerType)
             : this(predefinedTypes, predefinedOperators,
                    ConvertToContainingNodeFlag(
                      containsForEachStatement,
@@ -54,7 +56,9 @@ internal sealed partial class SyntaxTreeIndex
                      containsConversion,
                      containsGlobalKeyword,
                      containsCollectionInitializer,
-                     containsAttribute))
+                     containsAttribute,
+                     containsArrayCreationExpressionOrArrayType,
+                     containsPointerType))
         {
         }
 
@@ -82,7 +86,9 @@ internal sealed partial class SyntaxTreeIndex
             bool containsConversion,
             bool containsGlobalKeyword,
             bool containsCollectionInitializer,
-            bool containsAttribute)
+            bool containsAttribute,
+            bool containsArrayCreationExpressionOrArrayType,
+            bool containsPointerType)
         {
             var containingNodes = ContainingNodes.None;
 
@@ -103,6 +109,7 @@ internal sealed partial class SyntaxTreeIndex
             containingNodes |= containsGlobalKeyword ? ContainingNodes.ContainsGlobalKeyword : 0;
             containingNodes |= containsCollectionInitializer ? ContainingNodes.ContainsCollectionInitializer : 0;
             containingNodes |= containsAttribute ? ContainingNodes.ContainsAttribute : 0;
+            containingNodes |= containsArrayCreationExpressionOrArrayType ? ContainingNodes.ContainsArrayCreationExpressionOrArrayType : 0;
 
             return containingNodes;
         }
@@ -164,6 +171,12 @@ internal sealed partial class SyntaxTreeIndex
         public bool ContainsAttribute
             => (_containingNodes & ContainingNodes.ContainsAttribute) == ContainingNodes.ContainsAttribute;
 
+        public bool ContainsArrayCreationExpressionOrArrayType
+            => (_containingNodes & ContainingNodes.ContainsArrayCreationExpressionOrArrayType) == ContainingNodes.ContainsArrayCreationExpressionOrArrayType;
+
+        public bool ContainsPointerType
+            => (_containingNodes & ContainingNodes.ContainsPointerType) == ContainingNodes.ContainsPointerType;
+
         public void WriteTo(ObjectWriter writer)
         {
             writer.WriteInt32(_predefinedTypes);
@@ -209,6 +222,8 @@ internal sealed partial class SyntaxTreeIndex
             ContainsGlobalKeyword = 1 << 14,
             ContainsCollectionInitializer = 1 << 15,
             ContainsAttribute = 1 << 16,
+            ContainsArrayCreationExpressionOrArrayType = 1 << 117,
+            ContainsPointerType = 1 << 18,
         }
     }
 }

@@ -8,6 +8,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Runtime.InteropServices
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -140,15 +141,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' </summary>
         Protected ReadOnly CommentedSymbol As Symbol
 
-        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             Throw ExceptionUtilities.Unreachable
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             Throw ExceptionUtilities.Unreachable
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             Throw ExceptionUtilities.Unreachable
         End Function
 
@@ -173,7 +174,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' <summary>
         ''' Removes from symbol collection overridden methods or properties
         ''' </summary>
-        Protected Shared Sub RemoveOverriddenMethodsAndProperties(symbols As ArrayBuilder(Of Symbol))
+        Protected Shared Sub RemoveOverriddenMethodsAndProperties(symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             If symbols Is Nothing OrElse symbols.Count < 2 Then
                 Return
             End If
@@ -181,7 +182,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' Do we have any method or property?
             Dim originalDef2Symbol As Dictionary(Of Symbol, Integer) = Nothing
             For i = 0 To symbols.Count - 1
-                Dim sym As Symbol = symbols(i)
+                Dim sym As Symbol = symbols(i).Symbol
                 Select Case sym.Kind
                     Case SymbolKind.Method, SymbolKind.Property
                         If originalDef2Symbol Is Nothing Then
@@ -199,7 +200,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim indices2remove As ArrayBuilder(Of Integer) = Nothing
             For i = 0 To symbols.Count - 1
                 Dim index As Integer = -1
-                Dim sym As Symbol = symbols(i)
+                Dim sym As Symbol = symbols(i).Symbol
 
                 Select Case sym.Kind
 
@@ -251,8 +252,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             Dim target As Integer = 0
             For source = 0 To symbols.Count - 1
-                Dim sym As Symbol = symbols(source)
-                If sym IsNot Nothing Then
+                Dim sym As SymbolWithAnnotationSymbols = symbols(source)
+                If Not sym.isdefault Then
                     symbols(target) = sym
                     target += 1
                 End If

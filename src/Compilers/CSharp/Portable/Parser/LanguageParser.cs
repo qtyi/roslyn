@@ -658,7 +658,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                             }
 
                         case SyntaxKind.UsingKeyword:
-                            if (isGlobal && (this.PeekToken(1).Kind == SyntaxKind.OpenParenToken || (!IsScript && IsPossibleTopLevelUsingLocalDeclarationStatement())))
+                            if (isGlobal && (this.PeekToken(1).Kind == SyntaxKind.OpenParenToken || (!IsScript && IsPossibleTopLevelUsingLocalDeclarationStatement() && !IsPossibleUsingDirectiveRatherThanUsingDeclarationStatement())))
                             {
                                 // Top-level using statement or using local declaration
                                 goto default;
@@ -971,12 +971,44 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 unsafeToken = AddTrailingSkippedSyntax(unsafeToken, AddError(this.EatToken(), ErrorCode.ERR_BadStaticAfterUnsafe));
             }
 
-            var alias = this.IsNamedAssignment() ? ParseNameEquals() : null;
+            SyntaxToken? name = null;
+            TypeParameterListSyntax? typeParameters = null;
+            SyntaxToken? equalsToken = null;
+
+            // alias can be either a single IdentifierToken or an IdentifierToken followed by TypeParameterListSyntax and TypeParameterConstraintClauseSyntax list.
+            var hasAlias = this.CurrentToken.Kind == SyntaxKind.EqualsToken /* Missing alias identifier */ ||
+                (IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.EqualsToken or SyntaxKind.LessThanToken);
+            if (hasAlias)
+            {
+                // We may fall into the case where someone just try using a generic type, which we may need to tell them it
+                // needs to be `using static generic-type`, but on the other hand that may become a problem because generic
+                // alias has the similar syntax as generic type.  e.g.
+                //
+                //     using GenericType<TypeParameter>
+                //
+                // If we first see an identifier followed with a '<' token, then we parse them greedily as a generic alias.
+                // Then we check the next token if it is '=' token, if it is then we have done right, otherwise we go back to
+                // the token after "using" and parse as a generic type without alias.
+                using var resetPoint = GetDisposableResetPoint(resetOnDispose: false);
+                name = this.ParseIdentifierToken();
+                typeParameters = this.ParseTypeParameterList();
+
+                equalsToken = this.TryEatToken(SyntaxKind.EqualsToken);
+
+                if (equalsToken is null)
+                {
+                    hasAlias = false;
+                    name = null;
+                    typeParameters = null;
+                    resetPoint.Reset();
+                }
+            }
 
             TypeSyntax type;
+            SyntaxListBuilder<TypeParameterConstraintClauseSyntax> constraints = default;
             SyntaxToken semicolon;
 
-            var isAliasToFunctionPointer = alias != null && this.CurrentToken.Kind == SyntaxKind.DelegateKeyword;
+            var isAliasToFunctionPointer = hasAlias && this.CurrentToken.Kind == SyntaxKind.DelegateKeyword;
             if (!isAliasToFunctionPointer && IsPossibleNamespaceMemberDeclaration())
             {
                 //We're worried about the case where someone already has a correct program
@@ -1004,7 +1036,29 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 // worse for error recovery, but it means all code that consumes a using-directive can keep on assuming
                 // it has a name when there is no alias.  Only code that specifically has to process aliases then has to
                 // deal with getting arbitrary types back.
-                type = alias == null ? this.ParseQualifiedName() : this.ParseType();
+                if (hasAlias)
+                {
+                    type = this.ParseType();
+
+                    // If we can see a where keyword ahead, then the current token was probably supposed to be an identifier
+                    if (type.IsMissing && this.PeekToken(1).ContextualKind == SyntaxKind.WhereKeyword)
+                        type = AddTrailingSkippedSyntax(type, this.EatToken());
+
+                    if (this.CurrentToken.ContextualKind == SyntaxKind.WhereKeyword)
+                    {
+                        var saveTerm = _termState;
+                        _termState |= TerminatorState.IsEndOfRecordOrClassOrStructOrInterfaceSignature;
+
+                        constraints = _pool.Allocate<TypeParameterConstraintClauseSyntax>();
+                        this.ParseTypeParameterConstraintClauses(constraints);
+
+                        _termState = saveTerm;
+                    }
+                }
+                else
+                {
+                    type = this.ParseQualifiedName();
+                }
 
                 // If we can see a semicolon ahead, then the current token was probably supposed to be an identifier
                 if (type.IsMissing && this.PeekToken(1).Kind == SyntaxKind.SemicolonToken)
@@ -1013,7 +1067,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 semicolon = this.EatToken(SyntaxKind.SemicolonToken);
             }
 
-            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, alias, type, semicolon);
+            return _syntaxFactory.UsingDirective(globalToken, usingToken, staticToken, unsafeToken, name, typeParameters, equalsToken, type, constraints, semicolon);
         }
 
         private bool IsPossibleGlobalAttributeDeclaration()
@@ -5847,6 +5901,50 @@ parse_member_name:;
             return name;
         }
 
+        private enum ScanTypeParameterListKind
+        {
+            NotTypeParameterList,
+            PossibleTypeParameterList,
+            DefiniteTypeParameterList
+        }
+
+        private ScanTypeParameterListKind ScanTypeParameterList(bool inUsingDirective)
+        {
+            // We only support scan type parameter list in using-directive.
+            Debug.Assert(inUsingDirective);
+
+            if (this.CurrentToken.Kind != SyntaxKind.LessThanToken)
+            {
+                return ScanTypeParameterListKind.NotTypeParameterList;
+            }
+
+            ScanTypeParameterListKind kind = ScanTypeParameterListKind.DefiniteTypeParameterList;
+
+            while (this.EatToken().Kind != SyntaxKind.GreaterThanToken) // Not end of type parameter list
+            {
+                // Type parameter in using-directive does not support attribute or in/out constraints, so
+                // there is only identifier that can be admitted.
+                if (this.IsTrueIdentifier() && this.PeekToken(1).Kind is SyntaxKind.CommaToken or SyntaxKind.GreaterThanToken)
+                {
+                    if (IsPredefinedType(this.CurrentToken.Kind))
+                    {
+                        kind = kind > ScanTypeParameterListKind.PossibleTypeParameterList ? ScanTypeParameterListKind.PossibleTypeParameterList : kind;
+                    }
+                }
+                else if (this.CurrentToken.Kind is SyntaxKind.CommaToken or SyntaxKind.GreaterThanToken) // Missing identifier
+                {
+                    kind = kind > ScanTypeParameterListKind.PossibleTypeParameterList ? ScanTypeParameterListKind.PossibleTypeParameterList : kind;
+                }
+                else
+                {
+                    kind = ScanTypeParameterListKind.NotTypeParameterList;
+                    break;
+                }
+            }
+
+            return kind;
+        }
+
         private enum ScanTypeArgumentListKind
         {
             NotTypeArgumentList,
@@ -8167,6 +8265,38 @@ done:
         {
             using var _ = this.GetDisposableResetPoint(resetOnDispose: true);
             return ParsePossibleScopedKeyword(isFunctionPointerParameter) != null;
+        }
+
+        private bool IsPossibleUsingDirectiveRatherThanUsingDeclarationStatement()
+        {
+            var tk = this.CurrentToken.ContextualKind;
+
+            // It's common to have `static` or `unsafe` keyword after `using` keyword in using-directive.
+            if (tk is SyntaxKind.StaticKeyword or SyntaxKind.UnsafeKeyword)
+            {
+                return true;
+            }
+
+            if (IsTrueIdentifier())
+            {
+                var token1 = PeekToken(1);
+                // using X =
+                if (token1.Kind == SyntaxKind.EqualsToken)
+                {
+                    return true;
+                }
+
+                if (token1.Kind == SyntaxKind.LessThanToken)
+                {
+                    using var _ = this.GetDisposableResetPoint(resetOnDispose: true);
+                    EatToken(); // Eat identifier token;
+                    // using X<A, B, ..., Z> =
+                    return this.ScanTypeParameterList(true) == ScanTypeParameterListKind.NotTypeParameterList ||
+                        this.CurrentToken.Kind == SyntaxKind.EqualsToken;
+                }
+            }
+
+            return false;
         }
 
         private bool IsPossibleFirstTypedIdentifierInLocaDeclarationStatement(bool isGlobalScriptLevel)

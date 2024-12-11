@@ -47,7 +47,20 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Editing
                 root = root.ReplaceNodes(root.DescendantNodesAndSelf().OfType<TypeSyntax>(),
                     (o, c) =>
                     {
-                        var symbol = model.GetSymbolInfo(o).Symbol;
+                        // We cannot annotate any type that is / contains alias type parameter.
+                        if (
+                            // In using-directive with type parameter list.
+                            o.Ancestors().OfType<UsingDirectiveSyntax>().SingleOrDefault() is UsingDirectiveSyntax { TypeParameterList: not null } &&
+                            // Targets type that contains alias type parameter.
+                            o.DescendantNodesAndSelf().OfType<TypeSyntax>()
+                                .Select(typeSyntax => model.GetSymbolInfo(typeSyntax).Symbol)
+                                .Any(static symbol => symbol is ITypeParameterSymbol { TypeParameterKind: TypeParameterKind.Alias })
+                        )
+                        {
+                            return c;
+                        }
+
+                        var symbol = model.GetAliasInfo(o).Target ?? model.GetSymbolInfo(o).Symbol;
                         return symbol != null
                             ? c.WithAdditionalAnnotations(SymbolAnnotation.Create(symbol), Simplifier.Annotation)
                             : c;
@@ -716,6 +729,42 @@ namespace System
     class C
     {
         private List F;
+    }
+}", useSymbolAnnotations);
+        }
+
+        [Theory, MemberData(nameof(TestAllData))]
+        public async Task TestUnnecessaryImportAddedAndRemoved2(bool useSymbolAnnotations)
+        {
+            await TestAsync(
+@"using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
+    }
+}",
+
+@"using System.Collections.Generic;
+using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
+    }
+}",
+
+@"using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+namespace System
+{
+    class C
+    {
+        private StringDictionary<int> F;
     }
 }", useSymbolAnnotations);
         }

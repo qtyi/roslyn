@@ -30,7 +30,7 @@ internal static partial class TypeSyntaxExtensions
             return false;
         }
 
-        if (semanticModel.GetAliasInfo(typeSyntax) != null)
+        if (semanticModel.GetAliasInfo(typeSyntax).Alias != null)
         {
             return false;
         }

@@ -167,6 +167,12 @@ internal abstract partial class AbstractDocumentHighlightsService :
         references = references.FilterToItemsToShow(options);
         references = references.FilterNonMatchingMethodNames(solution, symbol);
         references = references.FilterToAliasMatches(symbol as IAliasSymbol);
+        references = references.FilterToArrayTypeMatches(symbol as IArrayTypeSymbol);
+        references = references.FilterToDynamicTypeMatches(symbol as IDynamicTypeSymbol);
+        references = references.FilterToFunctionPointerTypeMatches(symbol as IFunctionPointerTypeSymbol);
+        references = references.FilterToNamedTypeMatches(symbol as INamedTypeSymbol);
+        references = references.FilterToPointerTypeMatches(symbol as IPointerTypeSymbol);
+        references = references.FilterToTypeParameterMatches(symbol as ITypeParameterSymbol);
 
         if (symbol.IsConstructor())
         {

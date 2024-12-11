@@ -46,7 +46,7 @@ internal sealed class OrdinaryMethodReferenceFinder : AbstractMethodOrPropertyOr
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         IMethodSymbol methodSymbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

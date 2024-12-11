@@ -216,7 +216,7 @@ internal sealed partial class FindReferencesSearchEngine(
     private async ValueTask ProcessProjectAsync(
         Project project, ImmutableArray<(ISymbol symbol, SymbolGroup group)> allSymbols, Action<Reference> onReferenceFound, CancellationToken cancellationToken)
     {
-        using var _1 = PooledDictionary<ISymbol, PooledHashSet<string>>.GetInstance(out var symbolToGlobalAliases);
+        using var _1 = PooledDictionary<ISymbol, PooledHashSet<NameWithArity>>.GetInstance(out var symbolToGlobalAliases);
         using var _2 = PooledDictionary<Document, Dictionary<ISymbol, SymbolGroup>>.GetInstance(out var documentToSymbolsWithin);
         try
         {
@@ -273,7 +273,7 @@ internal sealed partial class FindReferencesSearchEngine(
     private async ValueTask ProcessDocumentAsync(
         Document document,
         Dictionary<ISymbol, SymbolGroup> symbolsToSearchFor,
-        Dictionary<ISymbol, PooledHashSet<string>> symbolToGlobalAliases,
+        Dictionary<ISymbol, PooledHashSet<NameWithArity>> symbolToGlobalAliases,
         Action<Reference> onReferenceFound,
         CancellationToken cancellationToken)
     {
@@ -342,7 +342,7 @@ internal sealed partial class FindReferencesSearchEngine(
     private async Task AddGlobalAliasesAsync(
         Project project,
         ImmutableArray<(ISymbol symbol, SymbolGroup group)> allSymbols,
-        PooledDictionary<ISymbol, PooledHashSet<string>> symbolToGlobalAliases,
+        PooledDictionary<ISymbol, PooledHashSet<NameWithArity>> symbolToGlobalAliases,
         CancellationToken cancellationToken)
     {
         foreach (var (symbol, _) in allSymbols)
@@ -357,10 +357,10 @@ internal sealed partial class FindReferencesSearchEngine(
         }
     }
 
-    private static PooledHashSet<string> GetGlobalAliasesSet<T>(PooledDictionary<T, PooledHashSet<string>> dictionary, T key) where T : notnull
-        => dictionary.GetOrAdd(key, static _ => PooledHashSet<string>.GetInstance());
+    private static PooledHashSet<NameWithArity> GetGlobalAliasesSet<T>(PooledDictionary<T, PooledHashSet<NameWithArity>> dictionary, T key) where T : notnull
+        => dictionary.GetOrAdd(key, static _ => PooledHashSet<NameWithArity>.GetInstance());
 
-    private static void FreeGlobalAliases(PooledDictionary<ISymbol, PooledHashSet<string>> symbolToGlobalAliases)
+    private static void FreeGlobalAliases(PooledDictionary<ISymbol, PooledHashSet<NameWithArity>> symbolToGlobalAliases)
     {
         foreach (var (_, globalAliases) in symbolToGlobalAliases)
             globalAliases.Free();

@@ -287,17 +287,17 @@ internal partial class CSharpRecommendationService
 
         private RecommendedSymbols GetSymbolsOffOfAlias(IdentifierNameSyntax alias)
         {
-            var aliasSymbol = _context.SemanticModel.GetAliasInfo(alias, _cancellationToken);
-            if (aliasSymbol == null)
+            var aliasInfo = _context.SemanticModel.GetAliasInfo(alias, _cancellationToken);
+            if (aliasInfo.Alias == null)
                 return default;
 
             // If we are in case like `enum E : global::$$` we need to show only `System` namespace
             if (alias.GetAncestor<BaseListSyntax>()?.Parent is EnumDeclarationSyntax)
-                return new(GetSymbolsForEnumBaseList(aliasSymbol.Target));
+                return new(GetSymbolsForEnumBaseList(aliasInfo.Target));
 
             return new RecommendedSymbols(_context.SemanticModel.LookupNamespacesAndTypes(
                 alias.SpanStart,
-                aliasSymbol.Target));
+                aliasInfo.Target));
         }
 
         private ImmutableArray<ISymbol> GetSymbolsForLabelContext()
@@ -515,7 +515,7 @@ internal partial class CSharpRecommendationService
             //    using static | -- Show namespace and types
             //    using A = B.| -- Show namespace and types
             var usingDirective = name.GetAncestorOrThis<UsingDirectiveSyntax>();
-            if (usingDirective != null && usingDirective.Alias == null)
+            if (usingDirective != null && usingDirective.Identifier == default)
             {
                 return new RecommendedSymbols(usingDirective.StaticKeyword.IsKind(SyntaxKind.StaticKeyword)
                     ? symbols.WhereAsArray(s => !s.IsDelegateType())

@@ -903,13 +903,13 @@ End Class
             binder.LookupMember(result, baseType, "Finalize", 0, LookupOptions.IgnoreAccessibility, useSiteDiagnostics)
             Assert.Null(useSiteDiagnostics)
             Assert.True(result.IsGood)
-            Assert.Equal("Sub System.Object.Finalize()", result.SingleSymbol.ToTestDisplayString())
+            Assert.Equal("Sub System.Object.Finalize()", result.SingleSymbol.symbol.ToTestDisplayString())
 
             result.Clear()
             binder.LookupMember(result, baseType, "MemberwiseClone", 0, LookupOptions.IgnoreAccessibility, useSiteDiagnostics)
             Assert.Null(useSiteDiagnostics)
             Assert.True(result.IsGood)
-            Assert.Equal("Function System.Object.MemberwiseClone() As System.Object", result.SingleSymbol.ToTestDisplayString())
+            Assert.Equal("Function System.Object.MemberwiseClone() As System.Object", result.SingleSymbol.Symbol.ToTestDisplayString())
 
             result.Free()
         End Sub
@@ -1119,13 +1119,13 @@ End Class
             binder.Lookup(result, "Func1", arity:=0, options:=LookupOptions.MustNotBeReturnValueVariable, useSiteDiagnostics:=useSiteDiagnostics)
             Assert.Null(useSiteDiagnostics)
             Assert.True(result.IsGood)
-            Assert.Equal("Function Test.Func1() As System.Int32", result.SingleSymbol.ToTestDisplayString())
+            Assert.Equal("Function Test.Func1() As System.Int32", result.SingleSymbol.Symbol.ToTestDisplayString())
 
             result.Clear()
             binder.Lookup(result, "x", arity:=0, options:=LookupOptions.MustNotBeReturnValueVariable, useSiteDiagnostics:=useSiteDiagnostics)
             Assert.Null(useSiteDiagnostics)
             Assert.True(result.IsGood)
-            Assert.Equal("x As System.Int32", result.SingleSymbol.ToTestDisplayString())
+            Assert.Equal("x As System.Int32", result.SingleSymbol.Symbol.ToTestDisplayString())
 
             result.Free()
         End Sub

@@ -22,6 +22,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -1068,10 +1069,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return ToBadCrefString(crefSyntax);
             }
 
-            Symbol ambiguityWinner;
-            ImmutableArray<Symbol> symbols = binder.BindCref(crefSyntax, out ambiguityWinner, diagnostics);
+            SymbolWithAnnotationSymbols ambiguityWinner;
+            ImmutableArray<SymbolWithAnnotationSymbols> symbols = binder.BindCref(crefSyntax, out ambiguityWinner, diagnostics);
 
-            Symbol symbol;
+            SymbolWithAnnotationSymbols symbol;
             switch (symbols.Length)
             {
                 case 0:
@@ -1081,26 +1082,39 @@ namespace Microsoft.CodeAnalysis.CSharp
                     break;
                 default:
                     symbol = ambiguityWinner;
-                    Debug.Assert((object)symbol != null);
+                    Debug.Assert(!symbol.IsDefault);
                     break;
             }
 
-            if (symbol.Kind == SymbolKind.Alias)
+            Symbol result;
+            if (symbol.Symbol is AliasSymbol aliasSymbol)
             {
-                symbol = ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved: null);
+                if (aliasSymbol.IsGenericAlias)
+                {
+                    Debug.Assert(symbol.AnnotationSymbols.Length == 1 && symbol.AnnotationSymbols[0] is NamespaceOrTypeSymbol);
+                    result = symbol.AnnotationSymbols[0];
+                }
+                else
+                {
+                    result = aliasSymbol.GetAliasTarget(basesBeingResolved: null);
+                }
+            }
+            else
+            {
+                result = symbol.Symbol;
             }
 
-            if (symbol is NamespaceSymbol ns)
+            if (result is NamespaceSymbol ns)
             {
                 Debug.Assert(!ns.IsGlobalNamespace);
                 diagnostics.AddAssembliesUsedByNamespaceReference(ns);
             }
             else
             {
-                diagnostics.AddDependencies(symbol as TypeSymbol ?? symbol.ContainingType);
+                diagnostics.AddDependencies(result as TypeSymbol ?? result.ContainingType);
             }
 
-            return symbol.OriginalDefinition.GetDocumentationCommentId();
+            return result.OriginalDefinition.GetDocumentationCommentId();
         }
 
         /// <summary>

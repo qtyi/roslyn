@@ -115,7 +115,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     if (arity == 0)
                     {
                         // symbols cannot conflict with using alias names
-                        if (Next is WithExternAndUsingAliasesBinder withUsingAliases && withUsingAliases.IsUsingAlias(name, originalBinder.IsSemanticModelBinder, basesBeingResolved))
+                        if (Next is WithExternAndUsingAliasesBinder withUsingAliases && withUsingAliases.IsUsingAlias(name, arity, originalBinder.IsSemanticModelBinder, basesBeingResolved))
                         {
                             CSDiagnosticInfo diagInfo = new CSDiagnosticInfo(ErrorCode.ERR_ConflictAliasAndMember, name, _container);
                             var error = new ExtendedErrorTypeSymbol((NamespaceOrTypeSymbol)null, name, arity, diagInfo, unreported: true);

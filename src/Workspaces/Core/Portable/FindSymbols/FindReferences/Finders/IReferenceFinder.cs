@@ -24,7 +24,7 @@ internal interface IReferenceFinder
     /// For example, given symbol <c>A.X</c> and <c>global alias G = B.X</c>, <c>G</c> might be returned
     /// in a search for <c>A.X</c> because they both end in <c>X</c>.
     /// </summary>
-    Task<ImmutableArray<string>> DetermineGlobalAliasesAsync(
+    Task<ImmutableArray<NameWithArity>> DetermineGlobalAliasesAsync(
         ISymbol symbol, Project project, CancellationToken cancellationToken);
 
     /// <summary>
@@ -51,7 +51,7 @@ internal interface IReferenceFinder
     /// Implementations of this method must be thread-safe.
     /// </summary>
     Task DetermineDocumentsToSearchAsync<TData>(
-        ISymbol symbol, HashSet<string>? globalAliases,
+        ISymbol symbol, HashSet<NameWithArity>? globalAliases,
         Project project, IImmutableSet<Document>? documents,
         Action<Document, TData> processResult, TData processResultData,
         FindReferencesSearchOptions options, CancellationToken cancellationToken);

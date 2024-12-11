@@ -6992,7 +6992,7 @@ class C
             int exitCode = csc.Run(outWriter);
             Assert.Equal(0, exitCode);
 
-            var patched = Regex.Replace(outWriter.ToString().Trim(), "version \\d+\\.\\d+\\.\\d+(-[\\w\\d]+)*", "version A.B.C-d");
+            var patched = Regex.Replace(outWriter.ToString().Trim(), "version \\d+\\.\\d+\\.\\d+(-[\\w\\d\\.]+)*", "version A.B.C-d");
             patched = ReplaceCommitHash(patched);
             Assert.Equal(@"
 Microsoft (R) Visual C# Compiler version A.B.C-d (HASH)

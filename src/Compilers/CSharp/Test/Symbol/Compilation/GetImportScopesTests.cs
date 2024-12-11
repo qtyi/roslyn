@@ -620,7 +620,7 @@ global using M = Microsoft;";
         Assert.Empty(scopes.Single().XmlNamespaces);
 
         Assert.True(scopes.Single().Aliases.Single() is { Name: "M", Target: INamespaceSymbol { Name: nameof(Microsoft) } });
-        Assert.True(scopes.Single().Aliases.Single().DeclaringSyntaxReferences.Single().GetSyntax() is UsingDirectiveSyntax { Alias.Name.Identifier.Text: "M" });
+        Assert.True(scopes.Single().Aliases.Single().DeclaringSyntaxReferences.Single().GetSyntax() is UsingDirectiveSyntax { Identifier.Text: "M" });
 
         Assert.True(scopes.Single().Imports.Single().NamespaceOrType is INamespaceSymbol { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) });
         Assert.True(scopes.Single().Imports.Single().DeclaringSyntaxReference!.GetSyntax() is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier.Text: nameof(System) } });
@@ -650,7 +650,7 @@ class C
 
         Assert.Single(scopes.Single().Aliases);
         Assert.True(scopes.Single().Aliases.Single() is { Name: "M", Target: INamespaceSymbol { Name: nameof(Microsoft) } });
-        Assert.True(scopes.Single().Aliases.Single().DeclaringSyntaxReferences.Single().GetSyntax() is UsingDirectiveSyntax { Alias.Name.Identifier.Text: "M" });
+        Assert.True(scopes.Single().Aliases.Single().DeclaringSyntaxReferences.Single().GetSyntax() is UsingDirectiveSyntax { Identifier.Text: "M" });
 
         Assert.Empty(scopes.Single().ExternAliases);
         Assert.Empty(scopes.Single().XmlNamespaces);

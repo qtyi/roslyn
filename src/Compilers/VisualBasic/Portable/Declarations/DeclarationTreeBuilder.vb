@@ -244,7 +244,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                         Continue For
                     End If
 
-                    result = result Or QuickAttributeHelpers.GetQuickAttributes(QuickAttributeChecker.GetFinalName(simpleImportsClause.Name), inAttribute:=False)
+                    result = result Or QuickAttributeHelpers.GetQuickAttributes(QuickAttributeChecker.GetFinalName(simpleImportsClause.NamespaceOrType), inAttribute:=False)
                 Next
             Next
 

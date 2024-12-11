@@ -6374,7 +6374,7 @@ class H
 
             var x1Decl = GetPatternDeclarations(tree, "x1").Single();
             var x1 = (DeclarationPatternSyntax)x1Decl.Parent;
-            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1.Type).ToTestDisplayString());
+            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -6397,7 +6397,7 @@ class H
 
             var x1Decl = GetPatternDeclarations(tree, "x1").Single();
             var x1 = (DeclarationPatternSyntax)x1Decl.Parent;
-            Assert.Null(model.GetAliasInfo(x1.Type));
+            Assert.Null(model.GetAliasInfo(x1.Type).Alias);
         }
 
         [Fact]

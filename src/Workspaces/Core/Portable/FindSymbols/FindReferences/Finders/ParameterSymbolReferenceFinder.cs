@@ -23,7 +23,7 @@ internal sealed class ParameterSymbolReferenceFinder : AbstractReferenceFinder<I
 
     protected override Task DetermineDocumentsToSearchAsync<TData>(
         IParameterSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

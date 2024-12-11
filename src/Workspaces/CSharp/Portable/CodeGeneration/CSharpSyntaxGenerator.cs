@@ -154,8 +154,8 @@ internal sealed class CSharpSyntaxGenerator : SyntaxGenerator
     public override SyntaxNode NamespaceImportDeclaration(SyntaxNode name)
         => SyntaxFactory.UsingDirective((NameSyntax)name);
 
-    public override SyntaxNode AliasImportDeclaration(string aliasIdentifierName, SyntaxNode name)
-        => SyntaxFactory.UsingDirective(SyntaxFactory.NameEquals(aliasIdentifierName), (NameSyntax)name);
+    public override SyntaxNode AliasImportDeclaration(string aliasIdentifierName, IEnumerable<SyntaxNode>? aliasTypeParameters, SyntaxNode name)
+        => SyntaxFactory.UsingDirective(Identifier(aliasIdentifierName), AsTypeParameterList(aliasTypeParameters), (NameSyntax)name);
 
     public override SyntaxNode NamespaceDeclaration(SyntaxNode name, IEnumerable<SyntaxNode> declarations)
     {
@@ -1833,6 +1833,7 @@ internal sealed class CSharpSyntaxGenerator : SyntaxGenerator
             MethodDeclarationSyntax method => method.WithConstraintClauses(WithTypeConstraints(method.ConstraintClauses, typeParameterName, kinds, isUnmanagedType, types)),
             TypeDeclarationSyntax type => type.WithConstraintClauses(WithTypeConstraints(type.ConstraintClauses, typeParameterName, kinds, isUnmanagedType, types)),
             DelegateDeclarationSyntax @delegate => @delegate.WithConstraintClauses(WithTypeConstraints(@delegate.ConstraintClauses, typeParameterName, kinds, isUnmanagedType, types)),
+            UsingDirectiveSyntax @using => @using.WithConstraintClauses(WithTypeConstraints(@using.ConstraintClauses, typeParameterName, kinds, isUnmanagedType, types)),
             _ => declaration,
         };
 
@@ -3463,7 +3464,7 @@ internal sealed class CSharpSyntaxGenerator : SyntaxGenerator
         });
 
     public override SyntaxNode ArrayTypeExpression(SyntaxNode type)
-        => SyntaxFactory.ArrayType((TypeSyntax)type, [SyntaxFactory.ArrayRankSpecifier()]);
+        => SyntaxFactory.ArrayType((TypeSyntax)type, [SyntaxFactory.ArrayRankSpecifier()]).WithAdditionalAnnotations(Simplifier.Annotation);
 
     public override SyntaxNode NullableTypeExpression(SyntaxNode type)
     {
@@ -3473,12 +3474,12 @@ internal sealed class CSharpSyntaxGenerator : SyntaxGenerator
         }
         else
         {
-            return SyntaxFactory.NullableType((TypeSyntax)type);
+            return SyntaxFactory.NullableType((TypeSyntax)type).WithAdditionalAnnotations(Simplifier.Annotation);
         }
     }
 
     internal override SyntaxNode CreateTupleType(IEnumerable<SyntaxNode> elements)
-        => SyntaxFactory.TupleType([.. elements.Cast<TupleElementSyntax>()]);
+        => SyntaxFactory.TupleType([.. elements.Cast<TupleElementSyntax>()]).WithAdditionalAnnotations(Simplifier.Annotation);
 
     public override SyntaxNode TupleElementExpression(SyntaxNode type, string? name = null)
         => SyntaxFactory.TupleElement((TypeSyntax)type, name?.ToIdentifierToken() ?? default);

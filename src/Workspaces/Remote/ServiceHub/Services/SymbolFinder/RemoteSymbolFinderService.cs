@@ -219,11 +219,20 @@ internal sealed class RemoteSymbolFinderService : BrokeredServiceBase, IRemoteSy
         public ValueTask OnCompletedAsync(CancellationToken cancellationToken)
             => _callback.InvokeAsync((callback, cancellationToken) => callback.OnCompletedAsync(_callbackId, cancellationToken), cancellationToken);
 
-        public ValueTask OnDefinitionFoundAsync(SymbolGroup group, CancellationToken cancellationToken)
+        public async ValueTask OnDefinitionFoundAsync(SymbolGroup group, CancellationToken cancellationToken)
         {
             var dehydratedGroup = SerializableSymbolGroup.Dehydrate(_solution, group, cancellationToken);
-            return _callback.InvokeAsync(
-                (callback, cancellationToken) => callback.OnDefinitionFoundAsync(_callbackId, dehydratedGroup, cancellationToken), cancellationToken);
+
+            // WORKAROUND(sanmuru): We may run into some occations that we have some symbols which do not have any definition.
+            // It is very common since we allow search for alias symbol those may target to pointer type or function pointer type.
+            // If `dehydratedGroup` is empty, we need not to invoke call-back.
+            if (dehydratedGroup.Symbols.Count == 0)
+            {
+                return;
+            }
+
+            await _callback.InvokeAsync(
+                (callback, cancellationToken) => callback.OnDefinitionFoundAsync(_callbackId, dehydratedGroup, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask OnReferencesFoundAsync(

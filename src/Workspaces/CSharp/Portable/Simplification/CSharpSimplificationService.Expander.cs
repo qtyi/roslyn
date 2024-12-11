@@ -455,7 +455,7 @@ internal partial class CSharpSimplificationService
             if (!SyntaxFacts.IsAliasQualifier(originalSimpleName))
             {
                 var aliasInfo = _semanticModel.GetAliasInfo(originalSimpleName, _cancellationToken);
-                if (aliasInfo != null)
+                if (aliasInfo.Alias != null)
                 {
                     var aliasTarget = aliasInfo.Target;
 
@@ -517,8 +517,9 @@ internal partial class CSharpSimplificationService
                             break;
 
                         case SyntaxKind.IdentifierName:
-                            var identifierReplacement = (IdentifierNameSyntax)replacement;
-                            replacement = replacement.ReplaceToken(identifier, GetNewIdentifier(identifierReplacement.Identifier));
+                        case SyntaxKind.GenericName:
+                            var simpleNameReplacement = (SimpleNameSyntax)replacement;
+                            replacement = replacement.ReplaceToken(identifier, GetNewIdentifier(simpleNameReplacement.Identifier));
                             break;
 
                         default:
@@ -539,7 +540,7 @@ internal partial class CSharpSimplificationService
                             newIdentifier = newIdentifier.WithAdditionalAnnotations(_annotationForReplacedAliasIdentifier);
                         }
 
-                        var aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Name);
+                        var aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Alias.Name, aliasInfo.Alias.Arity);
                         return newIdentifier.WithAdditionalAnnotations(aliasAnnotationInfo);
                     }
                 }

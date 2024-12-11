@@ -41,6 +41,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
         UnconstrainedTypeParameterInConditional
         CommentsAfterLineContinuation
         InitOnlySettersUsage
+        ImportGenericAlias
     End Enum
 
     Friend Module FeatureExtensions
@@ -105,6 +106,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
 
                 Case Feature.InitOnlySettersUsage
                     Return LanguageVersion.VisualBasic16_9
+
+                Case feature.ImportGenericAlias
+                    Return LanguageVersion.Latest.MapSpecifiedToEffectiveVersion()
+
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(feature)
             End Select
@@ -178,6 +183,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax
                     Return ERRID.FEATURE_CommentsAfterLineContinuation
                 Case Feature.InitOnlySettersUsage
                     Return ERRID.FEATURE_InitOnlySettersUsage
+                Case feature.ImportGenericAlias
+                    Return ERRID.FEATURE_ImportGenericAlias
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(feature)
             End Select

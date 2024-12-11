@@ -1578,7 +1578,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Dim entryPointLookupOptions As LookupOptions = LookupOptions.AllMethodsOfAnyArity Or LookupOptions.IgnoreExtensionMethods
                     binder.LookupMember(lookupResult, mainType, WellKnownMemberNames.EntryPointMethodName, arity:=0, options:=entryPointLookupOptions, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
 
-                    If (Not lookupResult.IsGoodOrAmbiguous) OrElse lookupResult.Symbols(0).Kind <> SymbolKind.Method Then
+                    If (Not lookupResult.IsGoodOrAmbiguous) OrElse lookupResult.Symbols(0).Symbol.Kind <> SymbolKind.Method Then
                         diagnostics.Add(ERRID.ERR_StartupCodeNotFound1, NoLocation.Singleton, mainType)
                         lookupResult.Free()
                         Return Nothing
@@ -1588,8 +1588,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' The entrypoint cannot be in another assembly.
                         ' NOTE: filter these out here, rather than below, so that we
                         ' report "not found", rather than "invalid", as in dev10.
-                        If candidate.ContainingAssembly = Me.Assembly Then
-                            entryPointCandidates.Add(DirectCast(candidate, MethodSymbol))
+                        If candidate.Symbol.ContainingAssembly = Me.Assembly Then
+                            entryPointCandidates.Add(DirectCast(candidate.Symbol, MethodSymbol))
                         End If
                     Next
 

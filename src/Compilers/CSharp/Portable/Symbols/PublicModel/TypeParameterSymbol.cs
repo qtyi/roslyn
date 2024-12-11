@@ -59,6 +59,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
             get { return _underlying.DeclaringType.GetPublicSymbol(); }
         }
 
+        IAliasSymbol ITypeParameterSymbol.DeclaringAlias
+        {
+            get { return _underlying.DeclaringAlias.GetPublicSymbol(); }
+        }
+
         ImmutableArray<ITypeSymbol> ITypeParameterSymbol.ConstraintTypes
         {
             get

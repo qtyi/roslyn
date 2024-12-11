@@ -109,7 +109,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeFixes.SimplifyTypeNames
 
         Private Shared Sub AddAliasedName(ByRef aliasedNames As ImmutableHashSet(Of String), simpleImportsClause As SimpleImportsClauseSyntax)
             If simpleImportsClause.Alias IsNot Nothing Then
-                Dim identifierName = TryCast(simpleImportsClause.Name.GetRightmostName(), IdentifierNameSyntax)
+                Dim identifierName = TryCast(simpleImportsClause.NamespaceOrType.GetRightmostName(), IdentifierNameSyntax)
                 If identifierName IsNot Nothing Then
                     If Not String.IsNullOrEmpty(identifierName.Identifier.ValueText) Then
                         aliasedNames = aliasedNames.Add(identifierName.Identifier.ValueText)

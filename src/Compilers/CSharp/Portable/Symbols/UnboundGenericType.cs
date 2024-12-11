@@ -42,6 +42,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 new CSDiagnosticInfo(ErrorCode.ERR_UnexpectedUnboundGenericName));
             return constructedFrom.Construct(typeArguments, unbound: true);
         }
+
+        public static TypeSymbol AsUnboundGenericType(this AliasSymbol alias)
+        {
+            var type = (TypeSymbol)alias.Target;
+
+            if (alias.Arity == 0)
+            {
+                return type;
+            }
+
+            var containsAliasTypeParameter = type.VisitType((TypeSymbol t, AliasSymbol a, bool _) => t.TypeKind == TypeKind.TypeParameter, alias) is not null;
+            return !containsAliasTypeParameter ? type : ((NamedTypeSymbol)type).AsUnboundGenericType();
+        }
     }
 
     internal sealed class UnboundArgumentErrorTypeSymbol : ErrorTypeSymbol

@@ -152,6 +152,11 @@
         <target state="translated">komentáře po pokračování řádku</target>
         <note />
       </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="new">import generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FEATURE_InitOnlySettersUsage">
         <source>assigning to or passing 'ByRef' properties with init-only setters</source>
         <target state="translated">přiřazování do vlastností ByRef nebo jejich předávání pomocí metod setter init-only</target>
@@ -3153,6 +3158,11 @@
       <trans-unit id="ERR_InvalidTypeForAliasesImport2">
         <source>'{1}' for the Imports alias to '{0}' does not refer to a Namespace, Class, Structure, Interface, Enum or Module.</source>
         <target state="translated">'Název {1} aliasu importu {0} neodkazuje na prvky Namespace, Class, Structure, Interface, Enum ani Module.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="new">'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedConstant2">

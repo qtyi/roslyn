@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using System.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -37,9 +38,25 @@ namespace Microsoft.CodeAnalysis.CSharp
             return _allowedMap != null && _allowedMap.TryGetValue(syntax, out allowed) && allowed;
         }
 
+        protected override bool IsUnboundAliasAllowed(GenericNameSyntax syntax, AliasSymbol symbol)
+        {
+            if (!IsUnboundTypeAllowed(syntax))
+            {
+                return false;
+            }
+
+            // Open types are allowed if and only if:
+            //   1) A generic named type whose type arguments are all type parameters of the alias symbol.
+            //   2) Any type that contains no type parameter of the alias symbol.
+            Debug.Assert(symbol.Target.IsType);
+            var containsAliasTypeParameter = ((TypeSymbol)symbol.Target).VisitType((TypeSymbol t, AliasSymbol a, bool _) => t.TypeKind == TypeKind.TypeParameter, symbol) is not null;
+            return !containsAliasTypeParameter ||
+                symbol.Target is NamedTypeSymbol namedType && namedType.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.All(static (TypeWithAnnotations t, AliasSymbol a) => t.Type.TypeKind == TypeKind.TypeParameter, symbol);
+        }
+
         /// <summary>
         /// This visitor walks over a type expression looking for open types.
-        /// Open types are allowed if an only if:
+        /// Open types are allowed if and only if:
         ///   1) There is no constructed generic type elsewhere in the visited syntax; and
         ///   2) The open type is not used as a type argument or array/pointer/nullable
         ///        element type.

@@ -35,12 +35,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Dim target = aliasImport.Alias.Target
                     If target.IsNamespace Then
                         scopeBuilder.Add(Cci.UsedNamespaceOrType.CreateNamespace(DirectCast(target, NamespaceSymbol).GetCciAdapter(), aliasOpt:=aliasImport.Alias.Name))
+                    ElseIf aliasImport.Alias.IsGenericAlias Then
+                        ' WORKAROUND(sanmuru): We skip generic alias now.
+                        Continue For
                     ElseIf target.Kind <> SymbolKind.ErrorType AndAlso Not target.ContainingAssembly.IsLinked Then
                         ' It is not an error to import a non-existing type (unlike C#), skip the error types.
                         ' We also skip alias imports of embedded types to avoid breaking existing code that
                         ' imports types that can't be embedded but doesn't use them anywhere else in the code.
                         Dim typeRef = GetTypeReference(DirectCast(target, NamedTypeSymbol), moduleBuilder, diagnostics)
-                        scopeBuilder.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, aliasOpt:=aliasImport.Alias.Name))
+                        scopeBuilder.Add(Cci.UsedNamespaceOrType.CreateType(typeRef, aliasOpt:=New NameWithArity(aliasImport.Alias.Name, aliasImport.Alias.Arity)))
                     End If
                 Next
             End If

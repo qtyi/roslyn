@@ -261,7 +261,7 @@ internal readonly struct NameDeclarationInfo(
             GetAccessibility(modifiers.Value),
             GetDeclarationModifiers(modifiers.Value),
             semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type,
-            semanticModel.GetAliasInfo(typeSyntax, cancellationToken));
+            semanticModel.GetAliasInfo(typeSyntax, cancellationToken).Alias);
     }
 
     private static NameDeclarationInfo IsLastTokenOfType<TSyntaxNode>(
@@ -303,7 +303,7 @@ internal readonly struct NameDeclarationInfo(
             GetAccessibility(modifiers),
             GetDeclarationModifiers(modifiers),
             semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type,
-            semanticModel.GetAliasInfo(typeSyntax, cancellationToken));
+            semanticModel.GetAliasInfo(typeSyntax, cancellationToken).Alias);
     }
 
     private static bool IsFieldDeclaration(SyntaxToken token, SemanticModel semanticModel,
@@ -370,7 +370,7 @@ internal readonly struct NameDeclarationInfo(
 
             if (symbolInfo.GetAnySymbol() is ITypeSymbol type)
             {
-                var alias = semanticModel.GetAliasInfo(conditionalExpressionSyntax.Condition, cancellationToken);
+                var alias = semanticModel.GetAliasInfo(conditionalExpressionSyntax.Condition, cancellationToken).Alias;
 
                 result = new NameDeclarationInfo(
                     possibleDeclarationComputer(default),

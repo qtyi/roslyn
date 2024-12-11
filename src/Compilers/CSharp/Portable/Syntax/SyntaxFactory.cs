@@ -2655,26 +2655,51 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
-        public static UsingDirectiveSyntax UsingDirective(NameEqualsSyntax alias, NameSyntax name)
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, NameSyntax name)
         {
             return UsingDirective(
+                globalKeyword: default(SyntaxToken),
                 usingKeyword: Token(SyntaxKind.UsingKeyword),
                 staticKeyword: default(SyntaxToken),
-                alias: alias,
-                name: name,
+                unsafeKeyword: default(SyntaxToken),
+                identifier: identifier,
+                typeParameterList: null,
+                equalsToken: Token(SyntaxKind.EqualsToken),
+                namespaceOrType: name,
+                constraintClauses: default,
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
 
-        public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name, SyntaxToken semicolonToken)
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, NameSyntax name)
         {
             return UsingDirective(
-                globalKeyword: default,
+                globalKeyword: default(SyntaxToken),
+                usingKeyword: Token(SyntaxKind.UsingKeyword),
+                staticKeyword: default(SyntaxToken),
+                unsafeKeyword: default(SyntaxToken),
+                identifier: identifier,
+                typeParameterList: typeParameterList,
+                equalsToken: Token(SyntaxKind.EqualsToken),
+                namespaceOrType: name,
+                constraintClauses: default,
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
+        }
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameSyntax name)
+        {
+            return UsingDirective(
+                globalKeyword: default(SyntaxToken),
                 usingKeyword,
                 staticKeyword,
-                unsafeKeyword: default,
-                alias,
+                unsafeKeyword: default(SyntaxToken),
+                identifier: default(SyntaxToken),
+                typeParameterList: null,
+                equalsToken: Token(SyntaxKind.EqualsToken),
                 namespaceOrType: name,
-                semicolonToken);
+                constraintClauses: default,
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
 
         /// <summary>Creates a new ClassOrStructConstraintSyntax instance.</summary>

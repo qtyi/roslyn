@@ -137,26 +137,11 @@ internal sealed partial class ExpressionSimplifier : AbstractCSharpSimplifier<Ex
             // Check if we need to replace this syntax with an alias identifier
             if (TryReplaceExpressionWithAlias(
                     memberAccess, semanticModel, symbol,
-                    cancellationToken, out var aliasReplacement))
+                    cancellationToken, out var aliasReplacement, out var aliasTypeArguments))
             {
-                // get the token text as it appears in source code to preserve e.g. unicode character escaping
-                var text = aliasReplacement.Name;
-                var syntaxRef = aliasReplacement.DeclaringSyntaxReferences.FirstOrDefault();
+                var aliasName = CreateAliasNameSyntax(memberAccess, aliasReplacement, aliasTypeArguments, cancellationToken).WithTriviaFrom(memberAccess);
 
-                if (syntaxRef != null)
-                {
-                    var declIdentifier = ((UsingDirectiveSyntax)syntaxRef.GetSyntax(cancellationToken)).Alias!.Name.Identifier;
-                    text = declIdentifier.IsVerbatimIdentifier() ? declIdentifier.ToString()[1..] : declIdentifier.ToString();
-                }
-
-                replacementNode = SyntaxFactory.IdentifierName(
-                    memberAccess.Name.Identifier.CopyAnnotationsTo(SyntaxFactory.Identifier(
-                        memberAccess.GetLeadingTrivia(),
-                        SyntaxKind.IdentifierToken,
-                        text,
-                        aliasReplacement.Name,
-                        memberAccess.GetTrailingTrivia())));
-
+                replacementNode = aliasName.WithIdentifier(memberAccess.Name.Identifier.CopyAnnotationsTo(aliasName.Identifier));
                 replacementNode = memberAccess.CopyAnnotationsTo(replacementNode);
                 replacementNode = memberAccess.Name.CopyAnnotationsTo(replacementNode);
 
@@ -305,8 +290,22 @@ internal sealed partial class ExpressionSimplifier : AbstractCSharpSimplifier<Ex
 
                         return true;
                     }
-            }
 
+                case IdentifierNameSyntax { Identifier.ValueText: "dynamic" }: // dynamic type
+                case ArrayTypeSyntax:
+                case FunctionPointerTypeSyntax:
+                case PointerTypeSyntax:
+                case TupleTypeSyntax:
+                    {
+                        if (!TrySimplifyComplexType(expression, semanticModel, cancellationToken, out var newNode, out issueSpan))
+                            return false;
+
+                        // replacement node might not be in it's simplest form, so add simplify annotation to it.
+                        replacementNode = newNode.WithAdditionalAnnotations(Simplifier.Annotation);
+
+                        return true;
+                    }
+            }
             return false;
         }
     }
@@ -438,6 +437,43 @@ internal sealed partial class ExpressionSimplifier : AbstractCSharpSimplifier<Ex
                     }
                 }
             }
+        }
+
+        return false;
+    }
+
+    private static bool TrySimplifyComplexType(
+        ExpressionSyntax expression,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken,
+        [NotNullWhen(true)] out ExpressionSyntax? replacementNode,
+        out TextSpan issueSpan)
+    {
+        replacementNode = null;
+        issueSpan = default;
+
+        // See https://github.com/dotnet/roslyn/issues/40974
+        //
+        // To be very safe, we only support simplifying code that bound to a symbol without any
+        // sort of problems.  We could potentially relax this in the future.  However, we would
+        // need to be very careful about the implications of us offering to fixup 'broken' code 
+        // in a manner that might end up making things worse or confusing the user.
+        var symbol = SimplificationHelpers.GetOriginalSymbolInfo(semanticModel, expression);
+        if (symbol == null)
+            return false;
+
+        // Check if we need to replace this syntax with an alias identifier
+        if (TryReplaceExpressionWithAlias(
+                expression, semanticModel, symbol,
+                cancellationToken, out var aliasReplacement, out var aliasTypeArguments))
+        {
+            var aliasName = CreateAliasNameSyntax(expression, aliasReplacement, aliasTypeArguments, cancellationToken).WithTriviaFrom(expression);
+
+            replacementNode = expression.CopyAnnotationsTo(aliasName);
+
+            issueSpan = expression.Span;
+
+            return true;
         }
 
         return false;

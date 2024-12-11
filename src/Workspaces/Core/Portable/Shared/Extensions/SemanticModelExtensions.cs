@@ -104,12 +104,28 @@ internal static partial class SemanticModelExtensions
         }
         else
         {
-            aliasSymbol = semanticModel.GetAliasInfo(token.Parent!, cancellationToken);
+            aliasSymbol = semanticModel.GetAliasInfo(token.Parent!, cancellationToken).Alias;
             var bindableParent = syntaxFacts.TryGetBindableParent(token);
             var typeInfo = bindableParent != null ? semanticModel.GetTypeInfo(bindableParent, cancellationToken) : default;
             type = typeInfo.Type;
             convertedType = typeInfo.ConvertedType;
-            declaredSymbol = MapSymbol(semanticFacts.GetDeclaredSymbol(semanticModel, token, cancellationToken), type);
+            declaredSymbol = semanticFacts.GetDeclaredSymbol(semanticModel, token, cancellationToken);
+            // Tuple element, that consist of single token, of tuple type will
+            // return an field symbol represent the field of tuple type.  We do
+            // not what this field symbol, but instead we need to focus to the
+            // innermost type or alias symbol.
+            if (declaredSymbol.IsTupleField())
+            {
+                var tupleElement = token.GetAncestor(syntaxFacts.IsTupleElement);
+                if (tupleElement != null && tupleElement.DescendantTokens().IsSingle())
+                {
+                    declaredSymbol = null;
+                }
+            }
+            if (declaredSymbol != null)
+            {
+                declaredSymbol = MapSymbol(declaredSymbol, type);
+            }
 
             var skipSymbolInfoLookup = declaredSymbol.IsKind(SymbolKind.RangeVariable);
             allSymbols = skipSymbolInfoLookup

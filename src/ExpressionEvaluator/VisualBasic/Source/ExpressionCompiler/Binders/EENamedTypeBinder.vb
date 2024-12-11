@@ -60,11 +60,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
                 Dim symbols = lookupResult.Symbols
                 For i As Integer = 0 To symbols.Count - 1
                     Dim symbol = symbols(i)
-                    If symbol.Kind = SymbolKind.TypeParameter Then
-                        Debug.Assert(TypeSymbol.Equals(symbol.OriginalDefinition.ContainingType, substitutedSourceType.OriginalDefinition, TypeCompareKind.ConsiderEverything))
-                        Dim ordinal = DirectCast(symbol, TypeParameterSymbol).Ordinal
-                        symbols(i) = substitutedSourceType.TypeArgumentsNoUseSiteDiagnostics(ordinal)
-                        Debug.Assert(symbols(i).Kind = SymbolKind.TypeParameter)
+                    If symbol.Symbol.Kind = SymbolKind.TypeParameter Then
+                        Debug.Assert(TypeSymbol.Equals(symbol.Symbol.OriginalDefinition.ContainingType, substitutedSourceType.OriginalDefinition, TypeCompareKind.ConsiderEverything))
+                        Dim ordinal = DirectCast(symbol.Symbol, TypeParameterSymbol).Ordinal
+                        symbols(i) = substitutedSourceType.TypeArgumentsNoUseSiteDiagnostics(ordinal).WithDefaultAnnotationSymbols()
+                        Debug.Assert(symbols(i).Symbol.Kind = SymbolKind.TypeParameter)
                     End If
                 Next
             End If

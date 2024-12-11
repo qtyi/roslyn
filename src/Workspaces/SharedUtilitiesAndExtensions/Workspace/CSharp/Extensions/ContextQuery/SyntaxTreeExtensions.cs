@@ -634,6 +634,8 @@ internal static partial class SyntaxTreeExtensions
         }
 
         // using |
+        // or
+        // using | < T > = Bar
         // but not:
         // using | = Bar
 
@@ -643,10 +645,17 @@ internal static partial class SyntaxTreeExtensions
         if (token.IsKind(SyntaxKind.UsingKeyword))
         {
             var usingDirective = token.GetAncestor<UsingDirectiveSyntax>();
-            if (usingDirective != null)
+            if (usingDirective != null && usingDirective.Identifier == default)
             {
-                if (token.GetNextToken(includeSkipped: true).Kind() != SyntaxKind.EqualsToken &&
-                    usingDirective.Alias == null)
+                var nextTokenKind = token.GetNextToken(includeSkipped: true).Kind();
+                if (nextTokenKind == SyntaxKind.LessThanToken)
+                {
+                    if (usingDirective.TypeParameterList != null)
+                    {
+                        return true;
+                    }
+                }
+                else if (nextTokenKind != SyntaxKind.EqualsToken)
                 {
                     return true;
                 }
@@ -2205,8 +2214,7 @@ internal static partial class SyntaxTreeExtensions
         // apply to a "using Goo = ..." situation.
         if (token.IsKind(SyntaxKind.EqualsToken))
         {
-            if (token.Parent.IsKind(SyntaxKind.NameEquals) &&
-                token.Parent.IsParentKind(SyntaxKind.UsingDirective))
+            if (token.Parent.IsKind(SyntaxKind.UsingDirective))
             {
                 return false;
             }

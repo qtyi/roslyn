@@ -738,7 +738,7 @@ class ADerived2: A
             INamedTypeSymbol classA = globalNS.GetMembers("A").Single() as INamedTypeSymbol;
             var tree = c.SyntaxTrees.First();
             var model = c.GetSemanticModel(tree);
-            IAliasSymbol aliasA = model.GetDeclaredSymbol(tree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Where(u => u.Alias != null).Single()) as IAliasSymbol;
+            IAliasSymbol aliasA = model.GetDeclaredSymbol(tree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Where(u => u.Identifier != default).Single());
             INamedTypeSymbol classADerived = globalNS.GetMembers("ADerived").Single() as INamedTypeSymbol;
             INamedTypeSymbol classADerived2 = globalNS.GetMembers("ADerived2").Single() as INamedTypeSymbol;
             INamedTypeSymbol classB = globalNS.GetMembers("B").Single() as INamedTypeSymbol;
@@ -892,7 +892,7 @@ internal class Derived : Outer
             Compilation compilation1 = c1;
             var tree = c1.SyntaxTrees.First();
             var model = c1.GetSemanticModel(tree);
-            IAliasSymbol SomeAlias = model.GetDeclaredSymbol(tree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Where(u => u.Alias != null).Single());
+            IAliasSymbol SomeAlias = model.GetDeclaredSymbol(tree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Where(u => u.Identifier != default).Single());
             INamespaceSymbol globalNS = c1.GlobalNamespace;
             IAssemblySymbol sourceAssem = c1.SourceModule.ContainingAssembly;
             IAssemblySymbol mscorlibAssem = ((CSharpCompilation)c1).GetReferencedAssemblySymbol(c1.ExternalReferences[0]).GetPublicSymbol();

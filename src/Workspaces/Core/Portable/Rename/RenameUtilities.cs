@@ -29,12 +29,12 @@ internal static class RenameUtilities
         // it obtained an AliasSyntaxAnnotation and it is going through another rename session. Make sure the token
         // has only one annotation pertaining to the current session or try to extract only the current session annotation
         var originalAliasAnnotation = token.GetAnnotations(AliasAnnotation.Kind).Single();
-        var originalAliasName = AliasAnnotation.GetAliasName(originalAliasAnnotation);
+        var originalAlias = AliasAnnotation.GetAlias(originalAliasAnnotation);
 
-        if (originalAliasName == aliasSymbol.Name)
+        if (originalAlias.Name == aliasSymbol.Name && originalAlias.Arity == aliasSymbol.GetArity())
         {
             token = token.WithoutAnnotations(originalAliasAnnotation);
-            var replacementAliasAnnotation = AliasAnnotation.Create(replacementText);
+            var replacementAliasAnnotation = AliasAnnotation.Create(replacementText, originalAlias.Arity);
             token = token.WithAdditionalAnnotations(replacementAliasAnnotation);
         }
 
@@ -157,11 +157,6 @@ internal static class RenameUtilities
         var symbolInfo = semanticModel.GetSymbolInfo(token, cancellationToken);
         if (symbolInfo.Symbol != null)
         {
-            if (symbolInfo.Symbol.IsTupleType())
-            {
-                return TokenRenameInfo.NoSymbolsTokenInfo;
-            }
-
             return TokenRenameInfo.CreateSingleSymbolTokenInfo(symbolInfo.Symbol);
         }
 

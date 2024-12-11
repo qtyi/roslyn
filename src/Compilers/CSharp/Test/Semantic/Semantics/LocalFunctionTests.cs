@@ -1778,7 +1778,7 @@ class C
             var aTypeInfo = model.GetTypeInfo(a);
             Assert.Equal(TypeKind.Error, aTypeInfo.Type.TypeKind);
 
-            Assert.Null(model.GetAliasInfo(a));
+            Assert.Null(model.GetAliasInfo(a).Alias);
 
             Assert.Empty(model.LookupNamespacesAndTypes(a.SpanStart, name: "A"));
 
@@ -1801,7 +1801,7 @@ class C
 
             Assert.Equal(clsCompliantSymbol, model.GetTypeInfo(clsCompliant).Type);
 
-            Assert.Null(model.GetAliasInfo(clsCompliant));
+            Assert.Null(model.GetAliasInfo(clsCompliant).Alias);
 
             Assert.Equal(clsCompliantSymbol,
                 model.LookupNamespacesAndTypes(clsCompliant.SpanStart, name: "CLSCompliantAttribute").Single());
@@ -1853,7 +1853,7 @@ class C
             var aTypeInfo = model.GetTypeInfo(a);
             Assert.Equal(TypeKind.Error, aTypeInfo.Type.TypeKind);
 
-            Assert.Null(model.GetAliasInfo(a));
+            Assert.Null(model.GetAliasInfo(a).Alias);
 
             Assert.Empty(model.LookupNamespacesAndTypes(a.SpanStart, name: "A"));
 
@@ -1876,7 +1876,7 @@ class C
 
             Assert.Equal(clsCompliantSymbol, model.GetTypeInfo(clsCompliant).Type);
 
-            Assert.Null(model.GetAliasInfo(clsCompliant));
+            Assert.Null(model.GetAliasInfo(clsCompliant).Alias);
 
             Assert.Equal(clsCompliantSymbol,
                 model.LookupNamespacesAndTypes(clsCompliant.SpanStart, name: "CLSCompliantAttribute").Single());

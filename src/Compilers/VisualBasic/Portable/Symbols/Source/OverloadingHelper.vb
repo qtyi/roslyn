@@ -4,6 +4,7 @@
 
 Imports System.Diagnostics
 Imports Microsoft.CodeAnalysis.PooledObjects
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
     ''' <summary>
@@ -159,19 +160,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Dim result = LookupResult.GetInstance()
             binder.LookupMember(result, container, name, 0, LookupOptions.AllMethodsOfAnyArity Or LookupOptions.IgnoreExtensionMethods, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
             If result.IsGoodOrAmbiguous Then
-                Dim lookupSymbols As ArrayBuilder(Of Symbol) = result.Symbols
+                Dim lookupSymbols As ArrayBuilder(Of SymbolWithAnnotationSymbols) = result.Symbols
                 If result.Kind = LookupResultKind.Ambiguous AndAlso result.HasDiagnostic AndAlso TypeOf result.Diagnostic Is AmbiguousSymbolDiagnostic Then
-                    lookupSymbols.AddRange(DirectCast(result.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols)
+                    lookupSymbols.AddRange(DirectCast(result.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols())
                 End If
 
                 For Each foundMember In lookupSymbols
                     ' Go through each member found in a base class or interface
-                    If IsCandidateMember(foundMember, kind) AndAlso foundMember.ContainingType IsNot container Then
+                    If IsCandidateMember(foundMember.Symbol, kind) AndAlso foundMember.Symbol.ContainingType IsNot container Then
                         If metadataName Is Nothing Then
-                            metadataName = foundMember.MetadataName
+                            metadataName = foundMember.Symbol.MetadataName
                         Else
                             ' Intentionally using case-sensitive comparison here.
-                            If Not String.Equals(metadataName, foundMember.MetadataName, StringComparison.Ordinal) Then
+                            If Not String.Equals(metadataName, foundMember.Symbol.MetadataName, StringComparison.Ordinal) Then
                                 ' We have found two members with conflicting casing of metadata names.
                                 metadataName = Nothing
                                 Exit For

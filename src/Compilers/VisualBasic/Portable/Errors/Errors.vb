@@ -1782,7 +1782,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERR_InvalidVersionFormatDeterministic = 37330
         ERR_TypeReserved = 37331
 
-        ERR_NextAvailable = 37332
+        ERR_InvalidTypeForAliasesImport3 = 37332
+
+        ERR_NextAvailable = 37333
 
         '// WARNINGS BEGIN HERE
         WRN_UseOfObsoleteSymbol2 = 40000
@@ -2081,5 +2083,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         FEATURE_CommentsAfterLineContinuation
         FEATURE_InitOnlySettersUsage
         FEATURE_CallerArgumentExpression
+        FEATURE_ImportGenericAlias
     End Enum
 End Namespace

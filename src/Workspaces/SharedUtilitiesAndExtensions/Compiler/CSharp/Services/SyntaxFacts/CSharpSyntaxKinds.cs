@@ -76,6 +76,9 @@ internal class CSharpSyntaxKinds : ISyntaxKinds
     public int QualifiedName => (int)SyntaxKind.QualifiedName;
 
     public int TupleType => (int)SyntaxKind.TupleType;
+    public int ArrayType => (int)SyntaxKind.ArrayType;
+    public int? PointerType => (int)SyntaxKind.PointerType;
+    public int? FunctionPointerType => (int)SyntaxKind.FunctionPointerType;
 
     public int CharacterLiteralExpression => (int)SyntaxKind.CharacterLiteralExpression;
     public int DefaultLiteralExpression => (int)SyntaxKind.DefaultLiteralExpression;

@@ -64,6 +64,34 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
         }
 
         [Fact]
+        public async Task TestNotInUsingAliasDeclaration()
+        {
+            await VerifyAbsenceAsync(
+@"using Goo = int $$");
+        }
+
+        [Fact]
+        public async Task TestNotInGlobalUsingAliasDeclaration()
+        {
+            await VerifyAbsenceAsync(
+@"global using Goo = int $$");
+        }
+
+        [Fact]
+        public async Task TestInGenericUsingAliasDeclaration()
+        {
+            await VerifyKeywordAsync(
+@"using Goo<T> = T $$");
+        }
+
+        [Fact]
+        public async Task TestInGlobalGenericUsingAliasDeclaration()
+        {
+            await VerifyKeywordAsync(
+@"global using Goo<T> = T $$");
+        }
+
+        [Fact]
         public async Task TestNotInEmptyStatement()
         {
             await VerifyAbsenceAsync(AddInsideMethod(

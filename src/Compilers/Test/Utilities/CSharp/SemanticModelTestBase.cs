@@ -143,19 +143,19 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             return model.GetPreprocessingSymbolInfo(nameSyntaxToBind);
         }
 
-        internal AliasSymbol GetAliasInfoForTest(string testSrc)
+        internal AliasInfo GetAliasInfoForTest(string testSrc)
         {
             var compilation = CreateCompilation(testSrc);
             return GetAliasInfoForTest(compilation);
         }
 
-        internal AliasSymbol GetAliasInfoForTest(CSharpCompilation compilation)
+        internal AliasInfo GetAliasInfoForTest(CSharpCompilation compilation)
         {
             var tree = compilation.SyntaxTrees[0];
             var model = compilation.GetSemanticModel(tree);
             IdentifierNameSyntax syntaxToBind = GetSyntaxNodeOfTypeForBinding<IdentifierNameSyntax>(GetSyntaxNodeList(tree));
 
-            return model.GetAliasInfo(syntaxToBind).GetSymbol();
+            return model.GetAliasInfo(syntaxToBind);
         }
 
         protected CompilationUtils.SemanticInfoSummary GetSemanticInfoForTest(string testSrc)

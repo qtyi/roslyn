@@ -7376,7 +7376,7 @@ interface Base<N> : Base, ISetup<N> where N : Base<N>.Nest { }
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);
             var nest = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(i => i.Identifier.ValueText == "Nest").Single();
-            Assert.Null(model.GetAliasInfo(nest));
+            Assert.Null(model.GetAliasInfo(nest).Alias);
             Assert.Equal("Base.Nest", model.GetTypeInfo(nest).Type.ToDisplayString());
         }
 
@@ -7401,7 +7401,7 @@ interface Base<N> : Base, ISetup<N> where N : Base<N>.Nest { }
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);
             var nest = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(i => i.Identifier.ValueText == "Nest").Single();
-            Assert.Null(model.GetAliasInfo(nest));
+            Assert.Null(model.GetAliasInfo(nest).Alias);
             Assert.Equal("Base.Nest", model.GetTypeInfo(nest).Type.ToDisplayString());
         }
     }

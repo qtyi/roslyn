@@ -167,4 +167,26 @@ Imports System
         </errors>)
     End Sub
 
+    <Fact>
+    Public Sub GenericAlias()
+        Dim options = VisualBasicParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest)
+
+        ParseAndVerify(<![CDATA[
+            Imports System.Tuple(Of String, Integer)
+            Imports Tuple(Of String, Integer)
+        ]]>, options)
+
+        ParseAndVerify(<![CDATA[
+            Imports X(Of T) = System.String
+            Imports Y(Of T) = T
+            Imports Z(Of T1, T2, T3) = System.Tuple(Of T1, T2, T3)
+        ]]>, options)
+
+        ParseAndVerify(<![CDATA[
+            Imports X(Of T As Class) = T
+            Imports Y(Of T As Structure) = T
+            Imports Z(Of T1 As New, T2 As Class, T3 As T2) = System.Tuple(Of T1, T2, T3)
+        ]]>, options)
+    End Sub
+
 End Class

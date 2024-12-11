@@ -10,16 +10,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Utilities
 
         Public Shared ReadOnly NormalInstance As IComparer(Of ImportsClauseSyntax) = New ImportsClauseComparer()
 
-        Private ReadOnly _nameComparer As IComparer(Of NameSyntax)
+        Private ReadOnly _typeComparer As IComparer(Of TypeSyntax)
         Private ReadOnly _tokenComparer As IComparer(Of SyntaxToken)
 
         Private Sub New()
-            _nameComparer = NameSyntaxComparer.Create(TokenComparer.NormalInstance)
+            _typeComparer = TypeSyntaxComparer.Create(TokenComparer.NormalInstance)
             _tokenComparer = TokenComparer.NormalInstance
         End Sub
 
         Public Sub New(tokenComparer As IComparer(Of SyntaxToken))
-            _nameComparer = NameSyntaxComparer.Create(tokenComparer)
+            _typeComparer = TypeSyntaxComparer.Create(tokenComparer)
             _tokenComparer = tokenComparer
         End Sub
 
@@ -43,9 +43,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Utilities
                 ElseIf imports1.Alias Is Nothing AndAlso imports2.Alias IsNot Nothing Then
                     Return -1
                 ElseIf imports1.Alias IsNot Nothing AndAlso imports2.Alias IsNot Nothing Then
-                    Return _tokenComparer.Compare(imports1.Alias.Identifier, imports2.Alias.Identifier)
+                    Dim result = _tokenComparer.Compare(imports1.Alias.Identifier, imports2.Alias.Identifier)
+                    If result <> 0 Then
+                        Return result
+                    End If
+
+                    Dim count1 = If(imports1.Alias.TypeParameterList Is Nothing, 0, imports1.Alias.TypeParameterList.Parameters.Count)
+                    Dim count2 = If(imports2.Alias.TypeParameterList Is Nothing, 0, imports2.Alias.TypeParameterList.Parameters.Count)
+                    Return count1.CompareTo(count2)
                 Else
-                    Return _nameComparer.Compare(imports1.Name, imports2.Name)
+                    Return _typeComparer.Compare(imports1.NamespaceOrType, imports2.NamespaceOrType)
                 End If
             End If
 

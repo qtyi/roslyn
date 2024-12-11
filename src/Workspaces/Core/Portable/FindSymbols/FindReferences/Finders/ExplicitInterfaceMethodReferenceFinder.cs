@@ -17,7 +17,7 @@ internal sealed class ExplicitInterfaceMethodReferenceFinder : AbstractReference
 
     protected sealed override Task DetermineDocumentsToSearchAsync<TData>(
         IMethodSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

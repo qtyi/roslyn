@@ -7,6 +7,7 @@ Imports System.Runtime.InteropServices
 Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -933,7 +934,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Lookup(result, labelName, 0, LookupOptions.LabelsOnly, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
             Debug.Assert(result.HasSingleSymbol AndAlso result.IsGood)
 
-            Dim symbol = DirectCast(result.SingleSymbol, SourceLabelSymbol)
+            Dim symbol = DirectCast(result.SingleSymbol.Symbol, SourceLabelSymbol)
 
             ' Check for duplicate goto label
 
@@ -1780,7 +1781,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' A local symbol will always be found because all local declarations are put into the 
                 ' local map in the blockbasebinder. 
                 Debug.Assert(result.HasSingleSymbol AndAlso result.IsGood)
-                Dim lookupSymbol = DirectCast(result.SingleSymbol, LocalSymbol)
+                Dim lookupSymbol = DirectCast(result.SingleSymbol.Symbol, LocalSymbol)
                 result.Free()
 
                 If lookupSymbol.IdentifierToken.FullSpan <> identifier.FullSpan Then
@@ -1848,7 +1849,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                 If result.HasSingleSymbol Then
 
-                    Dim altSymbol = result.SingleSymbol
+                    Dim altSymbol = result.SingleSymbol.Symbol
                     If altSymbol IsNot symbol Then
 
                         Select Case altSymbol.Kind
@@ -2994,9 +2995,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     ' local and infer the type when the from/to or for-each collection expressions are available for binding.
 
                     If result.IsGood AndAlso
-                        result.Symbols(0).Kind = SymbolKind.Local Then
+                        result.Symbols(0).Symbol.Kind = SymbolKind.Local Then
 
-                        Dim localSymbol = DirectCast(result.Symbols(0), LocalSymbol)
+                        Dim localSymbol = DirectCast(result.Symbols(0).Symbol, LocalSymbol)
                         If localSymbol.IdentifierToken = identifier Then
                             ' This is an inferred local, we will need to compute its type.
                             isInferredLocal = True
@@ -4186,7 +4187,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             ' bind the call to Current (incl. overload resolution, handling of param arrays, optional parameters, ...)
             methodOrPropertyGroup = New BoundPropertyGroup(collectionSyntax,
-                                                           lookupResult.Symbols.ToDowncastedImmutable(Of PropertySymbol),
+                                                           lookupResult.Symbols.ToImmutable().WithoutAnnotationSymbols(Of PropertySymbol)(),
                                                            lookupResult.Kind,
                                                            boundEnumeratorPlaceholder,
                                                            QualificationKind.QualifiedViaValue)
@@ -4233,28 +4234,28 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' <summary>
         ''' Checks if a given symbol is a function that takes no parameters.
         ''' </summary>
-        Private Shared ReadOnly s_isFunctionWithoutArguments As Func(Of Symbol, Boolean) = Function(sym)
-                                                                                               If sym.Kind = SymbolKind.Method Then
-                                                                                                   Dim method = DirectCast(sym, MethodSymbol)
-                                                                                                   Return Not method.IsSub() AndAlso
+        Private Shared ReadOnly s_isFunctionWithoutArguments As Func(Of SymbolWithAnnotationSymbols, Boolean) = Function(sym)
+                                                                                                                    If sym.Symbol.Kind = SymbolKind.Method Then
+                                                                                                                        Dim method = DirectCast(sym.Symbol, MethodSymbol)
+                                                                                                                        Return Not method.IsSub() AndAlso
                                                                                                           Not method.IsGenericMethod AndAlso
                                                                                                           method.CanBeCalledWithNoParameters
-                                                                                               End If
-                                                                                               Return False
-                                                                                           End Function
+                                                                                                                    End If
+                                                                                                                    Return False
+                                                                                                                End Function
 
         ''' <summary>
         ''' Checks if a given symbol is a property that is readable.
         ''' </summary>
-        Private Shared ReadOnly s_isReadablePropertyWithoutArguments As Func(Of Symbol, Boolean) = Function(sym)
-                                                                                                       If sym.Kind = SymbolKind.Property Then
-                                                                                                           Dim prop = DirectCast(sym, PropertySymbol)
-                                                                                                           Return prop.IsReadable AndAlso
+        Private Shared ReadOnly s_isReadablePropertyWithoutArguments As Func(Of SymbolWithAnnotationSymbols, Boolean) = Function(sym)
+                                                                                                                            If sym.Symbol.Kind = SymbolKind.Property Then
+                                                                                                                                Dim prop = DirectCast(sym.Symbol, PropertySymbol)
+                                                                                                                                Return prop.IsReadable AndAlso
                                                                                                                   Not prop.GetMostDerivedGetMethod().IsGenericMethod AndAlso
                                                                                                                   prop.GetCanBeCalledWithNoParameters
-                                                                                                       End If
-                                                                                                       Return False
-                                                                                                   End Function
+                                                                                                                            End If
+                                                                                                                            Return False
+                                                                                                                        End Function
 
         ''' <summary>
         ''' Returns the lookup result if at least one found symbol matches the requirements that are verified
@@ -4266,7 +4267,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Private Function GetMemberIfMatchesRequirements(
             name As String,
             container As TypeSymbol,
-            symbolChecker As Func(Of Symbol, Boolean),
+            symbolChecker As Func(Of SymbolWithAnnotationSymbols, Boolean),
             result As LookupResult,
             syntax As SyntaxNode,
             diagnostics As BindingDiagnosticBag
@@ -4288,8 +4289,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                 ' if there are instance methods in the results, there will be no extension methods. 
                 ' Therefore we need to check separately.
-                If result.Symbols(0).Kind = SymbolKind.Method AndAlso
-                    Not DirectCast(result.Symbols(0), MethodSymbol).IsReducedExtensionMethod Then
+                If result.Symbols(0).Symbol.Kind = SymbolKind.Method AndAlso
+                    Not DirectCast(result.Symbols(0).Symbol, MethodSymbol).IsReducedExtensionMethod Then
                     result.Clear()
                     LookupExtensionMethods(result,
                                            container,

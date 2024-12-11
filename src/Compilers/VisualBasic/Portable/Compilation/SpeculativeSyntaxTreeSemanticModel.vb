@@ -90,9 +90,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         Friend Overrides Function GetExpressionSymbolInfo(node As ExpressionSyntax, options As VBSemanticModel.SymbolInfoOptions, Optional cancellationToken As CancellationToken = Nothing) As SymbolInfo
             If (options And VBSemanticModel.SymbolInfoOptions.PreserveAliases) <> 0 Then
-                Debug.Assert(TypeOf node Is IdentifierNameSyntax)
-                Dim aliasSymbol = _parentSemanticModel.GetSpeculativeAliasInfo(_position, DirectCast(node, IdentifierNameSyntax), Me.GetSpeculativeBindingOption(node))
-                Return SymbolInfoFactory.Create(ImmutableArray.Create(Of ISymbol)(aliasSymbol), If(aliasSymbol IsNot Nothing, LookupResultKind.Good, LookupResultKind.Empty))
+                Debug.Assert(TypeOf node Is SimpleNameSyntax)
+                Dim aliasInfo = _parentSemanticModel.GetSpeculativeAliasInfo(_position, DirectCast(node, SimpleNameSyntax), Me.GetSpeculativeBindingOption(node))
+                Return SymbolInfo.From(aliasInfo)
             End If
 
             Return _parentSemanticModel.GetSpeculativeSymbolInfo(_position, node, Me.GetSpeculativeBindingOption(node))

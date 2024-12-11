@@ -731,9 +731,9 @@ partial class A : /*<bind>*/O/*</bind>*/ {}
             Assert.Equal(0, semanticInfo.CandidateSymbols.Length);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("O=System.Object", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("O=System.Object", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
 
@@ -766,8 +766,8 @@ partial class A {
             Assert.NotNull(semanticInfo.Symbol);
             Assert.Equal(0, semanticInfo.CandidateSymbols.Length);
 
-            Assert.Equal("O=System.Object", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.Equal("O=System.Object", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
 
@@ -4411,9 +4411,9 @@ class X { }
             Assert.Equal(0, semanticInfo.CandidateSymbols.Length);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("X=A", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("X=A", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
 
@@ -4449,8 +4449,8 @@ using S = System.String;
             Assert.Equal(0, semanticInfo.CandidateSymbols.Length);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Equal("S=System.String", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.Equal("S=System.String", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
             Assert.Equal("String", aliasInfo.Target.Name);
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
@@ -9310,9 +9310,9 @@ class Test
 
             Assert.Equal(SymbolKind.NamedType, semanticInfo.Symbol.Kind);
             Assert.Equal("System.String", semanticInfo.Symbol.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
-            Assert.Equal("A", aliasInfo.Name);
-            Assert.Equal("A=System.String", aliasInfo.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
+            Assert.Equal("A", aliasInfo.Alias.Name);
+            Assert.Equal("A=System.String", aliasInfo.Alias.ToTestDisplayString());
         }
 
         [WorkItem(542000, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542000")]
@@ -9930,9 +9930,9 @@ class A1 : System.Attribute { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("A=A1", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("A=A1", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
         }
 
         [WorkItem(542979, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542979")]
@@ -9966,9 +9966,9 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
         }
 
         [WorkItem(542979, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542979")]
@@ -10002,9 +10002,9 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
         }
 
         [WorkItem(542979, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542979")]
@@ -10038,9 +10038,9 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
         }
 
         [WorkItem(542979, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542979")]
@@ -10074,9 +10074,9 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.NotNull(aliasInfo);
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString());
-            Assert.Equal(SymbolKind.Alias, aliasInfo.Kind);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString());
+            Assert.Equal(SymbolKind.Alias, aliasInfo.Alias.Kind);
         }
 
         [WorkItem(542979, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542979")]
@@ -10263,7 +10263,7 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Null(aliasInfo);
+            Assert.Null(aliasInfo.Alias);
         }
 
         [Fact]
@@ -10298,7 +10298,7 @@ class Gen<T> { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Null(aliasInfo);
+            Assert.Null(aliasInfo.Alias);
         }
 
         [Fact]
@@ -10333,7 +10333,7 @@ class A2 : System.Attribute { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Null(aliasInfo);
+            Assert.Null(aliasInfo.Alias);
         }
 
         [Fact]
@@ -10367,7 +10367,7 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Null(aliasInfo);
+            Assert.Null(aliasInfo.Alias);
         }
 
         [Fact]
@@ -10401,7 +10401,7 @@ class C { }
             Assert.False(semanticInfo.IsCompileTimeConstant);
 
             var aliasInfo = GetAliasInfoForTest(sourceCode);
-            Assert.Null(aliasInfo);
+            Assert.Null(aliasInfo.Alias);
         }
 
         [WorkItem(542018, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542018")]
@@ -11647,10 +11647,10 @@ class Test
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
 
-            Assert.Equal("global", aliasInfo.Name);
+            Assert.Equal("global", aliasInfo.Alias.Name);
             Assert.Equal("<global namespace>", aliasInfo.Target.ToTestDisplayString());
-            Assert.True(((NamespaceSymbol)(aliasInfo.Target)).IsGlobalNamespace);
-            Assert.False(aliasInfo.IsExtern);
+            Assert.True(((INamespaceSymbol)(aliasInfo.Target)).IsGlobalNamespace);
+            Assert.False(aliasInfo.Alias.IsExtern);
 
             Assert.False(semanticInfo.IsCompileTimeConstant);
         }
@@ -11681,10 +11681,10 @@ class Test
 
             Assert.Equal(0, semanticInfo.MethodGroup.Length);
 
-            Assert.Equal("global", aliasInfo.Name);
+            Assert.Equal("global", aliasInfo.Alias.Name);
             Assert.Equal("<global namespace>", aliasInfo.Target.ToTestDisplayString());
-            Assert.True(((NamespaceSymbol)(aliasInfo.Target)).IsGlobalNamespace);
-            Assert.False(aliasInfo.IsExtern);
+            Assert.True(((INamespaceSymbol)(aliasInfo.Target)).IsGlobalNamespace);
+            Assert.False(aliasInfo.Alias.IsExtern);
 
             Assert.False(semanticInfo.IsCompileTimeConstant);
         }

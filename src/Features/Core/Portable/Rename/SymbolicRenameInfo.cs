@@ -243,7 +243,16 @@ internal sealed class SymbolicRenameInfo
             }
             else
             {
-                return new SymbolicRenameInfo(FeaturesResources.You_cannot_rename_this_element);
+                // Tuple type symbol with no valid location in source indicate that it is the metadata symbol
+                // System.ValueTuple itself.
+                if (symbol.IsTupleType())
+                {
+                    return new SymbolicRenameInfo(FeaturesResources.You_cannot_rename_elements_that_are_defined_in_metadata);
+                }
+                else
+                {
+                    return new SymbolicRenameInfo(FeaturesResources.You_cannot_rename_this_element);
+                }
             }
         }
 

@@ -3980,7 +3980,7 @@ public partial class C
         Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
 
         var aliasInfo = model.GetAliasInfo(methodNameSyntax);
-        Assert.Null(aliasInfo);
+        Assert.Null(aliasInfo.Alias);
     }
 
     [Fact]

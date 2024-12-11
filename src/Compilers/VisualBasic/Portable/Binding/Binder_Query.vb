@@ -10,6 +10,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports ReferenceEqualityComparer = Roslyn.Utilities.ReferenceEqualityComparer
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -728,7 +729,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             childScopeBinder.LookupInSingleBinder(lookup, rangeVar.Name, 0, Nothing, childScopeBinder, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
 
-            Dim result As Boolean = (lookup.IsGood AndAlso lookup.Symbols(0).Kind = SymbolKind.RangeVariable)
+            Dim result As Boolean = (lookup.IsGood AndAlso lookup.Symbols(0).Symbol.Kind = SymbolKind.RangeVariable)
 
             lookup.Free()
 
@@ -4439,7 +4440,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                 result = InferControlVariableType(lookupResult.Symbols, failedDueToAnAmbiguity)
 
-                If result Is Nothing AndAlso Not failedDueToAnAmbiguity AndAlso Not lookupResult.Symbols(0).IsReducedExtensionMethod() Then
+                If result Is Nothing AndAlso Not failedDueToAnAmbiguity AndAlso Not lookupResult.Symbols(0).Symbol.IsReducedExtensionMethod() Then
                     ' We tried to infer from instance methods and there were no suitable 'Select' method,
                     ' let's try to infer from extension methods.
                     lookupResult.Clear()
@@ -4463,13 +4464,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' Returns inferred type or Nothing.
         ''' </summary>
         Private Function InferControlVariableType(
-            methods As ArrayBuilder(Of Symbol),
+            methods As ArrayBuilder(Of SymbolWithAnnotationSymbols),
             <Out()> ByRef failedDueToAnAmbiguity As Boolean
         ) As TypeSymbol
             Dim result As TypeSymbol = Nothing
             failedDueToAnAmbiguity = False
 
-            For Each method As MethodSymbol In methods
+            For Each sym In methods
+                Dim method = DirectCast(sym.Symbol, MethodSymbol)
                 Dim inferredType As TypeSymbol = InferControlVariableType(method)
 
                 If inferredType IsNot Nothing Then

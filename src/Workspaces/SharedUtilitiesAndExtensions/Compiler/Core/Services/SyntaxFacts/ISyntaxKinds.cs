@@ -123,6 +123,10 @@ internal interface ISyntaxKinds
     int StringLiteralExpression { get; }
     int TrueLiteralExpression { get; }
 
+    int ArrayType { get; }
+    int? PointerType { get; }
+    int? FunctionPointerType { get; }
+
     #endregion
 
     #region expressions

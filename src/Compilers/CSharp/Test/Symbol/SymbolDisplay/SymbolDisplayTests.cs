@@ -1470,7 +1470,7 @@ class C<T, U, V> { }
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes);
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases);
 
             TestSymbolDescription(
                 text,
@@ -1496,7 +1496,7 @@ class C
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
 
             TestSymbolDescription(
                 text,
@@ -1523,7 +1523,7 @@ class C
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
 
             TestSymbolDescription(
                 text,
@@ -1551,7 +1551,7 @@ class C<T>
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
 
             TestSymbolDescription(
                 text,
@@ -1579,7 +1579,7 @@ class C<T>
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases | SymbolDisplayCompilerInternalOptions.UsePlusForNestedTypes);
 
             TestSymbolDescription(
                 text,
@@ -2769,6 +2769,43 @@ namespace N1 " + ob + @"
                 text.IndexOf("class Goo", StringComparison.Ordinal),
                 true,
                 SymbolDisplayPartKind.ClassName);
+        }
+
+        [Fact]
+        public void TestAlias4()
+        {
+            var text = @"
+using Goo<TA1> = N1.C2<TA1> where TA1 : N1.C1;
+
+namespace N1 {
+    class C1 {}
+    class C2<T> {
+        enum E1 {} }
+}
+";
+
+            Func<NamespaceSymbol, Symbol> findSymbol = global =>
+                global.GetNestedNamespace("N1").
+                GetTypeMembers("C2", 1).Single().
+                GetTypeMembers("E1").Single();
+
+            var format = new SymbolDisplayFormat(
+                genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+
+            TestSymbolDescription(
+                text,
+                findSymbol,
+                format,
+                "Goo<T>.E1",
+                text.IndexOf("namespace", StringComparison.Ordinal),
+                true,
+                SymbolDisplayPartKind.AliasName,
+                SymbolDisplayPartKind.Punctuation,
+                SymbolDisplayPartKind.TypeParameterName,
+                SymbolDisplayPartKind.Punctuation,
+                SymbolDisplayPartKind.Punctuation,
+                SymbolDisplayPartKind.EnumName);
         }
 
         [Fact]

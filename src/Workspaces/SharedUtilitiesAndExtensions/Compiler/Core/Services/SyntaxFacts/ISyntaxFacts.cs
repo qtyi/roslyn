@@ -197,6 +197,20 @@ internal interface ISyntaxFacts
 
     void GetPartsOfTupleExpression<TArgumentSyntax>(SyntaxNode node,
         out SyntaxToken openParen, out SeparatedSyntaxList<TArgumentSyntax> arguments, out SyntaxToken closeParen) where TArgumentSyntax : SyntaxNode;
+    void GetPartsOfTupleType<TElementSyntax>(SyntaxNode node,
+        out SyntaxToken openParen, out SeparatedSyntaxList<TElementSyntax> elements, out SyntaxToken closeParen) where TElementSyntax : SyntaxNode;
+
+    void GetPartsOfArrayType<TArrayRankSpecifier>(SyntaxNode node,
+        out SyntaxNode elementType, out SyntaxList<TArrayRankSpecifier> rankSpecifiers) where TArrayRankSpecifier : SyntaxNode;
+    void GetRankOfArrayRankSpecifier(SyntaxNode node, out int rank);
+
+    bool IsDynamicType([NotNullWhen(true)] SyntaxNode node);
+
+    bool IsTupleElement([NotNullWhen(true)] SyntaxNode node);
+    string? GetNameOfTupleElement(SyntaxNode node);
+
+    void GetParametersOfFunctionPointerType<TParameter>(SyntaxNode node,
+        out SeparatedSyntaxList<TParameter> parameters) where TParameter : SyntaxNode;
 
     bool IsVerbatimInterpolatedStringExpression([NotNullWhen(true)] SyntaxNode? node);
 
@@ -529,7 +543,7 @@ internal interface ISyntaxFacts
     void GetPartsOfParenthesizedExpression(SyntaxNode node, out SyntaxToken openParen, out SyntaxNode expression, out SyntaxToken closeParen);
     void GetPartsOfPrefixUnaryExpression(SyntaxNode node, out SyntaxToken operatorToken, out SyntaxNode operand);
     void GetPartsOfQualifiedName(SyntaxNode node, out SyntaxNode left, out SyntaxToken dotToken, out SyntaxNode right);
-    void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken alias, out SyntaxNode name);
+    void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken identifier, out SeparatedSyntaxList<SyntaxNode> typeParameters, out SyntaxNode name);
 
     #endregion
 

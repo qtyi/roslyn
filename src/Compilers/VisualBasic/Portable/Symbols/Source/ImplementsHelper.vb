@@ -221,7 +221,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                     Dim candidates As ArrayBuilder(Of TSymbol) = Nothing
 
                     For Each possibleMatch In lookup.Symbols
-                        Dim possibleMatchMember = TryCast(possibleMatch, TSymbol)
+                        Dim possibleMatchMember = TryCast(possibleMatch.Symbol, TSymbol)
                         If possibleMatchMember IsNot Nothing AndAlso
                            possibleMatchMember.ContainingType.IsInterface AndAlso
                            MembersAreMatchingForPurposesOfInterfaceImplementation(implementingSym, possibleMatchMember) Then
@@ -310,7 +310,7 @@ Next_i:
                         errorReported = True
 DoneWithErrorReporting:
                         If candidateSymbols IsNot Nothing Then
-                            candidateSymbols.AddRange(lookup.Symbols)
+                            candidateSymbols.AddRange(lookup.Symbols.ToImmutable().WithoutAnnotationSymbols())
                         End If
 
                     ElseIf candidatesCount = 1 Then
@@ -330,7 +330,7 @@ DoneWithErrorReporting:
                         Debug.Assert(candidatesCount = 0)
                         ' No matching members. Remember non-matching members for semantic model questions.
                         If candidateSymbols IsNot Nothing Then
-                            candidateSymbols.AddRange(lookup.Symbols)
+                            candidateSymbols.AddRange(lookup.Symbols.ToImmutable().WithoutAnnotationSymbols())
                         End If
                         resultKind = LookupResult.WorseResultKind(lookup.Kind, LookupResultKind.OverloadResolutionFailure)
                     End If

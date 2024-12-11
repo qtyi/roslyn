@@ -5710,4 +5710,10 @@
   <data name="ERR_TypeReserved" xml:space="preserve">
     <value>The type name '{0}' is reserved to be used by the compiler.</value>
   </data>
+  <data name="ERR_InvalidTypeForAliasesImport3" xml:space="preserve">
+    <value>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</value>
+  </data>
+  <data name="FEATURE_ImportGenericAlias" xml:space="preserve">
+    <value>import generic alias</value>
+  </data>
 </root>

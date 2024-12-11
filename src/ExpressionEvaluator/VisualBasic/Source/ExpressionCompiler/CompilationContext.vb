@@ -663,8 +663,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
             Dim projectLevelImportsBuilder As ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
             Dim fileLevelImportsBuilder As ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
 
-            Dim projectLevelAliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
-            Dim fileLevelAliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim projectLevelAliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
+            Dim fileLevelAliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
 
             Dim projectLevelXmlImports As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
             Dim fileLevelXmlImports As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
@@ -743,7 +743,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
             importBinder As Binder,
             position As Integer,
             ByRef importsBuilder As ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition),
-            ByRef aliases As Dictionary(Of String, AliasAndImportsClausePosition),
+            ByRef aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition),
             ByRef xmlImports As Dictionary(Of String, XmlNamespaceAndImportsClausePosition)) As Boolean
 
             Dim targetString = importRecord.TargetString
@@ -761,9 +761,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
 
             ' Check for syntactically invalid aliases.
             Dim [alias] = importRecord.Alias
-            If Not String.IsNullOrEmpty([alias]) Then
+            If [alias].HasValue Then
                 Dim aliasNameSyntax As NameSyntax = Nothing
-                If Not TryParseDottedName([alias], aliasNameSyntax) OrElse aliasNameSyntax.Kind <> SyntaxKind.IdentifierName Then
+                If Not TryParseDottedName([alias].Value.Name, aliasNameSyntax) OrElse aliasNameSyntax.Kind <> SyntaxKind.IdentifierName Then
                     Debug.WriteLine($"Import record '{importRecord}' has syntactically invalid alias '{[alias]}'")
                     Return False
                 End If
@@ -775,7 +775,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
                     If importRecord.TargetType IsNot Nothing Then
                         typeSymbol = DirectCast(importRecord.TargetType, TypeSymbol)
                     Else
-                        Debug.Assert(importRecord.Alias Is Nothing) ' Represented as ImportTargetKind.NamespaceOrType in old-format PDBs.
+                        Debug.Assert(Not importRecord.Alias.HasValue) ' Represented as ImportTargetKind.NamespaceOrType in old-format PDBs.
 
                         typeSymbol = importBinder.BindTypeSyntax(targetSyntax, BindingDiagnosticBag.Discarded)
 
@@ -788,15 +788,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
                         End If
                     End If
 
-                    If [alias] IsNot Nothing Then
-                        Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias], typeSymbol, NoLocation.Singleton)
+                    If [alias].HasValue Then
+                        ' WORKAROUND(sanmuru): We have already skipped those generic alias imports.
+                        Debug.Assert([alias].Value.Arity = 0)
+                        Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias].Value.Name, typeSymbol)
 
                         If aliases Is Nothing Then
-                            aliases = New Dictionary(Of String, AliasAndImportsClausePosition)()
+                            aliases = New Dictionary(Of NameWithArity, AliasAndImportsClausePosition)()
                         End If
 
                         ' There's no real syntax, so there's no real position.  We'll give them separate numbers though.
-                        aliases([alias]) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
+                        aliases([alias].Value) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
                     Else
                         If importsBuilder Is Nothing Then
                             importsBuilder = ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition).GetInstance()
@@ -827,7 +829,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
 
                     ' Native PDBs: aliased namespace is stored as NamespaceOrType
                     ' Portable PDBs: aliased namespace is stored as Namespace
-                    If [alias] Is Nothing Then
+                    If Not [alias].HasValue Then
                         If importsBuilder Is Nothing Then
                             importsBuilder = ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition).GetInstance()
                         End If
@@ -835,14 +837,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
                         ' There's no real syntax, so there's no real position.  We'll give them separate numbers though.
                         importsBuilder.Add(New NamespaceOrTypeAndImportsClausePosition(namespaceOrTypeSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty))
                     Else
-                        Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias], namespaceOrTypeSymbol, NoLocation.Singleton)
+                        ' WORKAROUND(sanmuru): We have already skipped those generic alias imports.
+                        Debug.Assert([alias].Value.Arity = 0)
+                        Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias].Value.Name, namespaceOrTypeSymbol)
 
                         If aliases Is Nothing Then
-                            aliases = New Dictionary(Of String, AliasAndImportsClausePosition)()
+                            aliases = New Dictionary(Of NameWithArity, AliasAndImportsClausePosition)()
                         End If
 
                         ' There's no real syntax, so there's no real position.  We'll give them separate numbers though.
-                        aliases([alias]) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
+                        aliases([alias].Value) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
                     End If
 
                 Case ImportTargetKind.NamespaceOrType ' Aliased namespace or type (native PDB only)
@@ -856,24 +860,28 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
                         Return False ' Don't add anything for this import.
                     End If
 
-                    Debug.Assert([alias] IsNot Nothing) ' Implied by TargetKind
+                    Debug.Assert([alias].HasValue) ' Implied by TargetKind
 
-                    Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias], namespaceOrTypeSymbol, NoLocation.Singleton)
+                    ' WORKAROUND(sanmuru): We have already skipped those generic alias imports.
+                    Debug.Assert([alias].Value.Arity = 0)
+                    Dim aliasSymbol As New AliasSymbol(importBinder.Compilation, importBinder.ContainingNamespaceOrType, [alias].Value.Name, namespaceOrTypeSymbol)
 
                     If aliases Is Nothing Then
-                        aliases = New Dictionary(Of String, AliasAndImportsClausePosition)()
+                        aliases = New Dictionary(Of NameWithArity, AliasAndImportsClausePosition)()
                     End If
 
                     ' There's no real syntax, so there's no real position.  We'll give them separate numbers though.
-                    aliases([alias]) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
+                    aliases([alias].Value) = New AliasAndImportsClausePosition(aliasSymbol, position, syntaxReference:=Nothing, ImmutableArray(Of AssemblySymbol).Empty)
 
                 Case ImportTargetKind.XmlNamespace
                     If xmlImports Is Nothing Then
                         xmlImports = New Dictionary(Of String, XmlNamespaceAndImportsClausePosition)()
                     End If
 
+                    Debug.Assert([alias].HasValue)
+
                     ' There's no real syntax, so there's no real position.  We'll give them separate numbers though.
-                    xmlImports(importRecord.Alias) = New XmlNamespaceAndImportsClausePosition(importRecord.TargetString, position, syntaxReference:=Nothing)
+                    xmlImports([alias].Value.Name) = New XmlNamespaceAndImportsClausePosition(importRecord.TargetString, position, syntaxReference:=Nothing)
                 Case ImportTargetKind.DefaultNamespace
                     ' Processed ahead of time so that it can be incorporated into the compilation before
                     ' constructing the binder chain.
@@ -894,7 +902,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
             Return True
         End Function
 
-        Private Shared Function MergeAliases(Of T)(projectLevel As Dictionary(Of String, T), fileLevel As Dictionary(Of String, T)) As Dictionary(Of String, T)
+        Private Shared Function MergeAliases(Of TKey, TValue)(projectLevel As Dictionary(Of TKey, TValue), fileLevel As Dictionary(Of TKey, TValue)) As Dictionary(Of TKey, TValue)
             If projectLevel Is Nothing Then
                 Return fileLevel
             ElseIf fileLevel Is Nothing Then
@@ -903,7 +911,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator
 
             ' File-level aliases win.
             For Each pair In projectLevel
-                Dim [alias] As String = pair.Key
+                Dim [alias] As TKey = pair.Key
                 If Not fileLevel.ContainsKey([alias]) Then
                     fileLevel.Add([alias], pair.Value)
                 End If

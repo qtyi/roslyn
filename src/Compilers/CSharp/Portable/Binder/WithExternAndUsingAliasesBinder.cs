@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal abstract override ImmutableArray<AliasAndUsingDirective> UsingAliases { get; }
 
-        protected abstract ImmutableDictionary<string, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved);
+        protected abstract ImmutableDictionary<NameWithArity, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved);
 
         internal override void LookupSymbolsInSingleBinder(
             LookupResult result, string name, int arity, ConsList<TypeSymbol> basesBeingResolved, LookupOptions options, Binder originalBinder, bool diagnose, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
@@ -81,9 +81,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         protected abstract ImportChain BuildImportChain();
 
-        internal bool IsUsingAlias(string name, bool callerIsSemanticModel, ConsList<TypeSymbol>? basesBeingResolved)
+        internal bool IsUsingAlias(string name, int arity, bool callerIsSemanticModel, ConsList<TypeSymbol>? basesBeingResolved)
         {
-            return IsUsingAlias(this.GetUsingAliasesMap(basesBeingResolved), name, callerIsSemanticModel);
+            return IsUsingAlias(this.GetUsingAliasesMap(basesBeingResolved), name, arity, callerIsSemanticModel);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return new FromSyntax(declaringSymbol, declarationSyntax, next);
         }
 
-        internal static WithExternAndUsingAliasesBinder Create(ImmutableArray<AliasAndExternAliasDirective> externAliases, ImmutableDictionary<string, AliasAndUsingDirective> usingAliases, WithUsingNamespacesAndTypesBinder next)
+        internal static WithExternAndUsingAliasesBinder Create(ImmutableArray<AliasAndExternAliasDirective> externAliases, ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases, WithUsingNamespacesAndTypesBinder next)
         {
             return new FromSymbols(externAliases, usingAliases, next);
         }
@@ -111,7 +111,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             private readonly CSharpSyntaxNode _declarationSyntax;
             private ImmutableArray<AliasAndExternAliasDirective> _lazyExternAliases;
             private ImmutableArray<AliasAndUsingDirective> _lazyUsingAliases;
-            private ImmutableDictionary<string, AliasAndUsingDirective>? _lazyUsingAliasesMap;
+            private ImmutableDictionary<NameWithArity, AliasAndUsingDirective>? _lazyUsingAliasesMap;
             private QuickAttributeChecker? _lazyQuickAttributeChecker;
 
             internal FromSyntax(SourceNamespaceSymbol declaringSymbol, CSharpSyntaxNode declarationSyntax, WithUsingNamespacesAndTypesBinder next)
@@ -148,7 +148,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            protected override ImmutableDictionary<string, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved)
+            protected override ImmutableDictionary<NameWithArity, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved)
             {
                 if (_lazyUsingAliasesMap is null)
                 {
@@ -226,9 +226,9 @@ namespace Microsoft.CodeAnalysis.CSharp
         private sealed class FromSymbols : WithExternAndUsingAliasesBinder
         {
             private readonly ImmutableArray<AliasAndExternAliasDirective> _externAliases;
-            private readonly ImmutableDictionary<string, AliasAndUsingDirective> _usingAliases;
+            private readonly ImmutableDictionary<NameWithArity, AliasAndUsingDirective> _usingAliases;
 
-            internal FromSymbols(ImmutableArray<AliasAndExternAliasDirective> externAliases, ImmutableDictionary<string, AliasAndUsingDirective> usingAliases, WithUsingNamespacesAndTypesBinder next)
+            internal FromSymbols(ImmutableArray<AliasAndExternAliasDirective> externAliases, ImmutableDictionary<NameWithArity, AliasAndUsingDirective> usingAliases, WithUsingNamespacesAndTypesBinder next)
                 : base(next)
             {
                 Debug.Assert(!externAliases.IsDefault);
@@ -252,7 +252,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            protected override ImmutableDictionary<string, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved)
+            protected override ImmutableDictionary<NameWithArity, AliasAndUsingDirective> GetUsingAliasesMap(ConsList<TypeSymbol>? basesBeingResolved)
             {
                 return _usingAliases;
             }

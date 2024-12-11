@@ -14,6 +14,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Roslyn.Utilities
 Imports TypeKind = Microsoft.CodeAnalysis.TypeKind
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -58,6 +59,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return False
         End Function
 
+        ''' <summary>
+        ''' Returns true if the node is in a position where an unbound alias
+        ''' such as (A(of)) is allowed.
+        ''' </summary>
+        Public Overrides Function IsUnboundAliasAllowed(syntax As GenericNameSyntax, symbol As AliasSymbol) As Boolean
+            Return False
+        End Function
+
         Public Overrides ReadOnly Property ContainingMember As Symbol
             Get
                 Throw ExceptionUtilities.Unreachable
@@ -97,16 +106,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Throw ExceptionUtilities.Unreachable
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
-            Return ImmutableArray(Of Symbol).Empty
+        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
-            Return ImmutableArray(Of Symbol).Empty
+        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
         End Function
 
-        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
-            Return ImmutableArray(Of Symbol).Empty
+        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
         End Function
 
         Protected Friend Overrides Function TryBindOmittedLeftForMemberAccess(node As MemberAccessExpressionSyntax,

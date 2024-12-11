@@ -1120,7 +1120,7 @@ Imports HT=System.Collections.HashTable
 BC32045: 'HT' has no type parameters and so cannot have type arguments.
     public c as HT(Of String)      
                 ~~~~~~~~~~~~~
-BC32045: 'List(Of Object)' has no type parameters and so cannot have type arguments.
+BC32045: 'ArrayList' has no type parameters and so cannot have type arguments.
     public d as ArrayList(Of String)      
                 ~~~~~~~~~~~~~~~~~~~~
                                  </errors>
@@ -1155,7 +1155,7 @@ BC31403: Error in project-level import 'HT=System.Collections.HashTable' at 'HT=
 BC32045: 'HT' has no type parameters and so cannot have type arguments.
     public c as HT(Of String)      
                 ~~~~~~~~~~~~~
-BC32045: 'List(Of Object)' has no type parameters and so cannot have type arguments.
+BC32045: 'ArrayList' has no type parameters and so cannot have type arguments.
     public d as ArrayList(Of String)      
                 ~~~~~~~~~~~~~~~~~~~~
                                  </errors>

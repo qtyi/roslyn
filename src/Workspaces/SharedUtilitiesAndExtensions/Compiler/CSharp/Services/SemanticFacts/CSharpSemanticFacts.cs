@@ -125,7 +125,7 @@ internal sealed partial class CSharpSemanticFacts : ISemanticFacts
         return model.TryGetSpeculativeSemanticModelForMethodBody(oldMethod.Body.OpenBraceToken.Span.End, newMethod, out speculativeModel);
     }
 
-    public ImmutableHashSet<string> GetAliasNameSet(SemanticModel model, CancellationToken cancellationToken)
+    public ImmutableHashSet<NameWithArity> GetAliasSet(SemanticModel model, CancellationToken cancellationToken)
     {
         var original = model.GetOriginalSemanticModel();
         if (!original.SyntaxTree.HasCompilationUnitRoot)
@@ -134,35 +134,35 @@ internal sealed partial class CSharpSemanticFacts : ISemanticFacts
         }
 
         var root = original.SyntaxTree.GetCompilationUnitRoot(cancellationToken);
-        var builder = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        var builder = ImmutableHashSet.CreateBuilder<NameWithArity>(new NameWithArityComparer(StringComparer.Ordinal));
 
-        AppendAliasNames(root.Usings, builder);
-        AppendAliasNames(root.Members.OfType<BaseNamespaceDeclarationSyntax>(), builder, cancellationToken);
+        AppendAliases(root.Usings, builder);
+        AppendAliases(root.Members.OfType<BaseNamespaceDeclarationSyntax>(), builder, cancellationToken);
 
         return builder.ToImmutable();
     }
 
-    private static void AppendAliasNames(SyntaxList<UsingDirectiveSyntax> usings, ImmutableHashSet<string>.Builder builder)
+    private static void AppendAliases(SyntaxList<UsingDirectiveSyntax> usings, ImmutableHashSet<NameWithArity>.Builder builder)
     {
         foreach (var @using in usings)
         {
-            if (@using.Alias == null || @using.Alias.Name == null)
+            if (@using.Identifier == default)
             {
                 continue;
             }
 
-            @using.Alias.Name.Identifier.ValueText.AppendToAliasNameSet(builder);
+            @using.Identifier.ValueText.AppendToAliasSet(@using.TypeParameterList?.Parameters.Count ?? 0, builder);
         }
     }
 
-    private static void AppendAliasNames(IEnumerable<BaseNamespaceDeclarationSyntax> namespaces, ImmutableHashSet<string>.Builder builder, CancellationToken cancellationToken)
+    private static void AppendAliases(IEnumerable<BaseNamespaceDeclarationSyntax> namespaces, ImmutableHashSet<NameWithArity>.Builder builder, CancellationToken cancellationToken)
     {
         foreach (var @namespace in namespaces)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            AppendAliasNames(@namespace.Usings, builder);
-            AppendAliasNames(@namespace.Members.OfType<BaseNamespaceDeclarationSyntax>(), builder, cancellationToken);
+            AppendAliases(@namespace.Usings, builder);
+            AppendAliases(@namespace.Members.OfType<BaseNamespaceDeclarationSyntax>(), builder, cancellationToken);
         }
     }
 

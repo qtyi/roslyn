@@ -93,11 +93,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             foreach (var usingDirective in usingsSyntax)
             {
-                if (usingDirective.Alias != null &&
+                if (usingDirective.Identifier != default &&
                     usingDirective.Name != null &&
                     (!onlyGlobalAliases || usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)))
                 {
-                    string name = usingDirective.Alias.Name.Identifier.ValueText;
+                    string name = usingDirective.Identifier.ValueText;
                     string target = usingDirective.Name.GetUnqualifiedName().Identifier.ValueText;
 
                     if (_nameToAttributeMap.TryGetValue(target, out var foundAttributes))

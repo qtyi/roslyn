@@ -1,5 +1,7 @@
+abstract Microsoft.CodeAnalysis.Editing.SyntaxGenerator.AliasImportDeclaration(string aliasIdentifierName, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.SyntaxNode> aliasTypeParameters, Microsoft.CodeAnalysis.SyntaxNode name) -> Microsoft.CodeAnalysis.SyntaxNode
 Microsoft.CodeAnalysis.CompilationOutputInfo.GeneratedFilesOutputDirectory.get -> string
 Microsoft.CodeAnalysis.CompilationOutputInfo.WithGeneratedFilesOutputDirectory(string path) -> Microsoft.CodeAnalysis.CompilationOutputInfo
+Microsoft.CodeAnalysis.Editing.SyntaxGenerator.AliasImportDeclaration(string aliasIdentifierName, System.Collections.Generic.IEnumerable<string> aliasTypeParameterNames, Microsoft.CodeAnalysis.ITypeSymbol symbol) -> Microsoft.CodeAnalysis.SyntaxNode
 Microsoft.CodeAnalysis.Project.HostAnalyzerOptions.get -> Microsoft.CodeAnalysis.Diagnostics.AnalyzerOptions
 Microsoft.CodeAnalysis.ProjectInfo.WithId(Microsoft.CodeAnalysis.ProjectId id) -> Microsoft.CodeAnalysis.ProjectInfo
 virtual Microsoft.CodeAnalysis.Host.HostLanguageServices.Dispose() -> void

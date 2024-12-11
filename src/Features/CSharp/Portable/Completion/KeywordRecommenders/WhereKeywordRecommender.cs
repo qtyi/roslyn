@@ -35,11 +35,11 @@ internal class WhereKeywordRecommender : AbstractSyntacticSingleKeywordRecommend
         //   delegate void D<T> where T : IGoo |
         //   void Goo<T>() |
         //   void Goo<T>() where T : IGoo |
+        //   using A<T> = type |
 
         var token = context.TargetToken;
 
         // class C<T> |
-
         if (token.Kind() == SyntaxKind.GreaterThanToken)
         {
             var typeParameters = token.GetAncestor<TypeParameterListSyntax>();
@@ -113,8 +113,21 @@ internal class WhereKeywordRecommender : AbstractSyntacticSingleKeywordRecommend
             }
         }
 
+        //   using A<T> = type |
+        var directive = token.GetAncestor<TypeSyntax>(syntax => syntax.IsParentKind(SyntaxKind.UsingDirective))?.Parent as UsingDirectiveSyntax;
+        // Is generic alias declaration
+        if (directive != null && directive.TypeParameterList != null)
+        {
+            // At the last token of generic alias target TypeSyntax
+            if (token == directive.NamespaceOrType.GetLastToken())
+            {
+                return true;
+            }
+        }
+
         // class C<T> where T : IGoo |
         // delegate void D<T> where T : IGoo |
+        // using A<T> where T : IGoo |
         if (token.IsLastTokenOfNode<TypeParameterConstraintSyntax>())
         {
             return true;

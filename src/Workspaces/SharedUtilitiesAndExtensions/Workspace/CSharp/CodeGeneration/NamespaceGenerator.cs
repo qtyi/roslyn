@@ -155,7 +155,7 @@ internal static class NamespaceGenerator
             if (name != null)
             {
                 return UsingDirective(
-                    NameEquals(alias.Name.ToIdentifierName()),
+                    alias.Name.ToIdentifierToken(),
                     name);
             }
         }

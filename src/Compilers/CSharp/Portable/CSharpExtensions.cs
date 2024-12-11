@@ -1022,23 +1022,31 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>
-        /// If <paramref name="nameSyntax"/> resolves to an alias name, return the AliasSymbol corresponding
-        /// to A. Otherwise return null.
+        /// If <paramref name="nameSyntax"/> resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
         /// </summary>
-        public static IAliasSymbol? GetAliasInfo(this SemanticModel? semanticModel, IdentifierNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        public static AliasInfo GetAliasInfo(this SemanticModel? semanticModel, SimpleNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var csmodel = semanticModel as CSharpSemanticModel;
-            return csmodel?.GetAliasInfo(nameSyntax, cancellationToken);
+            if (semanticModel is CSharpSemanticModel csmodel)
+            {
+                return csmodel.GetAliasInfo(nameSyntax, cancellationToken);
+            }
+
+            return AliasInfo.None;
         }
 
         /// <summary>
         /// Binds the name in the context of the specified location and sees if it resolves to an
-        /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         /// </summary>
-        public static IAliasSymbol? GetSpeculativeAliasInfo(this SemanticModel? semanticModel, int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
+        public static AliasInfo GetSpeculativeAliasInfo(this SemanticModel? semanticModel, int position, SimpleNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
         {
-            var csmodel = semanticModel as CSharpSemanticModel;
-            return csmodel?.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
+            if (semanticModel is CSharpSemanticModel csmodel)
+            {
+                return csmodel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
+            }
+
+            return AliasInfo.None;
         }
 
         /// <summary>

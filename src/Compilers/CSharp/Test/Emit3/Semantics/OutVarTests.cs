@@ -17922,7 +17922,7 @@ public class Cls
             var x1Decl = GetOutVarDeclaration(tree, "x1");
             VerifyModelForOutVar(model, x1Decl);
 
-            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1Decl.Type).ToTestDisplayString());
+            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1Decl.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -17954,7 +17954,7 @@ public class Cls
             var x1Decl = GetOutVarDeclaration(tree, "x1");
             VerifyModelForOutVar(model, x1Decl);
 
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(x1Decl.Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(x1Decl.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -18071,7 +18071,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
         }
 
         [Fact]
@@ -18106,7 +18106,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
         }
 
         [Fact]
@@ -18145,7 +18145,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("System.Int32 x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -18186,7 +18186,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("System.Int32 x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -18229,7 +18229,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("System.Int32 x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -18272,7 +18272,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("System.Int32 x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -18311,7 +18311,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("var x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -18387,7 +18387,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, isDelegateCreation: true, isExecutableCode: true, isShadowed: false, verifyDataFlow: true, references: x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("var x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -19291,7 +19291,7 @@ public class Cls
             var x1Ref = GetReference(tree, "x1");
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
             Assert.Equal("dynamic x1", model.GetDeclaredSymbol(GetVariableDesignation(x1Decl)).ToTestDisplayString());
         }
 
@@ -19369,7 +19369,7 @@ public class Cls
 
             VerifyModelForOutVar(model, x1Decl, x1Ref);
 
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
         }
 
         [Fact]
@@ -32499,7 +32499,7 @@ class H
             var model = compilation.GetSemanticModel(tree);
 
             var x1Decl = GetOutVarDeclarations(tree, "x1").Single();
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
         }
 
         [Fact]
@@ -32527,7 +32527,7 @@ class H
             var model = compilation.GetSemanticModel(tree);
 
             var x1Decl = GetOutVarDeclarations(tree, "x1").Single();
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(x1Decl.Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(x1Decl.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -32555,7 +32555,7 @@ class H
             var model = compilation.GetSemanticModel(tree);
 
             var x1Decl = GetOutVarDeclarations(tree, "x1").Single();
-            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1Decl.Type).ToTestDisplayString());
+            Assert.Equal("a=System.Int32", model.GetAliasInfo(x1Decl.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -32581,7 +32581,7 @@ class H
             var model = compilation.GetSemanticModel(tree);
 
             var x1Decl = GetOutVarDeclarations(tree, "x1").Single();
-            Assert.Null(model.GetAliasInfo(x1Decl.Type));
+            Assert.Null(model.GetAliasInfo(x1Decl.Type).Alias);
         }
 
         [Fact, WorkItem(14717, "https://github.com/dotnet/roslyn/issues/14717")]
@@ -33026,7 +33026,7 @@ public class C
             Assert.Equal("System.Int32", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("System.Int32", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration1.Type).IsIdentity);
-            Assert.Null(model.GetAliasInfo(declaration1.Type));
+            Assert.Null(model.GetAliasInfo(declaration1.Type).Alias);
 
             var discard2 = GetDiscardDesignations(tree).ElementAt(1);
             Assert.Null(model.GetDeclaredSymbol(discard2));
@@ -33042,7 +33042,7 @@ public class C
             Assert.Equal("System.Int32", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("System.Int32", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration2.Type).IsIdentity);
-            Assert.Null(model.GetAliasInfo(declaration2.Type));
+            Assert.Null(model.GetAliasInfo(declaration2.Type).Alias);
 
             var discard3 = GetDiscardIdentifiers(tree).First();
             Assert.Equal("System.Int32", model.GetTypeInfo(discard3).Type.ToTestDisplayString());
@@ -33098,7 +33098,7 @@ public class C
             Assert.Equal("System.Int64", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("System.Int64", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration1.Type).IsIdentity);
-            Assert.Null(model.GetAliasInfo(declaration1.Type));
+            Assert.Null(model.GetAliasInfo(declaration1.Type).Alias);
         }
 
         [Fact]
@@ -33140,7 +33140,7 @@ public class C
             Assert.Equal("System.Int32", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("System.Int32", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration1.Type).IsIdentity);
-            Assert.Equal("alias1=System.Int32", model.GetAliasInfo(declaration1.Type).ToTestDisplayString());
+            Assert.Equal("alias1=System.Int32", model.GetAliasInfo(declaration1.Type).Alias.ToTestDisplayString());
 
             var discard2 = GetDiscardDesignations(tree).ElementAt(1);
             Assert.Null(model.GetDeclaredSymbol(discard2));
@@ -33156,7 +33156,7 @@ public class C
             Assert.Equal("System.Int32", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("System.Int32", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration2.Type).IsIdentity);
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declaration2.Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declaration2.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -33204,7 +33204,7 @@ public class C
             Assert.Equal("alias1", typeInfo.Type.ToTestDisplayString());
             Assert.Equal("alias1", typeInfo.ConvertedType.ToTestDisplayString());
             Assert.True(model.GetConversion(declaration1.Type).IsIdentity);
-            Assert.Null(model.GetAliasInfo(declaration1.Type));
+            Assert.Null(model.GetAliasInfo(declaration1.Type).Alias);
 
             var discard2 = GetDiscardDesignations(tree).ElementAt(1);
             Assert.Null(model.GetDeclaredSymbol(discard2));
@@ -33222,7 +33222,7 @@ public class C
             Assert.Equal(TypeKind.Class, typeInfo.Type.TypeKind);
             Assert.Equal(typeInfo.Type, typeInfo.ConvertedType);
             Assert.True(model.GetConversion(declaration2.Type).IsIdentity);
-            Assert.Null(model.GetAliasInfo(declaration2.Type));
+            Assert.Null(model.GetAliasInfo(declaration2.Type).Alias);
         }
 
         [Fact]
@@ -35130,7 +35130,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType)); // crashes
+            Assert.Null(model.GetAliasInfo(varType).Alias); // crashes
 
             var decl = GetOutVarDeclaration(tree, "x");
             VerifyModelForOutVarInNotExecutableCode(model, decl);
@@ -35169,7 +35169,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType)); // crashes
+            Assert.Null(model.GetAliasInfo(varType).Alias); // crashes
 
             var decl = GetOutVarDeclaration(tree, "x");
             VerifyModelForOutVarInNotExecutableCode(model, decl);
@@ -35213,7 +35213,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType)); // crashes
+            Assert.Null(model.GetAliasInfo(varType).Alias); // crashes
 
             var decl = GetOutVarDeclaration(tree, "x");
             VerifyModelForOutVarInNotExecutableCode(model, decl);
@@ -35244,7 +35244,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType)); // crashes
+            Assert.Null(model.GetAliasInfo(varType).Alias); // crashes
 
             var decl = GetOutVarDeclaration(tree, "x");
             VerifyModelForOutVarInNotExecutableCode(model, decl);
@@ -35283,7 +35283,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType)); // crashes
+            Assert.Null(model.GetAliasInfo(varType).Alias); // crashes
 
             var decl = GetOutVarDeclaration(tree, "x");
             VerifyModelForOutVarInNotExecutableCode(model, decl);
@@ -35315,7 +35315,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType));
+            Assert.Null(model.GetAliasInfo(varType).Alias);
 
             var decl = GetOutVarDeclaration(tree, "x");
             Assert.Equal("var", model.GetTypeInfo(decl).Type.ToTestDisplayString()); // crashes
@@ -35351,7 +35351,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType));
+            Assert.Null(model.GetAliasInfo(varType).Alias);
 
             var decl = GetOutVarDeclaration(tree, "x");
             Assert.Equal("var", model.GetTypeInfo(decl).Type.ToTestDisplayString()); // crashes
@@ -35390,7 +35390,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType));
+            Assert.Null(model.GetAliasInfo(varType).Alias);
 
             var decl = GetOutVarDeclaration(tree, "x");
             Assert.Equal("var", model.GetTypeInfo(decl).Type.ToTestDisplayString()); // crashes
@@ -35420,7 +35420,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType));
+            Assert.Null(model.GetAliasInfo(varType).Alias);
 
             var decl = GetOutVarDeclaration(tree, "x");
             Assert.Equal("var", model.GetTypeInfo(decl).Type.ToTestDisplayString()); // crashes
@@ -35457,7 +35457,7 @@ class C
 
             var varType = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "var").Single();
             Assert.Equal("var", varType.ToString());
-            Assert.Null(model.GetAliasInfo(varType));
+            Assert.Null(model.GetAliasInfo(varType).Alias);
 
             var decl = GetOutVarDeclaration(tree, "x");
             Assert.Equal("var", model.GetTypeInfo(decl).Type.ToTestDisplayString()); // crashes

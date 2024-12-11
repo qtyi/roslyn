@@ -288,6 +288,7 @@ internal static partial class ISymbolExtensions
         {
             SymbolKind.NamedType => ((INamedTypeSymbol)symbol).Arity,
             SymbolKind.Method => ((IMethodSymbol)symbol).Arity,
+            SymbolKind.Alias => ((IAliasSymbol)symbol).Arity,
             _ => 0,
         };
 
@@ -368,6 +369,7 @@ internal static partial class ISymbolExtensions
         {
             IMethodSymbol m => m.TypeParameters,
             INamedTypeSymbol nt => nt.TypeParameters,
+            IAliasSymbol a => a.TypeParameters,
             _ => [],
         };
 

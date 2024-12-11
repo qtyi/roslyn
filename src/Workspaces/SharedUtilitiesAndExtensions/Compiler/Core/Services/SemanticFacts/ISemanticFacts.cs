@@ -74,9 +74,9 @@ internal partial interface ISemanticFacts
     bool TryGetSpeculativeSemanticModel(SemanticModel oldSemanticModel, SyntaxNode oldNode, SyntaxNode newNode, [NotNullWhen(true)] out SemanticModel? speculativeModel);
 
     /// <summary>
-    /// get all alias names defined in the semantic model
+    /// get all alias defined in the semantic model
     /// </summary>
-    ImmutableHashSet<string> GetAliasNameSet(SemanticModel model, CancellationToken cancellationToken);
+    ImmutableHashSet<NameWithArity> GetAliasSet(SemanticModel model, CancellationToken cancellationToken);
 
     ForEachSymbols GetForEachSymbols(SemanticModel semanticModel, SyntaxNode forEachStatement);
     SymbolInfo GetCollectionInitializerSymbolInfo(SemanticModel semanticModel, SyntaxNode node, CancellationToken cancellationToken);

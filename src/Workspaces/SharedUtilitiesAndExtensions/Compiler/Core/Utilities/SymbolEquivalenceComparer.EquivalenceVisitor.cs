@@ -617,10 +617,12 @@ internal sealed partial class SymbolEquivalenceComparer
             Debug.Assert(
                 (x.TypeParameterKind == TypeParameterKind.Method && IsConstructedFromSelf(x.DeclaringMethod!)) ||
                 (x.TypeParameterKind == TypeParameterKind.Type && IsConstructedFromSelf(x.ContainingType)) ||
+                x.TypeParameterKind == TypeParameterKind.Alias ||
                 x.TypeParameterKind == TypeParameterKind.Cref);
             Debug.Assert(
                 (y.TypeParameterKind == TypeParameterKind.Method && IsConstructedFromSelf(y.DeclaringMethod!)) ||
                 (y.TypeParameterKind == TypeParameterKind.Type && IsConstructedFromSelf(y.ContainingType)) ||
+                y.TypeParameterKind == TypeParameterKind.Alias ||
                 y.TypeParameterKind == TypeParameterKind.Cref);
 
             if (x.Ordinal != y.Ordinal ||
@@ -641,6 +643,11 @@ internal sealed partial class SymbolEquivalenceComparer
             {
                 // Anonymous type type parameters compare by index as well to prevent
                 // recursion.
+                return true;
+            }
+
+            if (x.TypeParameterKind == TypeParameterKind.Alias)
+            {
                 return true;
             }
 

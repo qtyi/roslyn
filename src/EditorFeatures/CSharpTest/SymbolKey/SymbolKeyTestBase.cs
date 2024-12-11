@@ -253,7 +253,7 @@ public abstract class SymbolKeyTestBase : CSharpTestBase
             var model = comp.GetSemanticModel(tree);
             foreach (var u in usingNodes)
             {
-                if (u.Alias != null)
+                if (u.Identifier != default)
                 {
                     // var sym = model.GetSymbolInfo(u.Alias.Identifier).Symbol;
                     var sym = model.GetDeclaredSymbol(u);

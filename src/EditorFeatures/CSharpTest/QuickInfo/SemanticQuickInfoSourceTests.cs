@@ -339,6 +339,15 @@ using System.Linq;
             MainDescription("class System.Console"));
     }
 
+    [Fact]
+    public async Task TestNameInUsingDirectiveWithGenericAlias()
+    {
+        await TestAsync(
+@"using String$$Dictionary<T> = System.Collections.Generic.Dictionary<string, T>;",
+            MainDescription("class System.Collections.Generic.Dictionary<TKey, TValue>"),
+            TypeParameterMap("\r\nTkey is string\r\nTValue is T"));
+    }
+
     [Fact, WorkItem("http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/991466")]
     public async Task TestDocumentationInUsingDirectiveWithAlias()
     {

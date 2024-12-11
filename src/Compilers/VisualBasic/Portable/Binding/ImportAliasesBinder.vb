@@ -24,9 +24,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
     Friend Class ImportAliasesBinder
         Inherits Binder
 
-        Private ReadOnly _importedAliases As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition)
+        Private ReadOnly _importedAliases As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition)
 
-        Public Sub New(containingBinder As Binder, importedAliases As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition))
+        Public Sub New(containingBinder As Binder, importedAliases As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition))
             MyBase.New(containingBinder)
 
             Debug.Assert(importedAliases IsNot Nothing)
@@ -54,7 +54,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Debug.Assert(lookupResult.IsClear)
 
             Dim [alias] As AliasAndImportsClausePosition = Nothing
-            If _importedAliases.TryGetValue(name, [alias]) Then
+            Dim key = _importedAliases.Keys.SingleOrNull(Function(nwa) StringComparer.OrdinalIgnoreCase.Compare(nwa.Name, name) = 0)
+            If key.HasValue Then
+                [alias] = _importedAliases(key.Value)
                 ' Got an alias. Return it without checking arity.
 
                 Dim res = CheckViability([alias].Alias, arity, options, Nothing, useSiteInfo)
@@ -73,7 +75,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                                     originalBinder As Binder)
             For Each [alias] In _importedAliases.Values
                 If originalBinder.CheckViability([alias].Alias.Target, -1, options, Nothing, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded).IsGoodOrAmbiguous Then
-                    nameSet.AddSymbol([alias].Alias, [alias].Alias.Name, 0)
+                    nameSet.AddSymbol([alias].Alias, [alias].Alias.Name, [alias].Alias.Arity)
                 End If
             Next
         End Sub

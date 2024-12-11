@@ -369,7 +369,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Dim diagBag = BindingDiagnosticBag.GetInstance()
 
             Dim membersMap = New HashSet(Of NamespaceOrTypeSymbol)
-            Dim aliasesMap = New Dictionary(Of String, AliasAndImportsClausePosition)(IdentifierComparison.Comparer)
+            Dim aliasesMap = New Dictionary(Of NameWithArity, AliasAndImportsClausePosition)(New NameWithArityComparer(IdentifierComparison.Comparer))
             Dim membersBuilder = ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition).GetInstance()
             Dim membersInfoBuilder = ArrayBuilder(Of GlobalImportInfo).GetInstance()
             Dim aliasesBuilder = ArrayBuilder(Of AliasAndImportsClausePosition).GetInstance()
@@ -435,7 +435,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
             Public Sub New(globalImport As GlobalImport,
                            membersMap As HashSet(Of NamespaceOrTypeSymbol),
-                           aliasesMap As Dictionary(Of String, AliasAndImportsClausePosition),
+                           aliasesMap As Dictionary(Of NameWithArity, AliasAndImportsClausePosition),
                            membersBuilder As ArrayBuilder(Of NamespaceOrTypeAndImportsClausePosition),
                            membersInfoBuilder As ArrayBuilder(Of GlobalImportInfo),
                            aliasesBuilder As ArrayBuilder(Of AliasAndImportsClausePosition),
@@ -474,9 +474,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Next
             End Sub
 
-            Public Overrides Sub AddAlias(syntaxRef As SyntaxReference, name As String, [alias] As AliasSymbol, importsClausePosition As Integer, dependencies As IReadOnlyCollection(Of AssemblySymbol))
+            Public Overrides Sub AddAlias(syntaxRef As SyntaxReference, name As String, arity As Integer, [alias] As AliasSymbol, importsClausePosition As Integer, dependencies As IReadOnlyCollection(Of AssemblySymbol))
                 Dim pair = New AliasAndImportsClausePosition([alias], importsClausePosition, syntaxRef, ImmutableArray(Of AssemblySymbol).Empty)
-                Aliases.Add(name, pair)
+                Aliases.Add(New NameWithArity(name, arity), pair)
                 _aliasesBuilder.Add(pair)
                 _aliasesInfoBuilder.Add(New GlobalImportInfo(_globalImport, syntaxRef))
                 AddDependencies(dependencies)
@@ -561,7 +561,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         End Property
 
         ' Get the project level alias imports, or Nothing if none.
-        Friend ReadOnly Property AliasImportsMap As Dictionary(Of String, AliasAndImportsClausePosition)
+        Friend ReadOnly Property AliasImportsMap As Dictionary(Of NameWithArity, AliasAndImportsClausePosition)
             Get
                 EnsureImportsAreBound(CancellationToken.None)
                 Return _lazyBoundImports.AliasImportsMap

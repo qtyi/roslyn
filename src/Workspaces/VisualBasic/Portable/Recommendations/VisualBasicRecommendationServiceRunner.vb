@@ -263,7 +263,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Recommendations
                     ' Check for color color
                     Dim speculativeTypeBinding = _context.SemanticModel.GetSpeculativeTypeInfo(_context.Position, leftExpression, SpeculativeBindingOption.BindAsTypeOrNamespace)
                     Dim speculativeAliasBinding = _context.SemanticModel.GetSpeculativeAliasInfo(_context.Position, leftExpression, SpeculativeBindingOption.BindAsTypeOrNamespace)
-                    If TypeOf leftHandSymbolInfo.Symbol IsNot INamespaceOrTypeSymbol AndAlso speculativeAliasBinding Is Nothing AndAlso Equals(firstSymbol.GetSymbolType(), speculativeTypeBinding.Type) Then
+                    If TypeOf leftHandSymbolInfo.Symbol IsNot INamespaceOrTypeSymbol AndAlso speculativeAliasBinding.Alias Is Nothing AndAlso Equals(firstSymbol.GetSymbolType(), speculativeTypeBinding.Type) Then
                         excludeShared = False
                         excludeInstance = False
                     End If

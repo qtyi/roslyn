@@ -12,6 +12,7 @@ Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -585,16 +586,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Sub
 
         <Extension()>
-        Public Sub GetExpressionSymbols(node As BoundExpression, symbols As ArrayBuilder(Of Symbol))
+        Public Sub GetExpressionSymbols(node As BoundExpression, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             Select Case node.Kind
                 Case BoundKind.MethodGroup
                     DirectCast(node, BoundMethodGroup).GetExpressionSymbols(symbols)
 
                 Case BoundKind.PropertyGroup
-                    symbols.AddRange(DirectCast(node, BoundPropertyGroup).Properties)
+                    symbols.AddRange(DirectCast(node, BoundPropertyGroup).Properties.WithDefaultAnnotationSymbols())
 
                 Case BoundKind.BadExpression
-                    symbols.AddRange(DirectCast(node, BoundBadExpression).Symbols)
+                    symbols.AddRange(DirectCast(node, BoundBadExpression).Symbols.WithDefaultAnnotationSymbols())
 
                 Case BoundKind.QueryClause
                     DirectCast(node, BoundQueryClause).UnderlyingExpression.GetExpressionSymbols(symbols)
@@ -618,9 +619,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Dim symbol = node.ExpressionSymbol
                     If symbol IsNot Nothing Then
                         If symbol.Kind = SymbolKind.Namespace AndAlso DirectCast(symbol, NamespaceSymbol).NamespaceKind = NamespaceKindNamespaceGroup Then
-                            symbols.AddRange(DirectCast(symbol, NamespaceSymbol).ConstituentNamespaces)
+                            symbols.AddRange(DirectCast(symbol, NamespaceSymbol).ConstituentNamespaces.WithDefaultAnnotationSymbols())
                         Else
-                            symbols.Add(symbol)
+                            symbols.Add(symbol.WithDefaultAnnotationSymbols())
                         End If
                     End If
             End Select

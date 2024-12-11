@@ -193,13 +193,14 @@ internal class CSharpSyntaxFacts : ISyntaxFacts
            usingDirective.NamespaceOrType == node;
 
     public bool IsUsingAliasDirective([NotNullWhen(true)] SyntaxNode? node)
-        => node is UsingDirectiveSyntax usingDirectiveNode && usingDirectiveNode.Alias != null;
+        => node is UsingDirectiveSyntax usingDirectiveNode && usingDirectiveNode.Identifier != default;
 
-    public void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken alias, out SyntaxNode name)
+    public void GetPartsOfUsingAliasDirective(SyntaxNode node, out SyntaxToken globalKeyword, out SyntaxToken aliasIdentifier, out SeparatedSyntaxList<SyntaxNode> aliasTypeParameters, out SyntaxNode name)
     {
         var usingDirective = (UsingDirectiveSyntax)node;
         globalKeyword = usingDirective.GlobalKeyword;
-        alias = usingDirective.Alias!.Name.Identifier;
+        aliasIdentifier = usingDirective.Identifier;
+        aliasTypeParameters = usingDirective.TypeParameterList is null ? default : usingDirective.TypeParameterList.Parameters;
         name = usingDirective.NamespaceOrType;
     }
 
@@ -1364,6 +1365,53 @@ internal class CSharpSyntaxFacts : ISyntaxFacts
         openParen = tupleExpression.OpenParenToken;
         arguments = (SeparatedSyntaxList<TArgumentSyntax>)(SeparatedSyntaxList<SyntaxNode>)tupleExpression.Arguments;
         closeParen = tupleExpression.CloseParenToken;
+    }
+
+    public void GetPartsOfTupleType<TElementSyntax>(SyntaxNode node,
+        out SyntaxToken openParen, out SeparatedSyntaxList<TElementSyntax> elements, out SyntaxToken closeParen) where TElementSyntax : SyntaxNode
+    {
+        var tupleType = (TupleTypeSyntax)node;
+        openParen = tupleType.OpenParenToken;
+        elements = (SeparatedSyntaxList<TElementSyntax>)(SeparatedSyntaxList<SyntaxNode>)tupleType.Elements;
+        closeParen = tupleType.CloseParenToken;
+    }
+
+    public void GetPartsOfArrayType<TArrayRankSpecifier>(SyntaxNode node,
+        out SyntaxNode elementType, out SyntaxList<TArrayRankSpecifier> rankSpecifiers) where TArrayRankSpecifier : SyntaxNode
+    {
+        var arrayType = (ArrayTypeSyntax)node;
+        elementType = arrayType.ElementType;
+        rankSpecifiers = (SyntaxList<TArrayRankSpecifier>)(SyntaxList<SyntaxNode>)arrayType.RankSpecifiers;
+    }
+
+    public void GetRankOfArrayRankSpecifier(SyntaxNode node, out int rank)
+    {
+        var rankSpecifier = (ArrayRankSpecifierSyntax)node;
+        rank = rankSpecifier.Rank;
+    }
+
+    public bool IsDynamicType(SyntaxNode node)
+    {
+        return node is IdentifierNameSyntax identifierName &&
+            SyntaxFacts.IsInTypeOnlyContext(identifierName) && identifierName.Identifier.Text == "dynamic";
+    }
+
+    public bool IsTupleElement(SyntaxNode node)
+    {
+        return node is TupleElementSyntax;
+    }
+
+    public string? GetNameOfTupleElement(SyntaxNode node)
+    {
+        var tupleElement = (TupleElementSyntax)node;
+        return tupleElement.Identifier == default ? null : tupleElement.Identifier.ValueText;
+    }
+
+    public void GetParametersOfFunctionPointerType<TParameter>(SyntaxNode node,
+        out SeparatedSyntaxList<TParameter> parameters) where TParameter : SyntaxNode
+    {
+        var functionPointerType = (FunctionPointerTypeSyntax)node;
+        parameters = (SeparatedSyntaxList<TParameter>)(SeparatedSyntaxList<SyntaxNode>)functionPointerType.ParameterList.Parameters;
     }
 
     public bool IsPreprocessorDirective(SyntaxTrivia trivia)

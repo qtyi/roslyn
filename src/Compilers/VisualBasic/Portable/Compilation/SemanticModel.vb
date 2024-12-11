@@ -10,6 +10,7 @@ Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -275,7 +276,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' Determine the symbols, resultKind, and member group.
             Dim resultKind As LookupResultKind = LookupResultKind.Empty
             Dim memberGroup As ImmutableArray(Of Symbol) = Nothing
-            Dim symbols As ImmutableArray(Of Symbol) = GetSemanticSymbols(boundNodes, binderOpt, options, resultKind, memberGroup)
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = GetSemanticSymbols(boundNodes, binderOpt, options, resultKind, memberGroup)
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
         End Function
@@ -489,29 +490,29 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' Determine the symbols, resultKind, and member group.
             Dim resultKind As LookupResultKind = LookupResultKind.Empty
             Dim memberGroup As ImmutableArray(Of Symbol) = Nothing
-            Dim symbols As ImmutableArray(Of Symbol) = GetSemanticSymbols(boundNodes, binderOpt, SymbolInfoOptions.DefaultOptions, resultKind, memberGroup)
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = GetSemanticSymbols(boundNodes, binderOpt, SymbolInfoOptions.DefaultOptions, resultKind, memberGroup)
 
             Return memberGroup
         End Function
 
         ''' <summary>
-        ''' If "nameSyntax" resolves to an alias name, return the AliasSymbol corresponding
-        ''' to A. Otherwise return null.
+        ''' If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        ''' to A. Otherwise return <see cref="AliasInfo.None"/>.
         ''' </summary>
-        Public Shadows Function GetAliasInfo(nameSyntax As IdentifierNameSyntax, Optional cancellationToken As CancellationToken = Nothing) As IAliasSymbol
+        Public Shadows Function GetAliasInfo(nameSyntax As SimpleNameSyntax, Optional cancellationToken As CancellationToken = Nothing) As AliasInfo
             CheckSyntaxNode(nameSyntax)
 
             If CanGetSemanticInfo(nameSyntax) Then
                 Dim info = GetExpressionSymbolInfo(nameSyntax, SymbolInfoOptions.PreferTypeToConstructors Or SymbolInfoOptions.PreserveAliases, cancellationToken)
-                Return TryCast(info.Symbol, IAliasSymbol)
+                Return GetAliasInfoFromSymbolInfo(info)
             Else
-                Return Nothing
+                Return AliasInfo.None
             End If
         End Function
 
         ''' <summary>
         ''' Binds the name in the context of the specified location and sees if it resolves to an
-        ''' alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        ''' alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         ''' </summary>
         ''' <param name="position">A character position used to identify a declaration scope and
         ''' accessibility. This character position must be within the FullSpan of the Root syntax
@@ -525,16 +526,34 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' expression should derive from TypeSyntax.</param>
         ''' <remarks>The passed in name is interpreted as a stand-alone name, as if it
         ''' appeared by itself somewhere within the scope that encloses "position".</remarks>
-        Public Shadows Function GetSpeculativeAliasInfo(position As Integer, nameSyntax As IdentifierNameSyntax, bindingOption As SpeculativeBindingOption) As IAliasSymbol
+        Public Shadows Function GetSpeculativeAliasInfo(position As Integer, nameSyntax As SimpleNameSyntax, bindingOption As SpeculativeBindingOption) As AliasInfo
             Dim binder As Binder = Nothing
             Dim bnodeSummary = GetSpeculativelyBoundNodeSummary(position, nameSyntax, bindingOption, binder)
 
             If bnodeSummary.LowestBoundNode IsNot Nothing Then
                 Dim info As SymbolInfo = Me.GetSymbolInfoForNode(SymbolInfoOptions.PreferTypeToConstructors Or SymbolInfoOptions.PreserveAliases, bnodeSummary, binderOpt:=binder)
-                Return TryCast(info.Symbol, IAliasSymbol)
+                Return GetAliasInfoFromSymbolInfo(info)
             Else
-                Return Nothing
+                Return AliasInfo.None
             End If
+        End Function
+
+        Private Shared Function GetAliasInfoFromSymbolInfo(symbolInfo As SymbolInfo) As AliasInfo
+            Dim aliasSymbol = TryCast(symbolInfo.Symbol, IAliasSymbol)
+            If aliasSymbol IsNot Nothing Then
+                If aliasSymbol.IsGenericAlias Then
+                    If (Not symbolInfo.AnnotationSymbols.IsDefaultOrEmpty AndAlso TypeOf symbolInfo.AnnotationSymbols(0) Is INamespaceOrTypeSymbol) Then
+                        Return New AliasInfo(aliasSymbol, DirectCast(symbolInfo.AnnotationSymbols(0), INamespaceOrTypeSymbol))
+                    Else
+                        Debug.Fail("Code should never reach here.")
+                        Return New AliasInfo(aliasSymbol, aliasSymbol.Target)
+                    End If
+                End If
+
+                Return New AliasInfo(aliasSymbol)
+            End If
+
+            Return AliasInfo.None
         End Function
 
         ''' <summary>
@@ -858,7 +877,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Function
 
         ' Given a diagnosticInfo, add any symbols from the diagnosticInfo to the symbol builder.
-        Private Sub AddSymbolsFromDiagnosticInfo(symbolsBuilder As ArrayBuilder(Of Symbol), diagnosticInfo As DiagnosticInfo)
+        Private Sub AddSymbolsFromDiagnosticInfo(symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols), diagnosticInfo As DiagnosticInfo)
             Dim diagInfoWithSymbols = TryCast(diagnosticInfo, IDiagnosticInfoWithSymbols)
             If diagInfoWithSymbols IsNot Nothing Then
                 diagInfoWithSymbols.GetAssociatedSymbols(symbolsBuilder)
@@ -867,36 +886,36 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ' Given a symbolsBuilder with a bunch of symbols in it, return an ImmutableArray containing
         ' just the symbols that are not ErrorTypeSymbols, and without any duplicates.
-        Friend Function RemoveErrorTypesAndDuplicates(symbolsBuilder As ArrayBuilder(Of Symbol), options As SymbolInfoOptions) As ImmutableArray(Of Symbol)
+        Friend Function RemoveErrorTypesAndDuplicates(symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols), options As SymbolInfoOptions) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             ' Common case is 0 or 1 symbol, so we optimize those cases to not allocate a HashSet, since
             ' duplicates aren't possible for those cases.
 
             If symbolsBuilder.Count = 0 Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             ElseIf symbolsBuilder.Count = 1 Then
                 Dim s = symbolsBuilder(0)
                 If (options And SymbolInfoOptions.ResolveAliases) <> 0 Then
-                    s = UnwrapAlias(s)
+                    s = Binder.UnwrapAlias(s)
                 End If
 
-                If TypeOf s Is ErrorTypeSymbol Then
+                If TypeOf s.Symbol Is ErrorTypeSymbol Then
                     symbolsBuilder.Clear()
-                    AddSymbolsFromDiagnosticInfo(symbolsBuilder, DirectCast(s, ErrorTypeSymbol).ErrorInfo)
+                    AddSymbolsFromDiagnosticInfo(symbolsBuilder, DirectCast(s.Symbol, ErrorTypeSymbol).ErrorInfo)
                     Return symbolsBuilder.ToImmutable()
                 Else
                     Return ImmutableArray.Create(s)
                 End If
             Else
                 ' 2 or more symbols. Use a hash set to remove duplicates.
-                Dim symbolSet = PooledHashSet(Of Symbol).GetInstance()
+                Dim symbolSet = PooledHashSet(Of SymbolWithAnnotationSymbols).GetInstance()
                 For Each s In symbolsBuilder
                     If (options And SymbolInfoOptions.ResolveAliases) <> 0 Then
-                        s = UnwrapAlias(s)
+                        s = Binder.UnwrapAlias(s)
                     End If
 
-                    If TypeOf s Is ErrorTypeSymbol Then
-                        Dim tempBuilder As ArrayBuilder(Of Symbol) = ArrayBuilder(Of Symbol).GetInstance()
-                        AddSymbolsFromDiagnosticInfo(tempBuilder, DirectCast(s, ErrorTypeSymbol).ErrorInfo)
+                    If TypeOf s.Symbol Is ErrorTypeSymbol Then
+                        Dim tempBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+                        AddSymbolsFromDiagnosticInfo(tempBuilder, DirectCast(s.Symbol, ErrorTypeSymbol).ErrorInfo)
                         For Each sym In tempBuilder
                             symbolSet.Add(sym)
                         Next
@@ -1014,10 +1033,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                  binderOpt As Binder,
                  options As SymbolInfoOptions,
                  ByRef resultKind As LookupResultKind,
-                 ByRef memberGroup As ImmutableArray(Of Symbol)) As ImmutableArray(Of Symbol)
+                 ByRef memberGroup As ImmutableArray(Of Symbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             ' TODO: Understand the case patched by TODO in GetSemanticInfoForNode and create a better fix.
 
-            Dim symbolsBuilder = ArrayBuilder(Of Symbol).GetInstance()
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
             Dim memberGroupBuilder = ArrayBuilder(Of Symbol).GetInstance()
             resultKind = LookupResultKind.Good  ' assume good unless we find out otherwise.
 
@@ -1046,17 +1065,21 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' If its an error type look at underlying symbols and kind.
                         ' The alias symbol is latter mapped to its target depending on options in RemoveErrorTypesAndDuplicates.
                         Dim boundType = DirectCast(boundNodes.LowestBoundNode, BoundTypeExpression)
-                        If boundType.AliasOpt IsNot Nothing Then
-                            symbolsBuilder.Add(boundType.AliasOpt)
-                        Else
+
+                        Dim [alias] = boundType.AliasOpt
+                        If [alias] Is Nothing Then
                             Dim typeSymbol As TypeSymbol = boundType.Type
                             Dim originalErrorType = TryCast(typeSymbol.OriginalDefinition, ErrorTypeSymbol)
                             If originalErrorType IsNot Nothing Then
                                 resultKind = originalErrorType.ResultKind
-                                symbolsBuilder.AddRange(originalErrorType.CandidateSymbols)
+                                symbolsBuilder.AddRange(originalErrorType.CandidateSymbols.WithDefaultAnnotationSymbols())
                             Else
-                                symbolsBuilder.Add(typeSymbol)
+                                symbolsBuilder.Add(typeSymbol.WithDefaultAnnotationSymbols())
                             End If
+                        ElseIf [alias].IsGenericAlias Then
+                            symbolsBuilder.Add(boundType.AliasOpt.WithAnnotationSymbol(boundType.Type))
+                        Else
+                            symbolsBuilder.Add(boundType.AliasOpt.WithDefaultAnnotationSymbols())
                         End If
 
                     Case BoundKind.Attribute
@@ -1080,13 +1103,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             If candidateSymbols.Length = 1 AndAlso candidateSymbols(0).Kind = SymbolKind.NamedType Then
                                 namedType = DirectCast(errorType.CandidateSymbols(0), NamedTypeSymbol)
                             Else
-                                symbolsBuilder.AddRange(candidateSymbols)
+                                symbolsBuilder.AddRange(candidateSymbols.WithDefaultAnnotationSymbols())
                                 Exit Select
                             End If
 
                         End If
 
-                        Dim symbols = ImmutableArray(Of Symbol).Empty
+                        Dim symbols = ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
                         AdjustSymbolsForObjectCreation(attribute, namedType, attribute.Constructor, binderOpt, symbols, memberGroupBuilder, resultKind)
                         symbolsBuilder.AddRange(symbols)
 
@@ -1100,9 +1123,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         End If
 
                         If creation.ConstructorOpt IsNot Nothing Then
-                            symbolsBuilder.Add(creation.ConstructorOpt)
+                            symbolsBuilder.Add(creation.ConstructorOpt.WithDefaultAnnotationSymbols())
                         Else
-                            symbolsBuilder.AddRange(memberGroupBuilder)
+                            symbolsBuilder.AddRange(memberGroupBuilder.ToImmutable().WithDefaultAnnotationSymbols())
                         End If
 
                     Case BoundKind.LateMemberAccess
@@ -1122,7 +1145,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         Dim containingMember = binder.ContainingMember
 
                         Dim meParam As ParameterSymbol = GetMeParameter(meReference.Type, containingType, containingMember, resultKind)
-                        symbolsBuilder.Add(meParam)
+                        symbolsBuilder.Add(meParam.WithDefaultAnnotationSymbols())
 
                     Case BoundKind.TypeOrValueExpression
                         ' If we're seeing a node of this kind, then we failed to resolve the member access
@@ -1166,7 +1189,7 @@ _Default:
                 End Select
             End If
 
-            Dim bindingSymbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
+            Dim bindingSymbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             symbolsBuilder.Free()
 
             If boundNodes.LowestBoundNodeOfSyntacticParent IsNot Nothing AndAlso (options And SymbolInfoOptions.PreferConstructorsToType) <> 0 Then
@@ -1189,7 +1212,7 @@ _Default:
 
                 If highestBoundNodeExpr.Kind = BoundKind.BadExpression AndAlso bindingSymbols.Length = 0 Then
                     ' If we didn't have symbols from the lowest, maybe the bad expression has symbols.
-                    bindingSymbols = DirectCast(highestBoundNodeExpr, BoundBadExpression).Symbols
+                    bindingSymbols = DirectCast(highestBoundNodeExpr, BoundBadExpression).Symbols.WithDefaultAnnotationSymbols()
                 End If
             End If
 
@@ -1237,20 +1260,22 @@ _Default:
         End Function
 
         Private Sub GetSemanticSymbolsForLateBoundInvocation(lateInvocation As BoundLateInvocation,
-                                                                symbolsBuilder As ArrayBuilder(Of Symbol),
+                                                                symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                                 memberGroupBuilder As ArrayBuilder(Of Symbol),
                                                                 ByRef resultKind As LookupResultKind)
 
             resultKind = LookupResultKind.LateBound
             Dim group = lateInvocation.MethodOrPropertyGroupOpt
             If group IsNot Nothing Then
-                group.GetExpressionSymbols(memberGroupBuilder)
-                group.GetExpressionSymbols(symbolsBuilder)
+                Dim expressionSymbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+                group.GetExpressionSymbols(expressionSymbolsBuilder)
+                memberGroupBuilder.AddRange(expressionSymbolsBuilder.ToImmutable().WithoutAnnotationSymbols())
+                symbolsBuilder.AddRange(expressionSymbolsBuilder)
             End If
         End Sub
 
         Private Sub GetSemanticSymbolsForLateBoundMemberAccess(boundNodes As BoundNodeSummary,
-                                                               symbolsBuilder As ArrayBuilder(Of Symbol),
+                                                               symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                                memberGroupBuilder As ArrayBuilder(Of Symbol),
                                                                ByRef resultKind As LookupResultKind)
 
@@ -1271,7 +1296,7 @@ _Default:
         ' Get the semantic symbols for a BoundMethodGroup. These are somewhat complex, as we want to get the result
         ' of overload resolution even though that result is associated with the parent node.
         Private Sub GetSemanticSymbolsForMethodGroup(boundNodes As BoundNodeSummary,
-                    symbolsBuilder As ArrayBuilder(Of Symbol),
+                    symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                     memberGroupBuilder As ArrayBuilder(Of Symbol),
                     ByRef resultKind As LookupResultKind)
 
@@ -1291,7 +1316,7 @@ _Default:
                     Case BoundKind.Call
                         ' If we are looking for info on M in M(args), we want the symbol that overload resolution chose for M.
                         Dim parentCall = DirectCast(boundNodes.LowestBoundNodeOfSyntacticParent, BoundCall)
-                        symbolsBuilder.Add(parentCall.Method)
+                        symbolsBuilder.Add(parentCall.Method.WithDefaultAnnotationSymbols())
                         If parentCall.ResultKind < resultKind Then
                             resultKind = parentCall.ResultKind
                         End If
@@ -1301,7 +1326,7 @@ _Default:
                         ' If we are looking for info on M in AddressOf M, we want the symbol that overload resolution chose for M. This
                         ' should be a BoundDelegateCreation.
                         Dim parentDelegateCreation = DirectCast(boundNodes.LowestBoundNodeOfSyntacticParent, BoundDelegateCreationExpression)
-                        symbolsBuilder.Add(parentDelegateCreation.Method)
+                        symbolsBuilder.Add(parentDelegateCreation.Method.WithDefaultAnnotationSymbols())
                         If parentDelegateCreation.ResultKind < resultKind Then
                             resultKind = parentDelegateCreation.ResultKind
                         End If
@@ -1311,14 +1336,14 @@ _Default:
                         Dim badExpression = DirectCast(boundNodes.LowestBoundNodeOfSyntacticParent, BoundBadExpression)
                         ' If the bad expressions has symbols(s) from the method group, it better
                         ' indicates the problem.
-                        symbolsBuilder.AddRange(badExpression.Symbols.Where(Function(sym) memberGroupBuilder.Contains(sym)))
+                        symbolsBuilder.AddRange(badExpression.Symbols.WhereAsArray(Function(sym) memberGroupBuilder.Contains(sym)).WithDefaultAnnotationSymbols())
                         If symbolsBuilder.Count > 0 Then
                             resultKind = badExpression.ResultKind
                             foundResolution = True
                         End If
 
                     Case BoundKind.NameOfOperator
-                        symbolsBuilder.AddRange(memberGroupBuilder)
+                        symbolsBuilder.AddRange(memberGroupBuilder.ToImmutable().WithDefaultAnnotationSymbols())
                         resultKind = LookupResultKind.MemberGroup
                         foundResolution = True
                 End Select
@@ -1326,7 +1351,7 @@ _Default:
 
             If Not foundResolution Then
                 ' If we didn't find a resolution, then use what we had as the member group.
-                symbolsBuilder.AddRange(memberGroupBuilder)
+                symbolsBuilder.AddRange(memberGroupBuilder.ToImmutable().WithDefaultAnnotationSymbols())
                 resultKind = LookupResultKind.OverloadResolutionFailure
             End If
 
@@ -1338,7 +1363,7 @@ _Default:
         ' Get the semantic symbols for a BoundPropertyGroup. These are somewhat complex, as we want to get the result
         ' of overload resolution even though that result is associated with the parent node.
         Private Sub GetSemanticSymbolsForPropertyGroup(boundNodes As BoundNodeSummary,
-                      symbolsBuilder As ArrayBuilder(Of Symbol),
+                      symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                       memberGroupBuilder As ArrayBuilder(Of Symbol),
                       ByRef resultKind As LookupResultKind)
 
@@ -1356,7 +1381,7 @@ _Default:
                         ' If we are looking for info on M in M(args), we want the symbol that overload resolution chose for M.
                         Dim parentPropAccess = TryCast(boundNodes.LowestBoundNodeOfSyntacticParent, BoundPropertyAccess)
                         If parentPropAccess IsNot Nothing Then
-                            symbolsBuilder.Add(parentPropAccess.PropertySymbol)
+                            symbolsBuilder.Add(parentPropAccess.PropertySymbol.WithDefaultAnnotationSymbols())
                             If parentPropAccess.ResultKind < resultKind Then
                                 resultKind = parentPropAccess.ResultKind
                             End If
@@ -1367,14 +1392,14 @@ _Default:
                         Dim badExpression = DirectCast(boundNodes.LowestBoundNodeOfSyntacticParent, BoundBadExpression)
                         ' If the bad expressions has symbols(s) from the property group, it better
                         ' indicates the problem.
-                        symbolsBuilder.AddRange(badExpression.Symbols.Where(Function(sym) memberGroupBuilder.Contains(sym)))
+                        symbolsBuilder.AddRange(badExpression.Symbols.WhereAsArray(Function(sym) memberGroupBuilder.Contains(sym)).WithDefaultAnnotationSymbols())
                         If symbolsBuilder.Count > 0 Then
                             resultKind = badExpression.ResultKind
                             foundResolution = True
                         End If
 
                     Case BoundKind.NameOfOperator
-                        symbolsBuilder.AddRange(memberGroupBuilder)
+                        symbolsBuilder.AddRange(memberGroupBuilder.ToImmutable().WithDefaultAnnotationSymbols())
                         resultKind = LookupResultKind.MemberGroup
                         foundResolution = True
                 End Select
@@ -1382,7 +1407,7 @@ _Default:
 
             If Not foundResolution Then
                 ' If we didn't find a resolution, then use what we had as the member group. 
-                symbolsBuilder.AddRange(memberGroupBuilder)
+                symbolsBuilder.AddRange(memberGroupBuilder.ToImmutable().WithDefaultAnnotationSymbols())
                 resultKind = LookupResultKind.OverloadResolutionFailure
             End If
 
@@ -1391,16 +1416,16 @@ _Default:
             End If
         End Sub
 
-        Private Shared Function UnwrapAliases(symbols As ImmutableArray(Of Symbol)) As ImmutableArray(Of Symbol)
-            Dim anyAliases As Boolean = symbols.Any(Function(sym) sym.Kind = SymbolKind.Alias)
+        Private Shared Function UnwrapAliases(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Dim anyAliases As Boolean = symbols.Any(Function(sym) sym.Symbol.Kind = SymbolKind.Alias)
 
             If Not anyAliases Then
                 Return symbols
             End If
 
-            Dim builder As ArrayBuilder(Of Symbol) = ArrayBuilder(Of Symbol).GetInstance()
+            Dim builder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
             For Each sym In symbols
-                builder.Add(UnwrapAlias(sym))
+                builder.Add(Binder.UnwrapAlias(sym))
             Next
 
             Return builder.ToImmutableAndFree()
@@ -1413,7 +1438,7 @@ _Default:
         ''' </summary>
         Private Sub AdjustSymbolsForObjectCreation(boundNodes As BoundNodeSummary,
                      binderOpt As Binder,
-                     ByRef bindingSymbols As ImmutableArray(Of Symbol),
+                     ByRef bindingSymbols As ImmutableArray(Of SymbolWithAnnotationSymbols),
                      memberGroupBuilder As ArrayBuilder(Of Symbol),
                      ByRef resultKind As LookupResultKind)
             Dim constructor As MethodSymbol = Nothing
@@ -1433,8 +1458,8 @@ _Default:
                 Dim unwrappedSymbols = UnwrapAliases(bindingSymbols)
 
                 ' We must have bound to a single named type 
-                If unwrappedSymbols.Length = 1 AndAlso TypeOf unwrappedSymbols(0) Is TypeSymbol Then
-                    Dim typeSymbol As TypeSymbol = DirectCast(unwrappedSymbols(0), TypeSymbol)
+                If unwrappedSymbols.Length = 1 AndAlso TypeOf unwrappedSymbols(0).Symbol Is TypeSymbol Then
+                    Dim typeSymbol As TypeSymbol = DirectCast(unwrappedSymbols(0).Symbol, TypeSymbol)
                     Dim namedTypeSymbol As NamedTypeSymbol = TryCast(typeSymbol, NamedTypeSymbol)
 
                     ' Figure out which constructor was selected.
@@ -1465,7 +1490,7 @@ _Default:
             namedTypeSymbol As NamedTypeSymbol,
             constructor As MethodSymbol,
             binderOpt As Binder,
-            ByRef bindingSymbols As ImmutableArray(Of Symbol),
+            ByRef bindingSymbols As ImmutableArray(Of SymbolWithAnnotationSymbols),
             memberGroupBuilder As ArrayBuilder(Of Symbol),
             ByRef resultKind As LookupResultKind)
 
@@ -1498,9 +1523,9 @@ _Default:
 
                 If constructor IsNot Nothing Then
                     Debug.Assert(candidateConstructors.Contains(constructor))
-                    bindingSymbols = ImmutableArray.Create(Of Symbol)(constructor)
+                    bindingSymbols = ImmutableArray.Create(constructor.WithDefaultAnnotationSymbols())
                 ElseIf candidateConstructors.Length <> 0 Then
-                    bindingSymbols = StaticCast(Of Symbol).From(candidateConstructors)
+                    bindingSymbols = candidateConstructors.WithDefaultAnnotationSymbols()
                     resultKind = LookupResult.WorseResultKind(resultKind, LookupResultKind.OverloadResolutionFailure)
                 End If
 
@@ -1510,12 +1535,12 @@ _Default:
 
         ' Gets SymbolInfo for a type or namespace or alias reference or implemented method.
         Friend Function GetSymbolInfoForSymbol(
-            symbol As Symbol,
+            symbol As SymbolWithAnnotationSymbols,
             options As SymbolInfoOptions
         ) As SymbolInfo
 
             ' 1. Determine type, dig through alias if needed.
-            Dim type = TryCast(UnwrapAlias(symbol), TypeSymbol)
+            Dim type = TryCast(Binder.UnwrapAlias(symbol).Symbol, TypeSymbol)
 
             ' 2. Determine symbols.
             ' We never return error symbols in the SemanticInfo.
@@ -1524,24 +1549,24 @@ _Default:
             ' Getting the set of symbols is a bit involved. We use the union of the symbol with 
             ' any symbols from the diagnostics, but error symbols are not included.\
             Dim resultKind As LookupResultKind
-            Dim symbolsBuilder = ArrayBuilder(Of Symbol).GetInstance()
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
             Dim originalErrorSymbol = If(type IsNot Nothing, TryCast(type.OriginalDefinition, ErrorTypeSymbol), Nothing)
             If originalErrorSymbol IsNot Nothing Then
                 ' Error case.
                 resultKind = originalErrorSymbol.ResultKind
                 If resultKind <> LookupResultKind.Empty Then
-                    symbolsBuilder.AddRange(originalErrorSymbol.CandidateSymbols)
+                    symbolsBuilder.AddRange(originalErrorSymbol.CandidateSymbols.WithDefaultAnnotationSymbols())
                 End If
 
-            ElseIf symbol.Kind = SymbolKind.Namespace AndAlso DirectCast(symbol, NamespaceSymbol).NamespaceKind = NamespaceKindNamespaceGroup Then
-                symbolsBuilder.AddRange(DirectCast(symbol, NamespaceSymbol).ConstituentNamespaces)
+            ElseIf symbol.Symbol.Kind = SymbolKind.Namespace AndAlso DirectCast(symbol.Symbol, NamespaceSymbol).NamespaceKind = NamespaceKindNamespaceGroup Then
+                symbolsBuilder.AddRange(DirectCast(symbol.Symbol, NamespaceSymbol).ConstituentNamespaces.WithDefaultAnnotationSymbols())
                 resultKind = LookupResultKind.Ambiguous
             Else
                 symbolsBuilder.Add(symbol)
                 resultKind = LookupResultKind.Good
             End If
 
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             symbolsBuilder.Free()
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
@@ -1549,11 +1574,11 @@ _Default:
 
         ' Gets TypeInfo for a type or namespace or alias reference or implemented method.
         Friend Function GetTypeInfoForSymbol(
-            symbol As Symbol
+            symbol As SymbolWithAnnotationSymbols
         ) As VisualBasicTypeInfo
 
             ' 1. Determine type, dig through alias if needed.
-            Dim type = TryCast(UnwrapAlias(symbol), TypeSymbol)
+            Dim type = TryCast(Binder.UnwrapAlias(symbol).Symbol, TypeSymbol)
 
             Return New VisualBasicTypeInfo(type, type, New Conversion(Conversions.Identity))
         End Function
@@ -1605,11 +1630,11 @@ _Default:
 
 #If DEBUG Then
             For Each item In result
-                Debug.Assert(item.Kind <> SymbolKind.Namespace OrElse DirectCast(item, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
+                Debug.Assert(item.Symbol.Kind <> SymbolKind.Namespace OrElse DirectCast(item.Symbol, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
             Next
 #End If
 
-            Return StaticCast(Of ISymbol).From(result)
+            Return StaticCast(Of ISymbol).From(result.WithoutAnnotationSymbols())
         End Function
 
         ''' <summary>
@@ -1652,11 +1677,11 @@ _Default:
             Dim result = LookupSymbolsInternal(position, Nothing, name, LookupOptions.Default, useBaseReferenceAccessibility:=True)
 #If DEBUG Then
             For Each item In result
-                Debug.Assert(item.Kind <> SymbolKind.Namespace)
+                Debug.Assert(item.Symbol.Kind <> SymbolKind.Namespace)
             Next
 #End If
 
-            Return StaticCast(Of ISymbol).From(result)
+            Return StaticCast(Of ISymbol).From(result.WithoutAnnotationSymbols())
         End Function
 
         ''' <summary>
@@ -1685,10 +1710,10 @@ _Default:
             Dim result = LookupSymbolsInternal(position, ToLanguageSpecific(container), name, LookupOptions.MustNotBeInstance Or LookupOptions.IgnoreExtensionMethods, useBaseReferenceAccessibility:=False)
 #If DEBUG Then
             For Each item In result
-                Debug.Assert(item.Kind <> SymbolKind.Namespace OrElse DirectCast(item, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
+                Debug.Assert(item.Symbol.Kind <> SymbolKind.Namespace OrElse DirectCast(item.Symbol, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
             Next
 #End If
-            Return StaticCast(Of ISymbol).From(result)
+            Return StaticCast(Of ISymbol).From(result.WithoutAnnotationSymbols())
         End Function
 
         ''' <summary>
@@ -1718,10 +1743,10 @@ _Default:
 
 #If DEBUG Then
             For Each item In result
-                Debug.Assert(item.Kind <> SymbolKind.Namespace OrElse DirectCast(item, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
+                Debug.Assert(item.Symbol.Kind <> SymbolKind.Namespace OrElse DirectCast(item.Symbol, NamespaceSymbol).NamespaceKind <> NamespaceKindNamespaceGroup)
             Next
 #End If
-            Return StaticCast(Of ISymbol).From(result)
+            Return StaticCast(Of ISymbol).From(result.WithoutAnnotationSymbols())
         End Function
 
         ''' <summary>
@@ -1745,10 +1770,10 @@ _Default:
             Dim result = LookupSymbolsInternal(position, container:=Nothing, name:=name, options:=LookupOptions.LabelsOnly, useBaseReferenceAccessibility:=False)
 #If DEBUG Then
             For Each item In result
-                Debug.Assert(item.Kind <> SymbolKind.Namespace)
+                Debug.Assert(item.Symbol.Kind <> SymbolKind.Namespace)
             Next
 #End If
-            Return StaticCast(Of ISymbol).From(result)
+            Return StaticCast(Of ISymbol).From(result.WithoutAnnotationSymbols())
         End Function
 
         ''' <summary>
@@ -1817,7 +1842,7 @@ _Default:
                  container As NamespaceOrTypeSymbol,
                  name As String,
                  options As LookupOptions,
-                 useBaseReferenceAccessibility As Boolean) As ImmutableArray(Of Symbol)
+                 useBaseReferenceAccessibility As Boolean) As ImmutableArray(Of SymbolWithAnnotationSymbols)
 
             Debug.Assert((options And LookupOptions.UseBaseReferenceAccessibility) = 0, "Use the useBaseReferenceAccessibility parameter.")
             If useBaseReferenceAccessibility Then
@@ -1829,7 +1854,7 @@ _Default:
 
             Dim binder = Me.GetEnclosingBinder(position)
             If binder Is Nothing Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             If useBaseReferenceAccessibility Then
@@ -1849,7 +1874,7 @@ _Default:
                 Dim info = LookupSymbolsInfo.GetInstance()
                 Me.AddLookupSymbolsInfo(position, info, container, options)
 
-                Dim results = ArrayBuilder(Of Symbol).GetInstance(info.Count)
+                Dim results = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance(info.Count)
 
                 For Each foundName In info.Names
                     AppendSymbolsWithName(results, foundName, binder, container, options, info)
@@ -1859,17 +1884,17 @@ _Default:
 
                 Dim sealedResults = results.ToImmutableAndFree()
 
-                Dim builder As ArrayBuilder(Of Symbol) = Nothing
+                Dim builder As ArrayBuilder(Of SymbolWithAnnotationSymbols) = Nothing
                 Dim pos = 0
                 For Each result In sealedResults
                     ' Special case: we want to see constructors, even though they can't be referenced by name.
-                    If result.CanBeReferencedByName OrElse
-                        (result.Kind = SymbolKind.Method AndAlso DirectCast(result, MethodSymbol).MethodKind = MethodKind.Constructor) Then
+                    If result.Symbol.CanBeReferencedByName OrElse
+                        (result.Symbol.Kind = SymbolKind.Method AndAlso DirectCast(result.Symbol, MethodSymbol).MethodKind = MethodKind.Constructor) Then
                         If builder IsNot Nothing Then
                             builder.Add(result)
                         End If
                     ElseIf builder Is Nothing Then
-                        builder = ArrayBuilder(Of Symbol).GetInstance()
+                        builder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
                         builder.AddRange(sealedResults, pos)
                     End If
 
@@ -1884,7 +1909,7 @@ _Default:
 
                 Me.AddLookupSymbolsInfo(position, info, container, options)
 
-                Dim results = ArrayBuilder(Of Symbol).GetInstance(info.Count)
+                Dim results = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance(info.Count)
 
                 AppendSymbolsWithName(results, name, binder, container, options, info)
 
@@ -1895,7 +1920,7 @@ _Default:
             End If
         End Function
 
-        Private Sub AppendSymbolsWithName(results As ArrayBuilder(Of Symbol), name As String, binder As Binder, container As NamespaceOrTypeSymbol, options As LookupOptions, info As LookupSymbolsInfo)
+        Private Sub AppendSymbolsWithName(results As ArrayBuilder(Of SymbolWithAnnotationSymbols), name As String, binder As Binder, container As NamespaceOrTypeSymbol, options As LookupOptions, info As LookupSymbolsInfo)
             Dim arities As LookupSymbolsInfo.IArityEnumerable = Nothing
             Dim uniqueSymbol As Symbol = Nothing
 
@@ -1903,7 +1928,7 @@ _Default:
                 If uniqueSymbol IsNot Nothing Then
                     ' This name mapped to something unique.  We don't need to proceed
                     ' with a costly lookup.  Just add it straight to the results.
-                    results.Add(uniqueSymbol)
+                    results.Add(uniqueSymbol.WithDefaultAnnotationSymbols())
                 Else
                     ' The name maps to multiple symbols. Actually do a real lookup so 
                     ' that we will properly figure out hiding and whatnot.
@@ -1924,11 +1949,11 @@ _Default:
                                   name As String,
                                   arities As LookupSymbolsInfo.IArityEnumerable,
                                   options As LookupOptions,
-                                  results As ArrayBuilder(Of Symbol))
+                                  results As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             Debug.Assert(results IsNot Nothing)
 
-            Dim uniqueSymbols = PooledHashSet(Of Symbol).GetInstance()
-            Dim tempResults = ArrayBuilder(Of Symbol).GetInstance(arities.Count)
+            Dim uniqueSymbols = PooledHashSet(Of SymbolWithAnnotationSymbols).GetInstance()
+            Dim tempResults = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance(arities.Count)
 
             For Each knownArity In arities
                 ' TODO: What happens here if options has LookupOptions.AllMethodsOfAnyArity bit set?
@@ -1950,7 +1975,7 @@ _Default:
                                   name As String,
                                   arity As Integer,
                                   options As LookupOptions,
-                                  results As ArrayBuilder(Of Symbol))
+                                  results As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             If name = WellKnownMemberNames.InstanceConstructorName Then  ' intentionally case sensitive; constructors always exactly ".ctor".
                 ' Constructors have very different lookup rules.
                 LookupInstanceConstructors(binder, container, options, results)
@@ -1975,8 +2000,8 @@ _Default:
                 If result.HasDiagnostic Then
                     ' In the ambiguous symbol case, we have a good symbol with a diagnostics that
                     ' mentions the other symbols. Union everything together with a set to prevent dups.
-                    Dim symbolSet = PooledHashSet(Of Symbol).GetInstance()
-                    Dim symBuilder = ArrayBuilder(Of Symbol).GetInstance()
+                    Dim symbolSet = PooledHashSet(Of SymbolWithAnnotationSymbols).GetInstance()
+                    Dim symBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
                     AddSymbolsFromDiagnosticInfo(symBuilder, result.Diagnostic)
                     symbolSet.UnionWith(symBuilder)
                     symbolSet.UnionWith(result.Symbols)
@@ -1984,9 +2009,9 @@ _Default:
 
                     results.AddRange(symbolSet)
                     symbolSet.Free()
-                ElseIf result.HasSingleSymbol AndAlso result.SingleSymbol.Kind = SymbolKind.Namespace AndAlso
-                       DirectCast(result.SingleSymbol, NamespaceSymbol).NamespaceKind = NamespaceKindNamespaceGroup Then
-                    results.AddRange(DirectCast(result.SingleSymbol, NamespaceSymbol).ConstituentNamespaces)
+                ElseIf result.HasSingleSymbol AndAlso result.SingleSymbol.Symbol.Kind = SymbolKind.Namespace AndAlso
+                       DirectCast(result.SingleSymbol.Symbol, NamespaceSymbol).NamespaceKind = NamespaceKindNamespaceGroup Then
+                    results.AddRange(DirectCast(result.SingleSymbol.Symbol, NamespaceSymbol).ConstituentNamespaces.WithDefaultAnnotationSymbols())
                 Else
                     results.AddRange(result.Symbols)
                 End If
@@ -1999,7 +2024,7 @@ _Default:
             binder As Binder,
             container As NamespaceOrTypeSymbol,
             options As LookupOptions,
-            results As ArrayBuilder(Of Symbol)
+            results As ArrayBuilder(Of SymbolWithAnnotationSymbols)
         )
             Debug.Assert(results IsNot Nothing)
 
@@ -2015,7 +2040,7 @@ _Default:
                 End If
             End If
 
-            results.AddRange(constructors)
+            results.AddRange(constructors.WithDefaultAnnotationSymbols())
         End Sub
 
         ''' <summary>
@@ -2394,7 +2419,7 @@ _Default:
                     ' NB: "binder", not "blockBinder", so that we don't incorrectly mark imports as used.
                     binder.Lookup(lookupResult, identifierSyntax.Identifier.ValueText, 0, Nothing, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
                     If lookupResult.IsGood Then
-                        Dim sym As LocalSymbol = TryCast(lookupResult.Symbols(0), LocalSymbol)
+                        Dim sym As LocalSymbol = TryCast(lookupResult.Symbols(0).Symbol, LocalSymbol)
                         If sym IsNot Nothing AndAlso sym.IdentifierToken = identifierSyntax.Identifier Then
                             Return sym
                         End If
@@ -2780,7 +2805,7 @@ _Default:
 
             Dim containingInvocationInfo As SymbolInfo = GetExpressionSymbolInfo(containingInvocation, SymbolInfoOptions.PreferConstructorsToType Or SymbolInfoOptions.ResolveAliases, cancellationToken)
 
-            Return FindNameParameterInfo(containingInvocationInfo.GetAllSymbols().Cast(Of Symbol).ToImmutableArray(),
+            Return FindNameParameterInfo(containingInvocationInfo.GetAllSymbols().Cast(Of Symbol).ToImmutableArray().WithDefaultAnnotationSymbols(),
                                          argumentName,
                                          containingInvocationInfo.CandidateReason)
         End Function
@@ -2816,7 +2841,7 @@ _Default:
             ' Determine the symbols, resultKind, and member group.
             Dim resultKind As LookupResultKind = LookupResultKind.Empty
             Dim memberGroup As ImmutableArray(Of Symbol) = Nothing
-            Dim containingInvocationInfosymbols As ImmutableArray(Of Symbol) = GetSemanticSymbols(summary,
+            Dim containingInvocationInfoSymbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = GetSemanticSymbols(summary,
                                                                                                  Nothing,
                                                                                                  SymbolInfoOptions.PreferConstructorsToType Or SymbolInfoOptions.ResolveAliases,
                                                                                                  resultKind,
@@ -2827,16 +2852,16 @@ _Default:
                                          If(resultKind = LookupResultKind.Good, CandidateReason.None, resultKind.ToCandidateReason()))
         End Function
 
-        Private Function FindNameParameterInfo(invocationInfosymbols As ImmutableArray(Of Symbol),
+        Private Function FindNameParameterInfo(invocationInfosymbols As ImmutableArray(Of SymbolWithAnnotationSymbols),
                                                arGumentName As String,
                                                reason As CandidateReason) As SymbolInfo
 
-            Dim symbols As ArrayBuilder(Of Symbol) = ArrayBuilder(Of Symbol).GetInstance()
+            Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
 
             For Each invocationSym In invocationInfosymbols
                 Dim param As ParameterSymbol = FindNamedParameter(invocationSym, arGumentName)
                 If param IsNot Nothing Then
-                    symbols.Add(param)
+                    symbols.Add(param.WithDefaultAnnotationSymbols())
                 End If
             Next
 
@@ -2844,18 +2869,18 @@ _Default:
                 symbols.Free()
                 Return SymbolInfo.None
             Else
-                Return SymbolInfoFactory.Create(StaticCast(Of ISymbol).From(symbols.ToImmutableAndFree()), reason)
+                Return SymbolInfoFactory.Create(symbols.ToImmutableAndFree(), reason)
             End If
         End Function
 
         ' Find the first parameter, if any, on method or property symbol named "argumentName"
-        Private Function FindNamedParameter(symbol As Symbol, argumentName As String) As ParameterSymbol
+        Private Function FindNamedParameter(symbol As SymbolWithAnnotationSymbols, argumentName As String) As ParameterSymbol
             Dim params As ImmutableArray(Of ParameterSymbol)
 
-            If symbol.Kind = SymbolKind.Method Then
-                params = DirectCast(symbol, MethodSymbol).Parameters
-            ElseIf symbol.Kind = SymbolKind.Property Then
-                params = DirectCast(symbol, PropertySymbol).Parameters
+            If symbol.Symbol.Kind = SymbolKind.Method Then
+                params = DirectCast(symbol.Symbol, MethodSymbol).Parameters
+            ElseIf symbol.Symbol.Kind = SymbolKind.Property Then
+                params = DirectCast(symbol.Symbol, PropertySymbol).Parameters
             Else
                 Return Nothing
             End If
@@ -3173,9 +3198,9 @@ _Default:
                        Nothing)
         End Function
 
-        Protected NotOverridable Overrides Function GetSpeculativeAliasInfoCore(position As Integer, nameSyntax As SyntaxNode, bindingOption As SpeculativeBindingOption) As IAliasSymbol
-            Return If(TypeOf nameSyntax Is IdentifierNameSyntax,
-                       GetSpeculativeAliasInfo(position, DirectCast(nameSyntax, IdentifierNameSyntax), bindingOption),
+        Protected NotOverridable Overrides Function GetSpeculativeAliasInfoCore(position As Integer, nameSyntax As SyntaxNode, bindingOption As SpeculativeBindingOption) As AliasInfo
+            Return If(TypeOf nameSyntax Is SimpleNameSyntax,
+                       GetSpeculativeAliasInfo(position, DirectCast(nameSyntax, SimpleNameSyntax), bindingOption),
                        Nothing)
         End Function
 
@@ -3187,12 +3212,12 @@ _Default:
             Return GetTypeInfoForNode(node, cancellationToken)
         End Function
 
-        Protected NotOverridable Overrides Function GetAliasInfoCore(node As SyntaxNode, Optional cancellationToken As CancellationToken = Nothing) As IAliasSymbol
+        Protected NotOverridable Overrides Function GetAliasInfoCore(node As SyntaxNode, Optional cancellationToken As CancellationToken = Nothing) As AliasInfo
             If node Is Nothing Then
                 Throw New ArgumentNullException(NameOf(node))
             End If
 
-            Dim nameSyntax = TryCast(node, IdentifierNameSyntax)
+            Dim nameSyntax = TryCast(node, SimpleNameSyntax)
             If nameSyntax IsNot Nothing Then
                 Return GetAliasInfo(nameSyntax, cancellationToken)
             End If

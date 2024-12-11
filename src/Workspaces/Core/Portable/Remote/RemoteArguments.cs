@@ -235,7 +235,9 @@ internal sealed class SerializableSymbolGroup(HashSet<SerializableSymbolAndProje
     public static SerializableSymbolGroup Dehydrate(Solution solution, SymbolGroup group, CancellationToken cancellationToken)
     {
         return new SerializableSymbolGroup(new HashSet<SerializableSymbolAndProjectId>(
-            group.Symbols.Select(s => SerializableSymbolAndProjectId.Dehydrate(solution, s, cancellationToken))));
+            group.Symbols
+                .Where(s => solution.GetOriginatingProject(s) is not null) // WORKAROUND(sanmuru): Exclude those unserializable symbols like pointer and function pointer that cannot find their originating projects.
+                .Select(s => SerializableSymbolAndProjectId.Dehydrate(solution, s, cancellationToken))));
     }
 }
 

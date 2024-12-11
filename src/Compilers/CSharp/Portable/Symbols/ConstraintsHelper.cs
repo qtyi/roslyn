@@ -831,6 +831,44 @@ hasRelatedInterfaces:
             return result;
         }
 
+        public static bool CheckConstraints(
+            this AliasSymbol alias,
+            ImmutableArray<TypeWithAnnotations> typeArguments,
+            in CheckConstraintsArgs args,
+            SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax)
+        {
+            if (!RequiresChecking(alias))
+            {
+                return true;
+            }
+
+            Debug.Assert(alias.Arity == typeArguments.Length && alias.Arity == typeArgumentsSyntax.Count);
+
+            var diagnosticsBuilder = ArrayBuilder<TypeParameterDiagnosticInfo>.GetInstance();
+            ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder = null;
+            var result = CheckAliasConstraints(
+                alias,
+                typeArguments,
+                in args,
+                diagnosticsBuilder,
+                nullabilityDiagnosticsBuilderOpt: args.IncludeNullability ? diagnosticsBuilder : null,
+                ref useSiteDiagnosticsBuilder);
+
+            if (useSiteDiagnosticsBuilder != null)
+            {
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder);
+            }
+
+            foreach (var pair in diagnosticsBuilder)
+            {
+                Debug.Assert(pair.TypeParameter.Ordinal < typeArgumentsSyntax.Count);
+                args.Diagnostics.Add(pair.UseSiteInfo, typeArgumentsSyntax[pair.TypeParameter.Ordinal].Location);
+            }
+
+            diagnosticsBuilder.Free();
+            return result;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckTypeConstraints(
             NamedTypeSymbol type,
@@ -864,6 +902,27 @@ hasRelatedInterfaces:
                 method.TypeSubstitution,
                 ((MethodSymbol)method.OriginalDefinition).TypeParameters,
                 method.TypeArgumentsWithAnnotations,
+                diagnosticsBuilder,
+                nullabilityDiagnosticsBuilderOpt,
+                ref useSiteDiagnosticsBuilder,
+                skipParameters);
+        }
+
+        private static bool CheckAliasConstraints(
+            AliasSymbol alias,
+            ImmutableArray<TypeWithAnnotations> typeArguments,
+            in CheckConstraintsArgs args,
+            ArrayBuilder<TypeParameterDiagnosticInfo> diagnosticsBuilder,
+            ArrayBuilder<TypeParameterDiagnosticInfo> nullabilityDiagnosticsBuilderOpt,
+            ref ArrayBuilder<TypeParameterDiagnosticInfo> useSiteDiagnosticsBuilder,
+            BitVector skipParameters = default(BitVector))
+        {
+            return CheckConstraints(
+                alias,
+                in args,
+                new TypeMap(alias.TypeParameters, typeArguments),
+                alias.TypeParameters,
+                typeArguments,
                 diagnosticsBuilder,
                 nullabilityDiagnosticsBuilderOpt,
                 ref useSiteDiagnosticsBuilder,
@@ -1587,6 +1646,16 @@ hasRelatedInterfaces:
             }
 
             Debug.Assert(method.ConstructedFrom != method);
+            return true;
+        }
+
+        public static bool RequiresChecking(AliasSymbol alias)
+        {
+            if (alias.Arity == 0)
+            {
+                return false;
+            }
+
             return true;
         }
 

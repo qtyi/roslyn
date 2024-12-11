@@ -696,6 +696,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private static bool IsTypeLessVisibleThan(TypeSymbol type, Symbol sym, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {
+            // Disable accessibility check in alias.
+            if (sym.Kind == SymbolKind.Alias)
+            {
+                return false;
+            }
+
             switch (type.TypeKind)
             {
                 case TypeKind.Class:

@@ -554,7 +554,7 @@ class F
             var model = comp.GetSemanticModel(tree);
 
             var expr = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(tree));
-            var alias = model.GetAliasInfo(expr);
+            var alias = model.GetAliasInfo(expr).Alias;
             Assert.Equal(SymbolKind.Alias, alias.Kind);
             Assert.Equal("Q=E", alias.ToTestDisplayString());
 

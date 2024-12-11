@@ -31,6 +31,7 @@ internal partial class CSharpSimplificationService()
     private static readonly ImmutableArray<AbstractReducer> s_reducers =
         [
             new CSharpVarReducer(),
+            new CSharpTypeReducer(),
             new CSharpNameReducer(),
             new CSharpNullableAnnotationReducer(),
             new CSharpCastReducer(),

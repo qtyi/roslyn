@@ -163,7 +163,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 GoTo Report_ERR_InterpolatedStringFactoryError
             End If
 
-            Dim methodGroup = New BoundMethodGroup(node.Syntax, Nothing, lookup.Symbols.ToDowncastedImmutable(Of MethodSymbol), lookup.Kind, Nothing, QualificationKind.QualifiedViaTypeName).MakeCompilerGenerated()
+            Dim methodGroup = New BoundMethodGroup(node.Syntax, Nothing, lookup.Symbols.ToImmutable().WithoutAnnotationSymbols(Of MethodSymbol)(), lookup.Kind, Nothing, QualificationKind.QualifiedViaTypeName).MakeCompilerGenerated()
             lookup.Free()
 
             Dim formatStringBuilderHandle = PooledStringBuilder.GetInstance()

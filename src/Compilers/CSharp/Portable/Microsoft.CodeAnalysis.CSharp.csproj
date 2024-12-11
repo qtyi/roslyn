@@ -33,7 +33,6 @@
   <ItemGroup>
     <None Include="BoundTree\BoundNodes.xml" />
     <None Include="BoundTree\BoundNodes.xsd" />
-    <None Include="Generated\CSharp.Generated.g4" />
     <AdditionalFiles Include="Syntax\Syntax.xml" />
     <None Include="Syntax\Syntax.xsd" />
     <None Include="UseSiteDiagnosticsCheckEnforcer\BaseLine.txt" />
@@ -80,14 +79,14 @@
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.EditorFeatures.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.CSharp.Features.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.CSharp.EditorFeatures.UnitTests" />
-    <InternalsVisibleTo Include="Microsoft.CodeAnalysis.CSharp.Features.UnitTests"/>
+    <InternalsVisibleTo Include="Microsoft.CodeAnalysis.CSharp.Features.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.EditorFeatures2.UnitTests" />
     <InternalsVisibleTo Include="CompilerBenchmarks" />
     <InternalsVisibleTo Include="Microsoft.Build.Tasks.CodeAnalysis.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.Features.Test.Utilities" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.LanguageServer.Protocol.Test.Utilities" />
     <InternalsVisibleTo Include="SemanticSearch.BuildTask.UnitTests" />
-    <InternalsVisibleTo Include="Roslyn.Test.PdbUtilities"/>
+    <InternalsVisibleTo Include="Roslyn.Test.PdbUtilities" />
   </ItemGroup>
   <Import Project="..\CSharpAnalyzerDriver\CSharpAnalyzerDriver.projitems" Label="Shared" />
 </Project>

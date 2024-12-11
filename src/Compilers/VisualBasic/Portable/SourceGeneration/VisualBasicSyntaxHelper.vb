@@ -111,8 +111,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         Private Shared Sub ProcessImportsClause(aliases As ArrayBuilder(Of (aliasName As String, symbolName As String)), clause As InternalSyntax.ImportsClauseSyntax)
             Dim importsClause = TryCast(clause, InternalSyntax.SimpleImportsClauseSyntax)
-            If importsClause?.Alias IsNot Nothing Then
-                aliases.Add((importsClause.Alias.Identifier.ValueText, GetUnqualifiedIdentifierOfName(importsClause.Name)))
+            Dim importedName = TryCast(importsClause?.NamespaceOrType, InternalSyntax.NameSyntax)
+            If importsClause?.Alias IsNot Nothing AndAlso importedName IsNot Nothing Then
+                ' We only care about aliases from one name to another name.  e.g. `Imports X = A.B.C;`  That's because
+                ' the caller Is only interested in finding a fully-qualified-metadata-name to an attribute.
+                aliases.Add((importsClause.Alias.Identifier.ValueText, GetUnqualifiedIdentifierOfName(importedName)))
             End If
         End Sub
 

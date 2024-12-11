@@ -56,6 +56,7 @@ internal sealed partial class SymbolEquivalenceComparer
         private int GetHashCodeWorker(ISymbol x, int currentHash)
             => x.Kind switch
             {
+                SymbolKind.Alias => CombineHashCodes((IAliasSymbol)x, currentHash),
                 SymbolKind.ArrayType => CombineHashCodes((IArrayTypeSymbol)x, currentHash),
                 SymbolKind.Assembly => CombineHashCodes((IAssemblySymbol)x, currentHash),
                 SymbolKind.Event => CombineHashCodes((IEventSymbol)x, currentHash),
@@ -74,6 +75,13 @@ internal sealed partial class SymbolEquivalenceComparer
                 SymbolKind.Preprocessing => CombineHashCodes((IPreprocessingSymbol)x, currentHash),
                 _ => -1,
             };
+
+        private int CombineHashCodes(IAliasSymbol x, int currentHash)
+        {
+            return
+                Hash.Combine(x.Arity,
+                GetHashCode(x.Target, currentHash));
+        }
 
         private int CombineHashCodes(IArrayTypeSymbol x, int currentHash)
         {
@@ -261,6 +269,7 @@ internal sealed partial class SymbolEquivalenceComparer
             Debug.Assert(
                 (x.TypeParameterKind == TypeParameterKind.Method && IsConstructedFromSelf(x.DeclaringMethod!)) ||
                 (x.TypeParameterKind == TypeParameterKind.Type && IsConstructedFromSelf(x.ContainingType)) ||
+                x.TypeParameterKind == TypeParameterKind.Alias ||
                 x.TypeParameterKind == TypeParameterKind.Cref);
 
             currentHash =
@@ -276,6 +285,11 @@ internal sealed partial class SymbolEquivalenceComparer
             {
                 // Anonymous type type parameters compare by index as well to prevent
                 // recursion.
+                return currentHash;
+            }
+
+            if (x.TypeParameterKind == TypeParameterKind.Alias)
+            {
                 return currentHash;
             }
 

@@ -15,6 +15,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.Text
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
     Partial Public Class VisualBasicCompilation
@@ -622,7 +623,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             Dim reference As CrefReferenceSyntax = DirectCast(attr, XmlCrefAttributeSyntax).Reference
                             Dim useSiteInfo = binder.GetNewCompoundUseSiteInfo(_diagnostics)
                             Dim diagnostics = BindingDiagnosticBag.GetInstance(_diagnostics)
-                            Dim bindResult As ImmutableArray(Of Symbol) = binder.BindInsideCrefAttributeValue(reference, preserveAliases:=False,
+                            Dim bindResult As ImmutableArray(Of SymbolWithAnnotationSymbols) = binder.BindInsideCrefAttributeValue(reference, preserveAliases:=False,
                                                                                                               diagnosticBag:=diagnostics, useSiteInfo:=useSiteInfo)
                             _diagnostics.AddDependencies(diagnostics)
                             _diagnostics.AddDependencies(useSiteInfo)
@@ -651,12 +652,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                 Dim errid As ERRID = errid.WRN_XMLDocCrefAttributeNotFound1
 
                                 For Each symbol In bindResult
-                                    If symbol.Kind = SymbolKind.TypeParameter Then
-                                        errid = errid.WRN_XMLDocCrefToTypeParameter
+                                    If symbol.Symbol.Kind = SymbolKind.TypeParameter Then
+                                        errid = ERRID.WRN_XMLDocCrefToTypeParameter
                                         Continue For
                                     End If
 
-                                    Dim id As String = symbol.OriginalDefinition.GetDocumentationCommentId()
+                                    Dim id As String = symbol.Symbol.OriginalDefinition.GetDocumentationCommentId()
                                     If id IsNot Nothing Then
 
                                         ' Override only if this is the first id or the new symbol's location wins; 
@@ -664,10 +665,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                         ' can be found by the name, just deterministically choose which one to use
                                         If symbolCommentId Is Nothing OrElse
                                                 Me._compilation.CompareSourceLocations(
-                                                    smallestSymbol.Locations(0), symbol.Locations(0)) > 0 Then
+                                                    smallestSymbol.Locations(0), symbol.Symbol.Locations(0)) > 0 Then
 
                                             symbolCommentId = id
-                                            smallestSymbol = symbol
+                                            smallestSymbol = symbol.Symbol
                                         End If
                                     End If
                                 Next
@@ -759,7 +760,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             Dim binder As binder = Me.GetOrCreateBinder(type)
                             Dim identifier As IdentifierNameSyntax = DirectCast(attr, XmlNameAttributeSyntax).Reference
                             Dim useSiteInfo = binder.GetNewCompoundUseSiteInfo(Me._diagnostics)
-                            Dim bindResult As ImmutableArray(Of Symbol) = binder.BindXmlNameAttributeValue(identifier, useSiteInfo)
+                            Dim bindResult As ImmutableArray(Of SymbolWithAnnotationSymbols) = binder.BindXmlNameAttributeValue(identifier, useSiteInfo)
 
                             Me._diagnostics.AddDependencies(useSiteInfo)
 

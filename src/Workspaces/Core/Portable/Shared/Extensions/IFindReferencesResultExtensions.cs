@@ -110,6 +110,135 @@ internal static partial class IFindReferencesResultExtensions
         return q.ToImmutableArray();
     }
 
+    public static ImmutableArray<ReferencedSymbol> FilterToArrayTypeMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        IArrayTypeSymbol? arrayTypeSymbol)
+    {
+        if (arrayTypeSymbol == null)
+        {
+            return result;
+        }
+
+        return ImmutableArray<ReferencedSymbol>.Empty;
+    }
+
+    public static ImmutableArray<ReferencedSymbol> FilterToDynamicTypeMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        IDynamicTypeSymbol? dynamicTypeSymbol)
+    {
+        if (dynamicTypeSymbol == null)
+        {
+            return result;
+        }
+
+        return ImmutableArray<ReferencedSymbol>.Empty;
+    }
+
+    public static ImmutableArray<ReferencedSymbol> FilterToFunctionPointerTypeMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        IFunctionPointerTypeSymbol? functionPointerTypeSymbol)
+    {
+        if (functionPointerTypeSymbol == null)
+        {
+            return result;
+        }
+
+        return ImmutableArray<ReferencedSymbol>.Empty;
+    }
+
+    public static ImmutableArray<ReferencedSymbol> FilterToNamedTypeMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        INamedTypeSymbol? namedTypeSymbol)
+    {
+        if (namedTypeSymbol == null)
+        {
+            return result;
+        }
+
+        if (!namedTypeSymbol.IsTupleType)
+        {
+            return result;
+        }
+
+        var q = from r in result
+                let namedTypeLocations = r.Locations.Where(loc =>
+                {
+                    var syntaxFacts = loc.Document.GetRequiredLanguageService<ISyntaxFactsService>();
+                    var node = loc.Location.FindNode(getInnermostNodeForTie: true, default);
+                    return !syntaxFacts.IsTupleType(node);
+                }).ToImmutableArray()
+                where namedTypeLocations.Any()
+                select new ReferencedSymbol(r.Definition, namedTypeLocations);
+
+        return q.ToImmutableArray();
+    }
+
+    public static ImmutableArray<ReferencedSymbol> FilterToPointerTypeMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        IPointerTypeSymbol? pointerTypeSymbol)
+    {
+        if (pointerTypeSymbol == null)
+        {
+            return result;
+        }
+
+        return ImmutableArray<ReferencedSymbol>.Empty;
+    }
+
+    public static ImmutableArray<ReferencedSymbol> FilterToTypeParameterMatches(
+        this ImmutableArray<ReferencedSymbol> result,
+        ITypeParameterSymbol? typeParameterSymbol)
+    {
+        if (typeParameterSymbol == null)
+        {
+            return result;
+        }
+
+        if (typeParameterSymbol.TypeParameterKind != TypeParameterKind.Alias)
+        {
+            return result;
+        }
+
+        var q = from r in result
+                let typeParameterLocations = r.Locations.Where(loc =>
+                {
+                    // Reference cannot be out of the span of using alias declaration.  Before expensive
+                    // syntax check, we simply check if it is a location of an alias identifier.
+                    if (loc.Alias != null)
+                    {
+                        return false;
+                    }
+
+                    var syntaxFacts = loc.Document.GetRequiredLanguageService<ISyntaxFactsService>();
+                    var token = loc.Location.FindToken(default);
+
+                    // Filter the case that reference to alias name.  In non error case, alias name should
+                    // not be the same as type parameter name.
+                    if (!syntaxFacts.StringComparer.Equals(token.Text, typeParameterSymbol.Name))
+                    {
+                        return false;
+                    }
+
+                    // The error case, alias name and type parameter name are equal, check if `token` is
+                    // the exact alias name identifier.
+                    var usingDirective = token.GetAncestor(node => syntaxFacts.IsUsingAliasDirective(node));
+                    if (usingDirective != null)
+                    {
+                        syntaxFacts.GetPartsOfUsingAliasDirective(usingDirective, out var _, out var identifier, out var _, out var _);
+                        if (identifier == token)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }).ToImmutableArray()
+                where typeParameterLocations.Any()
+                select new ReferencedSymbol(r.Definition, typeParameterLocations);
+
+        return q.ToImmutableArray();
+    }
+
     public static ImmutableArray<ReferencedSymbol> FilterNonMatchingMethodNames(
         this ImmutableArray<ReferencedSymbol> result,
         Solution solution,

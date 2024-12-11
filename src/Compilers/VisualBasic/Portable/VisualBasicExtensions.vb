@@ -1560,30 +1560,30 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Function
 
         ''' <summary>
-        ''' If "nameSyntax" resolves to an alias name, return the AliasSymbol corresponding
-        ''' to A. Otherwise return null.
+        ''' If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        ''' to A. Otherwise return <see cref="AliasInfo.None"/>.
         ''' </summary>
         <Extension>
-        Public Function GetAliasInfo(semanticModel As SemanticModel, nameSyntax As IdentifierNameSyntax, Optional cancellationToken As CancellationToken = Nothing) As IAliasSymbol
+        Public Function GetAliasInfo(semanticModel As SemanticModel, nameSyntax As SimpleNameSyntax, Optional cancellationToken As CancellationToken = Nothing) As AliasInfo
             Dim vbmodel = TryCast(semanticModel, VBSemanticModel)
             If vbmodel IsNot Nothing Then
                 Return vbmodel.GetAliasInfo(nameSyntax, cancellationToken)
             Else
-                Return Nothing
+                Return AliasInfo.None
             End If
         End Function
 
         ''' <summary>
         ''' Binds the name in the context of the specified location and sees if it resolves to an
-        ''' alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        ''' alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         ''' </summary>
         <Extension>
-        Public Function GetSpeculativeAliasInfo(semanticModel As SemanticModel, position As Integer, nameSyntax As IdentifierNameSyntax, bindingOption As SpeculativeBindingOption) As IAliasSymbol
+        Public Function GetSpeculativeAliasInfo(semanticModel As SemanticModel, position As Integer, nameSyntax As SimpleNameSyntax, bindingOption As SpeculativeBindingOption) As AliasInfo
             Dim vbmodel = TryCast(semanticModel, VBSemanticModel)
             If vbmodel IsNot Nothing Then
                 Return vbmodel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption)
             Else
-                Return Nothing
+                Return AliasInfo.None
             End If
         End Function
 

@@ -58,21 +58,21 @@ namespace Microsoft.CodeAnalysis
         }
 
         /// <summary>
-        /// If "nameSyntax" resolves to an alias name, return the IAliasSymbol corresponding
-        /// to A. Otherwise return null.
+        /// If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="semanticModel"></param>
         /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
-        public static IAliasSymbol? GetAliasInfo(this SemanticModel semanticModel, SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        public static AliasInfo GetAliasInfo(this SemanticModel semanticModel, SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
             return semanticModel.GetAliasInfo(nameSyntax, cancellationToken);
         }
 
         /// <summary>
         /// Binds the name in the context of the specified location and sees if it resolves to an
-        /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="semanticModel"></param>
         /// <param name="position">A character position used to identify a declaration scope and
@@ -87,7 +87,7 @@ namespace Microsoft.CodeAnalysis
         /// expression should derive from TypeSyntax.</param>
         /// <remarks>The passed in name is interpreted as a stand-alone name, as if it
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
-        public static IAliasSymbol? GetSpeculativeAliasInfo(this SemanticModel semanticModel, int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
+        public static AliasInfo GetSpeculativeAliasInfo(this SemanticModel semanticModel, int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
         {
             return semanticModel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
         }

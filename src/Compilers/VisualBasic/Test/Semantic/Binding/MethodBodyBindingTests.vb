@@ -87,22 +87,22 @@ End Namespace
             lr = New LookupResult()
             meth1Context.Lookup(lr, "x", 0, Nothing, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(meth1.Parameters(0), lr.SingleSymbol)
+            Assert.Equal(meth1.Parameters(0), lr.SingleSymbol.Symbol)
 
             lr.Clear()
             meth1Context.Lookup(lr, "TParam1", 0, LookupOptions.NamespacesOrTypesOnly, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(meth1.TypeParameters(0), lr.SingleSymbol)
+            Assert.Equal(meth1.TypeParameters(0), lr.SingleSymbol.Symbol)
 
             lr.Clear()
             meth1Context.Lookup(lr, "TParam2", 0, LookupOptions.NamespacesOrTypesOnly, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(meth1.TypeParameters(1), lr.SingleSymbol)
+            Assert.Equal(meth1.TypeParameters(1), lr.SingleSymbol.Symbol)
 
             lr.Clear()
             meth1Context.Lookup(lr, "Q", 0, LookupOptions.NamespacesOrTypesOnly, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(classQ1, lr.SingleSymbol)
+            Assert.Equal(classQ1, lr.SingleSymbol.Symbol)
 
             Dim meth2Context As MethodBodyBinder = DirectCast(BinderBuilder.CreateBinderForMethodBody(DirectCast(meth2.ContainingModule, SourceModuleSymbol), meth2.SyntaxTree, meth2), MethodBodyBinder)
             model = DirectCast(compilation.GetSemanticModel(meth2Context.SyntaxTree), SyntaxTreeSemanticModel)
@@ -113,12 +113,12 @@ End Namespace
             lr.Clear()
             meth2Context.Lookup(lr, "y", 0, Nothing, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(meth2.Parameters(0), lr.SingleSymbol)
+            Assert.Equal(meth2.Parameters(0), lr.SingleSymbol.Symbol)
 
             lr.Clear()
             meth2Context.Lookup(lr, "Q", 0, LookupOptions.NamespacesOrTypesOnly, Nothing)
             Assert.True(lr.IsGood)
-            Assert.Equal(classQ2, lr.SingleSymbol)
+            Assert.Equal(classQ2, lr.SingleSymbol.Symbol)
 
             ' Get the mappings and check that they seem to be right.
             Dim meth1Stmts = meth1.BlockSyntax.Statements

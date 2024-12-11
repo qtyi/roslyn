@@ -288,6 +288,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 case SourceOrdinaryMethodSymbol _:
                 case SourceMemberContainerTypeSymbol _:
+                case AliasSymbolFromSyntax _:
                     modifyCompilation = true;
                     break;
                 case LocalFunctionSymbol _:

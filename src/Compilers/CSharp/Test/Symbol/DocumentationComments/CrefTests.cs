@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.Test.Utilities;
 using Roslyn.Test.Utilities;
 using Xunit;
 using SymbolExtensions = Microsoft.CodeAnalysis.Test.Utilities.SymbolExtensions;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 {
@@ -257,7 +258,7 @@ class Program { }
                 // (3,20): warning CS1574: XML comment has cref attribute 'Gibberish' that could not be resolved
                 // /// See <see cref="Gibberish"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "Gibberish").WithArguments("Gibberish"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [WorkItem(547000, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/547000")]
@@ -331,7 +332,7 @@ class Program { }
                 // (3,20): warning CS1574: XML comment has cref attribute '.ctor' that could not be resolved
                 // /// See <see cref=".ctor"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "").WithArguments(""));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -360,7 +361,7 @@ class Program { }
                 // (3,20): warning CS1574: XML comment has cref attribute '.cctor' that could not be resolved
                 // /// See <see cref=".cctor"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "").WithArguments(""));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -389,7 +390,7 @@ class Program { }
                 // (3,20): warning CS1574: XML comment has cref attribute '~Program' that could not be resolved
                 // /// See <see cref="~Program"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "").WithArguments(""));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -406,7 +407,7 @@ class Program { }
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Program");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -426,7 +427,7 @@ class Program
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Program").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -446,7 +447,7 @@ class Program<T> { }
                 // (3,20): warning CS1723: XML comment has cref attribute 'T' that refers to a type parameter
                 // /// See <see cref="T"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRefTypeVar, "T").WithArguments("T"));
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -471,7 +472,7 @@ class Derived : Base { }
                 // (8,20): warning CS1574: XML comment has cref attribute 'M' that could not be resolved
                 // /// See <see cref="M"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "M").WithArguments("M"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -498,7 +499,7 @@ class Derived : Base { }
             // As in dev11, we ignore the inherited method symbol.
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -520,7 +521,7 @@ class Outer
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Outer").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -540,7 +541,7 @@ class Program
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Program").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -563,7 +564,7 @@ class Program
                 // (5,24): warning CS1574: XML comment has cref attribute 'T' that could not be resolved
                 //     /// See <see cref="T"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "T").WithArguments("T"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -586,7 +587,7 @@ class Program
                 // (5,24): warning CS1574: XML comment has cref attribute 'p' that could not be resolved
                 //     /// See <see cref="p"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "p").WithArguments("p"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -609,7 +610,7 @@ class Program
                 // (5,24): warning CS1574: XML comment has cref attribute 'Item' that could not be resolved
                 //     /// See <see cref="Item"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "Item").WithArguments("Item"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -631,7 +632,7 @@ class Program
                 // (5,24): warning CS1574: XML comment has cref attribute 'x' that could not be resolved
                 //     /// See <see cref="x"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "x").WithArguments("x"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -664,7 +665,7 @@ class A
 
             var expectedSymbol = obsoleteType;
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -698,7 +699,7 @@ class A
 
             var expectedSymbol = testType.GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -739,7 +740,7 @@ static class D
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
-                Assert.Equal(SymbolKind.NamedType, GetReferencedSymbol(crefSyntax, compilation).Kind);
+                Assert.Equal(SymbolKind.NamedType, GetReferencedSymbol(crefSyntax, compilation).Symbol.Kind);
             }
         }
 
@@ -784,7 +785,7 @@ class C { }
             var compilation = CreateCompilationWithILAndMscorlib40(csharp, il);
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
-                Assert.Equal(SymbolKind.NamedType, GetReferencedSymbol(crefSyntax, compilation).Kind);
+                Assert.Equal(SymbolKind.NamedType, GetReferencedSymbol(crefSyntax, compilation).Symbol.Kind);
             }
         }
 
@@ -814,7 +815,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
-                Assert.Equal(SymbolKind.Method, GetReferencedSymbol(crefSyntax, compilation).Kind);
+                Assert.Equal(SymbolKind.Method, GetReferencedSymbol(crefSyntax, compilation).Symbol.Kind);
             }
         }
 
@@ -861,7 +862,7 @@ class C { }
             var compilation = CreateCompilationWithILAndMscorlib40(csharp, il);
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
-                Assert.Equal(SymbolKind.Method, GetReferencedSymbol(crefSyntax, compilation).Kind);
+                Assert.Equal(SymbolKind.Method, GetReferencedSymbol(crefSyntax, compilation).Symbol.Kind);
             }
         }
 
@@ -1180,8 +1181,8 @@ static class D
             {
                 string text = crefSyntax.ToString();
                 string arguments = text.Contains("C()") ? "C()" : text.Contains("C") ? "C" : text.Contains("D()") ? "D()" : "D";
-                Assert.Null(GetReferencedSymbol(crefSyntax, compilation,
-                    Diagnostic(ErrorCode.WRN_BadXMLRef, text).WithArguments(arguments)));
+                Assert.True(GetReferencedSymbol(crefSyntax, compilation,
+                    Diagnostic(ErrorCode.WRN_BadXMLRef, text).WithArguments(arguments)).IsDefault);
             }
         }
 
@@ -1205,14 +1206,14 @@ class C
             var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers("M").OfType<MethodSymbol>();
             var expectedWinner = expectedCandidates.Single(m => m.ParameterCount == 0);
 
-            Symbol actualWinner;
+            SymbolWithAnnotationSymbols actualWinner;
             var actualCandidates = GetReferencedSymbols(crefSyntax, compilation, out actualWinner,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'M'. Assuming 'C.M()', but could have also matched other overloads including 'C.M(int)'.
                 // /// See <see cref="M"/>.
                 Diagnostic(ErrorCode.WRN_AmbiguousXMLReference, "M").WithArguments("M", "C.M()", "C.M(int)"));
 
-            Assert.Equal(expectedWinner, actualWinner);
-            AssertEx.SetEqual(expectedCandidates.AsEnumerable(), actualCandidates.ToArray());
+            Assert.Equal(expectedWinner, actualWinner.Symbol);
+            AssertEx.SetEqual(expectedCandidates.AsEnumerable(), actualCandidates.Select(static s => s.Symbol));
         }
 
         [Fact]
@@ -1247,7 +1248,7 @@ class B { }
             // NOTE: As in Dev11, no warning is produced.
             var expectedSymbol = compilation.GlobalNamespace.GetMembers("B").OfType<SourceNamedTypeSymbol>().Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1269,7 +1270,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => m.Parameters.Single().Type.SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1291,7 +1292,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => !m.ParameterRefKinds.IsDefault);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1313,7 +1314,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => m.ParameterRefKinds.Single() == RefKind.Out);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1335,7 +1336,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => m.HasParamsParameter());
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1357,7 +1358,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => m.IsExtensionMethod);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1379,14 +1380,14 @@ class B
             var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M");
             var expectedWinner = expectedCandidates.OfType<MethodSymbol>().Single(m => !m.IsVararg);
 
-            Symbol actualWinner;
+            SymbolWithAnnotationSymbols actualWinner;
             var actualCandidates = GetReferencedSymbols(crefSyntax, compilation, out actualWinner,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'M()'. Assuming 'B.M()', but could have also matched other overloads including 'B.M(__arglist)'.
                 // /// See <see cref="M()"/>.
                 Diagnostic(ErrorCode.WRN_AmbiguousXMLReference, "M()").WithArguments("M()", "B.M()", "B.M(__arglist)"));
 
-            Assert.Equal(expectedWinner, actualWinner);
-            AssertEx.SetEqual(expectedCandidates, actualCandidates.ToArray());
+            Assert.Equal(expectedWinner, actualWinner.Symbol);
+            AssertEx.SetEqual(expectedCandidates, actualCandidates.Select(static s => s.Symbol));
         }
 
         [Fact]
@@ -1408,7 +1409,7 @@ class B
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
                 Single(m => m.IsVararg);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1427,9 +1428,9 @@ class B<T>
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
-            var typeArgument = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
+            var typeArgument = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
             Assert.NotEqual(expectedOriginalDefinitionSymbol.TypeParameters.Single(), typeArgument);
             Assert.Equal("T", typeArgument.Name);
             Assert.IsType<CrefTypeParameterSymbol>(typeArgument);
@@ -1452,9 +1453,9 @@ class B<T>
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
-            var typeArgument = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
+            var typeArgument = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
             Assert.NotEqual(expectedOriginalDefinitionSymbol.TypeParameters.Single(), typeArgument);
             Assert.Equal("U", typeArgument.Name);
             Assert.IsType<CrefTypeParameterSymbol>(typeArgument);
@@ -1478,9 +1479,9 @@ class B
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
-            var typeArgument = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
+            var typeArgument = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
             Assert.NotEqual(expectedOriginalDefinitionSymbol.TypeParameters.Single(), typeArgument);
             Assert.Equal("T", typeArgument.Name);
             Assert.IsType<CrefTypeParameterSymbol>(typeArgument);
@@ -1504,9 +1505,9 @@ class B
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
-            var typeArgument = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
+            var typeArgument = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
             Assert.NotEqual(expectedOriginalDefinitionSymbol.TypeParameters.Single(), typeArgument);
             Assert.Equal("U", typeArgument.Name);
             Assert.IsType<CrefTypeParameterSymbol>(typeArgument);
@@ -1533,7 +1534,7 @@ class B<T, T>
                 // /// See <see cref="T"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRefTypeVar, "T").WithArguments("T"));
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         // Keep code coverage happy.
@@ -1553,7 +1554,7 @@ class C<T, U, V>
 
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            var actualTypeParameters = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Cast<CrefTypeParameterSymbol>().ToArray();
+            var actualTypeParameters = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Cast<CrefTypeParameterSymbol>().ToArray();
 
             AssertEx.None(actualTypeParameters, p => p.IsFromCompilation(compilation));
             AssertEx.None(actualTypeParameters, p => p.IsImplicitlyDeclared);
@@ -1601,14 +1602,14 @@ class B
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>()
                 .Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
-            var typeArgument = actualSymbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
+            var typeArgument = actualSymbol.Symbol.GetMemberTypeArgumentsNoUseSiteDiagnostics().Single();
             Assert.NotEqual(expectedOriginalDefinitionSymbol.TypeParameters.Single(), typeArgument);
             Assert.Equal("U", typeArgument.Name);
             Assert.IsType<CrefTypeParameterSymbol>(typeArgument);
             Assert.Equal(0, ((TypeParameterSymbol)typeArgument).Ordinal);
-            Assert.Equal(typeArgument, actualSymbol.GetParameters().Single().Type);
+            Assert.Equal(typeArgument, actualSymbol.Symbol.GetParameters().Single().Type);
         }
 
         [Fact]
@@ -1631,10 +1632,10 @@ class A<M, N>
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMember<NamedTypeSymbol>("B").GetMember<MethodSymbol>("M");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
 
             var expectedOriginalParameterTypes = expectedOriginalDefinitionSymbol.Parameters.Select(p => p.Type).Cast<TypeParameterSymbol>();
-            var actualParameterTypes = actualSymbol.GetParameters().Select(p => p.Type).Cast<TypeParameterSymbol>();
+            var actualParameterTypes = actualSymbol.Symbol.GetParameters().Select(p => p.Type).Cast<TypeParameterSymbol>();
 
             AssertEx.Equal(expectedOriginalParameterTypes.Select(t => t.Ordinal), actualParameterTypes.Select(t => t.Ordinal));
             AssertEx.None(expectedOriginalParameterTypes.Zip(actualParameterTypes, object.Equals), x => x);
@@ -1658,21 +1659,21 @@ class A<T, U>
 
             // CONSIDER: In Dev11, this unambiguously matches M(U) (i.e. the last type parameter wins).
 
-            Symbol actualWinner;
+            SymbolWithAnnotationSymbols actualWinner;
             var actualCandidates = GetReferencedSymbols(crefSyntax, compilation, out actualWinner,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'A{T, T}.M(T)'. Assuming 'A<T, T>.M(T)', but could have also matched other overloads including 'A<T, T>.M(T)'.
                 // /// See <see cref="A{T, T}.M(T)"/>.
                 Diagnostic(ErrorCode.WRN_AmbiguousXMLReference, "A{T, T}.M(T)").WithArguments("A{T, T}.M(T)", "A<T, T>.M(T)", "A<T, T>.M(T)"));
 
-            Assert.False(actualWinner.IsDefinition);
+            Assert.False(actualWinner.Symbol.IsDefinition);
 
-            var actualParameterType = actualWinner.GetParameters().Single().Type;
-            AssertEx.All(actualWinner.ContainingType.TypeArguments(), typeParam => TypeSymbol.Equals(typeParam, actualParameterType, TypeCompareKind.ConsiderEverything2)); //CONSIDER: Would be different in Dev11.
+            var actualParameterType = actualWinner.Symbol.GetParameters().Single().Type;
+            AssertEx.All(actualWinner.Symbol.ContainingType.TypeArguments(), typeParam => TypeSymbol.Equals(typeParam, actualParameterType, TypeCompareKind.ConsiderEverything2)); //CONSIDER: Would be different in Dev11.
             Assert.Equal(1, ((TypeParameterSymbol)actualParameterType).Ordinal);
 
             Assert.Equal(2, actualCandidates.Length);
             Assert.Equal(actualWinner, actualCandidates[0]);
-            Assert.Equal(actualWinner.ContainingType.GetMembers(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
+            Assert.Equal(actualWinner.Symbol.ContainingType.GetMembers(actualWinner.Symbol.Name).Single(member => member != actualWinner.Symbol), actualCandidates[1].Symbol);
         }
 
         [Fact]
@@ -1696,21 +1697,21 @@ class A<T>
 
             // CONSIDER: In Dev11, this unambiguously matches M(U) (i.e. the last type parameter wins).
 
-            Symbol actualWinner;
+            SymbolWithAnnotationSymbols actualWinner;
             var actualCandidates = GetReferencedSymbols(crefSyntax, compilation, out actualWinner,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'A{T}.B{T}.M(T)'. Assuming 'A<T>.B<T>.M(T)', but could have also matched other overloads including 'A<T>.B<T>.M(T)'.
                 // /// See <see cref="A{T}.B{T}.M(T)"/>.
                 Diagnostic(ErrorCode.WRN_AmbiguousXMLReference, "A{T}.B{T}.M(T)").WithArguments("A{T}.B{T}.M(T)", "A<T>.B<T>.M(T)", "A<T>.B<T>.M(T)"));
 
-            Assert.False(actualWinner.IsDefinition);
+            Assert.False(actualWinner.Symbol.IsDefinition);
 
-            var actualParameterType = actualWinner.GetParameters().Single().Type;
-            Assert.Equal(actualParameterType, actualWinner.ContainingType.TypeArguments().Single());
-            Assert.Equal(actualParameterType, actualWinner.ContainingType.ContainingType.TypeArguments().Single());
+            var actualParameterType = actualWinner.Symbol.GetParameters().Single().Type;
+            Assert.Equal(actualParameterType, actualWinner.Symbol.ContainingType.TypeArguments().Single());
+            Assert.Equal(actualParameterType, actualWinner.Symbol.ContainingType.ContainingType.TypeArguments().Single());
 
             Assert.Equal(2, actualCandidates.Length);
             Assert.Equal(actualWinner, actualCandidates[0]);
-            Assert.Equal(actualWinner.ContainingType.GetMembers(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
+            Assert.Equal(actualWinner.Symbol.ContainingType.GetMembers(actualWinner.Symbol.Name).Single(member => member != actualWinner.Symbol), actualCandidates[1].Symbol);
         }
 
         [Fact]
@@ -1735,8 +1736,8 @@ class U { }
                 Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
-            Assert.Equal(TypeKind.TypeParameter, actualSymbol.GetParameterTypes().Single().Type.TypeKind);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
+            Assert.Equal(TypeKind.TypeParameter, actualSymbol.Symbol.GetParameterTypes().Single().Type.TypeKind);
         }
 
         [Fact]
@@ -1761,8 +1762,8 @@ class A<T>
                 Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
-            Assert.Equal(TypeKind.TypeParameter, actualSymbol.GetParameterTypes().Single().Type.TypeKind);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
+            Assert.Equal(TypeKind.TypeParameter, actualSymbol.Symbol.GetParameterTypes().Single().Type.TypeKind);
         }
 
         [Fact]
@@ -1781,7 +1782,7 @@ class A<T>
 
             var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
+            Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.Symbol.OriginalDefinition);
         }
 
         [Fact]
@@ -1804,17 +1805,17 @@ class C
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.NotNull(actualSymbol);
+            Assert.False(actualSymbol.IsDefault);
             Assert.Equal(
                 compilation.GlobalNamespace
                            .GetMember<NamedTypeSymbol>("C")
                            .GetMember<SourceOrdinaryMethodSymbol>("M"),
-                actualSymbol);
-            Assert.Equal(SymbolKind.Method, actualSymbol.Kind);
+                actualSymbol.Symbol);
+            Assert.Equal(SymbolKind.Method, actualSymbol.Symbol.Kind);
             var model = compilation.GetSemanticModel(compilation.SyntaxTrees.Single());
             var info = model.GetSymbolInfo(crefSyntax);
             Assert.Equal(CandidateReason.None, info.CandidateReason);
-            Assert.Equal(info.Symbol, actualSymbol.ISymbol);
+            Assert.Equal(info.Symbol, actualSymbol.Symbol.ISymbol);
         }
 
         [Fact]
@@ -1845,7 +1846,7 @@ class Outer
 
             // Consider inaccessible symbols, as in Dev11
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [WorkItem(568006, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/568006")]
@@ -1869,12 +1870,12 @@ class Test { }
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             // Break: In dev11 the accessible symbol is preferred. We simply prefer the "first"
-            Symbol actualSymbol;
+            SymbolWithAnnotationSymbols actualSymbol;
             var symbols = GetReferencedSymbols(crefSyntax, compilation, out actualSymbol,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'C'. Assuming 'C', but could have also matched other overloads including 'C'.
                 // /// See <see cref="C"/>.
                 Diagnostic(ErrorCode.WRN_AmbiguousXMLReference, "C").WithArguments("C", "C", "C").WithLocation(3, 20));
-            Assert.Equal("A", actualSymbol.ContainingAssembly.Name);
+            Assert.Equal("A", actualSymbol.Symbol.ContainingAssembly.Name);
         }
 
         [WorkItem(568006, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/568006")]
@@ -1904,7 +1905,7 @@ class ClientUtils
             // NOTE: Matches dev11 - the accessible symbol is preferred (vs System.ClientUtils).
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("ClientUtils").GetMember<MethodSymbol>("Goo");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [WorkItem(568006, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/568006")]
@@ -1936,7 +1937,7 @@ class Other
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base").GetMember<FieldSymbol>("F");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [WorkItem(568006, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/568006")]
@@ -1968,7 +1969,7 @@ class Other
 
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base").GetMember<FieldSymbol>("F");
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1995,7 +1996,7 @@ class B : A
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             // CONSIDER: Dev11 fails with WRN_BadXMLRef.
-            Symbol actualWinner;
+            SymbolWithAnnotationSymbols actualWinner;
             var actualCandidates = GetReferencedSymbols(crefSyntax, compilation, out actualWinner,
                 // (3,20): warning CS0419: Ambiguous reference in cref attribute: 'A'. Assuming 'A', but could have also matched other overloads including 'A'.
                 // /// See <see cref="A"/>.
@@ -2003,7 +2004,7 @@ class B : A
 
             Assert.Contains(actualWinner, actualCandidates);
             Assert.Equal(2, actualCandidates.Length);
-            AssertEx.SetEqual(actualCandidates.Select(sym => sym.ContainingAssembly.Name), "Lib1", "Lib2");
+            AssertEx.SetEqual(actualCandidates.Select(sym => sym.Symbol.ContainingAssembly.Name), "Lib1", "Lib2");
 
             var model = compilation.GetSemanticModel(crefSyntax.SyntaxTree);
             var info = model.GetSymbolInfo(crefSyntax);
@@ -2042,7 +2043,7 @@ class B
                 // /// See <see cref="A.M"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "A.M").WithArguments("M"));
 
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             var model = compilation.GetSemanticModel(crefSyntax.SyntaxTree);
             var info = model.GetSymbolInfo(crefSyntax);
@@ -2096,7 +2097,7 @@ class C
                 // /// See <see cref="B.M(A)"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "B.M(A)").WithArguments("M(A)"));
 
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             var model = compilation.GetSemanticModel(crefSyntax.SyntaxTree);
             var info = model.GetSymbolInfo(crefSyntax);
@@ -2130,9 +2131,9 @@ class C
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-            Assert.IsType<SourceNamedTypeSymbol>(actualSymbol);
-            Assert.Equal("A", actualSymbol.Name);
-            Assert.Equal("Lib", actualSymbol.ContainingAssembly.Name);
+            Assert.IsType<SourceNamedTypeSymbol>(actualSymbol.Symbol);
+            Assert.Equal("A", actualSymbol.Symbol.Name);
+            Assert.Equal("Lib", actualSymbol.Symbol.ContainingAssembly.Name);
         }
 
         [Fact]
@@ -2212,7 +2213,7 @@ class C
             var expectedSymbol = compilation.GetSpecialType(SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2233,7 +2234,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").Indexers.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2254,7 +2255,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").Indexers.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2276,7 +2277,7 @@ class C
                 // (3,20): warning CS1574: XML comment has cref attribute 'this[float]' that could not be resolved
                 // /// See <see cref="this[float]"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "this[float]").WithArguments("this[float]"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2300,7 +2301,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.LogicalNotOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2327,7 +2328,7 @@ class C
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "operator -").WithArguments("operator -").WithLocation(3, 20)
                 );
 
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2351,7 +2352,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.LogicalNotOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2376,7 +2377,7 @@ class C
                 // (3,20): warning CS1574: XML comment has cref attribute 'operator !(int)' that could not be resolved
                 // /// See <see cref="operator !(int)"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "operator !(int)").WithArguments("operator !(int)"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2406,7 +2407,7 @@ class C
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2426,7 +2427,7 @@ class op_LogicalNot
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.LogicalNotOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2446,7 +2447,7 @@ class op_LogicalNot
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.LogicalNotOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2467,7 +2468,7 @@ class op_LogicalNot
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.LogicalNotOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2488,7 +2489,7 @@ class op_LogicalNot
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.LogicalNotOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2512,7 +2513,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.DivisionOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2536,7 +2537,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.DivisionOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2561,7 +2562,7 @@ class C
                 // (3,20): warning CS1574: XML comment has cref attribute 'operator /(int)' that could not be resolved
                 // /// See <see cref="operator /(int)"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "operator /(int)").WithArguments("operator /(int)"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2591,7 +2592,7 @@ class C
                 Single(method => method.ParameterTypesWithAnnotations.First().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2611,7 +2612,7 @@ class op_Division
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.DivisionOperatorName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2631,7 +2632,7 @@ class op_Division
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.DivisionOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2654,7 +2655,7 @@ class op_Division
                 // (3,20): warning CS1574: XML comment has cref attribute 'operator /(int)' that could not be resolved
                 // /// See <see cref="operator /(int)"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "operator /(int)").WithArguments("operator /(int)"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2675,7 +2676,7 @@ class op_Division
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.DivisionOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2696,7 +2697,7 @@ class op_Division
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.DivisionOperatorName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2720,7 +2721,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.ExplicitConversionName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2744,7 +2745,7 @@ class C
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>(WellKnownMemberNames.ImplicitConversionName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2769,7 +2770,7 @@ class C
                 // (3,20): warning CS1574: XML comment has cref attribute 'explicit operator int(int)' that could not be resolved
                 // /// See <see cref="explicit operator int(int)"/>.
                 Diagnostic(ErrorCode.WRN_BadXMLRef, "explicit operator int(int)").WithArguments("explicit operator int(int)"));
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2799,7 +2800,7 @@ class C
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2835,7 +2836,7 @@ class C
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32 && method.ReturnType.SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2855,7 +2856,7 @@ class op_Explicit
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.ExplicitConversionName);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2875,7 +2876,7 @@ class op_Implicit
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.ImplicitConversionName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2896,7 +2897,7 @@ class op_Explicit
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.ExplicitConversionName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2917,7 +2918,7 @@ class op_Implicit
             var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>(WellKnownMemberNames.ImplicitConversionName).InstanceConstructors.Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -6211,7 +6212,7 @@ class C { }
 
             Assert.Equal(compilation.GetSpecialType(SpecialType.System_Int32), info.Symbol);
             Assert.Equal(info.Symbol, alias.Target);
-            Assert.Equal("A", alias.Name);
+            Assert.Equal("A", alias.Alias.Name);
         }
 
         [WorkItem(653402, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/653402")]
@@ -6244,7 +6245,85 @@ class C
 
             Assert.Equal(compilation.GetSpecialType(SpecialType.System_Int32), info.Symbol);
             Assert.Equal(info.Symbol, alias.Target);
-            Assert.Equal("A", alias.Name);
+            Assert.Equal("A", alias.Alias.Name);
+        }
+
+        [WorkItem(653402, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/653402")]
+        [Fact]
+        public void CrefGenericAliasInfo_TopLevel()
+        {
+            var source = @"
+using A<S> = S? where S : struct;
+
+/// <see cref=""A{S}""/>
+class C { }
+";
+
+            var compilation = (Compilation)CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.RegularPreview);
+            compilation.VerifyDiagnostics();
+
+            var tree = compilation.SyntaxTrees.Single();
+            var model = compilation.GetSemanticModel(tree);
+
+            var crefSyntax = GetCrefSyntaxes(compilation).Single();
+
+            var info = model.GetSymbolInfo(crefSyntax);
+            var alias = model.GetAliasInfo(crefSyntax.DescendantNodesAndSelf().OfType<GenericNameSyntax>().Single());
+
+            Assert.IsAssignableFrom<ITypeSymbol>(info.Symbol);
+            ITypeSymbol typeSymbol = (ITypeSymbol)info.Symbol;
+            Assert.Equal(SpecialType.System_Nullable_T, typeSymbol.OriginalDefinition.SpecialType);
+            ITypeSymbol elementTypeSymbol = typeSymbol.GetNullableUnderlyingType();
+            Assert.Equal(SymbolKind.TypeParameter, elementTypeSymbol.Kind);
+            Assert.IsAssignableFrom<ITypeParameterSymbol>(elementTypeSymbol);
+            ITypeParameterSymbol typeParameterSymbol = (ITypeParameterSymbol)elementTypeSymbol;
+            Assert.Equal("S", typeParameterSymbol.Name);
+            Assert.Equal(TypeParameterKind.Cref, typeParameterSymbol.TypeParameterKind);
+            Assert.Equal("A", alias.Alias.Name);
+            Assert.Equal(1, alias.Alias.TypeParameters.Length);
+            Assert.Equal("S", alias.Alias.TypeParameters[0].Name);
+        }
+
+        [WorkItem(653402, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/653402")]
+        [Fact]
+        public void CrefGenericAliasInfo_Parameter()
+        {
+            var source = @"
+using A<S> = S? where S : struct;
+
+/// <see cref=""M{T}(A{T})""/>
+class C
+{
+    void M<T>(A<T> a) where T : struct { }
+}
+";
+
+            var compilation = (Compilation)CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.RegularPreview);
+            compilation.VerifyDiagnostics();
+
+            var tree = compilation.SyntaxTrees.Single();
+            var model = compilation.GetSemanticModel(tree);
+
+            var crefSyntax = GetCrefSyntaxes(compilation).Single();
+            var parameterSyntax = crefSyntax.
+                DescendantNodes().OfType<CrefParameterSyntax>().Single().
+                DescendantNodes().OfType<GenericNameSyntax>().Single();
+
+            var info = model.GetSymbolInfo(parameterSyntax);
+            var alias = model.GetAliasInfo(parameterSyntax);
+
+            Assert.IsAssignableFrom<ITypeSymbol>(info.Symbol);
+            ITypeSymbol typeSymbol = (ITypeSymbol)info.Symbol;
+            Assert.Equal(SpecialType.System_Nullable_T, typeSymbol.OriginalDefinition.SpecialType);
+            ITypeSymbol elementTypeSymbol = typeSymbol.GetNullableUnderlyingType();
+            Assert.Equal(SymbolKind.TypeParameter, elementTypeSymbol.Kind);
+            Assert.IsAssignableFrom<ITypeParameterSymbol>(elementTypeSymbol);
+            ITypeParameterSymbol typeParameterSymbol = (ITypeParameterSymbol)elementTypeSymbol;
+            Assert.Equal("T", typeParameterSymbol.Name);
+            Assert.Equal(TypeParameterKind.Cref, typeParameterSymbol.TypeParameterKind);
+            Assert.Equal("A", alias.Alias.Name);
+            Assert.Equal(1, alias.Alias.TypeParameters.Length);
+            Assert.Equal("S", alias.Alias.TypeParameters[0].Name);
         }
 
         [Fact]
@@ -6614,17 +6693,17 @@ class Cat { }
             });
         }
 
-        internal static Symbol GetReferencedSymbol(CrefSyntax crefSyntax, CSharpCompilation compilation, params DiagnosticDescription[] expectedDiagnostics)
+        internal static SymbolWithAnnotationSymbols GetReferencedSymbol(CrefSyntax crefSyntax, CSharpCompilation compilation, params DiagnosticDescription[] expectedDiagnostics)
         {
-            Symbol ambiguityWinner;
+            SymbolWithAnnotationSymbols ambiguityWinner;
             var references = GetReferencedSymbols(crefSyntax, compilation, out ambiguityWinner, expectedDiagnostics);
-            Assert.Null(ambiguityWinner);
+            Assert.True(ambiguityWinner.IsDefault);
             Assert.InRange(references.Length, 0, 1); //Otherwise, call GetReferencedSymbols
 
             return references.FirstOrDefault();
         }
 
-        private static ImmutableArray<Symbol> GetReferencedSymbols(CrefSyntax crefSyntax, CSharpCompilation compilation, out Symbol ambiguityWinner, params DiagnosticDescription[] expectedDiagnostics)
+        private static ImmutableArray<SymbolWithAnnotationSymbols> GetReferencedSymbols(CrefSyntax crefSyntax, CSharpCompilation compilation, out SymbolWithAnnotationSymbols ambiguityWinner, params DiagnosticDescription[] expectedDiagnostics)
         {
             var binderFactory = compilation.GetBinderFactory(crefSyntax.SyntaxTree);
             var binder = binderFactory.GetBinder(crefSyntax);
