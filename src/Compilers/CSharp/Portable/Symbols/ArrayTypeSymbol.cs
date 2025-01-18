@@ -350,6 +350,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(other, comparison))
+            {
+                return true;
+            }
+
             if ((object?)other == null || !other.HasSameShapeAs(this) ||
                 !other.ElementTypeWithAnnotations.Equals(ElementTypeWithAnnotations, comparison))
             {

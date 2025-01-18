@@ -105,6 +105,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return false;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+            {
+                return true;
+            }
+
             CrefTypeParameterSymbol other = t2 as CrefTypeParameterSymbol;
             return (object)other != null &&
                 other._name == _name &&

@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             // It might need to be substituted directly.
             TypeWithAnnotations result;
-            if (Mapping.TryGetValue(typeParameter, out result))
+            if (Mapping.TryGetValue((TypeParameterSymbol)typeParameter.OriginalTypeSymbolWithNoAliasConstructAnnotation, out result))
             {
                 return result;
             }

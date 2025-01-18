@@ -675,6 +675,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(other, comparison))
+            {
+                return true;
+            }
+
             if ((object)other == null || !ReferenceEquals(other.OriginalDefinition, this.OriginalDefinition))
             {
                 return false;

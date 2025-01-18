@@ -122,6 +122,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+            {
+                return true;
+            }
+
             UnboundArgumentErrorTypeSymbol? other = t2 as UnboundArgumentErrorTypeSymbol;
             return (object?)other != null && string.Equals(other._name, _name, StringComparison.Ordinal) && object.Equals(other._errorInfo, _errorInfo);
         }

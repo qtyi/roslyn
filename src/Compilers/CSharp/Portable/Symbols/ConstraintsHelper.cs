@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
+using AliasConstructAnnotation = Microsoft.CodeAnalysis.CSharp.Symbols.TypeSymbol.AliasConstructAnnotation;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -59,7 +60,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     /// the caller must lazily check constraints, and since the types may be compound types, it is
     /// necessary to call CheckAllConstraints.
     /// </summary>
-    internal static class ConstraintsHelper
+    internal static partial class ConstraintsHelper
     {
         /// <summary>
         /// Determine the effective base type, effective interface set, and set of type
@@ -584,6 +585,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private static bool CheckConstraintsSingleType(TypeSymbol type, in CheckConstraintsArgs args)
         {
+            CheckAliasConstructAnnotations(type, args);
+
             if (type.Kind == SymbolKind.NamedType)
             {
                 ((NamedTypeSymbol)type).CheckConstraints(args);
@@ -970,7 +973,9 @@ hasRelatedInterfaces:
                     continue;
                 }
 
-                if (!CheckConstraints(containingSymbol, in args, substitution, typeParameters[i], typeArguments[i], diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt,
+                var aliasConstructAnnotationsCheckResult = CheckAliasConstructAnnotations(typeArguments[i].Type, in args);
+                if (aliasConstructAnnotationsCheckResult == AliasConstructAnnotation.NotSatisfied ||
+                    !CheckConstraints(containingSymbol, in args, substitution, typeParameters[i], typeArguments[i], diagnosticsBuilder, nullabilityDiagnosticsBuilderOpt,
                                       ref useSiteDiagnosticsBuilder,
                                       ignoreTypeConstraintsDependentOnTypeParametersOpt))
                 {

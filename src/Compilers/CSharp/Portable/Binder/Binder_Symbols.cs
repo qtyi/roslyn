@@ -1659,6 +1659,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                 }
             }
+            else if (namedTypeOrAlias.IsAlias)
+            {
+                // We preserve alias construct information in constructed TypeSymbol for later check.
+                type = type.WithAliasConstructAnnotation(new TypeSymbol.AliasConstructAnnotation(type, namedTypeOrAlias.AliasSymbol, typeArguments, typeArgumentsSyntax));
+            }
 
             return type;
         }

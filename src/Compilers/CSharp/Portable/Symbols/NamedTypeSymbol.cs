@@ -791,6 +791,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if ((object)t2 == this) return true;
             if ((object)t2 == null) return false;
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+            {
+                return true;
+            }
+
             if ((comparison & TypeCompareKind.IgnoreDynamic) != 0)
             {
                 if (t2.TypeKind == TypeKind.Dynamic)

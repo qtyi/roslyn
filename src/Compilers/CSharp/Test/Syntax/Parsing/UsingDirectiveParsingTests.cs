@@ -4531,7 +4531,7 @@ class C
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,14): error CS1547: Keyword 'void' cannot be used in this context
-            // X<void>
+            //     void M(X<void> x) { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 14),
             // (5,14): error CS0306: The type 'void' may not be used as a type argument
             //     void M(X<void> x) { }
@@ -4622,7 +4622,7 @@ class C
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,7): error CS1547: Keyword 'void' cannot be used in this context
-            // X<void>
+            //     X<void> M() { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7),
             // (5,7): error CS0306: The type 'void' may not be used as a type argument
             //     X<void> M() { }
@@ -4705,7 +4705,7 @@ class C
 
         CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
             // (5,7): error CS1547: Keyword 'void' cannot be used in this context
-            // X<void>
+            //     X<void> M() { }
             Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(5, 7),
             // (5,7): error CS0306: The type 'void' may not be used as a type argument
             //     X<void> M() { }
@@ -4772,6 +4772,137 @@ class C
                     N(SyntaxKind.ParameterList);
                     {
                         N(SyntaxKind.OpenParenToken);
+                        N(SyntaxKind.CloseParenToken);
+                    }
+                    N(SyntaxKind.Block);
+                    {
+                        N(SyntaxKind.OpenBraceToken);
+                        N(SyntaxKind.CloseBraceToken);
+                    }
+                }
+                N(SyntaxKind.CloseBraceToken);
+            }
+            N(SyntaxKind.EndOfFileToken);
+        }
+        EOF();
+    }
+
+    [Fact]
+    public void GenericAliasUsingVoid4()
+    {
+        var text = @"
+using X<T> = T[];
+using Y = void;
+
+class C
+{
+    X<Y> M(X<Y> x) { }
+}";
+        UsingTree(text,
+            // (3,11): error CS1547: Keyword 'void' cannot be used in this context
+            // using Y = void;
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(3, 11));
+
+        CreateCompilation(text, options: TestOptions.UnsafeDebugDll).VerifyDiagnostics(
+            // (3,11): error CS1547: Keyword 'void' cannot be used in this context
+            // using Y = void;
+            Diagnostic(ErrorCode.ERR_NoVoidHere, "void").WithLocation(3, 11),
+            // (7,7): error CS0306: The type 'void' may not be used as a type argument
+            //     X<Y> M(X<Y> x) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "Y").WithArguments("void").WithLocation(7, 7),
+            // (7,10): error CS0161: 'C.M(void[])': not all code paths return a value
+            //     X<Y> M(X<Y> x) { }
+            Diagnostic(ErrorCode.ERR_ReturnExpected, "M").WithArguments("C.M(void[])").WithLocation(7, 10),
+            // (7,14): error CS0306: The type 'void' may not be used as a type argument
+            //     X<Y> M(X<Y> x) { }
+            Diagnostic(ErrorCode.ERR_BadTypeArgument, "Y").WithArguments("void").WithLocation(7, 14));
+
+        N(SyntaxKind.CompilationUnit);
+        {
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "X");
+                N(SyntaxKind.TypeParameterList);
+                {
+                    N(SyntaxKind.LessThanToken);
+                    N(SyntaxKind.TypeParameter);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.GreaterThanToken);
+                }
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.ArrayType);
+                {
+                    N(SyntaxKind.IdentifierName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "T");
+                    }
+                    N(SyntaxKind.ArrayRankSpecifier);
+                    {
+                        N(SyntaxKind.OpenBracketToken);
+                        N(SyntaxKind.OmittedArraySizeExpression);
+                        {
+                            N(SyntaxKind.OmittedArraySizeExpressionToken);
+                        }
+                        N(SyntaxKind.CloseBracketToken);
+                    }
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.UsingDirective);
+            {
+                N(SyntaxKind.UsingKeyword);
+                N(SyntaxKind.IdentifierToken, "Y");
+                N(SyntaxKind.EqualsToken);
+                N(SyntaxKind.PredefinedType);
+                {
+                    N(SyntaxKind.VoidKeyword);
+                }
+                N(SyntaxKind.SemicolonToken);
+            }
+            N(SyntaxKind.ClassDeclaration);
+            {
+                N(SyntaxKind.ClassKeyword);
+                N(SyntaxKind.IdentifierToken, "C");
+                N(SyntaxKind.OpenBraceToken);
+                N(SyntaxKind.MethodDeclaration);
+                {
+                    N(SyntaxKind.GenericName);
+                    {
+                        N(SyntaxKind.IdentifierToken, "X");
+                        N(SyntaxKind.TypeArgumentList);
+                        {
+                            N(SyntaxKind.LessThanToken);
+                            N(SyntaxKind.IdentifierName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "Y");
+                            }
+                            N(SyntaxKind.GreaterThanToken);
+                        }
+                    }
+                    N(SyntaxKind.IdentifierToken, "M");
+                    N(SyntaxKind.ParameterList);
+                    {
+                        N(SyntaxKind.OpenParenToken);
+                        N(SyntaxKind.Parameter);
+                        {
+                            N(SyntaxKind.GenericName);
+                            {
+                                N(SyntaxKind.IdentifierToken, "X");
+                                N(SyntaxKind.TypeArgumentList);
+                                {
+                                    N(SyntaxKind.LessThanToken);
+                                    N(SyntaxKind.IdentifierName);
+                                    {
+                                        N(SyntaxKind.IdentifierToken, "Y");
+                                    }
+                                    N(SyntaxKind.GreaterThanToken);
+                                }
+                            }
+                            N(SyntaxKind.IdentifierToken, "x");
+                        }
                         N(SyntaxKind.CloseParenToken);
                     }
                     N(SyntaxKind.Block);
