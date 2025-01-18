@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Completion.Providers
                 var targetToken = tree
                     .FindTokenOnLeftOfPosition(position, cancellationToken)
                     .GetPreviousTokenIfTouchingWord(position);
-                var usingDirectiveSyntax = targetToken.Parent!.FirstAncestorOrSelf<UsingDirectiveSyntax>();
+                var usingDirectiveSyntax = targetToken.Parent?.FirstAncestorOrSelf<UsingDirectiveSyntax>();
                 if (usingDirectiveSyntax == null)
                 {
                     return;

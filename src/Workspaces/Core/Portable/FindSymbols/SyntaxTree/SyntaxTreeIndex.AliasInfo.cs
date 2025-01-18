@@ -33,7 +33,6 @@ namespace Microsoft.CodeAnalysis.FindSymbols
                 Debug.Assert(aliasName != null);
                 Debug.Assert(aliasArity >= 0);
                 Debug.Assert(Enum.IsDefined(typeof(AliasTargetKind), targetKind));
-                Debug.Assert(targetName == null || !string.IsNullOrWhiteSpace(targetName));
                 Debug.Assert(targetArity >= 0);
 
                 AliasName = aliasName;

@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis
             _typeSet = setBuilder.ToImmutable();
         }
 
-        public bool TryGetAlias(INamespaceOrTypeSymbol symbol, [NotNullWhen(true)] out IAliasSymbol? aliasSymbol, out ImmutableArray<ITypeSymbol> typeArguments, bool mustResolveAllTypeParameters = true)
+        public bool TryGetAlias(INamespaceOrTypeSymbol symbol, [NotNullWhen(true)] out IAliasSymbol? aliasSymbol, out ImmutableArray<ITypeSymbol> typeArguments, bool mustResolveAllTypeParameters = true, bool skipTargetAliasTypeParameter = true)
         {
             if (symbol is INamespaceSymbol namespaceSymbol)
             {
@@ -62,6 +62,16 @@ namespace Microsoft.CodeAnalysis
             {
                 foreach (IAliasSymbol alias in _typeSet)
                 {
+                    // In some scenarios, like type simplify or minimal symbol display, a generic alias that targets to its type parameter
+                    // will cause loop. Think of this:
+                    //     using A<T> = T;
+                    // Then `Goo` -> `A<Goo>` -> `A<A<Goo>>` -> ... -> `A<A<...A<Goo>...>>`.
+                    // We use a parameter to switch on / off the feature to skip these aliases.
+                    if (skipTargetAliasTypeParameter && alias.Target is ITypeParameterSymbol { TypeParameterKind: TypeParameterKind.Alias })
+                    {
+                        continue;
+                    }
+
                     var resultKind = NamespaceOrTypeSymbolDeconstructionVisitor.Deconstruct(symbol, alias, out typeArguments);
                     if (resultKind == NamespaceOrTypeSymbolDeconstructionResultKind.Viable ||
                         (resultKind == NamespaceOrTypeSymbolDeconstructionResultKind.Ambiguous && !mustResolveAllTypeParameters))
