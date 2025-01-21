@@ -119,6 +119,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)QualifyMemberAccess\AbstractQualifyMemberAccessCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveAsyncModifier\AbstractRemoveAsyncModifierCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveRedundantEquality\RemoveRedundantEqualityCodeFixProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)removeunnecessaryaliastypeparameters\AbstractRemoveUnnecessaryAliasTypeParametersCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessarySuppressions\RemoveUnnecessaryPragmaSuppressionsCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnsealClass\AbstractUnsealClassCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UpdateLegacySuppressions\UpdateLegacySuppressionsCodeFixProvider.cs" />
@@ -153,5 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)UseCollectionExpression\" />
+    <Folder Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryAliasTypeParameters\" />
   </ItemGroup>
 </Project>

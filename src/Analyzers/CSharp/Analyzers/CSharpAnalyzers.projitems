@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NewLines\MultipleBlankLines\CSharpMultipleBlankLinesDiagnosticAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MatchFolderAndNamespace\CSharpMatchFolderAndNamespaceDiagnosticAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveRedundantEquality\CSharpRemoveRedundantEqualityDiagnosticAnalyzer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)removeunnecessaryaliastypeparameters\CSharpRemoveUnnecessaryAliasTypeParametersDiagnosticAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryDiscardDesignation\CSharpRemoveUnnecessaryDiscardDesignationDiagnosticAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryLambdaExpression\CSharpRemoveUnnecessaryLambdaExpressionDiagnosticAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryNullableDirective\CSharpRemoveRedundantNullableDirectiveDiagnosticAnalyzer.cs" />
@@ -160,5 +161,8 @@
   </ItemGroup>
   <ItemGroup Condition="'$(DefaultLanguageSourceExtension)' != '' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <ExpectedCompile Include="$(MSBuildThisFileDirectory)**\*$(DefaultLanguageSourceExtension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryAliasTypeParameters\" />
   </ItemGroup>
 </Project>

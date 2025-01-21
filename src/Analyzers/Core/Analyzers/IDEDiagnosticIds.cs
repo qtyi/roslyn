@@ -203,6 +203,9 @@ internal static class IDEDiagnosticIds
 
     public const string UseSystemThreadingLockDiagnosticId = "IDE0330";
 
+    public const string RemoveUnusedAliasTypeParametersDiagnosticId = "IDE0901";
+    public const string RemoveUnnecessaryAliasTypeParametersDiagnosticId = "IDE0902";
+
     // Analyzer error Ids
     public const string AnalyzerChangedId = "IDE1001";
     public const string AnalyzerDependencyConflictId = "IDE1002";
