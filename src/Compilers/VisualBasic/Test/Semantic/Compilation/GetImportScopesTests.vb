@@ -518,7 +518,7 @@ end namespace
 
             Assert.Single(scopes.Single().Aliases)
             Assert.True(IsAliasWithName(scopes.Single().Aliases.Single(), "M", "Microsoft", inGlobalNamespace:=True))
-            Assert.Empty(scopes.Single.Aliases().Single().DeclaringSyntaxReferences)
+            Assert.Single(scopes.Single.Aliases().Single().DeclaringSyntaxReferences)
 
             Assert.Single(scopes.Single().Imports)
             Assert.True(IsNamespaceWithName(scopes.Single().Imports.Single().NamespaceOrType, "System"))
@@ -545,7 +545,7 @@ end class"
 
             Assert.Single(scopes.Single().Aliases)
             Assert.True(IsAliasWithName(scopes.Single().Aliases.Single(), "M", "Microsoft", inGlobalNamespace:=True))
-            Assert.Empty(scopes.Single.Aliases().Single().DeclaringSyntaxReferences)
+            Assert.Single(scopes.Single.Aliases().Single().DeclaringSyntaxReferences)
 
             Assert.Single(scopes.Single().Imports)
             Assert.True(IsNamespaceWithName(scopes.Single().Imports.Single().NamespaceOrType, "System"))
@@ -594,7 +594,7 @@ end class
 
             Assert.Single(scopes(1).Aliases)
             Assert.True(IsAliasWithName(scopes(1).Aliases.Single(), "M", "Microsoft", inGlobalNamespace:=True))
-            Assert.Empty(scopes(1).Aliases().Single().DeclaringSyntaxReferences)
+            Assert.Single(scopes(1).Aliases().Single().DeclaringSyntaxReferences)
 
             Assert.Single(scopes(1).Imports)
             Assert.True(IsNamespaceWithName(scopes(1).Imports.Single().NamespaceOrType, "System"))

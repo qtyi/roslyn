@@ -39,9 +39,9 @@ internal class UsingDirectiveSyntaxClassifier : AbstractSyntaxClassifier
     {
         // For using aliases, we bind the target on the right of the equals and use that
         // binding to classify the alias.
-        if (usingDirective.Alias != null)
+        if (usingDirective.Identifier != default)
         {
-            var token = usingDirective.Alias.Name;
+            var token = usingDirective.Identifier;
 
             var symbolInfo = semanticModel.GetSymbolInfo(usingDirective.NamespaceOrType, cancellationToken);
             if (symbolInfo.Symbol is ITypeSymbol typeSymbol)
@@ -50,6 +50,15 @@ internal class UsingDirectiveSyntaxClassifier : AbstractSyntaxClassifier
                 if (classification != null)
                 {
                     result.Add(new ClassifiedSpan(token.Span, classification));
+                }
+
+                // Classify type parameter tokens.
+                if (usingDirective.TypeParameterList is not null)
+                {
+                    foreach (var typeParameter in usingDirective.TypeParameterList.Parameters)
+                    {
+                        result.Add(new ClassifiedSpan(typeParameter.Identifier.Span, ClassificationTypeNames.TypeParameterName));
+                    }
                 }
             }
             else if (symbolInfo.Symbol?.Kind == SymbolKind.Namespace)

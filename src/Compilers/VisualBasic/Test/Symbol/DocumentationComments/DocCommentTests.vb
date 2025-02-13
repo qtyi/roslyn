@@ -11163,7 +11163,7 @@ AssemblyName
             Assert.Equal("System.Collections.Generic", info.Symbol.ToTestDisplayString())
 
             CheckAllAliases(model, crefNode,
-                            New AliasInfo("aNamespace", "System.Collections.Generic"))
+                            New SimpleAliasInfo("aNamespace", "System.Collections.Generic"))
         End Sub
 
         <WorkItem(757110, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/757110")>
@@ -11247,7 +11247,7 @@ AssemblyName
             Assert.Equal("System.Collections.Generic.List(Of System.Int32)", info.Symbol.ToTestDisplayString())
 
             CheckAllAliases(model, crefNode,
-                            New AliasInfo("aType", "System.Collections.Generic.List(Of Integer)"))
+                            New SimpleAliasInfo("aType", "System.Collections.Generic.List(Of Integer)"))
         End Sub
 
         <Fact>
@@ -11296,8 +11296,8 @@ AssemblyName
             Assert.Equal("System.Collections.Generic.List(Of T)", info.Symbol.ToTestDisplayString())
 
             CheckAllAliases(model, crefNode,
-                            New AliasInfo("aNamespace", "System.Collections.Generic"),
-                            New AliasInfo("T", Nothing))
+                            New SimpleAliasInfo("aNamespace", "System.Collections.Generic"),
+                            New SimpleAliasInfo("T", Nothing))
         End Sub
 
         <Fact>
@@ -11346,8 +11346,8 @@ AssemblyName
             Assert.Equal("Function System.Object.ToString() As System.String", info.Symbol.ToTestDisplayString())
 
             CheckAllAliases(model, crefNode,
-                            New AliasInfo("aType", "System.Collections.Generic.List(Of Integer)"),
-                            New AliasInfo("ToString", Nothing))
+                            New SimpleAliasInfo("aType", "System.Collections.Generic.List(Of Integer)"),
+                            New SimpleAliasInfo("ToString", Nothing))
         End Sub
 
         <Fact>
@@ -11396,8 +11396,8 @@ AssemblyName
             Assert.Equal("Function System.Object.ToString() As System.String", info.Symbol.ToTestDisplayString())
 
             CheckAllAliases(model, crefNode,
-                            New AliasInfo("aType", "System.Collections.Generic.List(Of Integer)"),
-                            New AliasInfo("ToString", Nothing))
+                            New SimpleAliasInfo("aType", "System.Collections.Generic.List(Of Integer)"),
+                            New SimpleAliasInfo("ToString", Nothing))
         End Sub
 
         <WorkItem(568006, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/568006")>
@@ -11876,7 +11876,7 @@ xmlDoc)
 
 #Region "Helpers"
 
-        Private Structure AliasInfo
+        Private Structure SimpleAliasInfo
             Public ReadOnly Name As String
             Public ReadOnly Target As String
 
@@ -11886,7 +11886,7 @@ xmlDoc)
             End Sub
         End Structure
 
-        Private Sub CheckAllAliases(model As SemanticModel, cref As CrefReferenceSyntax, ParamArray expected As AliasInfo())
+        Private Sub CheckAllAliases(model As SemanticModel, cref As CrefReferenceSyntax, ParamArray expected As SimpleAliasInfo())
             Dim names = SyntaxNodeFinder.FindNodes(Of IdentifierNameSyntax)(cref, SyntaxKind.IdentifierName)
             Assert.Equal(expected.Length, names.Count)
 
@@ -11899,7 +11899,7 @@ xmlDoc)
                 Dim actual = model.GetAliasInfo(sym)
 
                 If e.Target Is Nothing Then
-                    Assert.Null(actual)
+                    Assert.Null(actual.Alias)
                 Else
                     Assert.Equal(e.Target, actual.Target.ToDisplayString)
                 End If

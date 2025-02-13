@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -562,7 +563,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             throw ExceptionUtilities.Unreachable();
         }
 
-        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<Symbol> crefSymbols)
+        internal override BoundExpression GetSpeculativelyBoundExpression(int position, ExpressionSyntax expression, SpeculativeBindingOption bindingOption, out Binder binder, out ImmutableArray<SymbolWithAnnotationSymbols> crefSymbols)
         {
             return GetEnclosingMemberModel(CheckAndAdjustPosition(position)).GetSpeculativelyBoundExpression(position, expression, bindingOption, out binder, out crefSymbols);
         }

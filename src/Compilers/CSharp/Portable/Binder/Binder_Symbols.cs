@@ -325,7 +325,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             // symbol must be a TypeSymbol or an Alias to a TypeSymbol
             if (symbol.IsType ||
-                (symbol.IsAlias && UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved) is TypeSymbol))
+                (symbol.IsAlias && UnwrapAliasNoDiagnostics(symbol, basesBeingResolved) is TypeSymbol))
             {
                 if (symbol.IsType)
                 {
@@ -942,7 +942,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return true;
 
                 // using X = dynamic; is legal.
-                if (node.Parent is UsingDirectiveSyntax { Alias: not null })
+                if (node.Parent is UsingDirectiveSyntax usingDirective && usingDirective.Identifier != default)
                     return true;
 
                 return false;
@@ -1002,7 +1002,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case AttributeSyntax parent when parent.Name == node: // [nint]
                     return null;
                 case UsingDirectiveSyntax usingDirective:
-                    if (usingDirective.Alias != null && usingDirective.NamespaceOrType == node)
+                    if (usingDirective.Identifier != default && usingDirective.NamespaceOrType == node)
                     {
                         // legal to write `using A = nuint;` as long as using-alias-to-type is enabled (checked later).
                         break;
@@ -1081,6 +1081,16 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        private static Symbol UnwrapAliasNoDiagnostics(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, ConsList<TypeSymbol> basesBeingResolved = null)
+        {
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
+            {
+                return symbol.TypeWithAnnotations.Type;
+            }
+
+            return UnwrapAliasNoDiagnostics(symbol.Symbol, basesBeingResolved);
+        }
+
         private static Symbol UnwrapAliasNoDiagnostics(Symbol symbol, ConsList<TypeSymbol> basesBeingResolved = null)
         {
             if (symbol.Kind == SymbolKind.Alias)
@@ -1093,30 +1103,30 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         private NamespaceOrTypeOrAliasSymbolWithAnnotations UnwrapAlias(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias)
-            {
-                AliasSymbol discarded;
-                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out discarded, diagnostics, syntax, basesBeingResolved));
-            }
-
-            return symbol;
+            return UnwrapAlias(symbol, out _, diagnostics, syntax, basesBeingResolved);
         }
 
         private NamespaceOrTypeOrAliasSymbolWithAnnotations UnwrapAlias(in NamespaceOrTypeOrAliasSymbolWithAnnotations symbol, out AliasSymbol alias, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            if (symbol.IsAlias)
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0
+                && symbol.TypeWithAnnotations.HasType)
             {
-                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsNullableEnabled, (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved));
+                alias = (AliasSymbol)symbol.Symbol;
+                return symbol.TypeWithAnnotations;
+            }
+            else if (symbol.IsType)
+            {
+                alias = null;
+                return symbol.TypeWithAnnotations;
             }
 
-            alias = null;
-            return symbol;
+            var unwrapped = (NamespaceOrTypeSymbol)UnwrapAlias(symbol.Symbol, out alias, diagnostics, syntax, basesBeingResolved);
+            return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(symbol.IsAlias ? symbol.IsNullableEnabled : false, unwrapped);
         }
 
         private Symbol UnwrapAlias(Symbol symbol, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
         {
-            AliasSymbol discarded;
-            return UnwrapAlias(symbol, out discarded, diagnostics, syntax, basesBeingResolved);
+            return UnwrapAlias(symbol, out _, diagnostics, syntax, basesBeingResolved);
         }
 
         private Symbol UnwrapAlias(Symbol symbol, out AliasSymbol alias, BindingDiagnosticBag diagnostics, SyntaxNode syntax, ConsList<TypeSymbol> basesBeingResolved = null)
@@ -1147,7 +1157,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return symbol;
         }
 
-        private TypeWithAnnotations BindGenericSimpleNamespaceOrTypeOrAliasSymbol(
+        private NamespaceOrTypeOrAliasSymbolWithAnnotations BindGenericSimpleNamespaceOrTypeOrAliasSymbol(
             GenericNameSyntax node,
             BindingDiagnosticBag diagnostics,
             ConsList<TypeSymbol> basesBeingResolved,
@@ -1203,49 +1213,79 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             SeparatedSyntaxList<TypeSyntax> typeArguments = node.TypeArgumentList.Arguments;
 
-            bool isUnboundTypeExpr = node.IsUnboundGenericName;
+            bool isUnboundTypeOrAliasExpr = node.IsUnboundGenericName;
             LookupOptions options = GetSimpleNameLookupOptions(node, isVerbatimIdentifier: false);
 
-            NamedTypeSymbol unconstructedType = LookupGenericTypeName(
+            NamedTypeOrAliasSymbol unconstructedTypeOrAlias = LookupGenericTypeOrAliasName(
                 diagnostics, basesBeingResolved, qualifierOpt, node, plainName, node.Arity, options);
-            NamedTypeSymbol resultType;
 
-            if (isUnboundTypeExpr)
+            if (unconstructedTypeOrAlias.IsAlias && unconstructedTypeOrAlias.AliasSymbol.Target.IsNamespace)
             {
-                if (!IsUnboundTypeAllowed(node))
-                {
-                    // If we already have an error type then skip reporting that the unbound type is illegal.
-                    if (!unconstructedType.IsErrorType())
-                    {
-                        // error CS7003: Unexpected use of an unbound generic name
-                        diagnostics.Add(ErrorCode.ERR_UnexpectedUnboundGenericName, node.Location);
-                    }
+                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                    AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken),
+                    unconstructedTypeOrAlias.AliasSymbol);
+            }
 
-                    resultType = unconstructedType.Construct(
-                        UnboundArgumentErrorTypeSymbol.CreateTypeArguments(
-                            unconstructedType.TypeParameters,
-                            node.Arity,
-                            errorInfo: null),
-                        unbound: false);
+            TypeSymbol resultType;
+            if (isUnboundTypeOrAliasExpr)
+            {
+                if (unconstructedTypeOrAlias.IsAlias)
+                {
+                    if (!IsUnboundAliasAllowed(node, unconstructedTypeOrAlias.AliasSymbol))
+                    {
+                        // Unbound alias is illegal.
+                        diagnostics.Add(ErrorCode.ERR_UnexpectedUnboundGenericName, node.Location);
+
+                        resultType = unconstructedTypeOrAlias.AliasSymbol.Construct(
+                            UnboundArgumentErrorTypeSymbol.CreateTypeArguments(
+                                unconstructedTypeOrAlias.AliasSymbol.TypeParameters,
+                                node.Arity,
+                                errorInfo: null),
+                            unbound: false);
+                    }
+                    else
+                    {
+                        resultType = unconstructedTypeOrAlias.AliasSymbol.AsUnboundGenericType();
+                    }
                 }
                 else
                 {
-                    resultType = unconstructedType.AsUnboundGenericType();
+                    Debug.Assert(unconstructedTypeOrAlias.IsNamedType);
+                    if (!IsUnboundTypeAllowed(node))
+                    {
+                        // If we already have an error type then skip reporting that the unbound type is illegal.
+                        if (!unconstructedTypeOrAlias.NamedTypeSymbol.IsErrorType())
+                        {
+                            // error CS7003: Unexpected use of an unbound generic name
+                            diagnostics.Add(ErrorCode.ERR_UnexpectedUnboundGenericName, node.Location);
+                        }
+
+                        resultType = unconstructedTypeOrAlias.NamedTypeSymbol.Construct(
+                            UnboundArgumentErrorTypeSymbol.CreateTypeArguments(
+                                unconstructedTypeOrAlias.NamedTypeSymbol.TypeParameters,
+                                node.Arity,
+                                errorInfo: null),
+                            unbound: false);
+                    }
+                    else
+                    {
+                        resultType = unconstructedTypeOrAlias.NamedTypeSymbol.AsUnboundGenericType();
+                    }
                 }
             }
             else if ((Flags & BinderFlags.SuppressTypeArgumentBinding) != 0)
             {
-                resultType = unconstructedType.Construct(PlaceholderTypeArgumentSymbol.CreateTypeArguments(unconstructedType.TypeParameters));
+                resultType = unconstructedTypeOrAlias.ConstructIfGeneric(PlaceholderTypeArgumentSymbol.CreateTypeArguments(unconstructedTypeOrAlias.TypeParameters));
             }
             else
             {
                 var boundTypeArguments = BindTypeArguments(typeArguments, diagnostics, basesBeingResolved);
 
-                // It's not an unbound type expression, so we must have type arguments, and we have a
-                // generic type of the correct arity in hand (possibly an error type). Bind the type
+                // It's not an unbound type or alias expression, so we must have type arguments, and we have a
+                // generic type or alias of the correct arity in hand (possibly an error type). Bind the type
                 // arguments and construct the final result.
-                resultType = ConstructNamedType(
-                    unconstructedType,
+                resultType = ConstructNamedTypeOrAlias(
+                    unconstructedTypeOrAlias,
                     node,
                     typeArguments,
                     boundTypeArguments,
@@ -1253,10 +1293,24 @@ namespace Microsoft.CodeAnalysis.CSharp
                     diagnostics);
             }
 
+            if (unconstructedTypeOrAlias.IsAlias)
+            {
+                if (Compilation.IsFeatureEnabled(MessageID.IDS_FeatureUsingTypeAlias) && resultType.ContainsPointerOrFunctionPointer())
+                {
+                    ReportUnsafeIfNotAllowed(node, diagnostics);
+                }
+
+                bool isNullableAnnotationsEnabled = AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken);
+                return NamespaceOrTypeOrAliasSymbolWithAnnotations.CreateUnannotated(
+                    isNullableAnnotationsEnabled,
+                    unconstructedTypeOrAlias.AliasSymbol,
+                    TypeWithAnnotations.Create(isNullableAnnotationsEnabled, resultType));
+            }
+
             return TypeWithAnnotations.Create(AreNullableAnnotationsEnabled(node.TypeArgumentList.GreaterThanToken), resultType);
         }
 
-        private NamedTypeSymbol LookupGenericTypeName(
+        private NamedTypeOrAliasSymbol LookupGenericTypeOrAliasName(
             BindingDiagnosticBag diagnostics,
             ConsList<TypeSymbol> basesBeingResolved,
             NamespaceOrTypeSymbol qualifierOpt,
@@ -1279,32 +1333,40 @@ namespace Microsoft.CodeAnalysis.CSharp
             bool wasError;
             Symbol lookupResultSymbol = ResultSymbol(lookupResult, plainName, arity, node, diagnostics, (basesBeingResolved != null), out wasError, qualifierOpt, options);
 
-            // As we said in the method above, there are three cases here:
+            // As we said in the method above, there are four cases here:
             //
             // * Lookup could fail to find anything at all.
             // * Lookup could find a type of the wrong arity
-            // * Lookup could find something but it is not a type.
+            // * Lookup could find an alias of the wrong arity
+            // * Lookup could find something but it is neither a type nor an alias.
             //
-            // In the first two cases we will be given back an error type symbol of the appropriate arity.
-            // In the third case we will be given back the symbol -- say, a local variable symbol.
+            // In the first three cases we will be given back an error type symbol of the appropriate arity.
+            // In the forth case we will be given back the symbol -- say, a local variable symbol.
             //
-            // In all three cases the appropriate error has already been reported. (That the
-            // type was not found, that the generic type found does not have that arity, that
-            // the non-generic type found cannot be used with a type argument list, or that
+            // In all four cases the appropriate error has already been reported. (That the
+            // type or alias was not found, that the generic type or alias found does not have that arity, that
+            // the non-generic type or alias found cannot be used with a type argument list, or that
             // the symbol found is not something that takes type arguments. )
 
-            // The first thing to do is to make sure that we have some sort of generic type in hand.
+            // The first thing to do is to make sure that we have some sort of generic type or alias in hand.
             // (Note that an error type symbol is always a generic type.)
 
-            NamedTypeSymbol type = lookupResultSymbol as NamedTypeSymbol;
+            NamedTypeOrAliasSymbol namedTypeOrAlias;
 
-            if ((object)type == null)
+            if (lookupResultSymbol is NamedTypeSymbol namedType)
             {
-                // We did a lookup with a generic arity, filtered to types and namespaces. If
-                // we got back something other than a type, there had better be an error info
-                // for us.
+                namedTypeOrAlias = namedType;
+            }
+            else if (lookupResultSymbol is AliasSymbolFromSyntax alias)
+            {
+                namedTypeOrAlias = alias;
+            }
+            else
+            {
+                // We did a lookup with a generic arity, filtered to types and aliases (target to types or namespaces). If
+                // we got back something other than a type or an alias, there had better be an error info for us.
                 Debug.Assert(lookupResult.Error != null);
-                type = new ExtendedErrorTypeSymbol(
+                namedTypeOrAlias = new ExtendedErrorTypeSymbol(
                     GetContainingNamespaceOrType(lookupResultSymbol),
                     ImmutableArray.Create<Symbol>(lookupResultSymbol),
                     lookupResult.Kind,
@@ -1314,7 +1376,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             lookupResult.Free();
 
-            return type;
+            return namedTypeOrAlias;
         }
 
         private ExtendedErrorTypeSymbol CreateErrorIfLookupOnTypeParameter(
@@ -1405,7 +1467,29 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 // we pass an empty basesBeingResolved here because this invocation is not on any possible path of
                 // infinite recursion in binding base clauses.
-                return ConstructNamedType(type, typeSyntax, typeArgumentsSyntax, typeArguments, basesBeingResolved: null, diagnostics: diagnostics);
+                return ConstructNamedTypeOrAlias(type, typeSyntax, typeArgumentsSyntax, typeArguments, basesBeingResolved: null, diagnostics: diagnostics) as NamedTypeSymbol;
+            }
+        }
+
+        private TypeSymbol ConstructAliasUnlessTypeArgumentOmitted(SyntaxNode typeSyntax, AliasSymbolFromSyntax alias, SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax, ImmutableArray<TypeWithAnnotations> typeArguments, BindingDiagnosticBag diagnostics)
+        {
+            if (typeArgumentsSyntax.Any(SyntaxKind.OmittedTypeArgument))
+            {
+                // Note: lookup won't have reported this, since the arity was correct.
+                // CONSIDER: the text of this error message makes sense, but we might want to add a separate code.
+                Error(diagnostics, ErrorCode.ERR_BadArity, typeSyntax, alias, MessageID.IDS_SK_ALIAS.Localize(), typeArgumentsSyntax.Count);
+
+                // If the syntax looks like an unbound generic alias, then they probably wanted the target.
+                // Give an error indicating that the syntax is incorrect and then use the target.  We should not
+                // provide unbound generic alias because it is illegal.
+                Debug.Assert(alias.Target is TypeSymbol);
+                return (TypeSymbol)alias.Target;
+            }
+            else
+            {
+                // we pass an empty basesBeingResolved here because this invocation is not on any possible path of
+                // infinite recursion in binding base clauses.
+                return ConstructNamedTypeOrAlias(alias, typeSyntax, typeArgumentsSyntax, typeArguments, basesBeingResolved: null, diagnostics: diagnostics);
             }
         }
 
@@ -1565,8 +1649,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         private static readonly Func<Symbol, MethodSymbol> s_toMethodSymbolFunc = s => (MethodSymbol)s;
         private static readonly Func<Symbol, PropertySymbol> s_toPropertySymbolFunc = s => (PropertySymbol)s;
 
-        private NamedTypeSymbol ConstructNamedType(
-            NamedTypeSymbol type,
+        private TypeSymbol ConstructNamedTypeOrAlias(
+            NamedTypeOrAliasSymbol namedTypeOrAlias,
             SyntaxNode typeSyntax,
             SeparatedSyntaxList<TypeSyntax> typeArgumentsSyntax,
             ImmutableArray<TypeWithAnnotations> typeArguments,
@@ -1574,20 +1658,36 @@ namespace Microsoft.CodeAnalysis.CSharp
             BindingDiagnosticBag diagnostics)
         {
             Debug.Assert(!typeArguments.IsEmpty);
-            type = type.Construct(typeArguments);
+            TypeSymbol type = namedTypeOrAlias.ConstructIfGeneric(typeArguments);
 
-            if (ShouldCheckConstraints && ConstraintsHelper.RequiresChecking(type))
+            if (ShouldCheckConstraints)
             {
                 bool includeNullability = Compilation.IsFeatureEnabled(MessageID.IDS_FeatureNullableReferenceTypes);
-                type.CheckConstraintsForNamedType(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics),
-                                                  typeSyntax, typeArgumentsSyntax, basesBeingResolved);
+                if (namedTypeOrAlias.IsAlias && ConstraintsHelper.RequiresChecking(namedTypeOrAlias.AliasSymbol))
+                {
+                    namedTypeOrAlias.AliasSymbol.CheckConstraints(typeArguments, new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics), typeArgumentsSyntax);
+                }
+                else
+                {
+                    Debug.Assert(type is NamedTypeSymbol);
+                    if (ConstraintsHelper.RequiresChecking((NamedTypeSymbol)type))
+                    {
+                        ((NamedTypeSymbol)type).CheckConstraintsForNamedType(new ConstraintsHelper.CheckConstraintsArgs(this.Compilation, this.Conversions, includeNullability, typeSyntax.Location, diagnostics),
+                                                                             typeSyntax, typeArgumentsSyntax, basesBeingResolved);
+                    }
+                }
+            }
+            else if (namedTypeOrAlias.IsAlias)
+            {
+                // We preserve alias construct information in constructed TypeSymbol for later check.
+                type = type.WithAliasConstructAnnotation(new TypeSymbol.AliasConstructAnnotation(type, namedTypeOrAlias.AliasSymbol, typeArguments, typeArgumentsSyntax));
             }
 
             return type;
         }
 
         /// <summary>
-        /// Check generic type constraints unless the type is used as part of a type or method
+        /// Check generic type constraints unless the type is used as part of a type, method or alias
         /// declaration. In those cases, constraints checking is handled by the caller.
         /// </summary>
         private bool ShouldCheckConstraints
@@ -2245,25 +2345,28 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // Single viable result.
                         var singleResult = symbols[0];
 
+                        // Unwrap alias symbol for further checking.
+                        var singleUnwrappedResult = UnwrapAliasNoDiagnostics(singleResult);
+
                         // Cannot reference System.Void directly.
-                        var singleType = singleResult as TypeSymbol;
+                        var singleType = singleUnwrappedResult as TypeSymbol;
                         if ((object)singleType != null && singleType.PrimitiveTypeCode == Cci.PrimitiveTypeCode.Void && simpleName == "Void")
                         {
                             wasError = true;
                             var errorInfo = new CSDiagnosticInfo(ErrorCode.ERR_SystemVoid);
                             diagnostics.Add(errorInfo, where.Location);
-                            singleResult = new ExtendedErrorTypeSymbol(GetContainingNamespaceOrType(singleResult), singleResult, LookupResultKind.NotReferencable, errorInfo); // UNDONE: Review resultkind.
+                            singleResult = new ExtendedErrorTypeSymbol(GetContainingNamespaceOrType(singleType), singleType, LookupResultKind.NotReferencable, errorInfo); // UNDONE: Review resultkind.
                         }
                         // Check for bad symbol.
                         else
                         {
-                            if (singleResult.Kind == SymbolKind.NamedType &&
+                            if (singleUnwrappedResult.Kind == SymbolKind.NamedType &&
                                 ((SourceModuleSymbol)this.Compilation.SourceModule).AnyReferencedAssembliesAreLinked)
                             {
                                 // Complain about unembeddable types from linked assemblies.
                                 if (diagnostics.DiagnosticBag is object)
                                 {
-                                    Emit.NoPia.EmbeddedTypesManager.IsValidEmbeddableType((NamedTypeSymbol)singleResult, where, diagnostics.DiagnosticBag);
+                                    Emit.NoPia.EmbeddedTypesManager.IsValidEmbeddableType((NamedTypeSymbol)singleType, where, diagnostics.DiagnosticBag);
                                 }
                             }
 
@@ -2271,11 +2374,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                             {
                                 wasError = ReportUseSite(singleResult, diagnostics, where);
                             }
-                            else if (singleResult.Kind == SymbolKind.ErrorType)
+                            else if (singleUnwrappedResult.Kind == SymbolKind.ErrorType)
                             {
                                 // We want to report ERR_CircularBase error on the spot to make sure
                                 // that the right location is used for it.
-                                var errorType = (ErrorTypeSymbol)singleResult;
+                                var errorType = (ErrorTypeSymbol)singleType;
 
                                 if (errorType.Unreported)
                                 {

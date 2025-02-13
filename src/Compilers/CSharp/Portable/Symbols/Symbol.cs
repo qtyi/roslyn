@@ -78,7 +78,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>
         /// Gets the name of a symbol as it appears in metadata. Most of the time, this
         /// is the same as the Name property, with the following exceptions:
-        /// 1) The metadata name of generic types includes the "`1", "`2" etc. suffix that
+        /// 1) The metadata name of generic types and aliases includes the "`1", "`2" etc. suffix that
         /// indicates the number of type parameters (it does not include, however, names of
         /// containing types or namespaces).
         /// 2) The metadata name of explicit interface names have spaces removed, compared to

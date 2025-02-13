@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.CodeAnalysis.CSharp.Completion.Providers;
 
 [ExportCompletionProvider(nameof(PreprocessorCompletionProvider), LanguageNames.CSharp)]
-[ExtensionOrder(After = nameof(ExternAliasCompletionProvider))]
+[ExtensionOrder(After = nameof(GenericAliasTargetCompletionProvider))]
 [Shared]
 internal class PreprocessorCompletionProvider : AbstractPreprocessorCompletionProvider
 {

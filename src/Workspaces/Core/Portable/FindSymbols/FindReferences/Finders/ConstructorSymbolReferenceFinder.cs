@@ -24,15 +24,15 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
     protected override bool CanFind(IMethodSymbol symbol)
         => symbol.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor;
 
-    protected override Task<ImmutableArray<string>> DetermineGlobalAliasesAsync(IMethodSymbol symbol, Project project, CancellationToken cancellationToken)
+    protected override Task<ImmutableArray<NameWithArity>> DetermineGlobalAliasesAsync(IMethodSymbol symbol, Project project, CancellationToken cancellationToken)
     {
         var containingType = symbol.ContainingType;
-        return GetAllMatchingGlobalAliasNamesAsync(project, containingType.Name, containingType.Arity, cancellationToken);
+        return GetAllMatchingGlobalAliasAsync(project, containingType.Name, containingType.Arity, cancellationToken);
     }
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         IMethodSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,
@@ -51,7 +51,7 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
             foreach (var globalAlias in globalAliases)
             {
                 await AddDocumentsAsync(
-                    project, documents, globalAlias, processResult, processResultData, cancellationToken).ConfigureAwait(false);
+                    project, documents, globalAlias.Name, processResult, processResultData, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -100,14 +100,15 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
         // First just look for this normal constructor references using the name of it's containing type.
         var containingType = methodSymbol.ContainingType;
         var containingTypeName = containingType.Name;
+        var containingTypeArity = containingType.Arity;
         AddReferencesInDocumentWorker(
-            methodSymbol, containingTypeName, state, processResult, processResultData, cancellationToken);
+            methodSymbol, containingTypeName, containingTypeArity, state, processResult, processResultData, cancellationToken);
 
         // Next, look for constructor references through a global alias to our containing type.
         foreach (var globalAlias in state.GlobalAliases)
             FindReferenceToAlias(methodSymbol, state, processResult, processResultData, containingTypeName, globalAlias, cancellationToken);
 
-        foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(containingTypeName, containingType.Arity))
+        foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(SyntaxTreeIndex.FilterAliasesByName(containingTypeName, containingTypeArity, state.Document.GetRequiredLanguageService<ISyntaxFactsService>())))
             FindReferenceToAlias(methodSymbol, state, processResult, processResultData, containingTypeName, localAlias, cancellationToken);
 
         // Finally, look for constructor references to predefined types (like `new int()`),
@@ -126,16 +127,16 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
     }
 
     private static void FindReferenceToAlias<TData>(
-        IMethodSymbol methodSymbol, FindReferencesDocumentState state, Action<FinderLocation, TData> processResult, TData processResultData, string name, string alias, CancellationToken cancellationToken)
+        IMethodSymbol methodSymbol, FindReferencesDocumentState state, Action<FinderLocation, TData> processResult, TData processResultData, string name, NameWithArity alias, CancellationToken cancellationToken)
     {
         // ignore the cases where the global alias might match the type name (i.e.
         // global alias Console = System.Console).  We'll already find those references
         // above.
-        if (state.SyntaxFacts.StringComparer.Equals(name, alias))
+        if (state.SyntaxFacts.StringComparer.Equals(name, alias.Name))
             return;
 
         AddReferencesInDocumentWorker(
-            methodSymbol, alias, state, processResult, processResultData, cancellationToken);
+            methodSymbol, alias.Name, alias.Arity, state, processResult, processResultData, cancellationToken);
     }
 
     /// <summary>
@@ -145,27 +146,29 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
     private static void AddReferencesInDocumentWorker<TData>(
         IMethodSymbol symbol,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
         CancellationToken cancellationToken)
     {
         FindOrdinaryReferences(
-            symbol, name, state, processResult, processResultData, cancellationToken);
+            symbol, name, arity, state, processResult, processResultData, cancellationToken);
         FindAttributeReferences(
-            symbol, name, state, processResult, processResultData, cancellationToken);
+            symbol, name, arity, state, processResult, processResultData, cancellationToken);
     }
 
     private static void FindOrdinaryReferences<TData>(
         IMethodSymbol symbol,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
         CancellationToken cancellationToken)
     {
         FindReferencesInDocumentUsingIdentifier(
-            symbol, name, state, processResult, processResultData, cancellationToken);
+            symbol, name, arity, state, processResult, processResultData, cancellationToken);
     }
 
     private static void FindPredefinedTypeReferences<TData>(
@@ -191,13 +194,14 @@ internal sealed class ConstructorSymbolReferenceFinder : AbstractReferenceFinder
     private static void FindAttributeReferences<TData>(
         IMethodSymbol symbol,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
         CancellationToken cancellationToken)
     {
         if (TryGetNameWithoutAttributeSuffix(name, state.SyntaxFacts, out var simpleName))
-            FindReferencesInDocumentUsingIdentifier(symbol, simpleName, state, processResult, processResultData, cancellationToken);
+            FindReferencesInDocumentUsingIdentifier(symbol, simpleName, arity, state, processResult, processResultData, cancellationToken);
     }
 
     private static void FindReferencesInImplicitObjectCreationExpression<TData>(

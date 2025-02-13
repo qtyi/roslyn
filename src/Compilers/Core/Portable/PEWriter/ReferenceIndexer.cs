@@ -143,6 +143,9 @@ namespace Microsoft.Cci
 
                 if (import.TargetTypeOpt != null)
                 {
+                    // WORKAROUND(sanmuru): We have already skipped those generic alias imports.
+                    Debug.Assert(!import.AliasOpt.HasValue || import.AliasOpt.Value.Arity == 0);
+
                     this.typeReferenceNeedsToken = true;
                     Visit(import.TargetTypeOpt);
                     Debug.Assert(!this.typeReferenceNeedsToken);

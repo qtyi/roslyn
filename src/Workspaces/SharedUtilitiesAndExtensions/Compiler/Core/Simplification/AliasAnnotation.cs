@@ -12,9 +12,9 @@ internal static class AliasAnnotation
 {
     public const string Kind = "Alias";
 
-    public static string GetAliasName(SyntaxAnnotation annotation)
-        => annotation.Data!;
+    public static NameWithArity GetAlias(SyntaxAnnotation annotation)
+        => NameWithArity.Parse(annotation.Data!);
 
-    public static SyntaxAnnotation Create(string aliasName)
-        => new(Kind, aliasName);
+    public static SyntaxAnnotation Create(string aliasName, int aliasArity)
+        => new(Kind, new NameWithArity(aliasName, aliasArity).ToString());
 }

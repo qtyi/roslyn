@@ -5734,4 +5734,10 @@
   <data name="ERR_EmbeddedAttributeMustFollowPattern" xml:space="preserve">
     <value>The type 'Microsoft.CodeAnalysis.EmbeddedAttribute' must be non-generic, Friend, NotInheritable, have a Public parameterless constructor, inherit from System.Attribute, and be able to be applied to any type</value>
   </data>
+  <data name="ERR_InvalidTypeForAliasesImport3" xml:space="preserve">
+    <value>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</value>
+  </data>
+  <data name="FEATURE_ImportGenericAlias" xml:space="preserve">
+    <value>import generic alias</value>
+  </data>
 </root>

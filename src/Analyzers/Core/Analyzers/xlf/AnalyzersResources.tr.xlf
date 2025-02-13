@@ -71,6 +71,16 @@
         <target state="translated">'this' veya 'Me' niteliği ekle</target>
         <note />
       </trans-unit>
+      <trans-unit id="Alias_type_parameter_0_is_unnecessary">
+        <source>Alias type parameter "{0}" is unnecessary</source>
+        <target state="new">Alias type parameter "{0}" is unnecessary</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Alias_type_parameter_0_is_unused">
+        <source>Alias type parameter "{0}" is unused</source>
+        <target state="new">Alias type parameter "{0}" is unused</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Avoid_legacy_format_target_0_in_SuppressMessageAttribute">
         <source>Avoid legacy format target '{0}' in 'SuppressMessageAttribute'</source>
         <target state="translated">'SuppressMessageAttribute' içinde eski biçimde hedef ('{0}') kullanmaktan kaçının</target>
@@ -316,6 +326,11 @@
         <target state="translated">Gereksiz eşitliği kaldır</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_alias_type_parameters">
+        <source>Remove unnecessary alias type parameters</source>
+        <target state="new">Remove unnecessary alias type parameters</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Remove_unnecessary_parentheses">
         <source>Remove unnecessary parentheses</source>
         <target state="translated">Gereksiz parantezleri kaldırın</target>
@@ -329,6 +344,11 @@
       <trans-unit id="Remove_unread_private_members">
         <source>Remove unread private members</source>
         <target state="translated">Okunmamış özel üyeleri kaldır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Remove_unused_alias_type_parameters">
+        <source>Remove unused alias type parameters</source>
+        <target state="new">Remove unused alias type parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="Remove_unused_member">

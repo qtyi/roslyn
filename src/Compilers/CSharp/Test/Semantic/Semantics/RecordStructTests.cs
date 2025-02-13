@@ -782,9 +782,6 @@ record struct S
                 // (5,31): error CS0666: 'S.field': new protected member declared in struct
                 //     internal protected string field; // 2, 3
                 Diagnostic(ErrorCode.ERR_ProtectedInStruct, "field").WithArguments("S.field").WithLocation(5, 31),
-                // (5,31): warning CS0649: Field 'S.field' is never assigned to, and will always have its default value null
-                //     internal protected string field; // 2, 3
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("S.field", "null").WithLocation(5, 31),
                 // (6,19): error CS0621: 'S.M()': virtual or abstract members cannot be private
                 //     abstract void M(); // 4
                 Diagnostic(ErrorCode.ERR_VirtualPrivate, "M").WithArguments("S.M()").WithLocation(6, 19),
@@ -5984,7 +5981,7 @@ class Attr1 : System.Attribute {}
 ";
             var analyzer = new AnalyzerActions_01_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount0);
             Assert.Equal(1, analyzer.FireCountRecordStructDeclarationA);
@@ -6223,7 +6220,7 @@ record struct C
 
             var analyzer = new AnalyzerActions_02_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6309,7 +6306,7 @@ readonly record struct C
 
             var analyzer = new AnalyzerActions_03_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6454,7 +6451,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_04_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(0, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount6);
@@ -6557,7 +6554,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_05_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
         }
@@ -6613,7 +6610,7 @@ interface I1 {}
 ";
             var analyzer = new AnalyzerActions_07_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount4);
@@ -6685,7 +6682,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_08_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount400);
@@ -6853,7 +6850,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_09_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);

@@ -1403,11 +1403,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeGeneration
             Return SyntaxFactory.ImportsStatement(SyntaxFactory.SingletonSeparatedList(Of ImportsClauseSyntax)(SyntaxFactory.SimpleImportsClause(DirectCast(name, NameSyntax))))
         End Function
 
-        Public Overrides Function AliasImportDeclaration(aliasIdentifierName As String, name As SyntaxNode) As SyntaxNode
+        Public Overrides Function AliasImportDeclaration(aliasIdentifierName As String, aliasTypeParameters As IEnumerable(Of SyntaxNode), name As SyntaxNode) As SyntaxNode
             If TypeOf name Is NameSyntax Then
                 Return SyntaxFactory.ImportsStatement(SyntaxFactory.SeparatedList(Of ImportsClauseSyntax).Add(
                                                       SyntaxFactory.SimpleImportsClause(
-                                                      SyntaxFactory.ImportAliasClause(aliasIdentifierName),
+                                                      SyntaxFactory.ImportAliasClause(
+                                                      SyntaxFactory.Identifier(aliasIdentifierName),
+                                                      If(aliasTypeParameters Is Nothing, Nothing,
+                                                      SyntaxFactory.TypeParameterList(
+                                                      SyntaxFactory.SeparatedList(aliasTypeParameters.Cast(Of TypeParameterSyntax))))),
                                                       CType(name, NameSyntax))))
 
             End If
@@ -1973,7 +1977,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeGeneration
                     End If
 
                 Case SyntaxKind.SimpleImportsClause
-                    Return DirectCast(declaration, SimpleImportsClauseSyntax).Name.ToString()
+                    Return DirectCast(declaration, SimpleImportsClauseSyntax).NamespaceOrType.ToString()
             End Select
 
             Return String.Empty
@@ -2043,7 +2047,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CodeGeneration
                         Dim clause = stmt.ImportsClauses(0)
                         Select Case clause.Kind
                             Case SyntaxKind.SimpleImportsClause
-                                Return ReplaceWithTrivia(declaration, DirectCast(clause, SimpleImportsClauseSyntax).Name, Me.DottedName(name))
+                                Return ReplaceWithTrivia(declaration, DirectCast(clause, SimpleImportsClauseSyntax).NamespaceOrType, Me.DottedName(name))
                         End Select
                     End If
             End Select

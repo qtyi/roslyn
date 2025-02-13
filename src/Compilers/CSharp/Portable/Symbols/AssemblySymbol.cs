@@ -552,6 +552,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal abstract IEnumerable<string> GetInternalsVisibleToAssemblyNames();
 
+        IEnumerable<ImmutableArray<byte>> IAssemblySymbolInternal.GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+            => GetFriendAccessibleAssemblyPublicKeys(simpleName);
+
+        internal abstract IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName);
+
+        IEnumerable<string> IAssemblySymbolInternal.GetFriendAccessibleAssemblyNames()
+            => GetFriendAccessibleAssemblyNames();
+
+        internal abstract IEnumerable<string> GetFriendAccessibleAssemblyNames();
+
         bool IAssemblySymbolInternal.AreInternalsVisibleToThisAssembly(IAssemblySymbolInternal otherAssembly)
             => AreInternalsVisibleToThisAssembly((AssemblySymbol)otherAssembly);
 

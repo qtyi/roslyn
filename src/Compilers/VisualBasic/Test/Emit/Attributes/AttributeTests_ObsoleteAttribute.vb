@@ -2424,6 +2424,43 @@ Imports A(Of C()).B
      </errors>)
         End Sub
 
+        <Fact>
+        Public Sub TestObsoleteInGenericAlias()
+            Dim compilation = CompilationUtils.CreateCompilationWithMscorlib40AndVBRuntime(
+<compilation>
+    <file name="a.vb"><![CDATA[
+Imports X(Of T) = T
+Imports Y(Of T) = A(Of T)
+Imports Z(Of T) = A(Of T()).B
+
+Class A(Of T)
+    Friend Class B
+    End Class
+End Class
+<System.Obsolete>
+Class C
+End Class
+Module M
+    Private F As X(Of C)
+    Private G As Y(Of C)
+    Private H As Z(Of C)
+End Module
+]]>
+    </file>
+</compilation>)
+            compilation.AssertTheseDiagnostics(<errors>
+BC40008: 'C' is obsolete.
+    Private F As X(Of C)
+                      ~
+BC40008: 'C' is obsolete.
+    Private G As Y(Of C)
+                      ~
+BC40008: 'C' is obsolete.
+    Private H As Z(Of C)
+                      ~
+     </errors>)
+        End Sub
+
         <WorkItem(580832, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/580832")>
         <Fact>
         Public Sub TestObsoleteOnVirtualMethod()

@@ -278,7 +278,7 @@ End Class
             Dim rootNamespace As NamespaceSymbol = Nothing
             Dim currentNamespace As NamespaceSymbol = Nothing
             Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-            Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
             Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
             GetImports(compContext, rootNamespace, currentNamespace, typesAndNamespaces, aliases, xmlNamespaces)
 
@@ -313,7 +313,7 @@ End Class
             Dim rootNamespace As NamespaceSymbol = Nothing
             Dim currentNamespace As NamespaceSymbol = Nothing
             Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-            Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
             Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
             GetImports(compContext, rootNamespace, currentNamespace, typesAndNamespaces, aliases, xmlNamespaces)
 
@@ -440,7 +440,7 @@ End Namespace
                     Dim rootNamespace As NamespaceSymbol = Nothing
                     Dim currentNamespace As NamespaceSymbol = Nothing
                     Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-                    Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+                    Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
                     Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
 
                     GetImports(
@@ -495,7 +495,7 @@ End Namespace
                         Dim rootNamespace As NamespaceSymbol = Nothing
                         Dim currentNamespace As NamespaceSymbol = Nothing
                         Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-                        Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+                        Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
                         Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
 
                         GetImports(
@@ -557,7 +557,7 @@ End Namespace
             Dim rootNamespace As NamespaceSymbol = Nothing
             Dim currentNamespace As NamespaceSymbol = Nothing
             Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-            Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
             Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
 
             WithRuntimeInstance(comp,
@@ -638,7 +638,7 @@ IL_000a:  ret
             <Out> ByRef rootNamespace As NamespaceSymbol,
             <Out> ByRef currentNamespace As NamespaceSymbol,
             <Out> ByRef typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
-            <Out> ByRef aliases As Dictionary(Of String, AliasAndImportsClausePosition),
+            <Out> ByRef aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition),
             <Out> ByRef xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition))
 
             Dim evalContext = CreateMethodContext(runtime, methodName)
@@ -652,7 +652,7 @@ IL_000a:  ret
             <Out> ByRef rootNamespace As NamespaceSymbol,
             <Out> ByRef currentNamespace As NamespaceSymbol,
             <Out> ByRef typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
-            <Out> ByRef aliases As Dictionary(Of String, AliasAndImportsClausePosition),
+            <Out> ByRef aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition),
             <Out> ByRef xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition))
 
             Dim binder = compContext.NamespaceBinder
@@ -685,8 +685,8 @@ IL_000a:  ret
                     Assert.False(typesAndNamespaces.IsDefault)
                 ElseIf TypeOf binder Is ImportAliasesBinder Then
                     Assert.Null(aliases)
-                    aliases = DirectCast(aliasesField.GetValue(binder), Dictionary(Of String, AliasAndImportsClausePosition))
-                    AssertEx.All(aliases, Function(pair) pair.Key = pair.Value.Alias.Name)
+                    aliases = DirectCast(aliasesField.GetValue(binder), Dictionary(Of NameWithArity, AliasAndImportsClausePosition))
+                    AssertEx.All(aliases, Function(pair) pair.Key.Name = pair.Value.Alias.Name AndAlso pair.Key.Arity = pair.Value.Alias.Arity)
                     Assert.NotNull(aliases)
                 ElseIf TypeOf binder Is XmlNamespaceImportsBinder Then
                     Assert.Null(xmlNamespaces)

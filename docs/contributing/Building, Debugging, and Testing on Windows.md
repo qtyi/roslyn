@@ -4,7 +4,7 @@
 
 Using the command line, Roslyn can be developed using the following pattern:
 
-1. Clone https://github.com/dotnet/roslyn
+1. Clone https://github.com/qtyi/roslyn
 1. Run Restore.cmd
 1. Run Build.cmd
 1. Run Test.cmd
@@ -23,7 +23,7 @@ The minimal required version of .NET Framework is 4.7.2.
 1. Install the [.NET 9.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) which matches the `sdk.version` property in [global.json](../../global.json#L3)
 1. [PowerShell 5.0 or newer](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-windows-powershell). If you are on Windows 10, you are fine; you'll only need to upgrade if you're on earlier versions of Windows. The download link is under the ["Upgrading existing Windows PowerShell"](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6#upgrading-existing-windows-powershell) heading.
 1. Run Restore.cmd
-1. Open Roslyn.sln
+1. Open Roslyn.slnx
 
 ## Developing with Visual Studio Code
 
@@ -88,7 +88,7 @@ give it a try.
 You can build and deploy with the following command:
 `.\Build.cmd -Restore -Configuration Release -deployExtensions -launch`.
 
-Then you can launch the `RoslynDev` hive with `devenv /rootSuffix RoslynDev`.
+Then you can launch the `Qtyi` hive with `devenv /rootSuffix Qtyi`.
 
 ### Deploying with F5
 
@@ -138,7 +138,7 @@ The experimental instance used by Roslyn is an entirely separate instance of
 Visual Studio with it's own settings and installed extensions. It's also, by
 default, a separate instance than the standard "Experimental Instance" used by
 other Visual Studio SDK projects. If you're familiar with the idea of Visual
-Studio hives, we deploy into the RoslynDev root suffix.
+Studio hives, we deploy into the Qtyi root suffix.
 
 ### Deploying with VSIX and Nuget package
 
@@ -185,7 +185,7 @@ and the compiler will produce a diagnostic including its own version as well as 
 version it is operating under.
 
 You can also attach a debugger to Visual Studio and check the loaded modules, looking at the folder
-where the various `CodeAnalysis` modules were loaded from (the `RoslynDev` should load them somewhere
+where the various `CodeAnalysis` modules were loaded from (the `Qtyi` should load them somewhere
 under `AppData`, not from `Program File`).
 
 ### Testing on the [dotnet/runtime](https://github.com/dotnet/runtime) repo
@@ -205,7 +205,7 @@ See internal documentation for that process [here](https://microsoft.sharepoint.
 
 Run `build.cmd -testIOperation` which sets the `ROSLYN_TEST_IOPERATION` environment variable to `true` and runs the tests.
 For running those tests in an IDE, the easiest is to find the `//#define ROSLYN_TEST_IOPERATION` directive and uncomment it.
-See more details in the [IOperation test hook](https://github.com/dotnet/roslyn/blob/main/docs/compilers/IOperation%20Test%20Hook.md) doc.
+See more details in the [IOperation test hook](https://github.com/qtyi/roslyn/blob/main/docs/compilers/IOperation%20Test%20Hook.md) doc.
 
 ### Replicating Failures in the Used Assemblies leg
 
@@ -235,4 +235,4 @@ Before pushing a relevant fix to CI, you can validate locally using the `-testUs
 
 ## Contributing
 
-Please see [Contributing Code](https://github.com/dotnet/roslyn/blob/main/CONTRIBUTING.md) for details on contributing changes back to the code.
+Please see [Contributing Code](https://github.com/qtyi/roslyn/blob/main/CONTRIBUTING.md) for details on contributing changes back to the code.

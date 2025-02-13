@@ -1637,6 +1637,13 @@ namespace Microsoft.CodeAnalysis
             return result?.ToImmutableAndFree() ?? ImmutableArray<string>.Empty;
         }
 
+        internal ImmutableArray<string> GetIgnoresAccessChecksToAttributeValues(EntityHandle token)
+        {
+            List<AttributeInfo> attrInfos = FindTargetAttributes(token, AttributeDescription.IgnoresAccessChecksToAttribute);
+            ArrayBuilder<string> result = ExtractStringValuesFromAttributes(attrInfos);
+            return result?.ToImmutableAndFree() ?? ImmutableArray<string>.Empty;
+        }
+
         internal ImmutableArray<string> GetConditionalAttributeValues(EntityHandle token)
         {
             List<AttributeInfo> attrInfos = FindTargetAttributes(token, AttributeDescription.ConditionalAttribute);

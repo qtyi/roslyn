@@ -3679,7 +3679,7 @@ class Attr3 : System.Attribute {}
 
             var analyzer = new AnalyzerActions_01_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount0);
             Assert.Equal(1, analyzer.FireCount1);
@@ -4050,7 +4050,7 @@ class C
 
             var analyzer = new AnalyzerActions_02_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount3);
@@ -4128,7 +4128,7 @@ class C
 
             var analyzer = new AnalyzerActions_03_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount3);
@@ -4263,7 +4263,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_04_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(0, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -4479,7 +4479,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_05_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -4585,7 +4585,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_06_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount200);
@@ -4793,7 +4793,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_07_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -4898,7 +4898,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_08_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount200);
@@ -5111,7 +5111,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_09_Class_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -5214,7 +5214,7 @@ class Attr1 : System.Attribute {}
 ";
             var analyzer = new AnalyzerActions_01_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount0);
             Assert.Equal(1, analyzer.FireCountStructDeclarationA);
@@ -5453,7 +5453,7 @@ struct C
 
             var analyzer = new AnalyzerActions_02_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount3);
@@ -5532,7 +5532,7 @@ readonly struct C
 
             var analyzer = new AnalyzerActions_03_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount3);
@@ -5657,7 +5657,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_04_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(0, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount6);
@@ -5760,7 +5760,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_05_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
         }
@@ -5816,7 +5816,7 @@ interface I1 {}
 ";
             var analyzer = new AnalyzerActions_07_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount4);
@@ -5888,7 +5888,7 @@ interface I1 {}
 
             var analyzer = new AnalyzerActions_08_Struct_Analyzer();
             var comp = CreateCompilation(text1);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount100);
             Assert.Equal(1, analyzer.FireCount400);

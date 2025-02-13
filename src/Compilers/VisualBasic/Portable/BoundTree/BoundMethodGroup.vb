@@ -72,7 +72,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                     localUseSiteInfo)
 
                     If lookup.IsGood Then
-                        methods = lookup.Symbols.ToDowncastedImmutable(Of MethodSymbol)()
+                        methods = lookup.Symbols.ToImmutable().WithoutAnnotationSymbols(Of MethodSymbol)()
                     End If
 
                     lookup.Free()

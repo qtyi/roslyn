@@ -28,9 +28,33 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             OpenTypeVisitor.Visit(typeExpression, _allowedMap)
         End Sub
 
-        Public Overrides Function IsUnboundTypeAllowed(Syntax As GenericNameSyntax) As Boolean
+        Public Overrides Function IsUnboundTypeAllowed(syntax As GenericNameSyntax) As Boolean
             Dim allowed As Boolean
-            Return _allowedMap IsNot Nothing AndAlso _allowedMap.TryGetValue(Syntax, allowed) AndAlso allowed
+            Return _allowedMap IsNot Nothing AndAlso _allowedMap.TryGetValue(syntax, allowed) AndAlso allowed
+        End Function
+
+        Public Overrides Function IsUnboundAliasAllowed(syntax As GenericNameSyntax, symbol As AliasSymbol) As Boolean
+            If Not IsUnboundTypeAllowed(syntax) Then
+                Return False
+            End If
+
+            ' Open types are allowed if And only if
+            '   1) A generic named type whose type arguments are all type parameters of the alias symbol.
+            '   2) Any type that contains no type parameter of the alias symbol.
+            Debug.Assert(symbol.Target.IsType)
+            Dim containsAliasTypeParameter = DirectCast(symbol.Target, TypeSymbol).VisitType(Function(t As TypeSymbol, a As AliasSymbol) t.TypeKind = TypeKind.TypeParameter, symbol) IsNot Nothing
+
+            If Not containsAliasTypeParameter Then
+                Return True
+            End If
+
+            Dim namedType = TryCast(symbol.Target, NamedTypeSymbol)
+            If namedType Is Nothing Then
+                Return False
+            End If
+
+            Dim typeArgs = If(namedType.IsTupleType, namedType.TupleElementTypes, namedType.TypeArgumentsNoUseSiteDiagnostics)
+            Return typeArgs.All(Function(t As TypeSymbol, a As AliasSymbol) t.TypeKind = TypeKind.TypeParameter, symbol)
         End Function
 
         ''' <summary>

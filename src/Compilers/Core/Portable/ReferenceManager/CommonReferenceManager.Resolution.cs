@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis
             PEAssembly assembly,
             WeakList<IAssemblySymbolInternal> cachedSymbols,
             DocumentationProvider documentationProvider,
-            string sourceAssemblySimpleName,
+            TCompilation compilation,
             MetadataImportOptions importOptions,
             bool embedInteropTypes);
 
@@ -352,7 +352,7 @@ namespace Microsoft.CodeAnalysis
                                     assembly,
                                     cachedSymbols,
                                     peReference.DocumentationProvider,
-                                    SimpleAssemblyName,
+                                    compilation,
                                     compilation.Options.MetadataImportOptions,
                                     peReference.Properties.EmbedInteropTypes);
 

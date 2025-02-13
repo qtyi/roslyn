@@ -204,6 +204,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+            {
+                return true;
+            }
+
             if ((comparison & TypeCompareKind.IgnoreDynamic) != 0)
             {
                 var other = t2 as NamedTypeSymbol;

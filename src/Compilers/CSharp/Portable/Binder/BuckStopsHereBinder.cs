@@ -99,6 +99,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             return false;
         }
 
+        protected override bool IsUnboundAliasAllowed(GenericNameSyntax syntax, AliasSymbol symbol)
+        {
+            return false;
+        }
+
         internal override bool IsInMethodBody
         {
             get

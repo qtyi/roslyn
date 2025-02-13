@@ -48,10 +48,10 @@ partial class A : Object {}
             var info1 = model.GetSemanticInfoSummary(base1);
             Assert.NotNull(info1.Symbol);
             var alias1 = model.GetAliasInfo((IdentifierNameSyntax)base1);
-            Assert.NotNull(alias1);
-            Assert.Equal(SymbolKind.Alias, alias1.Kind);
-            Assert.Equal("O", alias1.ToDisplayString());
-            Assert.Equal("O=System.Object", alias1.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
+            Assert.NotNull(alias1.Alias);
+            Assert.Equal(SymbolKind.Alias, alias1.Alias.Kind);
+            Assert.Equal("O", alias1.Alias.ToDisplayString());
+            Assert.Equal("O=System.Object", alias1.Alias.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
             Assert.Equal(info1.Symbol, alias1.Target);
 
             var info2 = model.GetSemanticInfoSummary(base2);
@@ -70,7 +70,7 @@ partial class A : Object {}
             Assert.Null(info4.Symbol); // no "using System;"
             Assert.Equal(0, info4.CandidateSymbols.Length);
             var alias4 = model.GetAliasInfo((IdentifierNameSyntax)base4);
-            Assert.Null(alias4);
+            Assert.Null(alias4.Alias);
         }
 
         [Fact]
@@ -108,10 +108,10 @@ partial class A : Object {}
             var info1 = model.GetSemanticInfoSummary(base1);
             Assert.NotNull(info1.Symbol);
             var alias1 = model.GetAliasInfo((IdentifierNameSyntax)base1);
-            Assert.NotNull(alias1);
-            Assert.Equal(SymbolKind.Alias, alias1.Kind);
-            Assert.Equal("O", alias1.ToDisplayString());
-            Assert.Equal("O=System.Object", alias1.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
+            Assert.NotNull(alias1.Alias);
+            Assert.Equal(SymbolKind.Alias, alias1.Alias.Kind);
+            Assert.Equal("O", alias1.Alias.ToDisplayString());
+            Assert.Equal("O=System.Object", alias1.Alias.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
             Assert.Equal(info1.Symbol, alias1.Target);
 
             var info2 = model.GetSemanticInfoSummary(base2);
@@ -130,7 +130,7 @@ partial class A : Object {}
             Assert.Null(info4.Symbol); // no "using System;"
             Assert.Equal(0, info4.CandidateSymbols.Length);
             var alias4 = model.GetAliasInfo((IdentifierNameSyntax)base4);
-            Assert.Null(alias4);
+            Assert.Null(alias4.Alias);
         }
 
         [Fact]
@@ -165,9 +165,9 @@ partial class A : Object {}
             var info1 = model.GetSemanticInfoSummary(base1);
             Assert.Equal("System.Object", info1.Type.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
             var alias1 = model.GetAliasInfo((IdentifierNameSyntax)base1);
-            Assert.NotNull(alias1);
-            Assert.Equal(SymbolKind.Alias, alias1.Kind);
-            Assert.Equal("O=System.Object", alias1.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
+            Assert.NotNull(alias1.Alias);
+            Assert.Equal(SymbolKind.Alias, alias1.Alias.Kind);
+            Assert.Equal("O=System.Object", alias1.Alias.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
 
             var info2 = model.GetSemanticInfoSummary(base2);
             Assert.NotNull(info2.Symbol);
@@ -185,7 +185,7 @@ partial class A : Object {}
             Assert.Null(info4.Symbol); // no "using System;"
             Assert.Equal(0, info4.CandidateSymbols.Length);
             var alias4 = model.GetAliasInfo((IdentifierNameSyntax)base4);
-            Assert.Null(alias4);
+            Assert.Null(alias4.Alias);
         }
 
         [Fact]
@@ -223,9 +223,9 @@ partial class A : Object {}
             var info1 = model.GetSemanticInfoSummary(base1);
             Assert.Equal("System.Object", info1.Type.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
             var alias1 = model.GetAliasInfo((IdentifierNameSyntax)base1);
-            Assert.NotNull(alias1);
-            Assert.Equal(SymbolKind.Alias, alias1.Kind);
-            Assert.Equal("O=System.Object", alias1.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
+            Assert.NotNull(alias1.Alias);
+            Assert.Equal(SymbolKind.Alias, alias1.Alias.Kind);
+            Assert.Equal("O=System.Object", alias1.Alias.ToDisplayString(format: SymbolDisplayFormat.TestFormat));
 
             var info2 = model.GetSemanticInfoSummary(base2);
             Assert.NotNull(info2.Symbol);
@@ -243,7 +243,7 @@ partial class A : Object {}
             Assert.Null(info4.Symbol); // no "using System;"
             Assert.Equal(0, info4.CandidateSymbols.Length);
             var alias4 = model.GetAliasInfo((IdentifierNameSyntax)base4);
-            Assert.Null(alias4);
+            Assert.Null(alias4.Alias);
         }
 
         [Theory]
@@ -543,7 +543,7 @@ class Program
             CSharpCompilation comp = CreateCompilation(syntaxTree);
             var model = comp.GetSemanticModel(syntaxTree);
             IdentifierNameSyntax exprSyntaxToBind = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
-            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Kind);
+            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Alias.Kind);
         }
 
         [WorkItem(541937, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541937")]
@@ -563,7 +563,7 @@ class Program
             CSharpCompilation comp = CreateCompilation(syntaxTree);
             var model = comp.GetSemanticModel(syntaxTree);
             IdentifierNameSyntax exprSyntaxToBind = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
-            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Kind);
+            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Alias.Kind);
         }
 
         [Fact, WorkItem(541937, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541937")]
@@ -582,7 +582,7 @@ class Program
             CSharpCompilation comp = CreateCompilation(syntaxTree);
             var model = comp.GetSemanticModel(syntaxTree);
             IdentifierNameSyntax exprSyntaxToBind = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
-            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Kind);
+            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Alias.Kind);
             Assert.Equal("System.Int32[]", model.GetAliasInfo(exprSyntaxToBind).Target.ToTestDisplayString());
         }
 
@@ -602,7 +602,7 @@ class Program
             CSharpCompilation comp = CreateCompilation(syntaxTree);
             var model = comp.GetSemanticModel(syntaxTree);
             IdentifierNameSyntax exprSyntaxToBind = (IdentifierNameSyntax)GetExprSyntaxForBinding(GetExprSyntaxList(syntaxTree));
-            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Kind);
+            Assert.Equal(SymbolKind.Alias, model.GetAliasInfo(exprSyntaxToBind).Alias.Kind);
             Assert.Equal("(System.Int32, System.Int32)", model.GetAliasInfo(exprSyntaxToBind).Target.ToTestDisplayString());
         }
 
@@ -694,14 +694,14 @@ namespace NS
 
             var tree = compilation.SyntaxTrees.Single();
 
-            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Skip(1).Single();
+            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Single();
 
             Assert.Equal("Short.MyClass", node.Parent.ToString());
 
             var model = compilation.GetSemanticModel(tree);
 
             var alias = model.GetAliasInfo(node);
-            Assert.Equal("Short=LongNamespace", alias.ToTestDisplayString());
+            Assert.Equal("Short=LongNamespace", alias.Alias.ToTestDisplayString());
             Assert.Equal(SymbolKind.ErrorType, alias.Target.Kind);
             Assert.Equal("LongNamespace", alias.Target.ToTestDisplayString());
 
@@ -737,14 +737,14 @@ class Test
 
             var tree = compilation.SyntaxTrees.Single();
 
-            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Skip(1).Single();
+            var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(id => id.Identifier.ValueText == "Short").Single();
 
             Assert.Equal("Short.MyClass", node.Parent.ToString());
 
             var model = compilation.GetSemanticModel(tree);
 
             var alias = model.GetAliasInfo(node);
-            Assert.Equal("Short=LongNamespace", alias.ToTestDisplayString());
+            Assert.Equal("Short=LongNamespace", alias.Alias.ToTestDisplayString());
             Assert.Equal(SymbolKind.ErrorType, alias.Target.Kind);
             Assert.Equal("LongNamespace", alias.Target.ToTestDisplayString());
 

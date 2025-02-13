@@ -7,8 +7,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.LanguageService;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
@@ -49,7 +53,7 @@ internal sealed partial class SyntaxTreeIndex
         var stringLiterals = StringLiteralHashSetPool.Allocate();
         var longLiterals = LongLiteralHashSetPool.Allocate();
 
-        HashSet<(string alias, string name, int arity, bool isGlobal)>? aliasInfo = null;
+        HashSet<AliasInfo>? aliasInfo = null;
         Dictionary<InterceptsLocationData, TextSpan>? interceptsLocationInfo = null;
 
         var isCSharp = project.Language == LanguageNames.CSharp;
@@ -75,6 +79,8 @@ internal sealed partial class SyntaxTreeIndex
             var containsAttribute = false;
             var containsDirective = root.ContainsDirectives;
             var containsPrimaryConstructorBaseType = false;
+            var containsArrayCreationExpressionOrArrayType = false;
+            var containsPointerType = false;
 
             var predefinedTypes = (int)PredefinedType.None;
             var predefinedOperators = (int)PredefinedOperator.None;
@@ -107,6 +113,8 @@ internal sealed partial class SyntaxTreeIndex
                         containsCollectionInitializer = containsCollectionInitializer || syntaxFacts.IsObjectCollectionInitializer(node);
                         containsAttribute = containsAttribute || syntaxFacts.IsAttribute(node);
                         containsPrimaryConstructorBaseType = containsPrimaryConstructorBaseType || syntaxFacts.IsPrimaryConstructorBaseType(node);
+                        containsArrayCreationExpressionOrArrayType = containsArrayCreationExpressionOrArrayType || syntaxFacts.IsArrayCreationExpression(node) || syntaxFacts.IsArrayType(node);
+                        containsPointerType = containsPointerType || syntaxFacts.IsPointerType(node) || syntaxFacts.IsFunctionPointerType(node);
 
                         TryAddAliasInfo(syntaxFacts, ref aliasInfo, node);
 
@@ -201,7 +209,9 @@ internal sealed partial class SyntaxTreeIndex
                     containsCollectionInitializer,
                     containsAttribute,
                     containsDirective,
-                    containsPrimaryConstructorBaseType),
+                    containsPrimaryConstructorBaseType,
+                    containsArrayCreationExpressionOrArrayType,
+                    containsPointerType),
                 aliasInfo,
                 interceptsLocationInfo);
         }
@@ -307,29 +317,74 @@ internal sealed partial class SyntaxTreeIndex
 
     private static void TryAddAliasInfo(
         ISyntaxFactsService syntaxFacts,
-        ref HashSet<(string alias, string name, int arity, bool isGlobal)>? aliasInfo,
+        ref HashSet<AliasInfo>? aliasInfo,
         SyntaxNode node)
     {
         if (!syntaxFacts.IsUsingAliasDirective(node))
             return;
 
-        syntaxFacts.GetPartsOfUsingAliasDirective(node, out var globalToken, out var alias, out var usingTarget);
+        syntaxFacts.GetPartsOfUsingAliasDirective(node, out var globalToken, out var aliasIdentifier, out var aliasTypeParameters, out var usingTarget);
 
-        // if we have `global using X = Y.Z` then walk down the rhs to pull out 'Z'.
-        if (syntaxFacts.IsQualifiedName(usingTarget))
+        var isGlobal = globalToken != default;
+        AliasInfo info;
+        // if we have `= (A, B, C)`.  We treat it as tuple.
+        if (syntaxFacts.IsTupleType(usingTarget))
         {
-            syntaxFacts.GetPartsOfQualifiedName(usingTarget, out _, out _, out var right);
-            usingTarget = right;
+            syntaxFacts.GetPartsOfTupleType<SyntaxNode>(usingTarget, out _, out var elements, out _);
+            info = AliasInfo.CreateTuple(aliasIdentifier.ValueText, aliasTypeParameters.Count, elements.Count, isGlobal);
+        }
+        // if we have `= A[,]`.  We treat it as array.
+        else if (syntaxFacts.IsArrayType(usingTarget))
+        {
+            syntaxFacts.GetPartsOfArrayType<SyntaxNode>(usingTarget, out _, out var rankSpecifiers);
+            syntaxFacts.GetRankOfArrayRankSpecifier(rankSpecifiers[0], out var rank);
+            info = AliasInfo.CreateArray(aliasIdentifier.ValueText, aliasTypeParameters.Count, rank, isGlobal);
+        }
+        // if we have `= dynamic`. We treat it as dynamic.
+        else if (syntaxFacts.IsDynamicType(usingTarget))
+        {
+            info = AliasInfo.CreateDynamic(aliasIdentifier.ValueText, aliasTypeParameters.Count, isGlobal);
+        }
+        // if we have `= A*`.  We treat it as pointer.
+        else if (syntaxFacts.IsPointerType(usingTarget))
+        {
+            info = AliasInfo.CreatePointer(aliasIdentifier.ValueText, aliasTypeParameters.Count, isGlobal);
+        }
+        // if we have `= delegate*<A, B, C>`.  We treat it as function pointer.
+        else if (syntaxFacts.IsFunctionPointerType(usingTarget))
+        {
+            syntaxFacts.GetParametersOfFunctionPointerType<SyntaxNode>(usingTarget, out var parameters);
+            info = AliasInfo.CreateFunctionPointer(aliasIdentifier.ValueText, aliasTypeParameters.Count, parameters.Count, isGlobal);
+        }
+        // if we have `<T> = T`.  We do not treat it as named type or alias.
+        else if (syntaxFacts.IsIdentifierName(usingTarget) && aliasTypeParameters.Any(tp => tp.GetFirstToken().ValueText == usingTarget.GetFirstToken().ValueText))
+        {
+            info = AliasInfo.CreateTypeParameter(aliasIdentifier.ValueText, aliasTypeParameters.Count, usingTarget.GetFirstToken().ValueText, isGlobal);
+        }
+        else
+        {
+            // if we have `global using X = Y.Z` then walk down the rhs to pull out 'Z'.
+            if (syntaxFacts.IsQualifiedName(usingTarget))
+            {
+                syntaxFacts.GetPartsOfQualifiedName(usingTarget, out _, out _, out var right);
+                usingTarget = right;
+            }
+
+            // We'll have either `= ...X` or `= ...X<A, B, C>` now.  Pull out the name and arity to put in the index.
+            if (syntaxFacts.IsSimpleName(usingTarget))
+            {
+                syntaxFacts.GetNameAndArityOfSimpleName(usingTarget, out var name, out var arity);
+                info = AliasInfo.CreateName(aliasIdentifier.ValueText, aliasTypeParameters.Count, name, arity, isGlobal);
+            }
+            else
+            {
+                // The using target syntax is too bad for us to process.
+                return;
+            }
         }
 
-        // We'll have either `= ...X` or `= ...X<A, B, C>` now.  Pull out the name and arity to put in the index.
-        if (syntaxFacts.IsSimpleName(usingTarget))
-        {
-            syntaxFacts.GetNameAndArityOfSimpleName(usingTarget, out var name, out var arity);
-
-            aliasInfo ??= [];
-            aliasInfo.Add((alias.ValueText, name, arity, isGlobal: globalToken != default));
-        }
+        aliasInfo ??= [];
+        aliasInfo.Add(info);
     }
 
     public static StringTable GetStringTable(ProjectState project)

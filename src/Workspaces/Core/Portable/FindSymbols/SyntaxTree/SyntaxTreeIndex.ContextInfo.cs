@@ -37,7 +37,9 @@ internal sealed partial class SyntaxTreeIndex
             bool containsCollectionInitializer,
             bool containsAttribute,
             bool containsDirective,
-            bool containsPrimaryConstructorBaseType)
+            bool containsPrimaryConstructorBaseType,
+            bool containsArrayCreationExpressionOrArrayType,
+            bool containsPointerType)
             : this(predefinedTypes, predefinedOperators,
                    ConvertToContainingNodeFlag(
                      containsForEachStatement,
@@ -58,7 +60,9 @@ internal sealed partial class SyntaxTreeIndex
                      containsCollectionInitializer,
                      containsAttribute,
                      containsDirective,
-                     containsPrimaryConstructorBaseType))
+                     containsPrimaryConstructorBaseType,
+                     containsArrayCreationExpressionOrArrayType,
+                     containsPointerType))
         {
         }
 
@@ -88,7 +92,9 @@ internal sealed partial class SyntaxTreeIndex
             bool containsCollectionInitializer,
             bool containsAttribute,
             bool containsDirective,
-            bool containsPrimaryConstructorBaseType)
+            bool containsPrimaryConstructorBaseType,
+            bool containsArrayCreationExpressionOrArrayType,
+            bool containsPointerType)
         {
             var containingNodes = ContainingNodes.None;
 
@@ -111,6 +117,7 @@ internal sealed partial class SyntaxTreeIndex
             containingNodes |= containsAttribute ? ContainingNodes.ContainsAttribute : 0;
             containingNodes |= containsDirective ? ContainingNodes.ContainsDirective : 0;
             containingNodes |= containsPrimaryConstructorBaseType ? ContainingNodes.ContainsPrimaryConstructorBaseType : 0;
+            containingNodes |= containsArrayCreationExpressionOrArrayType ? ContainingNodes.ContainsArrayCreationExpressionOrArrayType : 0;
 
             return containingNodes;
         }
@@ -178,6 +185,12 @@ internal sealed partial class SyntaxTreeIndex
         public bool ContainsPrimaryConstructorBaseType
             => (_containingNodes & ContainingNodes.ContainsPrimaryConstructorBaseType) == ContainingNodes.ContainsPrimaryConstructorBaseType;
 
+        public bool ContainsArrayCreationExpressionOrArrayType
+            => (_containingNodes & ContainingNodes.ContainsArrayCreationExpressionOrArrayType) == ContainingNodes.ContainsArrayCreationExpressionOrArrayType;
+
+        public bool ContainsPointerType
+            => (_containingNodes & ContainingNodes.ContainsPointerType) == ContainingNodes.ContainsPointerType;
+
         public void WriteTo(ObjectWriter writer)
         {
             writer.WriteInt32(_predefinedTypes);
@@ -225,6 +238,8 @@ internal sealed partial class SyntaxTreeIndex
             ContainsAttribute = 1 << 16,
             ContainsDirective = 1 << 17,
             ContainsPrimaryConstructorBaseType = 1 << 18,
+            ContainsArrayCreationExpressionOrArrayType = 1 << 19,
+            ContainsPointerType = 1 << 20,
         }
     }
 }

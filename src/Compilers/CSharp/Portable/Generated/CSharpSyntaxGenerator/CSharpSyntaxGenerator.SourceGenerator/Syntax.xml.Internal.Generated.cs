@@ -15152,14 +15152,17 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
     internal readonly SyntaxToken usingKeyword;
     internal readonly SyntaxToken? staticKeyword;
     internal readonly SyntaxToken? unsafeKeyword;
-    internal readonly NameEqualsSyntax? alias;
+    internal readonly SyntaxToken? identifier;
+    internal readonly TypeParameterListSyntax? typeParameterList;
+    internal readonly SyntaxToken? equalsToken;
     internal readonly TypeSyntax namespaceOrType;
+    internal readonly GreenNode? constraintClauses;
     internal readonly SyntaxToken semicolonToken;
 
-    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, SyntaxToken? identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken? equalsToken, TypeSyntax namespaceOrType, GreenNode? constraintClauses, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
       : base(kind, diagnostics, annotations)
     {
-        this.SlotCount = 7;
+        this.SlotCount = 10;
         if (globalKeyword != null)
         {
             this.AdjustFlagsAndWidth(globalKeyword);
@@ -15177,22 +15180,37 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
             this.AdjustFlagsAndWidth(unsafeKeyword);
             this.unsafeKeyword = unsafeKeyword;
         }
-        if (alias != null)
+        if (identifier != null)
         {
-            this.AdjustFlagsAndWidth(alias);
-            this.alias = alias;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+        }
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (equalsToken != null)
+        {
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
         }
         this.AdjustFlagsAndWidth(namespaceOrType);
         this.namespaceOrType = namespaceOrType;
+        if (constraintClauses != null)
+        {
+            this.AdjustFlagsAndWidth(constraintClauses);
+            this.constraintClauses = constraintClauses;
+        }
         this.AdjustFlagsAndWidth(semicolonToken);
         this.semicolonToken = semicolonToken;
     }
 
-    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken, SyntaxFactoryContext context)
+    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, SyntaxToken? identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken? equalsToken, TypeSyntax namespaceOrType, GreenNode? constraintClauses, SyntaxToken semicolonToken, SyntaxFactoryContext context)
       : base(kind)
     {
         this.SetFactoryContext(context);
-        this.SlotCount = 7;
+        this.SlotCount = 10;
         if (globalKeyword != null)
         {
             this.AdjustFlagsAndWidth(globalKeyword);
@@ -15210,21 +15228,36 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
             this.AdjustFlagsAndWidth(unsafeKeyword);
             this.unsafeKeyword = unsafeKeyword;
         }
-        if (alias != null)
+        if (identifier != null)
         {
-            this.AdjustFlagsAndWidth(alias);
-            this.alias = alias;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+        }
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (equalsToken != null)
+        {
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
         }
         this.AdjustFlagsAndWidth(namespaceOrType);
         this.namespaceOrType = namespaceOrType;
+        if (constraintClauses != null)
+        {
+            this.AdjustFlagsAndWidth(constraintClauses);
+            this.constraintClauses = constraintClauses;
+        }
         this.AdjustFlagsAndWidth(semicolonToken);
         this.semicolonToken = semicolonToken;
     }
 
-    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+    internal UsingDirectiveSyntax(SyntaxKind kind, SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, SyntaxToken? identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken? equalsToken, TypeSyntax namespaceOrType, GreenNode? constraintClauses, SyntaxToken semicolonToken)
       : base(kind)
     {
-        this.SlotCount = 7;
+        this.SlotCount = 10;
         if (globalKeyword != null)
         {
             this.AdjustFlagsAndWidth(globalKeyword);
@@ -15242,13 +15275,28 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
             this.AdjustFlagsAndWidth(unsafeKeyword);
             this.unsafeKeyword = unsafeKeyword;
         }
-        if (alias != null)
+        if (identifier != null)
         {
-            this.AdjustFlagsAndWidth(alias);
-            this.alias = alias;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+        }
+        if (typeParameterList != null)
+        {
+            this.AdjustFlagsAndWidth(typeParameterList);
+            this.typeParameterList = typeParameterList;
+        }
+        if (equalsToken != null)
+        {
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
         }
         this.AdjustFlagsAndWidth(namespaceOrType);
         this.namespaceOrType = namespaceOrType;
+        if (constraintClauses != null)
+        {
+            this.AdjustFlagsAndWidth(constraintClauses);
+            this.constraintClauses = constraintClauses;
+        }
         this.AdjustFlagsAndWidth(semicolonToken);
         this.semicolonToken = semicolonToken;
     }
@@ -15257,8 +15305,12 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
     public SyntaxToken UsingKeyword => this.usingKeyword;
     public SyntaxToken? StaticKeyword => this.staticKeyword;
     public SyntaxToken? UnsafeKeyword => this.unsafeKeyword;
-    public NameEqualsSyntax? Alias => this.alias;
+    public SyntaxToken? Identifier => this.identifier;
+    public TypeParameterListSyntax? TypeParameterList => this.typeParameterList;
+    public SyntaxToken? EqualsToken => this.equalsToken;
     public TypeSyntax NamespaceOrType => this.namespaceOrType;
+    /// <summary>Gets the type constraint list.</summary>
+    public CoreSyntax.SyntaxList<TypeParameterConstraintClauseSyntax> ConstraintClauses => new CoreSyntax.SyntaxList<TypeParameterConstraintClauseSyntax>(this.constraintClauses);
     public SyntaxToken SemicolonToken => this.semicolonToken;
 
     internal override GreenNode? GetSlot(int index)
@@ -15268,9 +15320,12 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
             1 => this.usingKeyword,
             2 => this.staticKeyword,
             3 => this.unsafeKeyword,
-            4 => this.alias,
-            5 => this.namespaceOrType,
-            6 => this.semicolonToken,
+            4 => this.identifier,
+            5 => this.typeParameterList,
+            6 => this.equalsToken,
+            7 => this.namespaceOrType,
+            8 => this.constraintClauses,
+            9 => this.semicolonToken,
             _ => null,
         };
 
@@ -15279,11 +15334,11 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
     public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitUsingDirective(this);
     public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitUsingDirective(this);
 
-    public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, NameEqualsSyntax alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+    public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameterList, SyntaxToken equalsToken, TypeSyntax namespaceOrType, CoreSyntax.SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken semicolonToken)
     {
-        if (globalKeyword != this.GlobalKeyword || usingKeyword != this.UsingKeyword || staticKeyword != this.StaticKeyword || unsafeKeyword != this.UnsafeKeyword || alias != this.Alias || namespaceOrType != this.NamespaceOrType || semicolonToken != this.SemicolonToken)
+        if (globalKeyword != this.GlobalKeyword || usingKeyword != this.UsingKeyword || staticKeyword != this.StaticKeyword || unsafeKeyword != this.UnsafeKeyword || identifier != this.Identifier || typeParameterList != this.TypeParameterList || equalsToken != this.EqualsToken || namespaceOrType != this.NamespaceOrType || constraintClauses != this.ConstraintClauses || semicolonToken != this.SemicolonToken)
         {
-            var newNode = SyntaxFactory.UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, alias, namespaceOrType, semicolonToken);
+            var newNode = SyntaxFactory.UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, identifier, typeParameterList, equalsToken, namespaceOrType, constraintClauses, semicolonToken);
             var diags = GetDiagnostics();
             if (diags?.Length > 0)
                 newNode = newNode.WithDiagnosticsGreen(diags);
@@ -15297,10 +15352,10 @@ internal sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
     }
 
     internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-        => new UsingDirectiveSyntax(this.Kind, this.globalKeyword, this.usingKeyword, this.staticKeyword, this.unsafeKeyword, this.alias, this.namespaceOrType, this.semicolonToken, diagnostics, GetAnnotations());
+        => new UsingDirectiveSyntax(this.Kind, this.globalKeyword, this.usingKeyword, this.staticKeyword, this.unsafeKeyword, this.identifier, this.typeParameterList, this.equalsToken, this.namespaceOrType, this.constraintClauses, this.semicolonToken, diagnostics, GetAnnotations());
 
     internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-        => new UsingDirectiveSyntax(this.Kind, this.globalKeyword, this.usingKeyword, this.staticKeyword, this.unsafeKeyword, this.alias, this.namespaceOrType, this.semicolonToken, GetDiagnostics(), annotations);
+        => new UsingDirectiveSyntax(this.Kind, this.globalKeyword, this.usingKeyword, this.staticKeyword, this.unsafeKeyword, this.identifier, this.typeParameterList, this.equalsToken, this.namespaceOrType, this.constraintClauses, this.semicolonToken, GetDiagnostics(), annotations);
 }
 
 /// <summary>Member declaration syntax.</summary>
@@ -27437,7 +27492,7 @@ internal partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<CSharpSyntaxNo
         => node.Update((SyntaxToken)Visit(node.ExternKeyword), (SyntaxToken)Visit(node.AliasKeyword), (SyntaxToken)Visit(node.Identifier), (SyntaxToken)Visit(node.SemicolonToken));
 
     public override CSharpSyntaxNode VisitUsingDirective(UsingDirectiveSyntax node)
-        => node.Update((SyntaxToken)Visit(node.GlobalKeyword), (SyntaxToken)Visit(node.UsingKeyword), (SyntaxToken)Visit(node.StaticKeyword), (SyntaxToken)Visit(node.UnsafeKeyword), (NameEqualsSyntax)Visit(node.Alias), (TypeSyntax)Visit(node.NamespaceOrType), (SyntaxToken)Visit(node.SemicolonToken));
+        => node.Update((SyntaxToken)Visit(node.GlobalKeyword), (SyntaxToken)Visit(node.UsingKeyword), (SyntaxToken)Visit(node.StaticKeyword), (SyntaxToken)Visit(node.UnsafeKeyword), (SyntaxToken)Visit(node.Identifier), (TypeParameterListSyntax)Visit(node.TypeParameterList), (SyntaxToken)Visit(node.EqualsToken), (TypeSyntax)Visit(node.NamespaceOrType), VisitList(node.ConstraintClauses), (SyntaxToken)Visit(node.SemicolonToken));
 
     public override CSharpSyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
         => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), (SyntaxToken)Visit(node.NamespaceKeyword), (NameSyntax)Visit(node.Name), (SyntaxToken)Visit(node.OpenBraceToken), VisitList(node.Externs), VisitList(node.Usings), VisitList(node.Members), (SyntaxToken)Visit(node.CloseBraceToken), (SyntaxToken)Visit(node.SemicolonToken));
@@ -30947,7 +31002,7 @@ internal partial class ContextAwareSyntax
         return new ExternAliasDirectiveSyntax(SyntaxKind.ExternAliasDirective, externKeyword, aliasKeyword, identifier, semicolonToken, this.context);
     }
 
-    public UsingDirectiveSyntax UsingDirective(SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+    public UsingDirectiveSyntax UsingDirective(SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, SyntaxToken? identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken? equalsToken, TypeSyntax namespaceOrType, CoreSyntax.SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken semicolonToken)
     {
 #if DEBUG
         if (globalKeyword != null)
@@ -30979,12 +31034,30 @@ internal partial class ContextAwareSyntax
                 default: throw new ArgumentException(nameof(unsafeKeyword));
             }
         }
+        if (identifier != null)
+        {
+            switch (identifier.Kind)
+            {
+                case SyntaxKind.IdentifierToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(identifier));
+            }
+        }
+        if (equalsToken != null)
+        {
+            switch (equalsToken.Kind)
+            {
+                case SyntaxKind.EqualsToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(equalsToken));
+            }
+        }
         if (namespaceOrType == null) throw new ArgumentNullException(nameof(namespaceOrType));
         if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
         if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
 #endif
 
-        return new UsingDirectiveSyntax(SyntaxKind.UsingDirective, globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, alias, namespaceOrType, semicolonToken, this.context);
+        return new UsingDirectiveSyntax(SyntaxKind.UsingDirective, globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, identifier, typeParameterList, equalsToken, namespaceOrType, constraintClauses.Node, semicolonToken, this.context);
     }
 
     public NamespaceDeclarationSyntax NamespaceDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken namespaceKeyword, NameSyntax name, SyntaxToken openBraceToken, CoreSyntax.SyntaxList<ExternAliasDirectiveSyntax> externs, CoreSyntax.SyntaxList<UsingDirectiveSyntax> usings, CoreSyntax.SyntaxList<MemberDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken? semicolonToken)
@@ -36215,7 +36288,7 @@ internal static partial class SyntaxFactory
         return new ExternAliasDirectiveSyntax(SyntaxKind.ExternAliasDirective, externKeyword, aliasKeyword, identifier, semicolonToken);
     }
 
-    public static UsingDirectiveSyntax UsingDirective(SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+    public static UsingDirectiveSyntax UsingDirective(SyntaxToken? globalKeyword, SyntaxToken usingKeyword, SyntaxToken? staticKeyword, SyntaxToken? unsafeKeyword, SyntaxToken? identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken? equalsToken, TypeSyntax namespaceOrType, CoreSyntax.SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken semicolonToken)
     {
 #if DEBUG
         if (globalKeyword != null)
@@ -36247,12 +36320,30 @@ internal static partial class SyntaxFactory
                 default: throw new ArgumentException(nameof(unsafeKeyword));
             }
         }
+        if (identifier != null)
+        {
+            switch (identifier.Kind)
+            {
+                case SyntaxKind.IdentifierToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(identifier));
+            }
+        }
+        if (equalsToken != null)
+        {
+            switch (equalsToken.Kind)
+            {
+                case SyntaxKind.EqualsToken:
+                case SyntaxKind.None: break;
+                default: throw new ArgumentException(nameof(equalsToken));
+            }
+        }
         if (namespaceOrType == null) throw new ArgumentNullException(nameof(namespaceOrType));
         if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
         if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
 #endif
 
-        return new UsingDirectiveSyntax(SyntaxKind.UsingDirective, globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, alias, namespaceOrType, semicolonToken);
+        return new UsingDirectiveSyntax(SyntaxKind.UsingDirective, globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, identifier, typeParameterList, equalsToken, namespaceOrType, constraintClauses.Node, semicolonToken);
     }
 
     public static NamespaceDeclarationSyntax NamespaceDeclaration(CoreSyntax.SyntaxList<AttributeListSyntax> attributeLists, CoreSyntax.SyntaxList<SyntaxToken> modifiers, SyntaxToken namespaceKeyword, NameSyntax name, SyntaxToken openBraceToken, CoreSyntax.SyntaxList<ExternAliasDirectiveSyntax> externs, CoreSyntax.SyntaxList<UsingDirectiveSyntax> usings, CoreSyntax.SyntaxList<MemberDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken? semicolonToken)

@@ -1052,11 +1052,17 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                 }
 
                 var alias = importRecord.Alias;
-                RoslynDebug.AssertNotNull(alias);
+                RoslynDebug.Assert(!alias.IsDefault);
 
-                if (!TryParseIdentifierNameSyntax(alias, out var aliasNameSyntax))
+                // WORKAROUND(sanmuru): We should have excluded generic alias from imports before.
+                if (alias.HasArity)
                 {
-                    Debug.WriteLine($"Import record '{importRecord}' has syntactically invalid extern alias '{alias}'");
+                    continue;
+                }
+
+                if (!TryParseIdentifierNameSyntax(alias.Name, out var aliasNameSyntax))
+                {
+                    Debug.WriteLine($"Import record '{importRecord}' has syntactically invalid extern alias '{alias.Name}'");
                     continue;
                 }
 
@@ -1080,7 +1086,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                     WithExternAliasesBinder.Create(externs, binder));
             }
 
-            var usingAliases = ImmutableDictionary.CreateBuilder<string, AliasAndUsingDirective>();
+            var usingAliases = ImmutableDictionary.CreateBuilder<NameWithArity, AliasAndUsingDirective>();
             var usingsBuilder = ArrayBuilder<NamespaceOrTypeAndUsingDirective>.GetInstance();
 
             foreach (var importRecord in importRecords)
@@ -1098,7 +1104,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
                                 // valid in the original source but unnecessary.
                                 continue; // Don't add anything for this import.
                             }
-                            else if (importRecord.Alias == null && !typeSymbol.IsStatic)
+                            else if (importRecord.Alias.IsDefault && !typeSymbol.IsStatic)
                             {
                                 // Only static types can be directly imported.
                                 continue;
@@ -1209,22 +1215,28 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
         }
 
         private static bool TryAddImport(
-            string? alias,
+            NameWithArity alias,
             NamespaceOrTypeSymbol targetSymbol,
             ArrayBuilder<NamespaceOrTypeAndUsingDirective> usingsBuilder,
-            ImmutableDictionary<string, AliasAndUsingDirective>.Builder usingAliases,
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Builder usingAliases,
             InContainerBinder binder,
             ImportRecord importRecord)
         {
-            if (alias == null)
+            if (alias.IsDefault)
             {
                 usingsBuilder.Add(new NamespaceOrTypeAndUsingDirective(targetSymbol, usingDirective: null, dependencies: default));
             }
             else
             {
-                if (!TryParseIdentifierNameSyntax(alias, out var aliasSyntax))
+                // WORKAROUND(sanmuru): We should have excluded generic alias from imports before.
+                if (alias.HasArity)
                 {
-                    Debug.WriteLine($"Import record '{importRecord}' has syntactically invalid alias '{alias}'");
+                    return false;
+                }
+
+                if (!TryParseIdentifierNameSyntax(alias.Name, out var aliasSyntax))
+                {
+                    Debug.WriteLine($"Import record '{importRecord}' has syntactically invalid alias '{alias.Name}'");
                     return false;
                 }
 

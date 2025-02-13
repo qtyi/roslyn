@@ -71,12 +71,45 @@ public sealed partial class SemanticClassifierTests : AbstractCSharpClassifierTe
     public async Task UsingAlias1(TestHost testHost)
     {
         await TestAsync(
-@"using M = System.Math;",
+            @"using M = System.Math;",
             testHost,
             Class("M"),
             Namespace("System"),
             Class("Math"),
             Static("Math"));
+    }
+
+    [Theory, CombinatorialData]
+    public async Task UsingGenericAlias1(TestHost testHost)
+    {
+        await TestAsync(
+            @"using CC<TArg, TResult> = System.Func<TArg, TArg, TResult>;",
+            testHost,
+            Delegate("CC"),
+            TypeParameter("TArg"),
+            TypeParameter("TResult"),
+            Namespace("System"),
+            Delegate("Func"),
+            TypeParameter("TArg"),
+            TypeParameter("TArg"),
+            TypeParameter("TResult"));
+    }
+
+    [Theory, CombinatorialData]
+    public async Task UsingGenericAlias2(TestHost testHost)
+    {
+        await TestAsync(
+            @"using CC<T> = System.Lazy<T> where T : System.IComparable<T>;",
+            testHost,
+            Class("CC"),
+            TypeParameter("T"),
+            Namespace("System"),
+            Class("Lazy"),
+            TypeParameter("T"),
+            TypeParameter("T"),
+            Namespace("System"),
+            Interface("IComparable"),
+            TypeParameter("T"));
     }
 
     [Theory, CombinatorialData]

@@ -27,7 +27,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Classification.Classifiers
                 result As SegmentedList(Of ClassifiedSpan),
                 cancellationToken As CancellationToken)
 
-            Dim symbolInfo = semanticModel.GetTypeInfo(DirectCast(node.Parent, SimpleImportsClauseSyntax).Name, cancellationToken)
+            Dim symbolInfo = semanticModel.GetTypeInfo(DirectCast(node.Parent, SimpleImportsClauseSyntax).NamespaceOrType, cancellationToken)
             If symbolInfo.Type IsNot Nothing Then
                 Dim classification = GetClassificationForType(symbolInfo.Type)
                 If classification IsNot Nothing Then

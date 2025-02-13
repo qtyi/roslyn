@@ -63,7 +63,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
-            Assert.Null(ud.Alias);
+            Assert.True(ud.Identifier == default(SyntaxToken));
+            Assert.Null(ud.TypeParameterList);
             Assert.True(ud.StaticKeyword == default(SyntaxToken));
             Assert.NotNull(ud.Name);
             Assert.Equal("a", ud.Name.ToString());
@@ -86,7 +87,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
             Assert.Equal(SyntaxKind.StaticKeyword, ud.StaticKeyword.Kind());
-            Assert.Null(ud.Alias);
+            Assert.True(ud.Identifier == default(SyntaxToken));
+            Assert.Null(ud.TypeParameterList);
             Assert.NotNull(ud.Name);
             Assert.Equal("a", ud.Name.ToString());
             Assert.NotEqual(default, ud.SemicolonToken);
@@ -153,7 +155,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
             Assert.True(ud.StaticKeyword == default(SyntaxToken));
-            Assert.Null(ud.Alias);
+            Assert.True(ud.Identifier == default(SyntaxToken));
+            Assert.Null(ud.TypeParameterList);
             Assert.NotNull(ud.Name);
             Assert.Equal("a.b", ud.Name.ToString());
             Assert.NotEqual(default, ud.SemicolonToken);
@@ -175,7 +178,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
             Assert.Equal(SyntaxKind.StaticKeyword, ud.StaticKeyword.Kind());
-            Assert.Null(ud.Alias);
+            Assert.True(ud.Identifier == default(SyntaxToken));
+            Assert.Null(ud.TypeParameterList);
             Assert.NotNull(ud.Name);
             Assert.Equal("a.b", ud.Name.ToString());
             Assert.NotEqual(default, ud.SemicolonToken);
@@ -197,7 +201,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
             Assert.Equal(SyntaxKind.StaticKeyword, ud.StaticKeyword.Kind());
-            Assert.Null(ud.Alias);
+            Assert.True(ud.Identifier == default(SyntaxToken));
+            Assert.Null(ud.TypeParameterList);
             Assert.NotNull(ud.Name);
             Assert.Equal("a<int?>", ud.Name.ToString());
             Assert.NotEqual(default, ud.SemicolonToken);
@@ -218,10 +223,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
-            Assert.NotNull(ud.Alias);
-            Assert.NotNull(ud.Alias.Name);
-            Assert.Equal("a", ud.Alias.Name.ToString());
-            Assert.NotEqual(default, ud.Alias.EqualsToken);
+            Assert.NotEqual(default, ud.Identifier);
+            Assert.Equal("a", ud.Identifier.ToString());
+            Assert.NotEqual(default, ud.EqualsToken);
+            Assert.Equal(SyntaxKind.EqualsToken, ud.EqualsToken.Kind());
             Assert.NotNull(ud.Name);
             Assert.Equal("b", ud.Name.ToString());
             Assert.NotEqual(default, ud.SemicolonToken);
@@ -242,12 +247,101 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             Assert.NotEqual(default, ud.UsingKeyword);
             Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
-            Assert.NotNull(ud.Alias);
-            Assert.NotNull(ud.Alias.Name);
-            Assert.Equal("a", ud.Alias.Name.ToString());
-            Assert.NotEqual(default, ud.Alias.EqualsToken);
+            Assert.NotEqual(default, ud.Identifier);
+            Assert.Equal("a", ud.Identifier.ToString());
+            Assert.NotEqual(default, ud.EqualsToken);
+            Assert.Equal(SyntaxKind.EqualsToken, ud.EqualsToken.Kind());
             Assert.NotNull(ud.Name);
             Assert.Equal("b<c>", ud.Name.ToString());
+            Assert.NotEqual(default, ud.SemicolonToken);
+        }
+
+        [Fact]
+        public void TestUsingGenericAliasName()
+        {
+            var text = "using a<b> = c;";
+            var file = this.ParseFile(text);
+
+            Assert.NotNull(file);
+            Assert.Equal(1, file.Usings.Count);
+            Assert.Equal(text, file.ToString());
+            Assert.Equal(0, file.Errors().Length);
+
+            var ud = file.Usings[0];
+
+            Assert.NotEqual(default, ud.UsingKeyword);
+            Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
+            Assert.NotEqual(default, ud.Identifier);
+            Assert.Equal("a", ud.Identifier.ToString());
+            Assert.Equal("<b>", ud.TypeParameterList.ToString());
+            Assert.NotEqual(default, ud.EqualsToken);
+            Assert.Equal(SyntaxKind.EqualsToken, ud.EqualsToken.Kind());
+            Assert.NotNull(ud.Name);
+            Assert.Equal("c", ud.Name.ToString());
+            Assert.NotEqual(default, ud.SemicolonToken);
+        }
+
+        [Fact]
+        public void TestUsingGenericAliasGenericName()
+        {
+            var text = "using a<b> = c<b>;";
+            var file = this.ParseFile(text);
+
+            Assert.NotNull(file);
+            Assert.Equal(1, file.Usings.Count);
+            Assert.Equal(text, file.ToString());
+            Assert.Equal(0, file.Errors().Length);
+
+            var ud = file.Usings[0];
+
+            Assert.NotEqual(default, ud.UsingKeyword);
+            Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
+            Assert.NotEqual(default, ud.Identifier);
+            Assert.Equal("a", ud.Identifier.ToString());
+            Assert.Equal("<b>", ud.TypeParameterList.ToString());
+            Assert.NotEqual(default, ud.EqualsToken);
+            Assert.Equal(SyntaxKind.EqualsToken, ud.EqualsToken.Kind());
+            Assert.NotNull(ud.Name);
+            Assert.Equal("c<b>", ud.Name.ToString());
+            Assert.NotEqual(default, ud.SemicolonToken);
+        }
+
+        [Fact]
+        public void TestUsingGenericAliasGenericNameWithConstraints()
+        {
+            var text = "using a<b> = c<b> where b : struct;";
+            var file = this.ParseFile(text);
+
+            Assert.NotNull(file);
+            Assert.Equal(1, file.Usings.Count);
+            Assert.Equal(text, file.ToString());
+            Assert.Equal(0, file.Errors().Length);
+
+            var ud = file.Usings[0];
+
+            Assert.NotEqual(default, ud.UsingKeyword);
+            Assert.Equal(SyntaxKind.UsingKeyword, ud.UsingKeyword.Kind());
+            Assert.NotEqual(default, ud.Identifier);
+            Assert.Equal("a", ud.Identifier.ToString());
+            Assert.Equal("<b>", ud.TypeParameterList.ToString());
+            Assert.NotEqual(default, ud.EqualsToken);
+            Assert.Equal(SyntaxKind.EqualsToken, ud.EqualsToken.Kind());
+            Assert.NotNull(ud.Name);
+            Assert.Equal("c<b>", ud.Name.ToString());
+            Assert.Equal(1, ud.ConstraintClauses.Count);
+
+            var cs = ud.ConstraintClauses[0];
+
+            Assert.NotEqual(default, cs.WhereKeyword);
+            Assert.Equal(SyntaxKind.WhereKeyword, cs.WhereKeyword.Kind());
+            Assert.NotNull(cs.Name);
+            Assert.Equal("b", cs.Name.ToString());
+            Assert.NotEqual(default, cs.ColonToken);
+            Assert.Equal(SyntaxKind.ColonToken, cs.ColonToken.Kind());
+            Assert.Equal(1, cs.Constraints.Count);
+            Assert.NotNull(cs.Constraints[0]);
+            Assert.Equal(SyntaxKind.StructConstraint, cs.Constraints[0].Kind());
+
             Assert.NotEqual(default, ud.SemicolonToken);
         }
 

@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 
 namespace Microsoft.CodeAnalysis.Shared.Utilities;
 
-using TreeMap = ConcurrentDictionary<(SyntaxTree tree, int namespaceId), ImmutableDictionary<INamespaceOrTypeSymbol, IAliasSymbol>>;
+using TreeMap = ConcurrentDictionary<(SyntaxTree tree, int namespaceId), AliasMap>;
 
 internal static class AliasSymbolCache
 {
@@ -28,21 +28,33 @@ internal static class AliasSymbolCache
         SemanticModel semanticModel,
         int namespaceId,
         INamespaceOrTypeSymbol targetSymbol,
-        out IAliasSymbol? aliasSymbol)
+        out IAliasSymbol? aliasSymbol,
+        out ImmutableArray<ITypeSymbol> aliasTypeArguments)
     {
         semanticModel = semanticModel.GetOriginalSemanticModel();
 
         aliasSymbol = null;
+        aliasTypeArguments = default;
         if (!s_treeAliasMap.TryGetValue(semanticModel.Compilation, out var treeMap) ||
-            !treeMap.TryGetValue((semanticModel.SyntaxTree, namespaceId), out var symbolMap))
+            !treeMap.TryGetValue((semanticModel.SyntaxTree, namespaceId), out var aliasMap))
         {
             // maps aren't available.  Caller needs to call back into us to add aliases for this scope.
             return false;
         }
 
-        // map was available.  see if it contains an alias to this target.  This is considered successful regardless
-        // of whether we find a mapping or not.
-        symbolMap.TryGetValue(targetSymbol, out aliasSymbol);
+        // map was available.  see if it contains an alias to this target.  
+        if (aliasMap.TryGetAlias(targetSymbol, out aliasSymbol, out aliasTypeArguments))
+        {
+            // there must be something wrong when a generic alias targets a namespace, we ignore it since we should
+            // not let this spread out.
+            if (targetSymbol.IsNamespace && aliasSymbol.Arity > 0)
+            {
+                aliasSymbol = null;
+                aliasTypeArguments = default;
+            }
+        }
+
+        // This is considered successful regardless of whether we find a mapping or not.
         return true;
     }
 
@@ -56,19 +68,11 @@ internal static class AliasSymbolCache
         if (treeMap.ContainsKey(key))
             return;
 
-        var builder = ImmutableDictionary.CreateBuilder<INamespaceOrTypeSymbol, IAliasSymbol>();
-        foreach (var alias in aliasSymbols)
-        {
-            if (builder.ContainsKey(alias.Target))
-                continue;
-
-            // only put the first one.
-            builder.Add(alias.Target, alias);
-        }
+        var aliasMap = new AliasMap(aliasSymbols.ToImmutableArray());
 
         // Use namespace id rather than holding onto namespace node directly, that will keep the tree alive as long
         // as the compilation is alive. In the current design, a node can come and go even if compilation is alive
         // through recoverable tree.
-        treeMap.TryAdd(key, builder.ToImmutable());
+        treeMap.TryAdd(key, aliasMap);
     }
 }

@@ -194,6 +194,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 return true;
             }
+
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(other, comparison))
+            {
+                return true;
+            }
+
             if (!_underlyingType.Equals(other, comparison))
             {
                 return false;

@@ -571,6 +571,22 @@ class C
             CompileAndVerify(source, expectedOutput: @"Contains");
         }
 
+        [Fact]
+        public void TestNameofGenericAliasMember()
+        {
+            var source = @"
+using System;
+using SCGL<T> = System.Collections.Generic.List<T>;
+class C
+{
+    public static void Main(string[] args)
+    {
+        System.Console.WriteLine(nameof(SCGL<int>.Contains));
+    }
+}";
+            CompileAndVerify(source, expectedOutput: @"Contains");
+        }
+
         [Fact, WorkItem(1013334, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/1013334")]
         public void TestCompatStatementExpressionInvocation()
         {

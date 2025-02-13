@@ -74,7 +74,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Extensions
                 From u In location.GetAncestorOrThis(Of CompilationUnitSyntax).Imports
                 From importClause In u.ImportsClauses.OfType(Of SimpleImportsClauseSyntax)()
                 Where importClause.Alias Is Nothing
-                Let info = semanticModel.GetSymbolInfo(importClause.Name)
+                Let info = semanticModel.GetSymbolInfo(importClause.NamespaceOrType)
                 Let ns = TryCast(info.Symbol, INamespaceSymbol)
                 Where ns IsNot Nothing
                 Select ns
@@ -82,9 +82,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Extensions
             Return q.ToSet()
         End Function
 
-        <Extension>
-        Public Function GetAliasInfo(semanticModel As SemanticModel, expression As ExpressionSyntax, cancellationToken As CancellationToken) As IAliasSymbol
-            Dim nameSyntax = TryCast(expression, IdentifierNameSyntax)
+        <Extension()>
+        Public Function GetAliasInfo(semanticModel As SemanticModel, expression As ExpressionSyntax, cancellationToken As CancellationToken) As AliasInfo
+            Dim nameSyntax = TryCast(expression, SimpleNameSyntax)
             If nameSyntax Is Nothing Then
                 Return Nothing
             Else

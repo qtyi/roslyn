@@ -44,7 +44,7 @@ public class C1
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
                 Diagnostic("Declaration", "C1"));
         }
 
@@ -92,7 +92,7 @@ public class C
     public void Goo1() {}
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("Goo") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("Goo") },
                 Diagnostic("Declaration", "Goo1"));
         }
 
@@ -125,7 +125,7 @@ namespace N4
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
                 Diagnostic("Declaration", "N2"),
                 Diagnostic("Declaration", "N3"));
         }
@@ -161,7 +161,7 @@ namespace N.N1.N6.N7
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
                 Diagnostic("Declaration", "N"));
         }
 
@@ -223,12 +223,12 @@ namespace N.N1.N2.N7
 ";
 
             await VerifyCSharpAsync(source,
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("N") },
                 Diagnostic("Declaration", "N"),
                 Diagnostic("Declaration", "N1"));
 
             await VerifyCSharpAsync(source,
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
                 Diagnostic("Declaration", "C1"));
         }
 
@@ -255,7 +255,7 @@ public struct Egg
 }
 public delegate void Ele<T1,T2>(T1 x, T2 y);
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("E") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("E") });
         }
 
         [Theory]
@@ -278,7 +278,7 @@ public class C
     public delegate void A4();
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("A") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("A") },
                 Diagnostic("Declaration", "A1"),
                 Diagnostic("Declaration", "A3"),
                 Diagnostic("Declaration", "A4"));
@@ -296,7 +296,7 @@ Module M
     End Class
 End Module
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("M") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("M") });
         }
 
         [Theory]
@@ -316,7 +316,7 @@ public class C
     public static void M3<T>() {}
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("M") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("M") },
                 new[] { Diagnostic("Declaration", "M2") });
         }
 
@@ -337,7 +337,7 @@ class C
     Task<(bool status, ErrorCode errorCode)> M() => null;
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("M") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("M") });
         }
 
         [Theory]
@@ -371,7 +371,7 @@ public class E
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("E") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("E") });
         }
 
         #endregion
@@ -382,7 +382,7 @@ public class E
         public async Task WarningOnCommentAnalyzerCSharp()
         {
             await VerifyCSharpAsync("// Comment\r\n /* Comment */",
-                new[] { new WarningOnCommentAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 Diagnostic("Comment", "// Comment"),
                 Diagnostic("Comment", "/* Comment */"));
         }
@@ -391,7 +391,7 @@ public class E
         public async Task WarningOnCommentAnalyzerBasic()
         {
             await VerifyBasicAsync("' Comment",
-                new[] { new WarningOnCommentAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 Diagnostic("Comment", "' Comment"));
         }
 
@@ -413,7 +413,7 @@ public class C
 }
 // after class
 ",
-                new[] { new WarningOnCommentAnalyzer() });
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() });
         }
 
         [Theory]
@@ -432,7 +432,7 @@ Public Class C
 End Class
 ' after class
 ",
-                new[] { new WarningOnCommentAnalyzer() });
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() });
         }
 
         [Theory]
@@ -453,7 +453,7 @@ public class C
 }
 // after class
 ",
-                new[] { new WarningOnCommentAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 Diagnostic("Comment", "// before module attributes"),
                 Diagnostic("Comment", "// before class"),
                 Diagnostic("Comment", "// after class"));
@@ -475,7 +475,7 @@ Public Class C
 End Class
 ' after class
 ",
-                new[] { new WarningOnCommentAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 Diagnostic("Comment", "' before module attributes"),
                 Diagnostic("Comment", "' before class"),
                 Diagnostic("Comment", "' after class"));
@@ -569,7 +569,7 @@ End|] Namespace
 ' In root namespace
 ",
                 rootNamespace: "RootNamespace",
-                analyzers: new[] { new WarningOnCommentAnalyzer() },
+                analyzers: new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 diagnostics: Diagnostic("Comment", "' In root namespace").WithLocation(3, 1));
         }
 
@@ -676,7 +676,7 @@ public enum E
 }
 // after enum
 ",
-                new[] { new WarningOnCommentAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnCommentAnalyzer() },
                 Diagnostic("Comment", "// before module attributes"),
                 Diagnostic("Comment", "// before enum"),
                 Diagnostic("Comment", "// after Field1 declaration"),
@@ -1209,7 +1209,7 @@ End|] Class
         {
             await VerifyCSharpAsync(
                 @"[module: " + attrName + @"(""Test"", ""CompilationEnded"")]",
-                new[] { new WarningOnCompilationEndedAnalyzer() });
+                new DiagnosticAnalyzer[] { new WarningOnCompilationEndedAnalyzer() });
         }
 
         [Theory]
@@ -1223,7 +1223,7 @@ public class C
     public string P { get; private set; }
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("get_") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("get_") });
         }
 
         [Theory]
@@ -1237,7 +1237,7 @@ public class C
     delegate void D();
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("Invoke") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("Invoke") });
         }
 
         [Theory]
@@ -1255,7 +1255,7 @@ public class C
     }
 }
 ",
-                new[] { new WarningOnCodeBodyAnalyzer(LanguageNames.CSharp) });
+                new DiagnosticAnalyzer[] { new WarningOnCodeBodyAnalyzer(LanguageNames.CSharp) });
         }
 
         [Theory]
@@ -1271,7 +1271,7 @@ Public Class C
     End Sub
 End Class
 ",
-                new[] { new WarningOnCodeBodyAnalyzer(LanguageNames.VisualBasic) });
+                new DiagnosticAnalyzer[] { new WarningOnCodeBodyAnalyzer(LanguageNames.VisualBasic) });
         }
 
         #endregion
@@ -1300,7 +1300,7 @@ public class C3
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("C") });
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("C") });
         }
 
         [Theory]
@@ -1318,7 +1318,7 @@ public class C
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
                 Diagnostic("Declaration", "C"));
         }
 
@@ -1336,7 +1336,7 @@ public class C
 {
 }
 ",
-                new[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
+                new DiagnosticAnalyzer[] { new WarningOnNamePrefixDeclarationAnalyzer("C") },
                 Diagnostic("Declaration", "C"));
         }
 
@@ -1355,7 +1355,7 @@ Imports System.Diagnostics.CodeAnalysis
 Class C
 End Class
 ",
-                new[] { new WarningOnTypeDeclarationAnalyzer() },
+                new DiagnosticAnalyzer[] { new WarningOnTypeDeclarationAnalyzer() },
                 Diagnostic("TypeDeclaration", "C").WithLocation(9, 7));
         }
 

@@ -8619,6 +8619,39 @@ public class D
         }
 
         [Fact]
+        public void UnmanagedCallersOnlyCannotCallMethodDirectlyWithGenericAlias()
+        {
+            var comp = CreateCompilationWithFunctionPointers(@"
+using System.Runtime.InteropServices;
+using E<T> = T;
+public class C
+{
+    public static unsafe void M2()
+    {
+        E<D>.M1();
+        delegate*<void> p1 = &E<D>.M1;
+        delegate* unmanaged<void> p2 = &E<D>.M1;
+    }
+}
+public class D
+{
+    [UnmanagedCallersOnly]
+    public static void M1() { }
+
+}
+");
+
+            comp.VerifyDiagnostics(
+                // (8,9): error CS8901: 'D.M1()' is attributed with 'UnmanagedCallersOnly' and cannot be called directly. Obtain a function pointer to this method.
+                //         E<D>.M1();
+                Diagnostic(ErrorCode.ERR_UnmanagedCallersOnlyMethodsCannotBeCalledDirectly, "E<D>.M1()", isSuppressed: false).WithArguments("D.M1()").WithLocation(8, 9),
+                // (9,31): error CS8786: Calling convention of 'D.M1()' is not compatible with 'Default'.
+                //         delegate*<void> p1 = &E<D>.M1;
+                Diagnostic(ErrorCode.ERR_WrongFuncPtrCallingConvention, "E<D>.M1", isSuppressed: false).WithArguments("D.M1()", "Default").WithLocation(9, 31)
+            );
+        }
+
+        [Fact]
         public void UnmanagedCallersOnlyCannotCallMethodDirectlyWithUsingStatic()
         {
             var comp = CreateCompilationWithFunctionPointers(@"

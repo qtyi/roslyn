@@ -226,7 +226,7 @@ namespace Microsoft.CodeAnalysis
             new SymbolDisplayFormat(
                 globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes,
+                compilerInternalOptions: SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases,
                 miscellaneousOptions: SymbolDisplayMiscellaneousOptions.ExpandValueTuple);
 
         /// <summary>

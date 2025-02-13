@@ -6394,7 +6394,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_01_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6405,7 +6405,7 @@ class B : A
 
             analyzer = new AnalyzerActions_01_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6499,7 +6499,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_02_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6508,7 +6508,7 @@ class B : A
 
             analyzer = new AnalyzerActions_02_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6556,7 +6556,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_03_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6571,7 +6571,7 @@ class B : A
 
             analyzer = new AnalyzerActions_03_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6677,7 +6677,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_04_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6688,7 +6688,7 @@ class B : A
 
             analyzer = new AnalyzerActions_04_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6764,7 +6764,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_05_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6773,7 +6773,7 @@ class B : A
 
             analyzer = new AnalyzerActions_05_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6822,7 +6822,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_06_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6831,7 +6831,7 @@ class B : A
 
             analyzer = new AnalyzerActions_06_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6880,7 +6880,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_07_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6889,7 +6889,7 @@ class B : A
 
             analyzer = new AnalyzerActions_07_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -6948,7 +6948,7 @@ class B : A
 
             var analyzer = new AnalyzerActions_08_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -6957,7 +6957,7 @@ class B : A
 
             analyzer = new AnalyzerActions_08_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7027,7 +7027,7 @@ class Test
 
             var analyzer = new AnalyzerActions_09_Analyzer();
             var comp = CreateCompilation(text1 + text2, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7035,7 +7035,7 @@ class Test
 
             analyzer = new AnalyzerActions_09_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7140,7 +7140,7 @@ class MyAttribute : System.Attribute
 
             var analyzer = new AnalyzerActions_10_Analyzer();
             var comp = CreateCompilation(text1 + text2 + text3, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7149,7 +7149,7 @@ class MyAttribute : System.Attribute
 
             analyzer = new AnalyzerActions_10_Analyzer();
             comp = CreateCompilation(new[] { text1, text2, text3 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7234,7 +7234,7 @@ class C1
 
             var analyzer = new AnalyzerActions_11_Analyzer();
             var comp = CreateCompilation(text1 + text2, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7243,7 +7243,7 @@ class C1
 
             analyzer = new AnalyzerActions_11_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7307,7 +7307,7 @@ class C1
 
             var analyzer = new AnalyzerActions_12_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -7317,7 +7317,7 @@ class C1
 
             analyzer = new AnalyzerActions_12_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);
@@ -7374,7 +7374,7 @@ class C1
 
             var analyzer = new AnalyzerActions_13_Analyzer();
             var comp = CreateCompilation(text1, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(0, analyzer.FireCount2);
@@ -7384,7 +7384,7 @@ class C1
 
             analyzer = new AnalyzerActions_13_Analyzer();
             comp = CreateCompilation(new[] { text1, text2 }, options: TestOptions.DebugExe, parseOptions: DefaultParseOptions);
-            comp.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            comp.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.FireCount1);
             Assert.Equal(1, analyzer.FireCount2);

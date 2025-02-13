@@ -9,23 +9,26 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Symbols;
 using Roslyn.Utilities;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
     internal static class SymbolInfoFactory
     {
-        internal static SymbolInfo Create(ImmutableArray<Symbol> symbols, LookupResultKind resultKind, bool isDynamic)
+        internal static SymbolInfo Create(ImmutableArray<SymbolWithAnnotationSymbols> symbols, LookupResultKind resultKind, bool isDynamic)
             => Create(OneOrMany.Create(symbols.NullToEmpty()), resultKind, isDynamic);
 
-        internal static SymbolInfo Create(OneOrMany<Symbol> symbols, LookupResultKind resultKind, bool isDynamic)
+        internal static SymbolInfo Create(OneOrMany<SymbolWithAnnotationSymbols> symbols, LookupResultKind resultKind, bool isDynamic)
         {
             if (isDynamic)
             {
                 if (symbols.Count == 1)
                 {
-                    return new SymbolInfo(symbols[0].GetPublicSymbol(), CandidateReason.LateBound);
+                    return new SymbolInfo(symbols[0].Symbol.GetPublicSymbol(), CandidateReason.LateBound);
                 }
                 else
                 {
@@ -37,7 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (symbols.Count > 0)
                 {
                     Debug.Assert(symbols.Count == 1);
-                    return new SymbolInfo(symbols[0].GetPublicSymbol());
+                    return SymbolInfo.From(symbols[0]);
                 }
                 else
                 {
@@ -49,11 +52,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return new SymbolInfo(getPublicSymbols(symbols), (symbols.Count > 0) ? resultKind.ToCandidateReason() : CandidateReason.None);
             }
 
-            static ImmutableArray<ISymbol> getPublicSymbols(OneOrMany<Symbol> symbols)
+            static ImmutableArray<ISymbol> getPublicSymbols(OneOrMany<SymbolWithAnnotationSymbols> symbols)
             {
                 var result = ArrayBuilder<ISymbol>.GetInstance(symbols.Count);
                 foreach (var symbol in symbols)
-                    result.Add(symbol.GetPublicSymbol());
+                    result.Add(symbol.Symbol.GetPublicSymbol());
 
                 return result.ToImmutableAndFree();
             }

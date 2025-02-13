@@ -10630,6 +10630,26 @@ expectedDescriptionOrNull: null, sourceCodeKind: SourceCodeKind.Script);
         ]);
     }
 
+    [Fact]
+    public async Task UsingBothGenericAndNonGenericAlias()
+    {
+        var markup = @"
+using A = (int, int, int, int);
+using A<T> = (T, T, T, T);
+using A<T1, T2> = (T1, T2, T2, T1);
+
+class C
+{
+    void M()
+    {
+        var t = new $$(default, default, default, default);
+    }
+}
+";
+        await VerifyItemExistsAsync(markup, "A");
+        await VerifyItemExistsAsync(markup, "A", displayTextSuffix: "<>");
+    }
+
     [WpfFact, WorkItem("https://github.com/dotnet/roslyn/issues/7932")]
     public async Task ExtensionMethodWithinSameClassOfferedForCompletion()
     {

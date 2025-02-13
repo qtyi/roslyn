@@ -15,6 +15,8 @@ Microsoft.CodeAnalysis.Editing.SyntaxGenerator.DefaultExpression(Microsoft.CodeA
 Microsoft.CodeAnalysis.Editing.SyntaxGenerator.DefaultExpression(Microsoft.CodeAnalysis.SyntaxNode type) -> Microsoft.CodeAnalysis.SyntaxNode
 Microsoft.CodeAnalysis.Editing.SyntaxGenerator.IdentifierName(string identifier) -> Microsoft.CodeAnalysis.SyntaxNode
 Microsoft.CodeAnalysis.Editing.SyntaxGenerator.MemberAccessExpression(Microsoft.CodeAnalysis.SyntaxNode expression, Microsoft.CodeAnalysis.SyntaxNode memberName) -> Microsoft.CodeAnalysis.SyntaxNode
+abstract Microsoft.CodeAnalysis.Editing.SyntaxGenerator.AliasImportDeclaration(string aliasIdentifierName, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.SyntaxNode> aliasTypeParameters, Microsoft.CodeAnalysis.SyntaxNode name) -> Microsoft.CodeAnalysis.SyntaxNode
+Microsoft.CodeAnalysis.Editing.SyntaxGenerator.AliasImportDeclaration(string aliasIdentifierName, System.Collections.Generic.IEnumerable<string> aliasTypeParameterNames, Microsoft.CodeAnalysis.ITypeSymbol symbol) -> Microsoft.CodeAnalysis.SyntaxNode
 Microsoft.CodeAnalysis.Project.HostAnalyzerOptions.get -> Microsoft.CodeAnalysis.Diagnostics.AnalyzerOptions
 Microsoft.CodeAnalysis.ProjectInfo.WithId(Microsoft.CodeAnalysis.ProjectId id) -> Microsoft.CodeAnalysis.ProjectInfo
 virtual Microsoft.CodeAnalysis.Host.HostLanguageServices.Dispose() -> void

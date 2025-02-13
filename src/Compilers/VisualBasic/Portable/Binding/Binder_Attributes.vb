@@ -175,18 +175,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim errorId As ERRID
             Dim resultKind As LookupResultKind
 
-            If symbol.Kind = SymbolKind.Namespace Then
+            If symbol.Symbol.Kind = SymbolKind.Namespace Then
                 errorId = ERRID.ERR_UnrecognizedType
 
-            ElseIf symbol.Kind = SymbolKind.TypeParameter Then
+            ElseIf symbol.symbol.Kind = SymbolKind.TypeParameter Then
                 errorId = ERRID.ERR_AttrCannotBeGenerics
 
-            ElseIf symbol.Kind <> SymbolKind.NamedType Then
+            ElseIf symbol.symbol.Kind <> SymbolKind.NamedType Then
                 errorId = ERRID.ERR_UnrecognizedType
                 resultKind = LookupResultKind.NotATypeOrNamespace
 
             Else
-                Dim namedType = DirectCast(symbol, NamedTypeSymbol)
+                Dim namedType = DirectCast(symbol.Symbol, NamedTypeSymbol)
                 Dim localUseSiteInfo = If(useSiteInfo.AccumulatesDependencies, New CompoundUseSiteInfo(Of AssemblySymbol)(Compilation.Assembly), CompoundUseSiteInfo(Of AssemblySymbol).DiscardedDependencies)
 
                 ' type cannot be generic
@@ -219,7 +219,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
 
             If diagInfo Is Nothing Then
-                diagInfo = New BadSymbolDiagnostic(symbol, errorId)
+                diagInfo = New BadSymbolDiagnostic(symbol.Symbol, errorId)
             End If
 
             lookupResult.Clear()
@@ -605,16 +605,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Private Shared Function GetBestAttributeFieldOrProperty(result As LookupResult) As Symbol
 
             If result.HasSingleSymbol Then
-                Return result.SingleSymbol
+                Return result.SingleSymbol.Symbol
             End If
 
             Dim bestSym As Symbol = Nothing
             Dim symbols = result.Symbols
 
             For Each sym In symbols
-                Select Case sym.Kind
+                Select Case sym.Symbol.Kind
                     Case SymbolKind.Field
-                        Return sym
+                        Return sym.Symbol
 
                     Case SymbolKind.Property
                         ' WARNING: This code seems to rely on an assumption that result.Symbols collection have 
@@ -628,8 +628,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         '          will have both symbols {D.PROP, B.PROP} and we should always grab D.PROP
                         '
                         ' TODO: revise
-                        bestSym = sym
-                        Dim propSym = DirectCast(sym, PropertySymbol)
+                        bestSym = sym.Symbol
+                        Dim propSym = DirectCast(sym.Symbol, PropertySymbol)
                         Dim setMethod = propSym.GetMostDerivedSetMethod()
 
                         ' NOTE: Dev10 seems to grab the first property and report error in case the 
@@ -644,7 +644,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Next
 
             If bestSym Is Nothing Then
-                Return symbols(0)
+                Return symbols(0).Symbol
             End If
             Return bestSym
         End Function

@@ -1628,14 +1628,8 @@ using VT2 = (int, int);
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "VT2");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "VT2");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.TupleType);
                     {
                         N(SyntaxKind.OpenParenToken);
@@ -2144,14 +2138,8 @@ e
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "type");
@@ -2207,14 +2195,8 @@ e
                 {
                     N(SyntaxKind.UsingKeyword);
                     N(SyntaxKind.StaticKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "alias");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "alias");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.IdentifierName);
                     {
                         N(SyntaxKind.IdentifierToken, "type");
@@ -2677,14 +2659,8 @@ e
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "s");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "s");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.FunctionPointerType);
                     {
                         N(SyntaxKind.DelegateKeyword);
@@ -2923,14 +2899,8 @@ Console.WriteLine();
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "aliasY");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "aliasY");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.QualifiedName);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -2974,14 +2944,8 @@ using aliasY = X.Y;
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "aliasY");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "aliasY");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.QualifiedName);
                     {
                         N(SyntaxKind.IdentifierName);
@@ -3020,14 +2984,8 @@ using aliasY = X.Y;
                 N(SyntaxKind.UsingDirective);
                 {
                     N(SyntaxKind.UsingKeyword);
-                    N(SyntaxKind.NameEquals);
-                    {
-                        N(SyntaxKind.IdentifierName);
-                        {
-                            N(SyntaxKind.IdentifierToken, "aliasY");
-                        }
-                        N(SyntaxKind.EqualsToken);
-                    }
+                    N(SyntaxKind.IdentifierToken, "aliasY");
+                    N(SyntaxKind.EqualsToken);
                     N(SyntaxKind.QualifiedName);
                     {
                         N(SyntaxKind.IdentifierName);

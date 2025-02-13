@@ -172,6 +172,11 @@
         <target state="translated">行接續符號後註解</target>
         <note />
       </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="new">import generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FEATURE_InitOnlySettersUsage">
         <source>assigning to or passing 'ByRef' properties with init-only setters</source>
         <target state="translated">使用僅限初始化的 setter，指派或傳遞 'ByRef' 屬性</target>
@@ -3194,6 +3199,11 @@
       <trans-unit id="ERR_InvalidTypeForAliasesImport2">
         <source>'{1}' for the Imports alias to '{0}' does not refer to a Namespace, Class, Structure, Interface, Enum or Module.</source>
         <target state="translated">'Imports 別名為 '{0}' 的 '{1}'，並未參考 Namespace、Class、Structure、Interface、Enum 或 Module。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="new">'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedConstant2">

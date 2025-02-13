@@ -1580,7 +1580,7 @@ end class
 
             Dim format = New SymbolDisplayFormat(
             memberOptions:=SymbolDisplayMemberOptions.IncludeType,
-            compilerInternalOptions:=SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes)
+            compilerInternalOptions:=SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases)
 
             TestSymbolDescription(
                 text,

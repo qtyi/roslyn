@@ -494,9 +494,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification
                 '
                 ' 1. if this identifier is an alias, we'll expand it here and replace the node completely.
                 '
-                If originalSimpleName.Kind = SyntaxKind.IdentifierName Then
-                    Dim aliasInfo = _semanticModel.GetAliasInfo(DirectCast(originalSimpleName, IdentifierNameSyntax))
-                    If aliasInfo IsNot Nothing Then
+                If originalSimpleName.Kind = SyntaxKind.IdentifierName OrElse originalSimpleName.Kind = SyntaxKind.GenericName Then
+                    Dim aliasInfo = _semanticModel.GetAliasInfo(originalSimpleName)
+                    If aliasInfo.Alias IsNot Nothing Then
                         Dim aliasTarget = aliasInfo.Target
 
                         If aliasTarget.IsNamespace() AndAlso DirectCast(aliasTarget, INamespaceSymbol).IsGlobalNamespace Then
@@ -527,7 +527,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification
                                 newIdentifier = newIdentifier.WithAdditionalAnnotations(Me._annotationForReplacedAliasIdentifier)
                             End If
 
-                            Dim aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Name)
+                            Dim aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Alias.Name, aliasInfo.Alias.Arity)
                             newIdentifier = newIdentifier.WithAdditionalAnnotations(aliasAnnotationInfo)
 
                             replacement = replacement.ReplaceNode(
@@ -548,7 +548,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification
                                 newIdentifier = newIdentifier.WithAdditionalAnnotations(Me._annotationForReplacedAliasIdentifier)
                             End If
 
-                            Dim aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Name)
+                            Dim aliasAnnotationInfo = AliasAnnotation.Create(aliasInfo.Alias.Name, aliasInfo.Alias.Arity)
                             newIdentifier = newIdentifier.WithAdditionalAnnotations(aliasAnnotationInfo)
 
                             replacement = replacement.ReplaceToken(identifier, newIdentifier)

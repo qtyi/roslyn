@@ -3209,7 +3209,7 @@ End Module
     </file>
 </compilation>
         Dim analyzer = New CustomDiagnosticAnalyzerWithFullWidthId
-        Dim analyzers = {analyzer}
+        Dim analyzers = New DiagnosticAnalyzer() {analyzer}
         Dim expectedId = analyzer.SupportedDiagnostics.Single.Id
         Dim expectedMsg = analyzer.SupportedDiagnostics.Single.MessageFormat
         CreateCompilationWithMscorlib40AndVBRuntime(compXml).VerifyAnalyzerDiagnostics(analyzers, Nothing, Nothing,
@@ -3316,7 +3316,7 @@ End Module
     </file>
 </compilation>
         Dim analyzer = New CustomDiagnosticAnalyzerWithVeryLongId
-        Dim analyzers = {analyzer}
+        Dim analyzers = New DiagnosticAnalyzer() {analyzer}
         Dim expectedId = analyzer.SupportedDiagnostics.Single.Id
         Dim expectedMsg = analyzer.SupportedDiagnostics.Single.MessageFormat
         CreateCompilationWithMscorlib40AndVBRuntime(compXml).VerifyAnalyzerDiagnostics(analyzers, Nothing, Nothing,

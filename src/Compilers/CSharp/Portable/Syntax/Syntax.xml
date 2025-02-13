@@ -3123,10 +3123,21 @@
         <Field Name="UnsafeKeyword" Type="SyntaxToken" Optional="true">
           <Kind Name="UnsafeKeyword"/>
         </Field>
-        <Field Name="Alias" Type="NameEqualsSyntax"/>
+        <Field Name="Identifier" Type="SyntaxToken">
+          <Kind Name="IdentifierToken"/>
+        </Field>
+        <Field Name="TypeParameterList" Type="TypeParameterListSyntax" Optional="true"/>
+        <Field Name="EqualsToken" Type="SyntaxToken">
+          <Kind Name="EqualsToken"/>
+        </Field>
       </Sequence>
     </Choice>
     <Field Name="NamespaceOrType" Type="TypeSyntax"/>
+    <Field Name="ConstraintClauses" Type="SyntaxList&lt;TypeParameterConstraintClauseSyntax&gt;" Optional="true">
+      <PropertyComment>
+        <summary>Gets the type constraint list.</summary>
+      </PropertyComment>
+    </Field>
     <Field Name="SemicolonToken" Type="SyntaxToken">
       <Kind Name="SemicolonToken"/>
     </Field>

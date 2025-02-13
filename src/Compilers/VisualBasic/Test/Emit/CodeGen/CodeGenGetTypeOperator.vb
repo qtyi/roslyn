@@ -641,5 +641,42 @@ True
 }
 ]]>).Compilation
         End Sub
+
+        <Fact>
+        Public Sub CodeGen_GetType_GenericAliasForTypeMemberOfGeneric()
+            Dim compilation1 = CompileAndVerify(
+<compilation>
+    <file name="a.vb">
+Imports System
+
+Imports GenericOuter(Of T) = Outer(Of T)
+
+Public Class Outer(Of T)
+    Public Class Inner(Of U)
+    End Class
+End Class
+
+Module Program
+    Public Sub Main()
+        System.Console.WriteLine(GetType(GenericOuter(Of ).Inner(Of )).Equals(GetType(Outer(Of ).Inner(Of ))))
+    End Sub
+End Module
+    </file>
+</compilation>, expectedOutput:=<![CDATA[
+True
+]]>).VerifyIL("Program.Main", <![CDATA[
+{
+  // Code size       31 (0x1f)
+  .maxstack  2
+  IL_0000:  ldtoken    "Outer(Of T).Inner(Of U)"
+  IL_0005:  call       "Function System.Type.GetTypeFromHandle(System.RuntimeTypeHandle) As System.Type"
+  IL_000a:  ldtoken    "Outer(Of T).Inner(Of U)"
+  IL_000f:  call       "Function System.Type.GetTypeFromHandle(System.RuntimeTypeHandle) As System.Type"
+  IL_0014:  callvirt   "Function System.Type.Equals(System.Type) As Boolean"
+  IL_0019:  call       "Sub System.Console.WriteLine(Boolean)"
+  IL_001e:  ret
+}
+]]>).Compilation
+        End Sub
     End Class
 End Namespace

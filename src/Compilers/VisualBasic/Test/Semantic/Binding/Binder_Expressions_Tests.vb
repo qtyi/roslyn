@@ -2085,6 +2085,32 @@ BC30182: Type expected.
 </errors>)
         End Sub
 
+        <Fact>
+        Public Sub GetTypeOnNSGenericAlias()
+            Dim text =
+<compilation name="GetTypeOnNSAlias">
+    <file name="a.vb">
+Imports NS(Of T)=System.Collections
+Module M
+  Sub S()
+    Dim x = GetType(NS(Of ))
+  End Sub
+End Module
+    </file>
+</compilation>
+
+            Dim compilation = CreateCompilationWithMscorlib40AndVBRuntime(text)
+            AssertTheseDiagnostics(compilation,
+<errors>
+BC37336: 'Collections' for the Imports generic alias to 'System.Collections' does not refer to a Class, Structure, Interface, Enum or Module.
+Imports NS(Of T)=System.Collections
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BC30182: Type expected.
+    Dim x = GetType(NS(Of ))
+                    ~~~~~~~
+</errors>)
+        End Sub
+
         <WorkItem(542383, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542383")>
         <Fact>
         Public Sub GetTypeOnModuleName()
@@ -2133,6 +2159,85 @@ Imports Con = System.Console
             Dim compilation = CreateCompilationWithMscorlib40AndVBRuntime(text)
             AssertNoErrors(compilation)
 
+        End Sub
+
+        <Fact>
+        Public Sub GetTypeOnGenericAlias_NoErrors()
+            Dim source =
+<compilation name="GetTypeOnGenericAlias">
+    <file name="a.vb">
+Imports System
+Imports A(Of T) = Object                                            ' generic alias targets determined non-generic named type.
+Imports B(Of T) = Integer()                                         ' generic alias targets determined array type.
+Imports C(Of T) = (T, T, T)                                         ' generic alias targets tuple type(generic named type) whose type arguments are all alias type parameter.
+Imports D(Of T) = System.Collections.Generic.Dictionary(Of T, T)    ' generic alias targets generic named type whose type arguments are all alias type parameter.
+
+    Module M
+    
+        Public Sub Main()
+            Console.WriteLine(
+                GetType(A(Of )) Is GetType(Object) And
+                GetType(B(Of )) Is GetType(Integer()) And
+                GetType(C(Of )) Is GetType(ValueTuple(Of ,,)) And
+                GetType(D(Of )) Is GetType(Collections.Generic.Dictionary(Of ,))
+            )
+        End Sub
+
+    End Module
+
+    </file>
+</compilation>
+
+            Dim compilation = CreateCompilationWithMscorlib40AndVBRuntimeAndReferences(source,
+                references:={ValueTupleRef},
+                parseOptions:=TestOptions.RegularLatest)
+            compilation.AssertNoErrors()
+        End Sub
+
+        <Fact>
+        Public Sub GetTypeOnGenericAlias_HasErrors()
+            Dim source =
+<compilation name="GetTypeOnGenericAlias">
+    <file name="a.vb">
+Imports System
+Imports A(Of T) = T                                                     ' generic alias targets its type parameter.
+Imports B(Of T) = T()                                                   ' generic alias targets array type whose element type is alias type parameter.
+Imports C(Of T) = (Integer, T)                                          ' generic alias targets tuple type(generic named type) whose type argument contains both determined types and alias type parameters.
+Imports D(Of T) = System.Collections.Generic.Dictionary(Of T, (T, T))   ' generic alias targets generic named type whose type argument contains both determined types(even though they're tuple types whose type arguments are all alias type parameter) and alias type parameters.
+
+
+    Module M
+    
+        Public Sub Main()
+            Dim a = GetType(A(Of ))
+            Dim b = GetType(B(Of ))
+            Dim c = GetType(C(Of ))
+            Dim d = GetType(D(Of ))
+        End Sub
+
+    End Module
+
+    </file>
+</compilation>
+
+            Dim compilation = CreateCompilationWithMscorlib40AndVBRuntimeAndReferences(source,
+                references:={ValueTupleRef},
+                parseOptions:=TestOptions.RegularLatest)
+            compilation.AssertTheseDiagnostics(
+<errors>
+BC30182: Type expected.
+            Dim a = GetType(A(Of ))
+                                 ~
+BC30182: Type expected.
+            Dim b = GetType(B(Of ))
+                                 ~
+BC30182: Type expected.
+            Dim c = GetType(C(Of ))
+                                 ~
+BC30182: Type expected.
+            Dim d = GetType(D(Of ))
+                                 ~
+</errors>)
         End Sub
 
         <Fact>

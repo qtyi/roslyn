@@ -2877,7 +2877,7 @@ End Module
             'Do a transform to Replace and Existing Tree
             Dim name As NameSyntax = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName("System"), SyntaxFactory.IdentifierName("Collections.Generic"))
             Dim oldImportClause As SimpleImportsClauseSyntax = CType(ThirdImportsClause.ImportsClauses(0), SimpleImportsClauseSyntax)
-            Dim newImportsClause = oldImportClause.WithName(name)
+            Dim newImportsClause = oldImportClause.WithNamespaceOrType(name)
 
             'Replace Node with a different Imports Clause
             Root = Root.ReplaceNode(oldImportClause, newImportsClause)

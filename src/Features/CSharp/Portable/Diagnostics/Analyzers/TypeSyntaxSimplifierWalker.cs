@@ -117,7 +117,7 @@ internal class TypeSyntaxSimplifierWalker : CSharpSyntaxWalker, IDisposable
 
         void AddAliasedName(UsingDirectiveSyntax usingDirective)
         {
-            if (usingDirective.Alias is not null &&
+            if (usingDirective.Identifier != default &&
                 usingDirective.Name?.GetRightmostName() is IdentifierNameSyntax identifierName)
             {
                 var identifierAlias = identifierName.Identifier.ValueText;
@@ -180,7 +180,7 @@ internal class TypeSyntaxSimplifierWalker : CSharpSyntaxWalker, IDisposable
             return;
         }
 
-        if (TrySimplify(node))
+        if (node.IsKind(SyntaxKind.GenericName) && TrySimplify(node))
         {
             // found a match. report it and stop processing.
             return;

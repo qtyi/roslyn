@@ -632,7 +632,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.GenerateType
             If TypeOf root Is CompilationUnitSyntax Then
                 Dim compilationRoot = DirectCast(root, CompilationUnitSyntax)
                 Dim memberImportsClause = SyntaxFactory.SimpleImportsClause(
-                    name:=SyntaxFactory.ParseName(includeUsingsOrImports))
+                    namespaceOrType:=SyntaxFactory.ParseTypeName(includeUsingsOrImports))
                 Dim lastToken = memberImportsClause.GetLastToken()
                 Dim lastTokenWithEndOfLineTrivia = lastToken.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
 
@@ -648,7 +648,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.GenerateType
                     For Each import In importClause
                         If TypeOf import Is SimpleImportsClauseSyntax Then
                             Dim membersImport = DirectCast(import, SimpleImportsClauseSyntax)
-                            If membersImport.Name IsNot Nothing AndAlso membersImport.Name.ToString().Equals(memberImportsClause.Name.ToString()) Then
+                            If membersImport.NamespaceOrType IsNot Nothing AndAlso membersImport.NamespaceOrType.ToString().Equals(memberImportsClause.NamespaceOrType.ToString()) Then
                                 Return updatedSolution
                             End If
                         End If

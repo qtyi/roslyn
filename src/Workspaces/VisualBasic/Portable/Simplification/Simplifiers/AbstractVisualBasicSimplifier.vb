@@ -2,9 +2,12 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
+Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Options
+Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.Simplification.Simplifiers
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -60,8 +63,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
         Protected Shared Function TryReplaceWithAlias(
             node As ExpressionSyntax,
             semanticModel As SemanticModel,
-            <Out> ByRef aliasReplacement As IAliasSymbol) As Boolean
+            <Out> ByRef aliasReplacement As IAliasSymbol,
+            <Out> ByRef aliasTypeArguments As ImmutableArray(Of ITypeSymbol)) As Boolean
             aliasReplacement = Nothing
+            aliasTypeArguments = Nothing
 
             If Not IsAliasReplaceableExpression(node) Then
                 Return False
@@ -79,20 +84,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
                 Dim qualifiedNameNode = DirectCast(node, QualifiedNameSyntax)
                 If qualifiedNameNode.Right.Identifier.HasAnnotations(AliasAnnotation.Kind) Then
                     Dim aliasAnnotationInfo = qualifiedNameNode.Right.Identifier.GetAnnotations(AliasAnnotation.Kind).Single()
+                    Dim [alias] = AliasAnnotation.GetAlias(aliasAnnotationInfo).Name
+                    Dim aliasName = CreateAliasNameSyntax(node, [alias], aliasTypeArguments)
 
-                    Dim aliasName = AliasAnnotation.GetAliasName(aliasAnnotationInfo)
-                    Dim aliasIdentifier = SyntaxFactory.IdentifierName(aliasName)
+                    Dim aliasTypeInfo = semanticModel.GetSpeculativeAliasInfo(node.SpanStart, aliasName, SpeculativeBindingOption.BindAsTypeOrNamespace)
 
-                    Dim aliasTypeInfo = semanticModel.GetSpeculativeAliasInfo(node.SpanStart, aliasIdentifier, SpeculativeBindingOption.BindAsTypeOrNamespace)
-
-                    If aliasTypeInfo IsNot Nothing Then
-                        aliasReplacement = aliasTypeInfo
+                    If aliasTypeInfo.Alias IsNot Nothing Then
+                        aliasReplacement = aliasTypeInfo.Alias
                         Return ValidateAliasForTarget(aliasReplacement, semanticModel, node, symbol)
                     End If
                 End If
             End If
 
-            If node.Kind = SyntaxKind.IdentifierName AndAlso semanticModel.GetAliasInfo(DirectCast(node, IdentifierNameSyntax)) IsNot Nothing Then
+            If node.Kind = SyntaxKind.IdentifierName OrElse node.Kind = SyntaxKind.GenericName _
+                AndAlso semanticModel.GetAliasInfoWithTarget(DirectCast(node, IdentifierNameSyntax)).Alias IsNot Nothing Then
                 Return False
             End If
 
@@ -122,7 +127,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
                 End If
             End If
 
-            aliasReplacement = DirectCast(symbol, INamespaceOrTypeSymbol).GetAliasForSymbol(node, semanticModel)
+            Dim result = DirectCast(symbol, INamespaceOrTypeSymbol).GetAliasForSymbol(node, semanticModel)
+            aliasReplacement = result.Item1
+            aliasTypeArguments = result.Item2
             If aliasReplacement IsNot Nothing And preferAliasToQualifiedName Then
                 Return ValidateAliasForTarget(aliasReplacement, semanticModel, node, symbol)
             End If
@@ -178,6 +185,23 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
             End If
 
             Return False
+        End Function
+
+        Protected Shared Function CreateAliasNameSyntax(node As SyntaxNode, aliasName As String, typeArguments As ImmutableArray(Of ITypeSymbol)) As SimpleNameSyntax
+            ' TODO(sanmur): Need escape identifier.
+            Dim identifier = SyntaxFactory.Identifier(aliasName)
+
+            Dim arity = If(typeArguments.IsDefaultOrEmpty, 0, typeArguments.Length)
+            If arity = 0 Then
+                Return SyntaxFactory.IdentifierName(identifier)
+            Else
+                Dim arguments = ArrayBuilder(Of TypeSyntax).GetInstance(arity)
+                For Each typeArgument In typeArguments
+                    arguments.Add(typeArgument.GenerateTypeSyntax().WithAdditionalAnnotations(Simplifier.Annotation))
+                Next
+
+                Return SyntaxFactory.GenericName(identifier, SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(arguments.ToArrayAndFree())))
+            End If
         End Function
 
         Protected Shared Function PreferPredefinedTypeKeywordInMemberAccess(expression As ExpressionSyntax, options As VisualBasicSimplifierOptions) As Boolean

@@ -473,6 +473,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
         Friend MustOverride Function GetInternalsVisibleToAssemblyNames() As IEnumerable(Of String)
 
+        Friend MustOverride Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+
+        Friend MustOverride Function GetFriendAccessibleAssemblyNames() As IEnumerable(Of String)
+
         Friend MustOverride Function AreInternalsVisibleToThisAssembly(other As AssemblySymbol) As Boolean
 
         ''' <summary>
@@ -741,23 +745,42 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Return True
             End If
 
+            ' NOTE: Check if any [InternalsVisibleTo] attribute in this assembly matches wantingAssembly.
             Dim myKeys = Me.GetInternalsVisibleToPublicKeys(assemblyWantingAccess.Name)
 
-            ' We have an easy out here. Suppose the assembly wanting access is
-            ' being compiled as a module. You can only strong-name an assembly. So we are going to optimistically
-            ' assume that it Is going to be compiled into an assembly with a matching strong name, if necessary
-            If myKeys.Any() AndAlso assemblyWantingAccess.IsNetModule() Then
-                Return True
-            End If
-
-            For Each key In myKeys
-                Dim conclusion As IVTConclusion = Me.Identity.PerformIVTCheck(assemblyWantingAccess.Identity.PublicKey, key)
-                Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
-                If conclusion = IVTConclusion.Match Then
-                    ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+            If myKeys.Any() Then
+                ' We have an easy out here. Suppose the assembly wanting access is
+                ' being compiled as a module. You can only strong-name an assembly. So we are going to optimistically
+                ' assume that it Is going to be compiled into an assembly with a matching strong name, if necessary
+                If assemblyWantingAccess.IsNetModule() Then
                     Return True
                 End If
-            Next
+
+                For Each key In myKeys
+                    Dim conclusion As IVTConclusion = Me.Identity.PerformIVTCheck(assemblyWantingAccess.Identity.PublicKey, key)
+                    Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
+                    If conclusion = IVTConclusion.Match Then
+                        ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+                        Return True
+                    End If
+                Next
+            End If
+
+            ' NOTE: Check if any friend accessible assembly, if wantingAssembly is a source assembly, matches this assembly.
+            If TypeOf assemblyWantingAccess Is AssemblySymbol Then
+                Dim keys = DirectCast(assemblyWantingAccess, AssemblySymbol).GetFriendAccessibleAssemblyPublicKeys(Me.Name)
+
+                If keys.Any() Then
+                    For Each key In keys
+                        Dim conclusion As IVTConclusion = Me.Identity.PerformIVFCheck(assemblyWantingAccess.Identity.PublicKey, key)
+                        Debug.Assert(conclusion <> IVTConclusion.NoRelationshipClaimed)
+                        If conclusion = IVTConclusion.Match Then
+                            ' Note that C# includes  OrElse conclusion = IVTConclusion.OneSignedOneNot
+                            Return True
+                        End If
+                    Next
+                End If
+            End If
 
             Return False
         End Function
@@ -806,6 +829,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
         Private Function IAssemblySymbolInternal_GetInternalsVisibleToAssemblyNames() As IEnumerable(Of String) Implements IAssemblySymbolInternal.GetInternalsVisibleToAssemblyNames
             Return GetInternalsVisibleToAssemblyNames()
+        End Function
+
+        Private Function IAssemblySymbolInternal_GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte)) Implements IAssemblySymbolInternal.GetFriendAccessibleAssemblyPublicKeys
+            Return GetFriendAccessibleAssemblyPublicKeys(simpleName)
+        End Function
+
+        Private Function IAssemblySymbolInternal_GetFriendAccessibleAssemblyNames() As IEnumerable(Of String) Implements IAssemblySymbolInternal.GetFriendAccessibleAssemblyNames
+            Return GetFriendAccessibleAssemblyNames()
         End Function
 
         Private Function IAssemblySymbolInternal_AreInternalsVisibleToThisAssembly(other As IAssemblySymbolInternal) As Boolean Implements IAssemblySymbolInternal.AreInternalsVisibleToThisAssembly

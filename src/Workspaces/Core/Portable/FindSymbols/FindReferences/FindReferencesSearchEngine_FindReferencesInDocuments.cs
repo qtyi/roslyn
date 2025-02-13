@@ -74,7 +74,7 @@ internal sealed partial class FindReferencesSearchEngine
 
         async ValueTask PerformSearchInProjectSeriallyAsync(ImmutableArray<(ISymbol symbol, SymbolGroup group)> symbols, Project project)
         {
-            using var _ = PooledDictionary<ISymbol, PooledHashSet<string>>.GetInstance(out var symbolToGlobalAliases);
+            using var _ = PooledDictionary<ISymbol, PooledHashSet<NameWithArity>>.GetInstance(out var symbolToGlobalAliases);
             try
             {
                 // Compute global aliases up front for the project so it can be used below for all the symbols we're
@@ -99,7 +99,7 @@ internal sealed partial class FindReferencesSearchEngine
         async ValueTask PerformSearchInDocumentSeriallyAsync(
             ImmutableArray<(ISymbol symbol, SymbolGroup group)> symbols,
             Document document,
-            PooledDictionary<ISymbol, PooledHashSet<string>> symbolToGlobalAliases)
+            PooledDictionary<ISymbol, PooledHashSet<NameWithArity>> symbolToGlobalAliases)
         {
             // We're doing to do all of our processing of this document at once.  This will necessitate all the
             // appropriate finders checking this document for hits.  We're likely going to need to perform syntax
@@ -182,9 +182,9 @@ internal sealed partial class FindReferencesSearchEngine
                 foreach (var token in tokens)
                 {
                     var parent = state.SyntaxFacts.TryGetBindableParent(token) ?? token.GetRequiredParent();
-                    var symbolInfo = state.Cache.GetSymbolInfo(parent, cancellationToken);
+                    var (symbolInfo, aliasInfo) = state.Cache.GetSymbolInfo(parent, cancellationToken);
 
-                    var (matched, candidate, candidateReason) = await HasInheritanceRelationshipAsync(symbol, symbolInfo).ConfigureAwait(false);
+                    var (matched, candidate, candidateReason) = await HasInheritanceRelationshipAsync(symbol, symbolInfo, aliasInfo).ConfigureAwait(false);
                     if (matched)
                     {
                         // Ensure we report this new symbol/group in case it's the first time we're seeing it.
@@ -200,7 +200,7 @@ internal sealed partial class FindReferencesSearchEngine
         }
 
         async ValueTask<(bool matched, ISymbol candidate, CandidateReason candidateReason)> HasInheritanceRelationshipAsync(
-            ISymbol symbol, SymbolInfo symbolInfo)
+            ISymbol symbol, SymbolInfo symbolInfo, AliasInfo aliasInfo)
         {
             if (await HasInheritanceRelationshipSingleAsync(symbol, symbolInfo.Symbol).ConfigureAwait(false))
                 return (matched: true, symbolInfo.Symbol!, CandidateReason.None);
@@ -210,6 +210,10 @@ internal sealed partial class FindReferencesSearchEngine
                 if (await HasInheritanceRelationshipSingleAsync(symbol, candidate).ConfigureAwait(false))
                     return (matched: true, candidate, symbolInfo.CandidateReason);
             }
+
+            if (aliasInfo.Alias is IAliasSymbol aliasSymbol &&
+                await HasInheritanceRelationshipSingleAsync(symbol, aliasSymbol).ConfigureAwait(false))
+                return (matched: true, aliasSymbol, CandidateReason.None);
 
             return default;
         }

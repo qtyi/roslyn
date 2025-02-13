@@ -13,11 +13,11 @@ namespace Microsoft.CodeAnalysis.FindSymbols.Finders;
 internal sealed class TypeParameterSymbolReferenceFinder : AbstractTypeParameterSymbolReferenceFinder
 {
     protected override bool CanFind(ITypeParameterSymbol symbol)
-        => symbol.TypeParameterKind != TypeParameterKind.Method;
+        => symbol.TypeParameterKind is TypeParameterKind.Type or TypeParameterKind.Cref;
 
     protected override Task DetermineDocumentsToSearchAsync<TData>(
         ITypeParameterSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

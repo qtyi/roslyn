@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Immutable;
 using System.Threading;
 
@@ -65,9 +66,10 @@ namespace Microsoft.CodeAnalysis
         /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
+        [Obsolete("This method is only used for compatibility. To get alias info, use GetAliasInfoWithTarget instead.", error: true)]
         public static IAliasSymbol? GetAliasInfo(this SemanticModel semanticModel, SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return semanticModel.GetAliasInfo(nameSyntax, cancellationToken);
+            return semanticModel.GetAliasInfo(nameSyntax, cancellationToken).Alias;
         }
 
         /// <summary>
@@ -87,7 +89,43 @@ namespace Microsoft.CodeAnalysis
         /// expression should derive from TypeSyntax.</param>
         /// <remarks>The passed in name is interpreted as a stand-alone name, as if it
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
+        [Obsolete("This method is only used for compatibility. To get alias info, use GetSpeculativeAliasInfoWithTarget instead.", error: true)]
         public static IAliasSymbol? GetSpeculativeAliasInfo(this SemanticModel semanticModel, int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
+        {
+            return semanticModel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption).Alias;
+        }
+
+        /// <summary>
+        /// If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
+        /// </summary>
+        /// <param name="semanticModel"></param>
+        /// <param name="nameSyntax">Name to get alias info for.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the
+        /// process of obtaining the alias information.</param>
+        public static AliasInfo GetAliasInfoWithTarget(this SemanticModel semanticModel, SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return semanticModel.GetAliasInfo(nameSyntax, cancellationToken);
+        }
+
+        /// <summary>
+        /// Binds the name in the context of the specified location and sees if it resolves to an
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
+        /// </summary>
+        /// <param name="semanticModel"></param>
+        /// <param name="position">A character position used to identify a declaration scope and
+        /// accessibility. This character position must be within the FullSpan of the Root syntax
+        /// node in this SemanticModel.
+        /// </param>
+        /// <param name="nameSyntax">A syntax node that represents a name. This syntax
+        /// node need not and typically does not appear in the source code referred to by the
+        /// SemanticModel instance.</param>
+        /// <param name="bindingOption">Indicates whether to binding the name as a full expression,
+        /// or as a type or namespace. If SpeculativeBindingOption.BindAsTypeOrNamespace is supplied, then
+        /// expression should derive from TypeSyntax.</param>
+        /// <remarks>The passed in name is interpreted as a stand-alone name, as if it
+        /// appeared by itself somewhere within the scope that encloses "position".</remarks>
+        public static AliasInfo GetSpeculativeAliasInfoWithTarget(this SemanticModel semanticModel, int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
         {
             return semanticModel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
         }

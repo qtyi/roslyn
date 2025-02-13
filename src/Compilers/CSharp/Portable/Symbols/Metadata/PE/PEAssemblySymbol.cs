@@ -260,6 +260,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return Assembly.GetInternalsVisibleToAssemblyNames();
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            return Assembly.GetFriendAccessibleAssemblyPublicKeys(simpleName);
+        }
+
+        internal override IEnumerable<string> GetFriendAccessibleAssemblyNames()
+        {
+            return Assembly.GetFriendAccessibleAssemblyNames();
+        }
+
         internal DocumentationProvider DocumentationProvider
         {
             get

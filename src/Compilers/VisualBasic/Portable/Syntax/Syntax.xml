@@ -470,10 +470,10 @@ Unify Enum declarations with other block type declarations.
         <description>An optional alias for the namespace or type being imported.</description>
       </child>
 
-      <child name="Name" kind="@NameSyntax">
+      <child name="NamespaceOrType" kind="@TypeSyntax">
         <description>The namespace or type being imported.</description>
-        <lm-equiv name="Name"></lm-equiv>
-        <native-equiv name="ImportedName"></native-equiv>
+        <lm-equiv name="NamespaceOrType"></lm-equiv>
+        <native-equiv name="ImportedNamespaceOrType"></native-equiv>
       </child>
     </node-structure>
 
@@ -487,6 +487,14 @@ Unify Enum declarations with other block type declarations.
 
       <child name="Identifier" kind="IdentifierToken">
         <description>The identifier being introduced.</description>
+      </child>
+
+      <child name="TypeParameterList" optional="true" kind="TypeParameterList">
+        <!-- REVIEW: Add constraint that this can't be present for a Module. -->
+        <description>
+          If present, a type parameter list with generic parameters for this type alias. If no generic parameters were
+          present, Nothing is returned.
+        </description>
       </child>
 
       <child name="EqualsToken" kind="EqualsToken">

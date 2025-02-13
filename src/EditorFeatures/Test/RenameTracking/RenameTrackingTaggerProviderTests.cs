@@ -1409,7 +1409,7 @@ public sealed class RenameTrackingTaggerProviderTests
     }
 
     [WpfFact, WorkItem("https://github.com/dotnet/roslyn/issues/14159")]
-    public async Task RenameTrackingNotOnWellKnownValueTupleType()
+    public async Task RenameTrackingOnWellKnownValueTupleType()
     {
         var workspaceXml = """
             <Workspace>
@@ -1438,7 +1438,7 @@ public sealed class RenameTrackingTaggerProviderTests
             """;
         using var state = RenameTrackingTestState.CreateFromWorkspaceXml(workspaceXml, LanguageNames.CSharp);
         state.EditorOperations.InsertText("2");
-        await state.AssertNoTag();
+        await state.AssertTag("ValueTuple", "ValueTuple2");
     }
 
     [WpfFact, WorkItem("https://github.com/dotnet/roslyn/issues/14159")]

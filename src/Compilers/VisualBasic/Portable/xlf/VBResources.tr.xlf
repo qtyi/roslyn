@@ -172,6 +172,11 @@
         <target state="translated">satır devamı sonrası açıklamalar</target>
         <note />
       </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="new">import generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FEATURE_InitOnlySettersUsage">
         <source>assigning to or passing 'ByRef' properties with init-only setters</source>
         <target state="translated">init-only ayarlayıcıları ile 'ByRef' özelliklerine atama veya geçirme</target>
@@ -3194,6 +3199,11 @@
       <trans-unit id="ERR_InvalidTypeForAliasesImport2">
         <source>'{1}' for the Imports alias to '{0}' does not refer to a Namespace, Class, Structure, Interface, Enum or Module.</source>
         <target state="translated">'Imports diğer adı '{0}' için olan '{1}' bir Namespace, Class, Structure, Interface, Enum veya Module başvurusu yapmıyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="new">'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedConstant2">

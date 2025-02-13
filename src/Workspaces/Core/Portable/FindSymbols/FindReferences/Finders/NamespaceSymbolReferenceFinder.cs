@@ -18,14 +18,14 @@ internal sealed class NamespaceSymbolReferenceFinder : AbstractReferenceFinder<I
     protected override bool CanFind(INamespaceSymbol symbol)
         => true;
 
-    protected override Task<ImmutableArray<string>> DetermineGlobalAliasesAsync(INamespaceSymbol symbol, Project project, CancellationToken cancellationToken)
+    protected override Task<ImmutableArray<NameWithArity>> DetermineGlobalAliasesAsync(INamespaceSymbol symbol, Project project, CancellationToken cancellationToken)
     {
-        return GetAllMatchingGlobalAliasNamesAsync(project, symbol.Name, arity: 0, cancellationToken);
+        return GetAllMatchingGlobalAliasAsync(project, symbol.Name, arity: 0, cancellationToken);
     }
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         INamespaceSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,
@@ -43,7 +43,7 @@ internal sealed class NamespaceSymbolReferenceFinder : AbstractReferenceFinder<I
             foreach (var globalAlias in globalAliases)
             {
                 await FindDocumentsAsync(
-                    project, documents, processResult, processResultData, cancellationToken, globalAlias).ConfigureAwait(false);
+                    project, documents, processResult, processResultData, cancellationToken, globalAlias.Name).ConfigureAwait(false);
             }
         }
 
@@ -72,10 +72,10 @@ internal sealed class NamespaceSymbolReferenceFinder : AbstractReferenceFinder<I
                 symbol, namespaceName, state, StandardCallbacks<FinderLocation>.AddToArrayBuilder, initialReferences, cancellationToken);
 
             foreach (var globalAlias in state.GlobalAliases)
-                FindReferenceToAlias(symbol, state, initialReferences, namespaceName, globalAlias, cancellationToken);
+                FindReferenceToAlias(symbol, state, initialReferences, namespaceName, globalAlias.Name, cancellationToken);
 
-            foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(symbol.Name, arity: 0))
-                FindReferenceToAlias(symbol, state, initialReferences, namespaceName, localAlias, cancellationToken);
+            foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(SyntaxTreeIndex.FilterAliasesByName(symbol.Name, arity: 0, state.Document.GetRequiredLanguageService<ISyntaxFactsService>())))
+                FindReferenceToAlias(symbol, state, initialReferences, namespaceName, localAlias.Name, cancellationToken);
 
             // The items in initialReferences need to be both reported and used later to calculate additional results.
             foreach (var location in initialReferences)

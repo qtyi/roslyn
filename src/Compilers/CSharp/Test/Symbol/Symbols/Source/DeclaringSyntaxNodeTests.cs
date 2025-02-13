@@ -146,6 +146,28 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Source
             CheckDeclaringSyntaxNodes(comp, sym, 1);
         }
 
+        private void CheckAliasDeclaringSyntax<TNode>(CSharpCompilation comp, SyntaxTree tree, string name, string[] typeParameterNames)
+            where TNode : CSharpSyntaxNode
+        {
+            var model = comp.GetSemanticModel(tree);
+            string code = tree.GetText().ToString();
+            int position = code.IndexOf(name, StringComparison.Ordinal);
+            var node = tree.GetRoot().FindToken(position).Parent.FirstAncestorOrSelf<TNode>();
+            var sym = model.GetDeclaredSymbol(node) as IAliasSymbol;
+
+            Assert.NotNull(sym);
+            int count = typeParameterNames.Length;
+            var parameters = sym.TypeParameters;
+            Assert.Equal(count, parameters.Length);
+
+            for (int i = 0; i < count; i++)
+            {
+                ITypeParameterSymbol tp = parameters[i];
+                Assert.Equal(typeParameterNames[i], tp.Name);
+                CheckDeclaringSyntaxNodes(comp, tp, 1);
+            }
+        }
+
         private void CheckLambdaDeclaringSyntax<TNode>(CSharpCompilation comp, SyntaxTree tree, string textToSearchFor)
             where TNode : ExpressionSyntax
         {
@@ -653,17 +675,23 @@ using System;
 using System.Collections.Generic;
 using ConsoleAlias=System.Console;
 using ListOfIntAlias=System.Collections.Generic.List<int>;
+using Array<T> = T[];
+using StringDictionary<TValue> = System.Collections.Generic.Dictionary<string, TValue>;
 
 namespace N1
 {
     using GooAlias=Con;
+    using ReversedTuple<T1, T2> = (T2, T1);
 }
 ";
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
-            CheckDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "ConsoleAlias", SymbolKind.Alias);
-            CheckDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "ListOfIntAlias", SymbolKind.Alias);
-            CheckDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "GooAlias", SymbolKind.Alias);
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "ConsoleAlias", Array.Empty<string>());
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "ListOfIntAlias", Array.Empty<string>());
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "Array", new string[] { "T" });
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "StringDictionary", new string[] { "TValue" });
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "GooAlias", Array.Empty<string>());
+            CheckAliasDeclaringSyntax<UsingDirectiveSyntax>(comp, tree, "ReversedTuple", new string[] { "T1", "T2" });
         }
 
         [Fact]

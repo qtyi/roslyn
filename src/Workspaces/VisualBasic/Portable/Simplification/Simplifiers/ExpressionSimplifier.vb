@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
@@ -106,8 +107,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
 
             If Not memberAccess.IsRightSideOfDot() Then
                 Dim aliasReplacement As IAliasSymbol = Nothing
+                Dim aliasTypeArguments As ImmutableArray(Of ITypeSymbol) = Nothing
 
-                If TryReplaceWithAlias(memberAccess, semanticModel, aliasReplacement) Then
+                If TryReplaceWithAlias(memberAccess, semanticModel, aliasReplacement, aliasTypeArguments) Then
                     Dim identifierToken = SyntaxFactory.Identifier(
                                 memberAccess.GetLeadingTrivia(),
                                 aliasReplacement.Name,

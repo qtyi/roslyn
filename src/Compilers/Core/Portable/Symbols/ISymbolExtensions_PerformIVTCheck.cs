@@ -99,5 +99,72 @@ namespace Microsoft.CodeAnalysis
             // Cases 1, 4, 5 and 10:
             return IVTConclusion.Match;
         }
+
+        /// <summary>
+        /// Given that an assembly with identity assemblyGrantingAccessIdentity granted access to assemblyWantingAccess,
+        /// check the public keys to ensure the internals-visible-from check should succeed. This is used by both the
+        /// C# and VB implementations as a helper to implement `bool IAssemblySymbol.GivesAccessTo(IAssemblySymbol toAssembly)`.
+        /// </summary>
+        internal static IVTConclusion PerformIVFCheck(
+            this AssemblyIdentity assemblyGrantingAccessIdentity,
+            ImmutableArray<byte> assemblyWantingAccessKey,
+            ImmutableArray<byte> grantedFromPublicKey)
+        {
+            // This gets a bit complicated. Let's break it down.
+            //
+            // First off, let's assume that the "other" assembly is GrantingAssembly.DLL, that the "this"
+            // assembly is "WantingAssembly.DLL". Whether we call this method depends on these three preconditions:
+            //
+            // p1) GrantingAssembly has not named WantingAssembly as a friend.
+            // p2) WantingAssembly has dismatched the strong-name GrantingAssembly has given.
+            // p3) WantingAssembly has named GrantingAssembly as a friend.
+            //
+            // Whether we allow WantingAssembly to see internals of GrantingAssembly depends on these four factors:
+            //
+            // q1) Is GrantingAssembly strong-named?
+            // q2) Did WantingAssembly name GrantingAssembly as a friend via a strong name?
+            // q3) Is WantingAssembly strong-named?
+            // q4) Does WantingAssembly give a strong-name for GrantingAssembly that matches our strong name?
+            //
+            // Let's make a chart that illustrates all the possible answers to these four questions, and
+            // what the resulting accessibility should be:
+            //
+            // case q1  q2  q3  q4  Result                 Explanation
+            // 1    YES YES YES YES SUCCESS          WantingAssembly has named this strong-named GrantingAssembly as a friend.
+            // 2    YES YES YES NO  NO MATCH         WantingAssembly has named a different strong-named GrantingAssembly as a friend.
+            // 3    YES YES NO  YES SUCCESS          WantingAssembly has named this strong-named GrantingAssembly as a friend.
+            // 4    YES YES NO  NO  NO MATCH         WantingAssembly has named a different strong-named GrantingAssembly as a friend.
+            // 5    YES NO  YES NO  SUCCESS          WantingAssembly has improperly (*) named any GrantingAssembly as its friend. But we honor its offer of friendship.
+            // 6    YES NO  NO  NO  SUCCESS          WantingAssembly has improperly (*) named any GrantingAssembly as its friend. But we honor its offer of friendship.
+            // 7    NO  YES YES NO  NO MATCH         WantingAssembly has named a strong-named GrantingAssembly as a friend, but this GrantingAssembly is weak-named.
+            // 8    NO  YES NO  NO  NO MATCH         WantingAssembly has named a strong-named GrantingAssembly as a friend, but this GrantingAssembly is weak-named.
+            // 9    NO  NO  YES NO  SUCCESS, BAD REF WantingAssembly has named any GrantingAssembly as a friend, but WantingAssembly should not be referring to a weak-named GrantingAssembly.
+            // 10   NO  NO  NO  NO  SUCCESS          WantingAssembly has named any GrantingAssembly as its friend.
+            //                                     
+            // (*) GrantingAssembly was not built with a Roslyn compiler, which would have prevented this.
+            //
+            // This method never returns NoRelationshipClaimed because if control got here, then we assume
+            // (as a precondition) that GrantingAssembly named WantingAssembly as a friend somehow.
+
+            bool q1 = assemblyGrantingAccessIdentity.IsStrongName;
+            bool q2 = !grantedFromPublicKey.IsDefaultOrEmpty;
+            bool q3 = !assemblyWantingAccessKey.IsDefaultOrEmpty;
+            bool q4 = (q1 & q2) && ByteSequenceComparer.Equals(grantedFromPublicKey, assemblyGrantingAccessIdentity.PublicKey);
+
+            // Cases 2, 4, 7 and 8:
+            if (q2 && !q4)
+            {
+                return IVTConclusion.PublicKeyDoesntMatch;
+            }
+
+            // Cases 9:
+            if (!q1 && q3)
+            {
+                return IVTConclusion.OneSignedOneNot;
+            }
+
+            // Cases 1, 3, 5, 6 and 10:
+            return IVTConclusion.Match;
+        }
     }
 }

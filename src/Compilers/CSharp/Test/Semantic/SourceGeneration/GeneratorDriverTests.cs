@@ -157,7 +157,7 @@ class GeneratedClass { }
 
             Compilation compilation = CreateCompilation(source, options: TestOptions.DebugDllThrowing, parseOptions: parseOptions);
             compilation.VerifyDiagnostics();
-            compilation.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            compilation.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(0, analyzer.GeneratedClassCount);
 
@@ -165,7 +165,7 @@ class GeneratedClass { }
 
             GeneratorDriver driver = CSharpGeneratorDriver.Create(new[] { testGenerator }, parseOptions: parseOptions);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
-            outputCompilation.GetAnalyzerDiagnostics(new[] { analyzer }, null).Verify();
+            outputCompilation.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, null).Verify();
 
             Assert.Equal(1, analyzer.GeneratedClassCount);
         }

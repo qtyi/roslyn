@@ -47,7 +47,7 @@ internal class CSharpOptionsSerializationService : AbstractOptionsSerializationS
         var (outputKind, reportSuppressedDiagnostics, moduleName, mainTypeName, scriptClassName,
             optimizationLevel, checkOverflow, cryptoKeyContainer, cryptoKeyFile, cryptoPublicKey,
             delaySign, platform, generalDiagnosticOption, warningLevel, specificDiagnosticOptions,
-            concurrentBuild, deterministic, publicSign, metadataImportOptions,
+            concurrentBuild, deterministic, publicSign, metadataImportOptions, friendAccessibleAssemblyPublicKeys,
             xmlReferenceResolver, sourceReferenceResolver, metadataReferenceResolver, assemblyIdentityComparer,
             strongNameProvider) = ReadCompilationOptionsPieces(reader, cancellationToken);
 
@@ -59,7 +59,7 @@ internal class CSharpOptionsSerializationService : AbstractOptionsSerializationS
             outputKind, reportSuppressedDiagnostics, moduleName, mainTypeName, scriptClassName, usings, optimizationLevel, checkOverflow, allowUnsafe,
             cryptoKeyContainer, cryptoKeyFile, cryptoPublicKey, delaySign, platform, generalDiagnosticOption, warningLevel, specificDiagnosticOptions, concurrentBuild,
             deterministic, xmlReferenceResolver, sourceReferenceResolver, metadataReferenceResolver, assemblyIdentityComparer, strongNameProvider, publicSign,
-            metadataImportOptions, nullableContextOptions);
+            metadataImportOptions, friendAccessibleAssemblyPublicKeys, nullableContextOptions);
     }
 
     public override ParseOptions ReadParseOptionsFrom(ObjectReader reader, CancellationToken cancellationToken)

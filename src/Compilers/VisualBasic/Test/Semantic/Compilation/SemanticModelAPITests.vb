@@ -1267,11 +1267,11 @@ End Class    </file>
             Assert.True(constantInfo.HasValue, "must be constant")
             Assert.Equal("hello", constantInfo.Value)
 
-            Dim aliasSymbol = speculativeModel.GetAliasInfo(DirectCast(attr3.Name, IdentifierNameSyntax))
-            Assert.NotNull(aliasSymbol)
-            Assert.Equal("O", aliasSymbol.Name)
-            Assert.NotNull(aliasSymbol.Target)
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name)
+            Dim aliasInfo = speculativeModel.GetAliasInfo(DirectCast(attr3.Name, IdentifierNameSyntax))
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("O", aliasInfo.Alias.Name)
+            Assert.NotNull(aliasInfo.Target)
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name)
 
             Dim attr4 = ParseAttributeSyntax("<P>")
 
@@ -1315,11 +1315,11 @@ End Class    </file>
             Assert.True(constantInfo.HasValue, "must be constant")
             Assert.Equal("hello", constantInfo.Value)
 
-            aliasSymbol = speculativeModel.GetAliasInfo(DirectCast(attr6.Name, IdentifierNameSyntax))
-            Assert.NotNull(aliasSymbol)
-            Assert.Equal("O", aliasSymbol.Name)
-            Assert.NotNull(aliasSymbol.Target)
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name)
+            aliasInfo = speculativeModel.GetAliasInfo(DirectCast(attr6.Name, IdentifierNameSyntax))
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("O", aliasInfo.Alias.Name)
+            Assert.NotNull(aliasInfo.Target)
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name)
 
             Dim position4 = CompilationUtils.FindPositionFromText(tree, "Serializable")
             Dim attr7 = ParseAttributeSyntax("<D>")
@@ -1351,11 +1351,11 @@ End Class    </file>
             Assert.True(constantInfo.HasValue, "must be constant")
             Assert.Equal("hello", constantInfo.Value)
 
-            aliasSymbol = speculativeModel.GetAliasInfo(DirectCast(attr8.Name, IdentifierNameSyntax))
-            Assert.NotNull(aliasSymbol)
-            Assert.Equal("O", aliasSymbol.Name)
-            Assert.NotNull(aliasSymbol.Target)
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name)
+            aliasInfo = speculativeModel.GetAliasInfo(DirectCast(attr8.Name, IdentifierNameSyntax))
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("O", aliasInfo.Alias.Name)
+            Assert.NotNull(aliasInfo.Target)
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name)
         End Sub
 
         <Fact()>
@@ -1769,7 +1769,7 @@ Imports System.Runtime
             Dim model = compilation.GetSemanticModel(tree)
 
             Dim speculatedTypeExpression = SyntaxFactory.ParseName("System.Collections")
-            TestGetSpeculativeSemanticModelForTypeSyntax_Common(model, importsClause.Name.Position,
+            TestGetSpeculativeSemanticModelForTypeSyntax_Common(model, importsClause.NamespaceOrType.Position,
                 speculatedTypeExpression, SpeculativeBindingOption.BindAsTypeOrNamespace, SymbolKind.Namespace, "System.Collections")
         End Sub
 
@@ -1789,7 +1789,7 @@ Imports A = System.Exception
             Dim model = compilation.GetSemanticModel(tree)
 
             Dim speculatedTypeExpression = SyntaxFactory.ParseName("System.ArgumentException")
-            TestGetSpeculativeSemanticModelForTypeSyntax_Common(model, importsClause.Name.Position,
+            TestGetSpeculativeSemanticModelForTypeSyntax_Common(model, importsClause.NamespaceOrType.Position,
                 speculatedTypeExpression, SpeculativeBindingOption.BindAsExpression, SymbolKind.NamedType, "System.ArgumentException")
         End Sub
 
@@ -1952,7 +1952,7 @@ End Class
             Assert.True(success)
             Assert.NotNull(speculativeModel)
 
-            Dim symbol = DirectCast(speculativeModel.GetAliasInfo(speculatedAliasName), AliasSymbol)
+            Dim symbol = DirectCast(speculativeModel.GetAliasInfo(speculatedAliasName).Alias, AliasSymbol)
             Assert.NotNull(symbol)
             Assert.Equal("A", symbol.ToDisplayString())
             Assert.Equal("System.ArgumentException", symbol.Target.ToDisplayString())

@@ -199,6 +199,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return SpecializedCollections.EmptyEnumerable<string>();
         }
 
+        internal override IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName)
+        {
+            return SpecializedCollections.EmptyEnumerable<ImmutableArray<byte>>();
+        }
+
+        internal override IEnumerable<string> GetFriendAccessibleAssemblyNames()
+        {
+            return SpecializedCollections.EmptyEnumerable<string>();
+        }
+
         public override bool MightContainExtensionMethods
         {
             get

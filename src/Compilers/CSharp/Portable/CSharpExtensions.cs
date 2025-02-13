@@ -1025,20 +1025,47 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// If <paramref name="nameSyntax"/> resolves to an alias name, return the AliasSymbol corresponding
         /// to A. Otherwise return null.
         /// </summary>
+        [Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", error: true)]
         public static IAliasSymbol? GetAliasInfo(this SemanticModel? semanticModel, IdentifierNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var csmodel = semanticModel as CSharpSemanticModel;
-            return csmodel?.GetAliasInfo(nameSyntax, cancellationToken);
+            return GetAliasInfo(semanticModel, (SimpleNameSyntax)nameSyntax, cancellationToken).Alias;
         }
 
         /// <summary>
         /// Binds the name in the context of the specified location and sees if it resolves to an
         /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
         /// </summary>
+        [Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", error: true)]
         public static IAliasSymbol? GetSpeculativeAliasInfo(this SemanticModel? semanticModel, int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
         {
-            var csmodel = semanticModel as CSharpSemanticModel;
-            return csmodel?.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
+            return GetSpeculativeAliasInfo(semanticModel, position, (SimpleNameSyntax)nameSyntax, bindingOption).Alias;
+        }
+        /// <summary>
+        /// If <paramref name="nameSyntax"/> resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
+        /// </summary>
+        public static AliasInfo GetAliasInfo(this SemanticModel? semanticModel, SimpleNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (semanticModel is CSharpSemanticModel csmodel)
+            {
+                return csmodel.GetAliasInfo(nameSyntax, cancellationToken);
+            }
+
+            return AliasInfo.None;
+        }
+
+        /// <summary>
+        /// Binds the name in the context of the specified location and sees if it resolves to an
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
+        /// </summary>
+        public static AliasInfo GetSpeculativeAliasInfo(this SemanticModel? semanticModel, int position, SimpleNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
+        {
+            if (semanticModel is CSharpSemanticModel csmodel)
+            {
+                return csmodel.GetSpeculativeAliasInfo(position, nameSyntax, bindingOption);
+            }
+
+            return AliasInfo.None;
         }
 
         /// <summary>

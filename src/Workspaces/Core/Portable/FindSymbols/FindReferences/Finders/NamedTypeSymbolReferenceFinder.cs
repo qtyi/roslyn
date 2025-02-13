@@ -14,14 +14,14 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 
 namespace Microsoft.CodeAnalysis.FindSymbols.Finders;
 
-internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<INamedTypeSymbol>
+internal sealed class NamedTypeSymbolReferenceFinder : WithAliasSymbolReferenceFinder<INamedTypeSymbol>
 {
     protected override bool CanFind(INamedTypeSymbol symbol)
         => symbol.TypeKind != TypeKind.Error;
 
-    protected override Task<ImmutableArray<string>> DetermineGlobalAliasesAsync(INamedTypeSymbol symbol, Project project, CancellationToken cancellationToken)
+    protected override Task<ImmutableArray<NameWithArity>> DetermineGlobalAliasesAsync(INamedTypeSymbol symbol, Project project, CancellationToken cancellationToken)
     {
-        return GetAllMatchingGlobalAliasNamesAsync(project, symbol.Name, symbol.Arity, cancellationToken);
+        return GetAllMatchingGlobalAliasAsync(project, symbol.Name, symbol.Arity, cancellationToken);
     }
 
     protected override ValueTask<ImmutableArray<ISymbol>> DetermineCascadedSymbolsAsync(
@@ -51,7 +51,7 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         INamedTypeSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,
@@ -63,7 +63,12 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
         if (globalAliases != null)
         {
             foreach (var alias in globalAliases)
-                await AddDocumentsToSearchAsync(alias, project, documents, processResult, processResultData, cancellationToken).ConfigureAwait(false);
+                await AddDocumentsToSearchAsync(alias.Name, project, documents, processResult, processResultData, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (symbol.IsTupleType)
+        {
+            await FindDocumentsWithTupleTypeAsync(project, documents, processResult, processResultData, cancellationToken).ConfigureAwait(false);
         }
 
         await FindDocumentsAsync(
@@ -94,6 +99,16 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
             await FindDocumentsAsync(project, documents, processResult, processResultData, cancellationToken, simpleName).ConfigureAwait(false);
     }
 
+    private static Task FindDocumentsWithTupleTypeAsync<TData>(
+        Project project,
+        IImmutableSet<Document>? documents,
+        Action<Document, TData> processResult,
+        TData processResultData,
+        CancellationToken cancellationToken)
+    {
+        return FindDocumentsWithPredicateAsync(project, documents, static index => index.ContainsTupleExpressionOrTupleType, processResult, processResultData, cancellationToken);
+    }
+
     private static bool IsPotentialReference(
         PredefinedType predefinedType,
         ISyntaxFactsService syntaxFacts,
@@ -104,7 +119,7 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
             predefinedType == actualType;
     }
 
-    protected override void FindReferencesInDocument<TData>(
+    protected override void FindAllNonLocalAliasReferences<TData>(
         INamedTypeSymbol namedType,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
@@ -114,27 +129,22 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
     {
         using var _ = ArrayBuilder<FinderLocation>.GetInstance(out var tempReferences);
 
-        // First find all references to this type, using it's actual .Net name.
+        // First find all references to this type, either with it's actual name, or through potential
+        // global aliases to it.
         AddReferencesToTypeOrGlobalAliasToIt(
             namedType, state, StandardCallbacks<FinderLocation>.AddToArrayBuilder, tempReferences, cancellationToken);
-
-        // Next, if this named type is a predefined type (like int/long), also search for it with the C# name,
-        // not the .Net one.
-        AddPredefinedTypeReferences(namedType, state, tempReferences, cancellationToken);
 
         // The items in tempReferences need to be both reported and used later to calculate additional results.
         foreach (var location in tempReferences)
             processResult(location, processResultData);
 
-        // This named type may end up being locally aliased as well.  If so, now find all the references to the local
-        // alias. Note: the local alias may be like `using X = System.Int32` or it could be `using X = int`.  Because
-        // we searched for both forms above, we'll find all references to the local aliases to either form here.
-
-        FindLocalAliasReferences(
-            tempReferences, state, processResult, processResultData, cancellationToken);
-
-        FindReferencesInDocumentInsideGlobalSuppressions(
+        FindPredefinedTypeReferences(
             namedType, state, processResult, processResultData, cancellationToken);
+
+        if (namedType.IsTupleType)
+        {
+            FindTupleTypeReferences(namedType, namedType.TupleElements.Length, state, processResult, processResultData, cancellationToken);
+        }
     }
 
     internal static void AddReferencesToTypeOrGlobalAliasToIt<TData>(
@@ -145,26 +155,26 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
         CancellationToken cancellationToken)
     {
         AddNonAliasReferences(
-            namedType, namedType.Name, state, processResult, processResultData, cancellationToken);
+            namedType, namedType.Name, namedType.Arity, state, processResult, processResultData, cancellationToken);
 
         foreach (var globalAlias in state.GlobalAliases)
             FindReferenceToAlias(namedType, state, processResult, processResultData, globalAlias, cancellationToken);
 
-        foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(namedType.Name, namedType.Arity))
+        foreach (var localAlias in state.Cache.SyntaxTreeIndex.GetAliases(SyntaxTreeIndex.FilterAliasesByName(namedType.Name, namedType.Arity, state.Document.GetRequiredLanguageService<ISyntaxFactsService>())))
             FindReferenceToAlias(namedType, state, processResult, processResultData, localAlias, cancellationToken);
     }
 
     private static void FindReferenceToAlias<TData>(
-        INamedTypeSymbol namedType, FindReferencesDocumentState state, Action<FinderLocation, TData> processResult, TData processResultData, string alias, CancellationToken cancellationToken)
+        INamedTypeSymbol namedType, FindReferencesDocumentState state, Action<FinderLocation, TData> processResult, TData processResultData, NameWithArity alias, CancellationToken cancellationToken)
     {
         // ignore the cases where the global alias might match the type name (i.e.
         // global alias Console = System.Console).  We'll already find those references
         // above.
-        if (state.SyntaxFacts.StringComparer.Equals(namedType.Name, alias))
+        if (state.SyntaxFacts.StringComparer.Equals(namedType.Name, alias.Name))
             return;
 
         AddNonAliasReferences(
-            namedType, alias, state, processResult, processResultData, cancellationToken);
+            namedType, alias.Name, alias.Arity, state, processResult, processResultData, cancellationToken);
     }
 
     /// <summary>
@@ -175,21 +185,23 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
     private static void AddNonAliasReferences<TData>(
         INamedTypeSymbol symbol,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
         CancellationToken cancellationToken)
     {
         FindOrdinaryReferences(
-            symbol, name, state, processResult, processResultData, cancellationToken);
+            symbol, name, arity, state, processResult, processResultData, cancellationToken);
 
         FindAttributeReferences(
-            symbol, name, state, processResult, processResultData, cancellationToken);
+            symbol, name, arity, state, processResult, processResultData, cancellationToken);
     }
 
     private static void FindOrdinaryReferences<TData>(
         INamedTypeSymbol namedType,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
@@ -201,13 +213,14 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
         // associate with the type, but rather with the constructor itself.
 
         FindReferencesInDocumentUsingIdentifier(
-            namedType, name, state, processResult, processResultData, cancellationToken);
+            namedType, name, arity, state, processResult, processResultData, cancellationToken);
     }
 
-    private static void AddPredefinedTypeReferences(
+    private static void FindPredefinedTypeReferences<TData>(
         INamedTypeSymbol symbol,
         FindReferencesDocumentState state,
-        ArrayBuilder<FinderLocation> tempReferences,
+        Action<FinderLocation, TData> processResult,
+        TData processResultData,
         CancellationToken cancellationToken)
     {
         var predefinedType = symbol.SpecialType.ToPredefinedType();
@@ -220,19 +233,44 @@ internal sealed class NamedTypeSymbolReferenceFinder : AbstractReferenceFinder<I
                 static (token, tuple) => IsPotentialReference(tuple.predefinedType, tuple.state.SyntaxFacts, token),
                 (state, predefinedType));
 
-        FindReferencesInTokens(
-            symbol, state, tokens, StandardCallbacks<FinderLocation>.AddToArrayBuilder, tempReferences, cancellationToken);
+        FindReferencesInTokens(symbol, state, tokens, processResult, processResultData, cancellationToken);
     }
 
     private static void FindAttributeReferences<TData>(
         INamedTypeSymbol namedType,
         string name,
+        int arity,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
         TData processResultData,
         CancellationToken cancellationToken)
     {
         if (TryGetNameWithoutAttributeSuffix(name, state.SyntaxFacts, out var nameWithoutSuffix))
-            FindReferencesInDocumentUsingIdentifier(namedType, nameWithoutSuffix, state, processResult, processResultData, cancellationToken);
+            FindReferencesInDocumentUsingIdentifier(namedType, nameWithoutSuffix, arity, state, processResult, processResultData, cancellationToken);
+    }
+
+    private static void FindTupleTypeReferences<TData>(
+        INamedTypeSymbol namedType,
+        int tupleElementCount,
+        FindReferencesDocumentState state,
+        Action<FinderLocation, TData> processResult,
+        TData processResultData,
+        CancellationToken cancellationToken)
+    {
+        var nodes = state.Cache.FindMatchingTupleTypeNodes(state.Document, tupleElementCount, cancellationToken);
+
+        foreach (var node in nodes)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var (matched, reason) = SymbolsMatch(
+                namedType, state, node, cancellationToken);
+            if (matched)
+            {
+                var location = CreateFinderLocation(state, node, reason, cancellationToken);
+
+                processResult(location, processResultData);
+            }
+        }
     }
 }

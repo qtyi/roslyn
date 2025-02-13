@@ -671,10 +671,7 @@ IDeconstructionAssignmentOperation (OperationKind.DeconstructionAssignment, Type
                 Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "Deconstruct").WithArguments("C", "Deconstruct").WithLocation(16, 17),
                 // CS1913: Member 'Deconstruct' cannot be initialized. It is not a field or property.
                 //         /*<bind>*/(x, y) = new C() { Deconstruct = DeconstructMethod }/*</bind>*/;
-                Diagnostic(ErrorCode.ERR_MemberCannotBeInitialized, "Deconstruct").WithArguments("Deconstruct").WithLocation(11, 38),
-                // CS0649: Field 'C.Deconstruct' is never assigned to, and will always have its default value null
-                //     public D1 Deconstruct;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Deconstruct").WithArguments("C.Deconstruct", "null").WithLocation(6, 15)
+                Diagnostic(ErrorCode.ERR_MemberCannotBeInitialized, "Deconstruct").WithArguments("Deconstruct").WithLocation(11, 38)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<AssignmentExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);
@@ -4277,7 +4274,7 @@ class C
             Assert.Equal("(var a, var b)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4295,7 +4292,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int d", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -4309,7 +4306,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);
@@ -4408,7 +4405,7 @@ class C
             Assert.Equal("(var a, var b)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4426,7 +4423,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int d", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -4440,7 +4437,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);
@@ -4536,7 +4533,7 @@ class C
             Assert.Equal("(var, var)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var _", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4557,7 +4554,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int _", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -4574,7 +4571,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);
@@ -4682,7 +4679,7 @@ class C
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).Alias.ToTestDisplayString());
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4696,7 +4693,7 @@ class C
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -4776,7 +4773,7 @@ using var = System.Int32;
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).Alias.ToTestDisplayString());
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4790,7 +4787,7 @@ using var = System.Int32;
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).Alias.ToTestDisplayString());
         }
 
         [Fact, WorkItem(17572, "https://github.com/dotnet/roslyn/issues/17572")]
@@ -4854,7 +4851,7 @@ class C
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[0].Type).Alias.ToTestDisplayString());
 
             Assert.Equal("var _", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -4871,7 +4868,7 @@ class C
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).ToTestDisplayString());
+            Assert.Equal("var=System.Int32", model.GetAliasInfo(declarations[1].Type).Alias.ToTestDisplayString());
         }
 
         [Fact, WorkItem(17572, "https://github.com/dotnet/roslyn/issues/17572")]
@@ -4953,7 +4950,7 @@ class C
             Assert.True(model.GetConversion(declaration.Type).IsIdentity);
             var symbolInfo = model.GetSymbolInfo(declaration.Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).ToTestDisplayString());
+            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).Alias.ToTestDisplayString());
         }
 
         [Fact, WorkItem(17572, "https://github.com/dotnet/roslyn/issues/17572")]
@@ -4999,7 +4996,7 @@ using al = System.Int32;
             Assert.True(model.GetConversion(declaration.Type).IsIdentity);
             var symbolInfo = model.GetSymbolInfo(declaration.Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).ToTestDisplayString());
+            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).Alias.ToTestDisplayString());
         }
 
         [Fact, WorkItem(17572, "https://github.com/dotnet/roslyn/issues/17572")]
@@ -5060,7 +5057,7 @@ class C
             Assert.True(model.GetConversion(declaration.Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declaration.Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).ToTestDisplayString());
+            Assert.Equal("al=System.Int32", model.GetAliasInfo(declaration.Type).Alias.ToTestDisplayString());
         }
 
         [Fact, WorkItem(17572, "https://github.com/dotnet/roslyn/issues/17572")]
@@ -5222,7 +5219,7 @@ class C
             Assert.Equal("(var a, var b)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5240,7 +5237,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int d", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -5254,7 +5251,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuples = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().ToArray();
             Assert.Equal(2, tuples.Length);
@@ -5366,7 +5363,7 @@ class C
             Assert.Equal("(var a, var b)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var c", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5384,7 +5381,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int d", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -5398,7 +5395,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuples = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().ToArray();
             Assert.Equal(2, tuples.Length);
@@ -5503,7 +5500,7 @@ class C
             Assert.Equal("(var, var)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("var _", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5524,7 +5521,7 @@ class C
             Assert.Null(symbolInfo.Symbol);
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             Assert.Equal("int _", declarations[2].ToString());
             typeInfo = model.GetTypeInfo(declarations[2]);
@@ -5541,7 +5538,7 @@ class C
             Assert.True(model.GetConversion(declarations[2].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[2].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[2].Type));
+            Assert.Null(model.GetAliasInfo(declarations[2].Type).Alias);
 
             var tuples = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().ToArray();
             Assert.Equal(2, tuples.Length);
@@ -5690,7 +5687,7 @@ class C
             Assert.Equal("((var a, var b), var c)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("int d", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5704,7 +5701,7 @@ class C
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);
@@ -5800,7 +5797,7 @@ class C
             Assert.Equal("((var a, var b), var c)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("int d", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5814,7 +5811,7 @@ class C
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);
@@ -5903,7 +5900,7 @@ class C
             Assert.Equal("((var, var), var)", symbolInfo.Symbol.ToTestDisplayString());
             Assert.Empty(symbolInfo.CandidateSymbols);
             Assert.Equal(CandidateReason.None, symbolInfo.CandidateReason);
-            Assert.Null(model.GetAliasInfo(declarations[0].Type));
+            Assert.Null(model.GetAliasInfo(declarations[0].Type).Alias);
 
             Assert.Equal("int _", declarations[1].ToString());
             typeInfo = model.GetTypeInfo(declarations[1]);
@@ -5920,7 +5917,7 @@ class C
             Assert.True(model.GetConversion(declarations[1].Type).IsIdentity);
             symbolInfo = model.GetSymbolInfo(declarations[1].Type);
             Assert.Equal("System.Int32", symbolInfo.Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(declarations[1].Type));
+            Assert.Null(model.GetAliasInfo(declarations[1].Type).Alias);
 
             var tuple = tree.GetCompilationUnitRoot().DescendantNodes().OfType<TupleExpressionSyntax>().Single();
             typeInfo = model.GetTypeInfo(tuple);

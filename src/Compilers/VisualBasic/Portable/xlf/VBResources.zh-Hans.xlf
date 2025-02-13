@@ -172,6 +172,11 @@
         <target state="translated">行继续符之后的注释</target>
         <note />
       </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="translated">导入泛型别名</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FEATURE_InitOnlySettersUsage">
         <source>assigning to or passing 'ByRef' properties with init-only setters</source>
         <target state="translated">通过 init-only 资源库分配或传递 "ByRef" 属性</target>
@@ -3193,6 +3198,11 @@
       <trans-unit id="ERR_InvalidTypeForAliasesImport2">
         <source>'{1}' for the Imports alias to '{0}' does not refer to a Namespace, Class, Structure, Interface, Enum or Module.</source>
         <target state="translated">“{0}”的 Imports 别名的“{1}”不引用命名空间、类、结构、接口、枚举或模块。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="translated">“{0}”的 Imports 泛型别名的“{1}”不引用类、结构、接口、枚举或模块。</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedConstant2">

@@ -23,6 +23,10 @@ namespace Microsoft.CodeAnalysis.Symbols
 
         IEnumerable<string> GetInternalsVisibleToAssemblyNames();
 
+        IEnumerable<ImmutableArray<byte>> GetFriendAccessibleAssemblyPublicKeys(string simpleName);
+
+        IEnumerable<string> GetFriendAccessibleAssemblyNames();
+
         bool AreInternalsVisibleToThisAssembly(IAssemblySymbolInternal? otherAssembly);
     }
 }

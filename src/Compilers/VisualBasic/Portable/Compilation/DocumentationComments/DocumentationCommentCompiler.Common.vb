@@ -8,6 +8,7 @@ Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
     Partial Public Class VisualBasicCompilation
@@ -417,7 +418,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                         If nameAttribute IsNot Nothing Then
                             Dim useSiteInfo = binder.GetNewCompoundUseSiteInfo(Me._diagnostics)
-                            Dim bindResult As ImmutableArray(Of Symbol) = binder.BindXmlNameAttributeValue(nameAttribute.Reference, useSiteInfo)
+                            Dim bindResult As ImmutableArray(Of SymbolWithAnnotationSymbols) = binder.BindXmlNameAttributeValue(nameAttribute.Reference, useSiteInfo)
 
                             If node.SyntaxTree.ReportDocumentationCommentDiagnostics() Then
                                 Me._diagnostics.Add(node, useSiteInfo)
@@ -428,7 +429,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             Dim needDiagnostic As Boolean = True
 
                             If Not bindResult.IsDefault AndAlso bindResult.Length = 1 Then
-                                needDiagnostic = bindResult(0).Kind <> SymbolKind.TypeParameter
+                                needDiagnostic = bindResult(0).Symbol.Kind <> SymbolKind.TypeParameter
                             End If
 
                             If needDiagnostic AndAlso node.SyntaxTree.ReportDocumentationCommentDiagnostics() Then

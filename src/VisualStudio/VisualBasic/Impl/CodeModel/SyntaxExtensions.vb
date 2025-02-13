@@ -19,10 +19,10 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.CodeModel
         End Function
 
         <Extension>
-        Public Function GetName(importsClause As ImportsClauseSyntax) As NameSyntax
+        Public Function GetTypeName(importsClause As ImportsClauseSyntax) As TypeSyntax
             Debug.Assert(TypeOf importsClause Is SimpleImportsClauseSyntax)
 
-            Return DirectCast(importsClause, SimpleImportsClauseSyntax).Name
+            Return DirectCast(importsClause, SimpleImportsClauseSyntax).NamespaceOrType
         End Function
 
         <Extension>

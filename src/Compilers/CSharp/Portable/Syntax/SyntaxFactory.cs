@@ -2655,26 +2655,74 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        [Obsolete("This method is only used for compatibility. To create with alias name, use Identifier overrides instead.", error: true)]
         public static UsingDirectiveSyntax UsingDirective(NameEqualsSyntax alias, NameSyntax name)
         {
-            return UsingDirective(
-                usingKeyword: Token(SyntaxKind.UsingKeyword),
-                staticKeyword: default(SyntaxToken),
-                alias: alias,
-                name: name,
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
+            return UsingDirective(alias.Name.Identifier, name);
         }
 
+        [Obsolete("This method is only used for compatibility. To create with alias name, use Identifier overrides instead.", error: true)]
         public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name, SyntaxToken semicolonToken)
         {
             return UsingDirective(
                 globalKeyword: default,
+                usingKeyword: usingKeyword,
+                staticKeyword: staticKeyword,
+                unsafeKeyword: default,
+                identifier: alias is null ? default : alias.Name.Identifier,
+                typeParameterList: null,
+                equalsToken: alias is null ? default : alias.EqualsToken,
+                namespaceOrType: name,
+                constraintClauses: default,
+                semicolonToken: semicolonToken);
+        }
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, NameSyntax name)
+        {
+            return UsingDirective(
+                globalKeyword: default(SyntaxToken),
+                usingKeyword: Token(SyntaxKind.UsingKeyword),
+                staticKeyword: default(SyntaxToken),
+                unsafeKeyword: default(SyntaxToken),
+                identifier: identifier,
+                typeParameterList: null,
+                equalsToken: Token(SyntaxKind.EqualsToken),
+                namespaceOrType: name,
+                constraintClauses: default,
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
+        }
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, NameSyntax name)
+        {
+            return UsingDirective(
+                globalKeyword: default(SyntaxToken),
+                usingKeyword: Token(SyntaxKind.UsingKeyword),
+                staticKeyword: default(SyntaxToken),
+                unsafeKeyword: default(SyntaxToken),
+                identifier: identifier,
+                typeParameterList: typeParameterList,
+                equalsToken: Token(SyntaxKind.EqualsToken),
+                namespaceOrType: name,
+                constraintClauses: default,
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
+        }
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameSyntax name)
+        {
+            return UsingDirective(
+                globalKeyword: default(SyntaxToken),
                 usingKeyword,
                 staticKeyword,
-                unsafeKeyword: default,
-                alias,
+                unsafeKeyword: default(SyntaxToken),
+                identifier: default(SyntaxToken),
+                typeParameterList: null,
+                equalsToken: Token(SyntaxKind.EqualsToken),
                 namespaceOrType: name,
-                semicolonToken);
+                constraintClauses: default,
+                semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
 
         /// <summary>Creates a new ClassOrStructConstraintSyntax instance.</summary>

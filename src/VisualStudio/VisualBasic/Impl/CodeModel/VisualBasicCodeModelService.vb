@@ -939,7 +939,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.CodeModel
                 Case SyntaxKind.OptionStatement
                     Return GetNormalizedName(node)
                 Case SyntaxKind.SimpleImportsClause
-                    Return GetNormalizedName(DirectCast(node, ImportsClauseSyntax).GetName())
+                    Return GetNormalizedName(DirectCast(node, ImportsClauseSyntax).GetTypeName())
                 Case SyntaxKind.InheritsStatement
                     Return DirectCast(node, InheritsStatementSyntax).InheritsKeyword.ToString()
                 Case SyntaxKind.ImplementsStatement
@@ -1941,7 +1941,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.CodeModel
         Public Overrides Function GetImportNamespaceOrType(node As SyntaxNode) As String
             Select Case node.Kind
                 Case SyntaxKind.SimpleImportsClause
-                    Return GetNormalizedName(DirectCast(node, SimpleImportsClauseSyntax).Name)
+                    Return GetNormalizedName(DirectCast(node, SimpleImportsClauseSyntax).NamespaceOrType)
                 Case Else
                     Throw New InvalidOperationException()
             End Select
@@ -1952,7 +1952,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.CodeModel
 
             Select Case node.Kind
                 Case SyntaxKind.SimpleImportsClause
-                    name = GetNormalizedName(DirectCast(node, SimpleImportsClauseSyntax).Name)
+                    name = GetNormalizedName(DirectCast(node, SimpleImportsClauseSyntax).NamespaceOrType)
                 Case Else
                     Throw New InvalidOperationException()
             End Select

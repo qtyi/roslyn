@@ -101,6 +101,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>
+        /// Returns true if the node is in a position where an unbound alias
+        /// such as (A&lt;,&gt;) with its corresponding alias symbol is allowed.
+        /// </summary>
+        protected virtual bool IsUnboundAliasAllowed(GenericNameSyntax syntax, AliasSymbol symbol)
+        {
+            return Next.IsUnboundAliasAllowed(syntax, symbol);
+        }
+
+        /// <summary>
         /// Generates a new <see cref="BoundBadExpression"/> with no known type
         /// </summary>
         private BoundBadExpression BadExpression(SyntaxNode syntax)
@@ -1655,16 +1664,28 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
                 else
                 {
-                    bool isNamedType = (symbol.Kind == SymbolKind.NamedType) || (symbol.Kind == SymbolKind.ErrorType);
-
-                    if (hasTypeArguments && isNamedType)
+                    bool isAlias = false;
+                    bool isNamedType = false;
+                    if (symbol.Kind is SymbolKind.Alias)
                     {
-                        symbol = ConstructNamedTypeUnlessTypeArgumentOmitted(node, (NamedTypeSymbol)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        isAlias = true;
+                        if (hasTypeArguments)
+                        {
+                            symbol = ConstructAliasUnlessTypeArgumentOmitted(node, (AliasSymbolFromSyntax)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        }
+                    }
+                    else if (symbol.Kind is SymbolKind.NamedType or SymbolKind.ErrorType)
+                    {
+                        isNamedType = true;
+                        if (hasTypeArguments)
+                        {
+                            symbol = ConstructNamedTypeUnlessTypeArgumentOmitted(node, (NamedTypeSymbol)symbol, typeArgumentList, typeArgumentsWithAnnotations, diagnostics);
+                        }
                     }
 
                     expression = BindNonMethod(node, symbol, diagnostics, lookupResult.Kind, indexed, isError);
 
-                    if (!isNamedType && (hasTypeArguments || node.Kind() == SyntaxKind.GenericName))
+                    if ((!isAlias && !isNamedType) && (hasTypeArguments || node.Kind() == SyntaxKind.GenericName))
                     {
                         Debug.Assert(isError); // Should have been reported by GetSymbolOrMethodOrPropertyGroup.
                         expression = new BoundBadExpression(
@@ -2447,13 +2468,25 @@ namespace Microsoft.CodeAnalysis.CSharp
         public BoundExpression BindNamespaceOrType(ExpressionSyntax node, BindingDiagnosticBag diagnostics)
         {
             var symbol = this.BindNamespaceOrTypeOrAliasSymbol(node, diagnostics, null, false);
-            return CreateBoundNamespaceOrTypeExpression(node, symbol.Symbol);
+            return CreateBoundNamespaceOrTypeExpression(node, symbol);
         }
 
         public BoundExpression BindNamespaceAlias(IdentifierNameSyntax node, BindingDiagnosticBag diagnostics)
         {
             var symbol = this.BindNamespaceAliasSymbol(node, diagnostics);
             return CreateBoundNamespaceOrTypeExpression(node, symbol);
+        }
+
+        private static BoundExpression CreateBoundNamespaceOrTypeExpression(ExpressionSyntax node, NamespaceOrTypeOrAliasSymbolWithAnnotations symbol)
+        {
+            // return the constructed alias target type here if `symbol` is an generic alias.
+            if (symbol.IsAlias && symbol.Symbol.GetArity() > 0)
+            {
+                Debug.Assert(symbol.TypeWithAnnotations.HasType);
+                return new BoundTypeExpression(node, (AliasSymbol)symbol.Symbol, symbol.TypeWithAnnotations.Type);
+            }
+
+            return CreateBoundNamespaceOrTypeExpression(node, symbol.Symbol);
         }
 
         private static BoundExpression CreateBoundNamespaceOrTypeExpression(ExpressionSyntax node, Symbol symbol)
@@ -4585,8 +4618,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 CheckFeatureAvailability(node, MessageID.IDS_FeatureRefStructs, diagnostics);
 
                 var spanType = GetWellKnownType(WellKnownType.System_Span_T, diagnostics, node);
-                return ConstructNamedType(
-                    type: spanType,
+                return ConstructNamedTypeOrAlias(
+                    namedTypeOrAlias: spanType,
                     typeSyntax: node.Kind() == SyntaxKind.StackAllocArrayCreationExpression
                         ? ((StackAllocArrayCreationExpressionSyntax)node).Type
                         : node,
@@ -7502,7 +7535,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         Debug.Assert((object)leftType != null);
 
                         var leftName = left.Identifier.ValueText;
-                        if (leftType.Name == leftName || IsUsingAliasInScope(leftName))
+                        if (leftType.Name == leftName || IsUsingAliasInScope(leftName, arity: 0))
                         {
                             var typeDiagnostics = BindingDiagnosticBag.GetInstance(diagnostics);
                             var boundType = BindNamespaceOrType(left, typeDiagnostics);
@@ -7537,18 +7570,18 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             string name = id.Identifier.ValueText;
 
-            return (type.Name == name || IsUsingAliasInScope(name)) &&
+            return (type.Name == name || IsUsingAliasInScope(name, arity: 0)) &&
                    TypeSymbol.Equals(BindNamespaceOrType(id, BindingDiagnosticBag.Discarded).Type, type, TypeCompareKind.AllIgnoreOptions);
         }
 
         // returns true if name matches a using alias in scope
         // NOTE: when true is returned, the corresponding using is also marked as "used" 
-        private bool IsUsingAliasInScope(string name)
+        private bool IsUsingAliasInScope(string name, int arity)
         {
             var isSemanticModel = this.IsSemanticModelBinder;
             for (var chain = this.ImportChain; chain != null; chain = chain.ParentOpt)
             {
-                if (IsUsingAlias(chain.Imports.UsingAliases, name, isSemanticModel))
+                if (IsUsingAlias(chain.Imports.UsingAliases, name, arity, isSemanticModel))
                 {
                     return true;
                 }

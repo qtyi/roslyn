@@ -365,7 +365,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (var directive in usings)
             {
-                if (directive.Alias == null)
+                if (directive.Identifier == default)
                 {
                     continue;
                 }

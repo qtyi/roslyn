@@ -271,6 +271,111 @@ Class1.Method3([6], , [7])",
                 });
         }
 
+        [WorkItem(9229, "DevDiv_Projects/Roslyn")]
+        [Fact]
+        public void TestImplementingWithGenericAliasedNames()
+        {
+            // Tests: 
+            // Use aliased name for type of parameter / return type in implemented member
+
+            var source = @"
+using System;
+using TypeA<T> = Type<T>;
+using TypeB<T> = T;
+using TypeC = NS.Derived;
+using NSAlias2 = NS;
+using NSAlias = NS;
+class Type<T>
+{
+}
+interface Interface
+{
+    TypeB<int> Method(System.Exception a, TypeB<int> b, params NS.Derived[] c);
+    void Method2(TypeC c1, NSAlias2.Derived c2, NS.Derived[] c3);
+    void Method3(int[] b1, TypeA<int> b2, params int[] b3);
+}
+namespace NS
+{
+    using TypeA = System.Exception;
+    using Type = Interface;
+    using TypeD<T> = TypeA<TypeB<T>>;
+    abstract class Base
+    {
+        public void Method2(Derived c1, NS.Derived c2, params NSAlias.Derived[] C3)
+        {
+            Console.WriteLine(""Base.Method2( , , [{0}])"", C3.Length);
+        }
+    }
+    class Derived : Base, Interface
+    {
+        public TypeB<int> Method(TypeA A, int B, TypeC[] C)
+        {
+            Console.WriteLine(""Derived.Method( , {0}, [{1}])"", B, C.Length);
+            return 0;
+        }
+        public void Method3(int[] B1, TypeD<int> B2, params int[] b2)
+        {
+            Console.WriteLine(""Derived.Method3([{0}], , [{1}])"", B1.Length, b2.Length);
+        }
+    }
+    class Class1 : Type
+    {
+        TypeB<int> Type.Method(TypeA A, int B, TypeC[] C)
+        {
+            Console.WriteLine(""Class1.Method( , {0}, [{1}])"", B, C.Length);
+            return 0;
+        }
+        void Interface.Method2(Derived c1, NS.Derived c2, NSAlias.Derived[] C3)
+        {
+            Console.WriteLine(""Class1.Method2( , , [{0}])"", C3.Length);
+        }
+        void Type.Method3(int[] B1, Type<TypeB<int>> B2, params int[] B3)
+        {
+            Console.WriteLine(""Class1.Method3([{0}], , [{1}])"", B1.Length, B3.Length);
+        }
+    }
+}
+class Test
+{
+    public static void Main()
+    {
+        TypeC d = new TypeC();
+        TypeA<int> a = new TypeA<int>();
+        Interface b = d;
+        d.Method(new System.Exception(), 1, new TypeC[]{d});
+        b.Method(new System.Exception(), 2, d, d);
+        b.Method2(d, d, new TypeC[]{d, d, d});
+        d.Method3(new int[4]{1, 2, 3, 4}, a, new int[5] {6, 7, 8, 9, 10});
+        b.Method3(new int[6]{1, 2, 3, 4, 5, 6}, a, 8, 9, 10, 11, 12, 13, 14);
+
+        b = new NS.Class1();
+        b.Method(new System.Exception(), 2, d, d);
+        b.Method2(d, d, new TypeC[]{d, d, d});
+        b.Method3(new int[6]{1, 2, 3, 4, 5, 6}, a, 8, 9, 10, 11, 12, 13, 14);
+    }
+}";
+
+            var comp = CompileAndVerify(source,
+                expectedOutput: @"
+Derived.Method( , 1, [1])
+Derived.Method( , 2, [2])
+Base.Method2( , , [3])
+Derived.Method3([4], , [5])
+Derived.Method3([6], , [7])
+Class1.Method( , 2, [2])
+Class1.Method2( , , [3])
+Class1.Method3([6], , [7])",
+                expectedSignatures: new[]
+                {
+                    Signature("NS.Derived", "Method", ".method public hidebysig newslot virtual final instance System.Int32 Method(System.Exception A, System.Int32 B, NS.Derived[] C) cil managed"),
+                    Signature("NS.Base", "Method2", ".method public hidebysig newslot virtual final instance System.Void Method2(NS.Derived c1, NS.Derived c2, [System.ParamArrayAttribute()] NS.Derived[] C3) cil managed"),
+                    Signature("NS.Derived", "Method3", ".method public hidebysig newslot virtual final instance System.Void Method3(System.Int32[] B1, Type`1[System.Int32] B2, [System.ParamArrayAttribute()] System.Int32[] b2) cil managed"),
+                    Signature("NS.Class1", "Interface.Method", ".method private hidebysig newslot virtual final instance System.Int32 Interface.Method(System.Exception A, System.Int32 B, NS.Derived[] C) cil managed"),
+                    Signature("NS.Class1", "Interface.Method2", ".method private hidebysig newslot virtual final instance System.Void Interface.Method2(NS.Derived c1, NS.Derived c2, NS.Derived[] C3) cil managed"),
+                    Signature("NS.Class1", "Interface.Method3", ".method private hidebysig newslot virtual final instance System.Void Interface.Method3(System.Int32[] B1, Type`1[System.Int32] B2, [System.ParamArrayAttribute()] System.Int32[] B3) cil managed")
+                });
+        }
+
         [Fact]
         public void TestVBNestedInterfaceImplementationMetadata()
         {

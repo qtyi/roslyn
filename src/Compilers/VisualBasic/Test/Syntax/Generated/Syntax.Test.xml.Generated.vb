@@ -125,11 +125,11 @@ Partial Public Class GeneratedTests
         End Function
 
         Private Shared Function GenerateGreenSimpleImportsClause() As InternalSyntax.SimpleImportsClauseSyntax
-            return InternalSyntax.SyntaxFactory.SimpleImportsClause(Nothing, GenerateGreenIdentifierName())
+            return InternalSyntax.SyntaxFactory.SimpleImportsClause(Nothing, GenerateGreenTupleType())
         End Function
 
         Private Shared Function GenerateGreenImportAliasClause() As InternalSyntax.ImportAliasClauseSyntax
-            return InternalSyntax.SyntaxFactory.ImportAliasClause(GenerateGreenIdentifierToken(), new InternalSyntax.PunctuationSyntax(SyntaxKind.EqualsToken, String.Empty, Nothing, Nothing))
+            return InternalSyntax.SyntaxFactory.ImportAliasClause(GenerateGreenIdentifierToken(), Nothing, new InternalSyntax.PunctuationSyntax(SyntaxKind.EqualsToken, String.Empty, Nothing, Nothing))
         End Function
 
         Private Shared Function GenerateGreenXmlNamespaceImportsClause() As InternalSyntax.XmlNamespaceImportsClauseSyntax
@@ -10093,13 +10093,13 @@ Partial Public Class GeneratedTests
             Debug.Assert(exceptionTest)
             exceptionTest = false
 
-            return SyntaxFactory.SimpleImportsClause(Nothing, GenerateRedIdentifierName())
+            return SyntaxFactory.SimpleImportsClause(Nothing, GenerateRedTupleType())
         End Function
 
         Private Shared Function GenerateRedImportAliasClause() As ImportAliasClauseSyntax
             Dim exceptionTest as boolean = false
             Try
-            SyntaxFactory.ImportAliasClause(SyntaxFactory.Token(SyntaxKind.ExternalSourceKeyword), SyntaxFactory.Token(SyntaxKind.EqualsToken))
+            SyntaxFactory.ImportAliasClause(SyntaxFactory.Token(SyntaxKind.ExternalSourceKeyword), Nothing, SyntaxFactory.Token(SyntaxKind.EqualsToken))
             catch e as ArgumentException
             exceptionTest = true
             End Try
@@ -10107,14 +10107,14 @@ Partial Public Class GeneratedTests
             exceptionTest = false
 
             Try
-            SyntaxFactory.ImportAliasClause(GenerateRedIdentifierToken(), SyntaxFactory.Token(SyntaxKind.ExternalSourceKeyword))
+            SyntaxFactory.ImportAliasClause(GenerateRedIdentifierToken(), Nothing, SyntaxFactory.Token(SyntaxKind.ExternalSourceKeyword))
             catch e as ArgumentException
             exceptionTest = true
             End Try
             Debug.Assert(exceptionTest)
             exceptionTest = false
 
-            return SyntaxFactory.ImportAliasClause(GenerateRedIdentifierToken(), SyntaxFactory.Token(SyntaxKind.EqualsToken))
+            return SyntaxFactory.ImportAliasClause(GenerateRedIdentifierToken(), Nothing, SyntaxFactory.Token(SyntaxKind.EqualsToken))
         End Function
 
         Private Shared Function GenerateRedXmlNamespaceImportsClause() As XmlNamespaceImportsClauseSyntax
@@ -18698,8 +18698,8 @@ Partial Public Class GeneratedTests
         <Fact>
         Public Sub TestRedSimpleImportsClause()
             dim objectUnderTest = GenerateRedSimpleImportsClause()
-            Assert.NotNull(objectUnderTest.name)
-            Dim withObj = objectUnderTest.WithAlias(objectUnderTest.Alias).WithName(objectUnderTest.Name)
+            Assert.NotNull(objectUnderTest.namespaceOrType)
+            Dim withObj = objectUnderTest.WithAlias(objectUnderTest.Alias).WithNamespaceOrType(objectUnderTest.NamespaceOrType)
             Assert.Equal(withobj, objectUnderTest)
         End Sub
 
@@ -18708,7 +18708,7 @@ Partial Public Class GeneratedTests
             dim objectUnderTest = GenerateRedImportAliasClause()
             Assert.NotNull(objectUnderTest.identifier)
             Assert.NotNull(objectUnderTest.equalsToken)
-            Dim withObj = objectUnderTest.WithIdentifier(objectUnderTest.Identifier).WithEqualsToken(objectUnderTest.EqualsToken)
+            Dim withObj = objectUnderTest.WithIdentifier(objectUnderTest.Identifier).WithTypeParameterList(objectUnderTest.TypeParameterList).WithEqualsToken(objectUnderTest.EqualsToken)
             Assert.Equal(withobj, objectUnderTest)
         End Sub
 

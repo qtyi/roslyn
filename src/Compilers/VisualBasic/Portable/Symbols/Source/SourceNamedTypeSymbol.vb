@@ -1855,7 +1855,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                         Dim simpleImportsClause = DirectCast(globalImport.Clause, SimpleImportsClauseSyntax)
 
                         If simpleImportsClause.Alias IsNot Nothing Then
-                            Dim name = QuickAttributeChecker.GetFinalName(simpleImportsClause.Name)
+                            Dim name = QuickAttributeChecker.GetFinalName(simpleImportsClause.NamespaceOrType)
                             Select Case name
                                 Case AttributeDescription.CaseInsensitiveExtensionAttribute.Name,
                                      AttributeDescription.ObsoleteAttribute.Name,

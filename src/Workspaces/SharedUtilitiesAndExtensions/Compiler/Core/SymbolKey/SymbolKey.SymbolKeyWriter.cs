@@ -68,6 +68,7 @@ internal partial struct SymbolKey
         public CancellationToken CancellationToken { get; private set; }
 
         private readonly List<IMethodSymbol> _methodSymbolStack = [];
+        private readonly List<IAliasSymbol> _aliasSymbolStack = new();
 
         internal int _nestingCount;
         private int _nextId;
@@ -87,6 +88,7 @@ internal partial struct SymbolKey
             _symbolToId.Clear();
             _stringBuilder.Clear();
             _methodSymbolStack.Clear();
+            _aliasSymbolStack.Clear();
             CancellationToken = default;
             _nestingCount = 0;
             _nextId = 0;
@@ -478,13 +480,13 @@ internal partial struct SymbolKey
 
         public override void VisitTypeParameter(ITypeParameterSymbol typeParameterSymbol)
         {
-            // If it's a reference to a method type parameter, and we're currently writing
-            // out a signature, then only write out the ordinal of type parameter.  This 
-            // helps prevent recursion problems in cases like "Goo<T>(T t).
-            if (ShouldWriteTypeParameterOrdinal(typeParameterSymbol, out var methodIndex))
+            // If it's a reference to a method or an alias type parameter, and we're currently writing
+            // out a signture or an alias, then only write out the ordinal of type parameter.  This 
+            // helps prevent recursion problems in cases like "Goo<T>(T t)" and "Goo<T> = T:.
+            if (ShouldWriteTypeParameterOrdinal(typeParameterSymbol, out var index))
             {
                 WriteType(SymbolKeyType.TypeParameterOrdinal);
-                TypeParameterOrdinalSymbolKey.Create(typeParameterSymbol, methodIndex, this);
+                TypeParameterOrdinalSymbolKey.Create(typeParameterSymbol, index, this);
             }
             else
             {
@@ -493,22 +495,37 @@ internal partial struct SymbolKey
             }
         }
 
-        public bool ShouldWriteTypeParameterOrdinal(ISymbol symbol, out int methodIndex)
+        public bool ShouldWriteTypeParameterOrdinal(ISymbol symbol, out int index)
         {
-            if (symbol is ITypeParameterSymbol { TypeParameterKind: TypeParameterKind.Method } typeParameter)
+            if (symbol is ITypeParameterSymbol typeParameter)
             {
-                for (int i = 0, n = _methodSymbolStack.Count; i < n; i++)
+                if (typeParameter.TypeParameterKind == TypeParameterKind.Method)
                 {
-                    var method = _methodSymbolStack[i];
-                    if (typeParameter.DeclaringMethod!.Equals(method))
+                    for (int i = 0, n = _methodSymbolStack.Count; i < n; i++)
                     {
-                        methodIndex = i;
-                        return true;
+                        var method = _methodSymbolStack[i];
+                        if (typeParameter.DeclaringMethod!.Equals(method))
+                        {
+                            index = i;
+                            return true;
+                        }
+                    }
+                }
+                else if (typeParameter.TypeParameterKind == TypeParameterKind.Alias)
+                {
+                    for (int i = 0, n = _aliasSymbolStack.Count; i < n; i++)
+                    {
+                        var alias = _aliasSymbolStack[i];
+                        if (typeParameter.DeclaringAlias!.Equals(alias))
+                        {
+                            index = i;
+                            return true;
+                        }
                     }
                 }
             }
 
-            methodIndex = -1;
+            index = -1;
             return false;
         }
 
@@ -520,6 +537,16 @@ internal partial struct SymbolKey
             Contract.ThrowIfTrue(_methodSymbolStack.Count == 0);
             Contract.ThrowIfFalse(method.Equals(_methodSymbolStack[^1]));
             _methodSymbolStack.RemoveAt(_methodSymbolStack.Count - 1);
+        }
+
+        public void PushAlias(IAliasSymbol alias)
+            => _aliasSymbolStack.Add(alias);
+
+        public void PopAlias(IAliasSymbol alias)
+        {
+            Contract.ThrowIfTrue(_aliasSymbolStack.Count == 0);
+            Contract.ThrowIfFalse(alias.Equals(_aliasSymbolStack[_aliasSymbolStack.Count - 1]));
+            _aliasSymbolStack.RemoveAt(_aliasSymbolStack.Count - 1);
         }
     }
 }

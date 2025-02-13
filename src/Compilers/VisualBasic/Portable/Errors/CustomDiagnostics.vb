@@ -4,6 +4,8 @@
 
 Imports System.Collections.Immutable
 Imports Microsoft.CodeAnalysis.PooledObjects
+Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
     ' If a DiagnosticInfo contains symbols that should be returned through the binding API,
@@ -12,6 +14,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
     Friend Interface IDiagnosticInfoWithSymbols
         ' Add the associated symbols to the given array builder.
         Sub GetAssociatedSymbols(builder As ArrayBuilder(Of Symbol))
+        ' Add the associated symbols to the given array builder.
+        Sub GetAssociatedSymbols(builder As ArrayBuilder(Of SymbolWithAnnotationSymbols))
     End Interface
 
     ''' <summary>
@@ -47,6 +51,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         Private Sub GetAssociatedSymbols(builder As ArrayBuilder(Of Symbol)) Implements IDiagnosticInfoWithSymbols.GetAssociatedSymbols
             builder.Add(_badSymbol)
+        End Sub
+
+        Private Sub GetAssociatedSymbols(builder As ArrayBuilder(Of SymbolWithAnnotationSymbols)) Implements IDiagnosticInfoWithSymbols.GetAssociatedSymbols
+            builder.Add(_badSymbol.WithDefaultAnnotationSymbols())
         End Sub
 
         ' Get the locations of all the symbols.
@@ -86,6 +94,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         Private Sub GetAssociatedSymbols(builder As ArrayBuilder(Of Symbol)) Implements IDiagnosticInfoWithSymbols.GetAssociatedSymbols
             builder.AddRange(_symbols)
+        End Sub
+
+        Private Sub GetAssociatedSymbols(builder As ArrayBuilder(Of SymbolWithAnnotationSymbols)) Implements IDiagnosticInfoWithSymbols.GetAssociatedSymbols
+            builder.AddRange(_symbols.WithDefaultAnnotationSymbols())
         End Sub
 
         ' Get the locations of all the symbols.

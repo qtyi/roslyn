@@ -4037,7 +4037,7 @@ class Program
             var type = refVar.Type;
             Assert.Equal("System.Int32", model.GetTypeInfo(type).Type.ToTestDisplayString());
             Assert.Equal("System.Int32", model.GetSymbolInfo(type).Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(type));
+            Assert.Null(model.GetAliasInfo(type).Alias);
 
             Assert.Null(model.GetSymbolInfo(refVar).Symbol);
             Assert.Null(model.GetTypeInfo(refVar).Type);
@@ -4061,6 +4061,45 @@ class C
             comp.VerifyDiagnostics(
                 // (2,7): warning CS8981: The type name 'var' only contains lower-cased ascii characters. Such names may become reserved for the language.
                 // using var = C;
+                Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "var").WithArguments("var").WithLocation(2, 7)
+                );
+
+            var tree = comp.SyntaxTrees.Single();
+            var model = comp.GetSemanticModel(tree);
+
+            var xDecl = tree.GetRoot().DescendantNodes().OfType<VariableDeclaratorSyntax>().ElementAt(1);
+            Assert.Equal("C x", model.GetDeclaredSymbol(xDecl).ToTestDisplayString());
+
+            var refVar = tree.GetRoot().DescendantNodes().OfType<RefTypeSyntax>().Single();
+            var type = refVar.Type;
+            Assert.Equal("C", model.GetTypeInfo(type).Type.ToTestDisplayString());
+            Assert.Equal("C", model.GetSymbolInfo(type).Symbol.ToTestDisplayString());
+            var alias = model.GetAliasInfo(type);
+            Assert.Equal(SymbolKind.NamedType, alias.Target.Kind);
+            Assert.Equal("C", alias.Target.ToDisplayString());
+
+            Assert.Null(model.GetSymbolInfo(refVar).Symbol);
+            Assert.Null(model.GetTypeInfo(refVar).Type);
+        }
+
+        [Fact]
+        public void RefGenericAliasVarSemanticModel()
+        {
+            var text = @"
+using var<T> = T;
+class C
+{
+    static void M()
+    {
+        C i = null;
+        ref var<C> x = ref i;
+    }
+}
+";
+            var comp = CreateCompilation(text);
+            comp.VerifyDiagnostics(
+                // (2,7): warning CS8981: The type name 'var' only contains lower-cased ascii characters. Such names may become reserved for the language.
+                // using var<T> = T;
                 Diagnostic(ErrorCode.WRN_LowerCaseTypeName, "var").WithArguments("var").WithLocation(2, 7)
                 );
 
@@ -4108,7 +4147,7 @@ class Program
             var type = refInt.Type;
             Assert.Equal("System.Int32", model.GetTypeInfo(type).Type.ToTestDisplayString());
             Assert.Equal("System.Int32", model.GetSymbolInfo(type).Symbol.ToTestDisplayString());
-            Assert.Null(model.GetAliasInfo(type));
+            Assert.Null(model.GetAliasInfo(type).Alias);
 
             Assert.Null(model.GetSymbolInfo(refInt).Symbol);
             Assert.Null(model.GetTypeInfo(refInt).Type);

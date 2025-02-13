@@ -497,6 +497,12 @@ Actual: {editorConfigString}
             # IDE0350
             dotnet_diagnostic.IDE0350.severity = %value%
 
+            # IDE0901
+            dotnet_diagnostic.IDE0901.severity = %value%
+            
+            # IDE0902
+            dotnet_diagnostic.IDE0902.severity = %value%
+            
             # IDE1005
             dotnet_diagnostic.IDE1005.severity = %value%
 
@@ -916,6 +922,8 @@ dotnet_diagnostic.JSON002.severity = %value%
             ("IDE0330", "csharp_prefer_system_threading_lock", "true"),
             ("IDE0340", "csharp_style_prefer_unbound_generic_type_in_nameof", "true"),
             ("IDE0350", "csharp_style_prefer_implicitly_typed_lambda_expression", "true"),
+            ("IDE0901", null, null),
+            ("IDE0902", null, null),
             ("IDE1005", "csharp_style_conditional_delegate_call", "true"),
             ("IDE1006", null, null),
             ("IDE1007", null, null),

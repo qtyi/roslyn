@@ -226,7 +226,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
     End Class
 
     ''' <summary>
-    ''' Represents a type parameter on a source type (as opposed to a method).
+    ''' Represents a type parameter on a source type.
     ''' </summary>
     Friend NotInheritable Class SourceTypeParameterOnTypeSymbol
         Inherits SourceTypeParameterSymbol
@@ -300,7 +300,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
     End Class
 
     ''' <summary>
-    ''' Represents a type parameter on a source method (as opposed to a type).
+    ''' Represents a type parameter on a source method.
     ''' </summary>
     Friend NotInheritable Class SourceTypeParameterOnMethodSymbol
         Inherits SourceTypeParameterSymbol
@@ -371,6 +371,71 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Return False
             End If
 
+            Return True
+        End Function
+
+    End Class
+
+    ''' <summary>
+    ''' Represents a type parameter on a source alias.
+    ''' </summary>
+    Friend NotInheritable Class SourceTypeParameterOnAliasSymbol
+        Inherits SourceTypeParameterSymbol
+
+        Private ReadOnly _container As SourceAliasSymbol
+        Private ReadOnly _syntaxRef As SyntaxReference
+
+        Public Sub New(container As SourceAliasSymbol,
+                       ordinal As Integer,
+                       name As String,
+                       syntaxRef As SyntaxReference)
+            MyBase.New(ordinal, name)
+            _container = container
+            _syntaxRef = syntaxRef
+        End Sub
+
+        Public Overrides ReadOnly Property ContainingSymbol As Symbol
+            Get
+                Return _container
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property TypeParameterKind As TypeParameterKind
+            Get
+                Return TypeParameterKind.Alias
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Variance As VarianceKind
+            Get
+                Return VarianceKind.None
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Locations As ImmutableArray(Of Location)
+            Get
+                Return ImmutableArray.Create(GetSymbolLocation(_syntaxRef))
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property DeclaringSyntaxReferences As ImmutableArray(Of SyntaxReference)
+            Get
+                Return GetDeclaringSyntaxReferenceHelper(_syntaxRef)
+            End Get
+        End Property
+
+        Protected Overrides ReadOnly Property ContainerTypeParameters As ImmutableArray(Of TypeParameterSymbol)
+            Get
+                Return _container.TypeParameters
+            End Get
+        End Property
+
+        Protected Overrides Function GetDeclaredConstraints(diagnostics As BindingDiagnosticBag) As ImmutableArray(Of TypeParameterConstraint)
+            Dim syntax = DirectCast(_syntaxRef.GetSyntax(), TypeParameterSyntax)
+            Return _container.BindTypeParameterConstraints(syntax, diagnostics)
+        End Function
+
+        Protected Overrides Function ReportRedundantConstraints() As Boolean
             Return True
         End Function
 

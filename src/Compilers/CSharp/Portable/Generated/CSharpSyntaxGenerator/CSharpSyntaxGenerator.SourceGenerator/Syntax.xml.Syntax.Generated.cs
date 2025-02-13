@@ -9375,8 +9375,9 @@ public sealed partial class ExternAliasDirectiveSyntax : CSharpSyntaxNode
 /// </remarks>
 public sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
 {
-    private NameEqualsSyntax? alias;
+    private TypeParameterListSyntax? typeParameterList;
     private TypeSyntax? namespaceOrType;
+    private SyntaxNode? constraintClauses;
 
     internal UsingDirectiveSyntax(InternalSyntax.CSharpSyntaxNode green, SyntaxNode? parent, int position)
       : base(green, parent, position)
@@ -9412,36 +9413,59 @@ public sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
         }
     }
 
-    public NameEqualsSyntax? Alias => GetRed(ref this.alias, 4);
+    public SyntaxToken Identifier
+    {
+        get
+        {
+            var slot = ((Syntax.InternalSyntax.UsingDirectiveSyntax)this.Green).identifier;
+            return slot != null ? new SyntaxToken(this, slot, GetChildPosition(4), GetChildIndex(4)) : default;
+        }
+    }
 
-    public TypeSyntax NamespaceOrType => GetRed(ref this.namespaceOrType, 5)!;
+    public TypeParameterListSyntax? TypeParameterList => GetRed(ref this.typeParameterList, 5);
 
-    public SyntaxToken SemicolonToken => new SyntaxToken(this, ((InternalSyntax.UsingDirectiveSyntax)this.Green).semicolonToken, GetChildPosition(6), GetChildIndex(6));
+    public SyntaxToken EqualsToken
+    {
+        get
+        {
+            var slot = ((Syntax.InternalSyntax.UsingDirectiveSyntax)this.Green).equalsToken;
+            return slot != null ? new SyntaxToken(this, slot, GetChildPosition(6), GetChildIndex(6)) : default;
+        }
+    }
+
+    public TypeSyntax NamespaceOrType => GetRed(ref this.namespaceOrType, 7)!;
+
+    /// <summary>Gets the type constraint list.</summary>
+    public SyntaxList<TypeParameterConstraintClauseSyntax> ConstraintClauses => new SyntaxList<TypeParameterConstraintClauseSyntax>(GetRed(ref this.constraintClauses, 8));
+
+    public SyntaxToken SemicolonToken => new SyntaxToken(this, ((InternalSyntax.UsingDirectiveSyntax)this.Green).semicolonToken, GetChildPosition(9), GetChildIndex(9));
 
     internal override SyntaxNode? GetNodeSlot(int index)
         => index switch
         {
-            4 => GetRed(ref this.alias, 4),
-            5 => GetRed(ref this.namespaceOrType, 5)!,
+            5 => GetRed(ref this.typeParameterList, 5),
+            7 => GetRed(ref this.namespaceOrType, 7)!,
+            8 => GetRed(ref this.constraintClauses, 8),
             _ => null,
         };
 
     internal override SyntaxNode? GetCachedSlot(int index)
         => index switch
         {
-            4 => this.alias,
-            5 => this.namespaceOrType,
+            5 => this.typeParameterList,
+            7 => this.namespaceOrType,
+            8 => this.constraintClauses,
             _ => null,
         };
 
     public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitUsingDirective(this);
     public override TResult? Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitUsingDirective(this);
 
-    public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, NameEqualsSyntax? alias, TypeSyntax namespaceOrType, SyntaxToken semicolonToken)
+    public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken unsafeKeyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, SyntaxToken equalsToken, TypeSyntax namespaceOrType, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken semicolonToken)
     {
-        if (globalKeyword != this.GlobalKeyword || usingKeyword != this.UsingKeyword || staticKeyword != this.StaticKeyword || unsafeKeyword != this.UnsafeKeyword || alias != this.Alias || namespaceOrType != this.NamespaceOrType || semicolonToken != this.SemicolonToken)
+        if (globalKeyword != this.GlobalKeyword || usingKeyword != this.UsingKeyword || staticKeyword != this.StaticKeyword || unsafeKeyword != this.UnsafeKeyword || identifier != this.Identifier || typeParameterList != this.TypeParameterList || equalsToken != this.EqualsToken || namespaceOrType != this.NamespaceOrType || constraintClauses != this.ConstraintClauses || semicolonToken != this.SemicolonToken)
         {
-            var newNode = SyntaxFactory.UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, alias, namespaceOrType, semicolonToken);
+            var newNode = SyntaxFactory.UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword, identifier, typeParameterList, equalsToken, namespaceOrType, constraintClauses, semicolonToken);
             var annotations = GetAnnotations();
             return annotations?.Length > 0 ? newNode.WithAnnotations(annotations) : newNode;
         }
@@ -9449,13 +9473,23 @@ public sealed partial class UsingDirectiveSyntax : CSharpSyntaxNode
         return this;
     }
 
-    public UsingDirectiveSyntax WithGlobalKeyword(SyntaxToken globalKeyword) => Update(globalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Alias, this.NamespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithUsingKeyword(SyntaxToken usingKeyword) => Update(this.GlobalKeyword, usingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Alias, this.NamespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithStaticKeyword(SyntaxToken staticKeyword) => Update(this.GlobalKeyword, this.UsingKeyword, staticKeyword, this.UnsafeKeyword, this.Alias, this.NamespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithUnsafeKeyword(SyntaxToken unsafeKeyword) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, unsafeKeyword, this.Alias, this.NamespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithAlias(NameEqualsSyntax? alias) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, alias, this.NamespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithNamespaceOrType(TypeSyntax namespaceOrType) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Alias, namespaceOrType, this.SemicolonToken);
-    public UsingDirectiveSyntax WithSemicolonToken(SyntaxToken semicolonToken) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Alias, this.NamespaceOrType, semicolonToken);
+    public UsingDirectiveSyntax WithGlobalKeyword(SyntaxToken globalKeyword) => Update(globalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithUsingKeyword(SyntaxToken usingKeyword) => Update(this.GlobalKeyword, usingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithStaticKeyword(SyntaxToken staticKeyword) => Update(this.GlobalKeyword, this.UsingKeyword, staticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithUnsafeKeyword(SyntaxToken unsafeKeyword) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, unsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithIdentifier(SyntaxToken identifier) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithTypeParameterList(TypeParameterListSyntax? typeParameterList) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, typeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithEqualsToken(SyntaxToken equalsToken) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, equalsToken, this.NamespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithNamespaceOrType(TypeSyntax namespaceOrType) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, namespaceOrType, this.ConstraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithConstraintClauses(SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, constraintClauses, this.SemicolonToken);
+    public UsingDirectiveSyntax WithSemicolonToken(SyntaxToken semicolonToken) => Update(this.GlobalKeyword, this.UsingKeyword, this.StaticKeyword, this.UnsafeKeyword, this.Identifier, this.TypeParameterList, this.EqualsToken, this.NamespaceOrType, this.ConstraintClauses, semicolonToken);
+
+    public UsingDirectiveSyntax AddTypeParameterListParameters(params TypeParameterSyntax[] items)
+    {
+        var typeParameterList = this.TypeParameterList ?? SyntaxFactory.TypeParameterList();
+        return WithTypeParameterList(typeParameterList.WithParameters(typeParameterList.Parameters.AddRange(items)));
+    }
+    public UsingDirectiveSyntax AddConstraintClauses(params TypeParameterConstraintClauseSyntax[] items) => WithConstraintClauses(this.ConstraintClauses.AddRange(items));
 }
 
 /// <summary>Member declaration syntax.</summary>

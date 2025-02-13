@@ -1322,7 +1322,7 @@ End Class
                 imports if_alias=if(true,System,System.IO)
             ]]>.Value
         ParseAndVerify(code, <errors>
-                                 <error id="30183"/>
+                                 <error id="30180"/>
                              </errors>)
     End Sub
 

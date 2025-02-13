@@ -9514,9 +9514,9 @@ End Class
             Assert.Equal("Sub A1..ctor()", sortedMethodGroup(0).ToTestDisplayString())
             Assert.False(semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.NotNull(aliasInfo)
-            Assert.Equal("A=A1", aliasInfo.ToTestDisplayString())
-            Assert.Equal(SymbolKind.[Alias], aliasInfo.Kind)
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("A=A1", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.[Alias], aliasInfo.Alias.Kind)
         End Sub
 
         <WorkItem(543515, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543515")>
@@ -9549,9 +9549,9 @@ End Class
             Assert.Equal("Sub System.ObsoleteAttribute..ctor(message As System.String, [error] As System.Boolean)", sortedMethodGroup(2).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.NotNull(aliasInfo)
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString())
-            Assert.Equal(SymbolKind.[Alias], aliasInfo.Kind)
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.[Alias], aliasInfo.Alias.Kind)
         End Sub
 
         <WorkItem(543515, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543515")>
@@ -9584,9 +9584,9 @@ End Class
             Assert.Equal("Sub System.ObsoleteAttribute..ctor(message As System.String, [error] As System.Boolean)", sortedMethodGroup(2).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.NotNull(aliasInfo)
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString())
-            Assert.Equal(SymbolKind.[Alias], aliasInfo.Kind)
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.[Alias], aliasInfo.Alias.Kind)
         End Sub
 
         <WorkItem(543515, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543515")>
@@ -9619,9 +9619,9 @@ End Class
             Assert.Equal("Sub System.ObsoleteAttribute..ctor(message As System.String, [error] As System.Boolean)", sortedMethodGroup(2).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.NotNull(aliasInfo)
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString())
-            Assert.Equal(SymbolKind.[Alias], aliasInfo.Kind)
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.[Alias], aliasInfo.Alias.Kind)
         End Sub
 
         <WorkItem(543515, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543515")>
@@ -9654,9 +9654,9 @@ End Class
             Assert.Equal("Sub System.ObsoleteAttribute..ctor(message As System.String, [error] As System.Boolean)", sortedMethodGroup(2).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.NotNull(aliasInfo)
-            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.ToTestDisplayString())
-            Assert.Equal(SymbolKind.[Alias], aliasInfo.Kind)
+            Assert.NotNull(aliasInfo.Alias)
+            Assert.Equal("GooAttribute=System.ObsoleteAttribute", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.[Alias], aliasInfo.Alias.Kind)
         End Sub
 
         <WorkItem(543515, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543515")>
@@ -9858,7 +9858,7 @@ end class
             Assert.Equal("Sub C..ctor()", sortedMethodGroup(0).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.Null(aliasInfo)
+            Assert.Null(aliasInfo.Alias)
         End Sub
 
         <Fact()>
@@ -9892,7 +9892,7 @@ end class
             Assert.Equal("Sub Gen(Of System.Int32)..ctor()", sortedMethodGroup(0).ToTestDisplayString())
             Assert.[False](semanticInfo.ConstantValue.HasValue)
             Dim aliasInfo = GetAliasInfoForTest(compilation, "a.vb")
-            Assert.Null(aliasInfo)
+            Assert.Null(aliasInfo.Alias)
         End Sub
 
         <Fact(), WorkItem(545085, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/545085")>
@@ -10217,10 +10217,10 @@ BC30002: Type 'ShortName.Class1' is not defined.
 
             Dim model = compilation.GetSemanticModel(tree)
 
-            Dim [alias] = model.GetAliasInfo(node)
-            Assert.Equal("ShortName=LongNamespace", [alias].ToTestDisplayString())
-            Assert.Equal(SymbolKind.ErrorType, [alias].Target.Kind)
-            Assert.Equal("LongNamespace", [alias].Target.ToTestDisplayString())
+            Dim aliasInfo = model.GetAliasInfo(node)
+            Assert.Equal("ShortName=LongNamespace", aliasInfo.Alias.ToTestDisplayString())
+            Assert.Equal(SymbolKind.ErrorType, aliasInfo.Target.Kind)
+            Assert.Equal("LongNamespace", aliasInfo.Target.ToTestDisplayString())
 
             Dim symbolInfo = model.GetSymbolInfo(node)
 

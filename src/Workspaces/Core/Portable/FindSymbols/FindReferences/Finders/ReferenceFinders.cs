@@ -11,14 +11,16 @@ internal static class ReferenceFinders
     // Rename does not need to include base/this constructor initializer calls
     public static readonly ImmutableArray<IReferenceFinder> DefaultRenameReferenceFinders =
         [
+            new AliasTypeParameterSymbolReferenceFinder(),
+            new ArrayTypeSymbolReferenceFinder(),
             ConstructorSymbolReferenceFinder.Instance,
-            PropertySymbolReferenceFinder.Instance,
             new DestructorSymbolReferenceFinder(),
             DynamicTypeSymbolReferenceFinder.Instance,
             new EventSymbolReferenceFinder(),
             new ExplicitConversionSymbolReferenceFinder(),
             new ExplicitInterfaceMethodReferenceFinder(),
             new FieldSymbolReferenceFinder(),
+            new FunctionPointerTypeSymbolReferenceFinder(),
             new LabelSymbolReferenceFinder(),
             new LocalSymbolReferenceFinder(),
             new MethodTypeParameterSymbolReferenceFinder(),
@@ -27,8 +29,10 @@ internal static class ReferenceFinders
             new OperatorSymbolReferenceFinder(),
             new OrdinaryMethodReferenceFinder(),
             new ParameterSymbolReferenceFinder(),
+            new PointerTypeSymbolReferenceFinder(),
             new PreprocessingSymbolReferenceFinder(),
             new PropertyAccessorSymbolReferenceFinder(),
+            PropertySymbolReferenceFinder.Instance,
             new RangeVariableSymbolReferenceFinder(),
             new TypeParameterSymbolReferenceFinder(),
         ];

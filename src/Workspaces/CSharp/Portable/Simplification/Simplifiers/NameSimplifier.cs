@@ -113,27 +113,12 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
 
         if (!name.IsRightSideOfDotOrColonColon())
         {
-            if (TryReplaceExpressionWithAlias(name, semanticModel, symbol, cancellationToken, out var aliasReplacement))
+            if (TryReplaceExpressionWithAlias(name, semanticModel, symbol, cancellationToken, out var aliasReplacement, out var aliasTypeArguments))
             {
-                // get the token text as it appears in source code to preserve e.g. Unicode character escaping
-                var text = aliasReplacement.Name;
-                var syntaxRef = aliasReplacement.DeclaringSyntaxReferences.FirstOrDefault();
+                var aliasName = CreateAliasNameSyntax(name, aliasReplacement, aliasTypeArguments, cancellationToken).WithTriviaFrom(name);
 
-                if (syntaxRef != null)
-                {
-                    var declIdentifier = ((UsingDirectiveSyntax)syntaxRef.GetSyntax(cancellationToken)).Alias.Name.Identifier;
-                    text = declIdentifier.IsVerbatimIdentifier() ? declIdentifier.ToString()[1..] : declIdentifier.ToString();
-                }
-
-                var identifierToken = Identifier(
-                        name.GetLeadingTrivia(),
-                        SyntaxKind.IdentifierToken,
-                        text,
-                        aliasReplacement.Name,
-                        name.GetTrailingTrivia());
-
-                identifierToken = CSharpSimplificationService.TryEscapeIdentifierToken(identifierToken, name);
-                replacementNode = IdentifierName(identifierToken);
+                replacementNode = aliasName;
+                var identifierToken = aliasName.Identifier;
 
                 // Merge annotation to new syntax node
                 var annotatedNodesOrTokens = name.GetAnnotatedNodesAndTokens(RenameAnnotation.Kind);
@@ -229,8 +214,8 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
                 }
             }
 
-            var aliasInfo = semanticModel.GetAliasInfo(name, cancellationToken);
-            if (nameHasNoAlias && aliasInfo == null)
+            var aliasInfo = semanticModel.GetAliasInfoWithTarget(name, cancellationToken);
+            if (nameHasNoAlias && aliasInfo.Alias == null)
             {
                 // Don't simplify to predefined type if name is part of a QualifiedName.
                 // QualifiedNames can't contain PredefinedTypeNames (although MemberAccessExpressions can).
@@ -272,7 +257,7 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
             if (!name.IsVar && symbol.Kind == SymbolKind.NamedType && !name.IsLeftSideOfQualifiedName())
             {
                 var type = (INamedTypeSymbol)symbol;
-                if (aliasInfo == null && CanSimplifyNullable(type, name, semanticModel))
+                if (aliasInfo.Alias == null && CanSimplifyNullable(type, name, semanticModel))
                 {
                     GenericNameSyntax genericName;
                     if (name.Kind() == SyntaxKind.QualifiedName)
@@ -330,17 +315,9 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
                 break;
 
             case SyntaxKind.IdentifierName:
-                {
-                    var identifier = ((IdentifierNameSyntax)name).Identifier;
-
-                    // we can try to remove the Attribute suffix if this is the attribute name
-                    TryReduceAttributeSuffix(name, identifier, out replacementNode, out issueSpan);
-                    break;
-                }
-
             case SyntaxKind.GenericName:
                 {
-                    var identifier = ((GenericNameSyntax)name).Identifier;
+                    var identifier = ((SimpleNameSyntax)name).Identifier;
 
                     // we can try to remove the Attribute suffix if this is the attribute name
                     TryReduceAttributeSuffix(name, identifier, out replacementNode, out issueSpan);
@@ -690,7 +667,7 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
         }
 
         if (name?.Parent is UsingDirectiveSyntax usingDirective &&
-            usingDirective.Alias == null)
+            usingDirective.Identifier == default)
         {
             // We're a qualified name in a using.  We don't want to reduce this name as people like
             // fully qualified names in usings so they can properly tell what the name is resolving

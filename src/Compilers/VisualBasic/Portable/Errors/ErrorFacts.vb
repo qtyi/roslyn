@@ -1369,6 +1369,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                      ERRID.ERR_UnmanagedConstraintNotSatisfied,
                      ERRID.ERR_CannotApplyOverloadResolutionPriorityToOverride,
                      ERRID.ERR_CannotApplyOverloadResolutionPriorityToMember,
+                     ERRID.ERR_InvalidTypeForAliasesImport3,
                      ERRID.ERR_NextAvailable,
                      ERRID.WRN_UseOfObsoleteSymbol2,
                      ERRID.WRN_InvalidOverrideDueToTupleNames2,

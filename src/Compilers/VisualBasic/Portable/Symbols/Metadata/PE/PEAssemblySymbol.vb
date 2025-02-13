@@ -128,6 +128,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols.Metadata.PE
             Return Assembly.GetInternalsVisibleToAssemblyNames()
         End Function
 
+        Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+            Return Assembly.GetFriendAccessibleAssemblyPublicKeys(simpleName)
+        End Function
+
+        Friend Overrides Function GetFriendAccessibleAssemblyNames() As IEnumerable(Of String)
+            Return Assembly.GetFriendAccessibleAssemblyNames()
+        End Function
+
         Public Overloads Overrides Function GetAttributes() As ImmutableArray(Of VisualBasicAttributeData)
             If _lazyCustomAttributes.IsDefault Then
                 PrimaryModule.LoadCustomAttributes(Me.Assembly.Handle, _lazyCustomAttributes)

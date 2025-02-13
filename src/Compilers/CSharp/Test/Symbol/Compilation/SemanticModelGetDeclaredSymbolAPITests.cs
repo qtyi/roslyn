@@ -3875,7 +3875,8 @@ class C
             var alias2 = model2.GetAliasInfo(node);
 
             Assert.Equal(alias1, alias2);
-            Assert.Same(alias1, alias2);
+            Assert.Same(alias1.Alias, alias2.Alias);
+            Assert.Same(alias1.Target, alias2.Target);
         }
 
         [WorkItem(542475, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/542475")]
@@ -4291,11 +4292,11 @@ class C {
             Assert.True(constantInfo.HasValue, "must be constant");
             Assert.Equal("hello", constantInfo.Value);
 
-            var aliasSymbol = speculativeModel.GetAliasInfo(attr3.Name as IdentifierNameSyntax);
-            Assert.NotNull(aliasSymbol);
-            Assert.Equal("O", aliasSymbol.Name);
-            Assert.NotNull(aliasSymbol.Target);
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name);
+            var aliasInfo = speculativeModel.GetAliasInfo(attr3.Name as IdentifierNameSyntax);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("O", aliasInfo.Alias.Name);
+            Assert.NotNull(aliasInfo.Target);
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name);
 
             var attr4 = ParseAttributeSyntax("[P]");
 
@@ -4337,11 +4338,11 @@ class C {
             Assert.True(constantInfo.HasValue, "must be constant");
             Assert.Equal("hello", constantInfo.Value);
 
-            aliasSymbol = speculativeModel.GetAliasInfo(attr6.Name as IdentifierNameSyntax);
-            Assert.NotNull(aliasSymbol);
-            Assert.Equal("O", aliasSymbol.Name);
-            Assert.NotNull(aliasSymbol.Target);
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name);
+            aliasInfo = speculativeModel.GetAliasInfo(attr6.Name as IdentifierNameSyntax);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("O", aliasInfo.Alias.Name);
+            Assert.NotNull(aliasInfo.Target);
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name);
 
             var attr7 = ParseAttributeSyntax(@"[O(""hello"")]");
             var position3 = tree.GetText().ToString().IndexOf("Serializable", StringComparison.Ordinal);
@@ -4360,11 +4361,11 @@ class C {
             Assert.True(constantInfo.HasValue, "must be constant");
             Assert.Equal("hello", constantInfo.Value);
 
-            aliasSymbol = speculativeModel.GetAliasInfo(attr7.Name as IdentifierNameSyntax);
-            Assert.NotNull(aliasSymbol);
-            Assert.Equal("O", aliasSymbol.Name);
-            Assert.NotNull(aliasSymbol.Target);
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name);
+            aliasInfo = speculativeModel.GetAliasInfo(attr7.Name as IdentifierNameSyntax);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("O", aliasInfo.Alias.Name);
+            Assert.NotNull(aliasInfo.Target);
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name);
 
             var attr8 = SyntaxFactory.ParseCompilationUnit(@"[assembly: O(""hello"")]").AttributeLists.First().Attributes.First();
 
@@ -4382,11 +4383,11 @@ class C {
             Assert.True(constantInfo.HasValue, "must be constant");
             Assert.Equal("hello", constantInfo.Value);
 
-            aliasSymbol = speculativeModel.GetAliasInfo(attr8.Name as IdentifierNameSyntax);
-            Assert.NotNull(aliasSymbol);
-            Assert.Equal("O", aliasSymbol.Name);
-            Assert.NotNull(aliasSymbol.Target);
-            Assert.Equal("ObsoleteAttribute", aliasSymbol.Target.Name);
+            aliasInfo = speculativeModel.GetAliasInfo(attr8.Name as IdentifierNameSyntax);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("O", aliasInfo.Alias.Name);
+            Assert.NotNull(aliasInfo.Target);
+            Assert.Equal("ObsoleteAttribute", aliasInfo.Target.Name);
         }
 
         [Fact]

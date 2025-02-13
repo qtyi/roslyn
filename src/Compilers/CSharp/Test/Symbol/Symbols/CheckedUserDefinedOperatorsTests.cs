@@ -514,7 +514,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -532,7 +532,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics();
@@ -540,7 +540,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -572,7 +572,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -603,7 +603,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         /// <summary>
@@ -635,7 +635,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -652,14 +652,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -686,7 +686,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -704,7 +704,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
@@ -712,7 +712,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -744,7 +744,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -776,7 +776,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -809,7 +809,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -817,7 +817,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -825,7 +825,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -858,7 +858,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -866,7 +866,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -874,7 +874,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -1056,7 +1056,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -1070,14 +1070,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -1106,7 +1106,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -1120,14 +1120,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -1159,7 +1159,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -1173,14 +1173,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -1209,7 +1209,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics( // (3,20): warning CS1584: XML comment has syntactically incorrect cref attribute 'operator checked true(C)'
@@ -1222,14 +1222,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -1694,7 +1694,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
 
@@ -1713,7 +1713,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics();
@@ -1721,7 +1721,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -1754,7 +1754,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -1786,7 +1786,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -1817,7 +1817,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -1835,7 +1835,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -1850,7 +1850,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -1883,7 +1883,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -1891,7 +1891,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -1899,7 +1899,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -1927,7 +1927,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -1945,7 +1945,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
@@ -1953,7 +1953,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -1986,7 +1986,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]
@@ -2019,7 +2019,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2052,7 +2052,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -2070,7 +2070,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(expected);
@@ -2078,7 +2078,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2111,7 +2111,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -2119,7 +2119,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
@@ -2127,7 +2127,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Theory]
@@ -2275,7 +2275,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
 
@@ -2311,7 +2311,7 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_OperatorNeedsMatch or (int)ErrorCode.WRN_EqualityOpWithoutEquals or (int)ErrorCode.WRN_EqualityOpWithoutGetHashCode)).
@@ -2319,7 +2319,7 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         private static string GetOperatorTokenForXml(string op)
@@ -2369,7 +2369,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
 
@@ -2405,7 +2405,7 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_OperatorNeedsMatch or (int)ErrorCode.WRN_EqualityOpWithoutEquals or (int)ErrorCode.WRN_EqualityOpWithoutGetHashCode)).
@@ -2413,7 +2413,7 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2853,7 +2853,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -2871,7 +2871,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics();
@@ -2879,7 +2879,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -2908,7 +2908,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2937,7 +2937,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2966,7 +2966,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -2995,7 +2995,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3019,7 +3019,7 @@ class C
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(
@@ -3037,7 +3037,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
@@ -3045,7 +3045,7 @@ class C
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
-            Assert.Equal(expectedSymbol, actualSymbol);
+            Assert.Equal(expectedSymbol, actualSymbol.Symbol);
         }
 
         [Fact]
@@ -3074,7 +3074,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3103,7 +3103,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3132,7 +3132,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3161,7 +3161,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3253,7 +3253,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -3267,14 +3267,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Fact]
@@ -3303,7 +3303,7 @@ class C
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular10.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(
@@ -3317,14 +3317,14 @@ class C
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
 
             compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source, parseOptions: TestOptions.Regular11.WithDocumentationMode(DocumentationMode.Diagnose));
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation, expected);
-            Assert.Null(actualSymbol);
+            Assert.True(actualSymbol.IsDefault);
         }
 
         [Theory]

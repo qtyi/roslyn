@@ -152,6 +152,7 @@ namespace Microsoft.CodeAnalysis.Test.Utilities
             public const string CodeActionsRemoveDocCommentNode = "CodeActions.RemoveDocCommentNode";
             public const string CodeActionsRemoveInKeyword = "CodeActions.RemoveInKeyword";
             public const string CodeActionsRemoveUnnecessarySuppressions = "CodeActions.RemoveUnnecessarySuppressions";
+            public const string CodeActionsRemoveUnnecessaryAliasTypeParameters = "CodeActions.RemoveUnnecessaryAliasTypeParameters";
             public const string CodeActionsRemoveUnnecessaryCast = "CodeActions.RemoveUnnecessaryCast";
             public const string CodeActionsRemoveUnnecessaryDiscardDesignation = "CodeActions.RemoveUnnecessaryDiscardDesignation";
             public const string CodeActionsRemoveUnnecessaryImports = "CodeActions.RemoveUnnecessaryImports";

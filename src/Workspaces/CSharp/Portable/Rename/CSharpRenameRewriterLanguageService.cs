@@ -857,16 +857,16 @@ internal sealed class CSharpRenameConflictLanguageService() : AbstractRenameRewr
             }
             else if (renamedSymbol.Kind == SymbolKind.Alias)
             {
-                // in C# there can only be one using with the same alias name in the same block (top of file of namespace). 
+                // in C# there can only be one using with the same alias name and arity in the same block (top of file of namespace). 
                 // It's ok to redefine the alias in different blocks.
                 var location = renamedSymbol.Locations.Single();
                 var tree = location.SourceTree;
                 Contract.ThrowIfNull(tree);
 
                 var token = await tree.GetTouchingTokenAsync(location.SourceSpan.Start, cancellationToken, findInsideTrivia: true).ConfigureAwait(false);
-                var currentUsing = (UsingDirectiveSyntax)token.Parent!.Parent!.Parent!;
+                var currentUsing = (UsingDirectiveSyntax)token.Parent!;
 
-                var namespaceDecl = token.Parent.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+                var namespaceDecl = token.Parent!.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
                 SyntaxList<UsingDirectiveSyntax> usings;
                 if (namespaceDecl != null)
                 {
@@ -880,10 +880,10 @@ internal sealed class CSharpRenameConflictLanguageService() : AbstractRenameRewr
 
                 foreach (var usingDirective in usings)
                 {
-                    if (usingDirective.Alias != null && usingDirective != currentUsing)
+                    if (usingDirective.Identifier != default && usingDirective != currentUsing)
                     {
-                        if (usingDirective.Alias.Name.Identifier.ValueText == currentUsing.Alias!.Name.Identifier.ValueText)
-                            conflicts.Add(reverseMappedLocations[usingDirective.Alias.Name.GetLocation()]);
+                        if (usingDirective.Identifier.ValueText == currentUsing.Identifier.ValueText && usingDirective.TypeParameterList?.Parameters.Count == currentUsing.TypeParameterList?.Parameters.Count)
+                            conflicts.Add(reverseMappedLocations[usingDirective.Identifier.GetLocation()]);
                     }
                 }
             }

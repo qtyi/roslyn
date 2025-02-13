@@ -57,7 +57,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.Snippets
             ' In Venus/Razor, inserting imports statements into the subject buffer does not work.
             ' Instead, we add the imports through the contained language host.
 
-            Dim memberImportsNamespaces = newImportsStatements.SelectMany(Function(s) s.ImportsClauses).OfType(Of SimpleImportsClauseSyntax).Select(Function(c) c.Name.ToString())
+            Dim memberImportsNamespaces = newImportsStatements.SelectMany(Function(s) s.ImportsClauses).OfType(Of SimpleImportsClauseSyntax).Select(Function(c) c.NamespaceOrType.ToString())
             If TryAddImportsToContainedDocument(document, memberImportsNamespaces) Then
                 Return document
             End If
@@ -174,12 +174,12 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.Snippets
                 Dim simpleImportsClause = TryCast(clause, SimpleImportsClauseSyntax)
                 If simpleImportsClause IsNot Nothing Then
                     If simpleImportsClause.Alias Is Nothing Then
-                        If Not membersImports.Any(Function(c) ordinalIgnoreCaseStringComparer.Equals(c.Name.ToString(), simpleImportsClause.Name.ToString())) Then
+                        If Not membersImports.Any(Function(c) ordinalIgnoreCaseStringComparer.Equals(c.NamespaceOrType.ToString(), simpleImportsClause.NamespaceOrType.ToString())) Then
                             uniqueClauses.Add(clause)
                         End If
                     Else
                         If Not aliasImports.Any(Function(a) ordinalIgnoreCaseStringComparer.Equals(a.Alias.Identifier.ToString(), simpleImportsClause.Alias.Identifier.ToString()) AndAlso
-                                                        ordinalIgnoreCaseStringComparer.Equals(a.Name.ToString(), simpleImportsClause.Name.ToString())) Then
+                                                        ordinalIgnoreCaseStringComparer.Equals(a.NamespaceOrType.ToString(), simpleImportsClause.NamespaceOrType.ToString())) Then
                             uniqueClauses.Add(clause)
                         End If
                     End If

@@ -569,6 +569,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalAccess", "ExternalA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.LanguageServer.Protocol.Test.Utilities", "src\LanguageServer\Protocol.TestUtilities\Microsoft.CodeAnalysis.LanguageServer.Protocol.Test.Utilities.csproj", "{7465CE63-A7B7-475F-8C57-48D2F8BC665A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Package", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\AnyCpu\Qtyi.Net.Compilers.Toolset.DevEnv.Package.csproj", "{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Arm64.Package", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\arm64\Qtyi.Net.Compilers.Toolset.DevEnv.Arm64.Package.csproj", "{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Framework.Package", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\Framework\Qtyi.Net.Compilers.Toolset.DevEnv.Framework.Package.csproj", "{6018651A-E5CE-3CF2-7D62-A5807D145204}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1399,6 +1405,18 @@ Global
 		{7465CE63-A7B7-475F-8C57-48D2F8BC665A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7465CE63-A7B7-475F-8C57-48D2F8BC665A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7465CE63-A7B7-475F-8C57-48D2F8BC665A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1661,6 +1679,9 @@ Global
 		{1AE9182D-B03E-4B00-B32E-37AE01715F57} = {EE97CB90-33BB-4F3A-9B3D-69375DEC6AC6}
 		{806F0C6F-3640-4C92-8D55-6767B1535467} = {D449D505-CC6A-4E0B-AF1B-976E2D0AE67A}
 		{7465CE63-A7B7-475F-8C57-48D2F8BC665A} = {D449D505-CC6A-4E0B-AF1B-976E2D0AE67A}
+		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
+		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
+		{6018651A-E5CE-3CF2-7D62-A5807D145204} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {604E6B91-7BC0-4126-AE07-D4D2FEFC3D29}

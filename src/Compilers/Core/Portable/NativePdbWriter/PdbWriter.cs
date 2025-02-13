@@ -161,18 +161,19 @@ namespace Microsoft.Cci
 
             IMethodDefinition method = methodBody.MethodDefinition;
 
-            var namespaceScopes = methodBody.ImportScope;
+            IImportScope namespaceScopes = methodBody.ImportScope;
 
             PooledHashSet<string> lazyDeclaredExternAliases = null;
             if (!isVisualBasic)
             {
-                for (var scope = namespaceScopes; scope != null; scope = scope.Parent)
+                for (IImportScope scope = namespaceScopes; scope != null; scope = scope.Parent)
                 {
-                    foreach (var import in scope.GetUsedNamespaces(Context))
+                    foreach (UsedNamespaceOrType import in scope.GetUsedNamespaces(Context))
                     {
                         if (import.TargetNamespaceOpt == null && import.TargetTypeOpt == null)
                         {
-                            Debug.Assert(import.AliasOpt != null);
+                            Debug.Assert(import.AliasOpt.HasValue);
+                            Debug.Assert(import.AliasOpt.Value.Arity == 0);
                             Debug.Assert(import.TargetAssemblyOpt == null);
 
                             if (lazyDeclaredExternAliases == null)
@@ -180,7 +181,7 @@ namespace Microsoft.Cci
                                 lazyDeclaredExternAliases = PooledHashSet<string>.GetInstance();
                             }
 
-                            lazyDeclaredExternAliases.Add(import.AliasOpt);
+                            lazyDeclaredExternAliases.Add(import.AliasOpt.Value.Name);
                         }
                     }
                 }
@@ -253,7 +254,6 @@ namespace Microsoft.Cci
                 if (import.TargetTypeOpt != null)
                 {
                     Debug.Assert(import.TargetNamespaceOpt == null);
-                    Debug.Assert(import.TargetAssemblyOpt == null);
 
                     // Native compiler doesn't write imports with generic types to PDB.
                     if (import.TargetTypeOpt.IsTypeSpecification())
@@ -263,9 +263,9 @@ namespace Microsoft.Cci
 
                     string typeName = GetOrCreateSerializedTypeName(import.TargetTypeOpt);
 
-                    if (import.AliasOpt != null)
+                    if (import.AliasOpt.HasValue)
                     {
-                        return (isProjectLevel ? "@PA:" : "@FA:") + import.AliasOpt + "=" + typeName;
+                        return (isProjectLevel ? "@PA:" : "@FA:") + import.AliasOpt.ToString() + "=" + typeName;
                     }
                     else
                     {
@@ -277,20 +277,22 @@ namespace Microsoft.Cci
                 {
                     string namespaceName = GetOrCreateSerializedNamespaceName(import.TargetNamespaceOpt);
 
-                    if (import.AliasOpt == null)
+                    if (!import.AliasOpt.HasValue)
                     {
                         return (isProjectLevel ? "@P:" : "@F:") + namespaceName;
                     }
                     else
                     {
-                        return (isProjectLevel ? "@PA:" : "@FA:") + import.AliasOpt + "=" + namespaceName;
+                        Debug.Assert(import.AliasOpt.Value.Arity == 0);
+                        return (isProjectLevel ? "@PA:" : "@FA:") + import.AliasOpt.Value.Name + "=" + namespaceName;
                     }
                 }
 
-                Debug.Assert(import.AliasOpt != null);
+                Debug.Assert(import.AliasOpt.HasValue);
+                Debug.Assert(import.AliasOpt.Value.Arity == 0);
                 Debug.Assert(import.TargetXmlNamespaceOpt != null);
 
-                return (isProjectLevel ? "@PX:" : "@FX:") + import.AliasOpt + "=" + import.TargetXmlNamespaceOpt;
+                return (isProjectLevel ? "@PX:" : "@FX:") + import.AliasOpt.Value.Name + "=" + import.TargetXmlNamespaceOpt;
             }
 
             Debug.Assert(import.TargetXmlNamespaceOpt == null);
@@ -302,7 +304,7 @@ namespace Microsoft.Cci
 
                 string typeName = GetOrCreateSerializedTypeName(import.TargetTypeOpt);
 
-                return (import.AliasOpt != null) ?
+                return (import.AliasOpt.HasValue) ?
                     "A" + import.AliasOpt + " T" + typeName :
                     "T" + typeName;
             }
@@ -311,7 +313,7 @@ namespace Microsoft.Cci
             {
                 string namespaceName = GetOrCreateSerializedNamespaceName(import.TargetNamespaceOpt);
 
-                if (import.AliasOpt != null)
+                if (import.AliasOpt.HasValue)
                 {
                     return (import.TargetAssemblyOpt != null) ?
                         "A" + import.AliasOpt + " E" + namespaceName + " " + GetAssemblyReferenceAlias(import.TargetAssemblyOpt, declaredExternAliasesOpt) :
@@ -325,7 +327,7 @@ namespace Microsoft.Cci
                 }
             }
 
-            Debug.Assert(import.AliasOpt != null);
+            Debug.Assert(import.AliasOpt.HasValue);
             Debug.Assert(import.TargetAssemblyOpt == null);
             return "X" + import.AliasOpt;
         }

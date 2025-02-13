@@ -166,7 +166,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 If parent IsNot Nothing Then
                     Select Case parent.Kind()
                         Case SyntaxKind.SimpleImportsClause
-                            Return DirectCast(parent, SimpleImportsClauseSyntax).Name Is node
+                            Return DirectCast(parent, SimpleImportsClauseSyntax).NamespaceOrType Is node
                         Case SyntaxKind.NamespaceStatement
                             Return DirectCast(parent, NamespaceStatementSyntax).Name Is node
                         Case SyntaxKind.QualifiedName

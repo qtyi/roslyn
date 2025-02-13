@@ -288,9 +288,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             summary.CandidateReason = symbolInfo.CandidateReason;
             summary.CandidateSymbols = symbolInfo.CandidateSymbols;
 
-            if (node is IdentifierNameSyntax identifier)
+            if (node is SimpleNameSyntax simpleName)
             {
-                summary.Alias = semanticModel.GetAliasInfo(identifier);
+                summary.Alias = semanticModel.GetAliasInfo(simpleName).Alias;
             }
 
             return summary;
@@ -330,9 +330,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             summary.CandidateReason = symbolInfo.CandidateReason;
             summary.CandidateSymbols = symbolInfo.CandidateSymbols;
 
-            if (node is IdentifierNameSyntax)
+            if (node is SimpleNameSyntax simpleName)
             {
-                summary.Alias = semanticModel.GetSpeculativeAliasInfo(position, (IdentifierNameSyntax)node, bindingOption);
+                summary.Alias = semanticModel.GetSpeculativeAliasInfo(position, simpleName, bindingOption).Alias;
             }
 
             return summary;

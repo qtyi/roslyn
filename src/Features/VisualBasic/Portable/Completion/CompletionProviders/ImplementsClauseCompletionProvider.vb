@@ -245,7 +245,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Completion.Providers
 
         Private Shared Sub AddAlias(symbol As ISymbol, interfacesAndContainers As ICollection(Of ISymbol), node As SyntaxNode, semanticModel As SemanticModel)
             If node IsNot Nothing AndAlso semanticModel IsNot Nothing AndAlso TypeOf symbol Is INamespaceOrTypeSymbol Then
-                Dim aliasSymbol = DirectCast(symbol, INamespaceOrTypeSymbol).GetAliasForSymbol(node, semanticModel)
+                Dim result = DirectCast(symbol, INamespaceOrTypeSymbol).GetAliasForSymbol(node, semanticModel)
+                Dim aliasSymbol = result.Item1
                 If aliasSymbol IsNot Nothing AndAlso Not interfacesAndContainers.Contains(aliasSymbol) Then
                     interfacesAndContainers.Add(aliasSymbol)
                 End If

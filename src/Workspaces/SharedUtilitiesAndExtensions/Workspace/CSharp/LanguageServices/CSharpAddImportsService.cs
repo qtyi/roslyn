@@ -37,7 +37,7 @@ internal sealed class CSharpAddImportsService() : AbstractAddImportsService<
         => [];
 
     protected override SyntaxNode? GetAlias(UsingDirectiveSyntax usingOrAlias)
-        => usingOrAlias.Alias;
+        => usingOrAlias.Identifier == default ? null : usingOrAlias;
 
     protected override bool IsStaticUsing(UsingDirectiveSyntax usingOrAlias)
         => usingOrAlias.StaticKeyword != default;

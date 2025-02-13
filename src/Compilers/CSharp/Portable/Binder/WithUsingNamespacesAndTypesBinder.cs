@@ -351,7 +351,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             protected override Imports GetImports()
             {
-                return Imports.Create(ImmutableDictionary<string, AliasAndUsingDirective>.Empty, _usings, ImmutableArray<AliasAndExternAliasDirective>.Empty);
+                return Imports.Create(ImmutableDictionary<NameWithArity, AliasAndUsingDirective>.Empty, _usings, ImmutableArray<AliasAndExternAliasDirective>.Empty);
             }
         }
     }

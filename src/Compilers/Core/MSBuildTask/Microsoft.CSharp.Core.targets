@@ -111,6 +111,7 @@
          InterceptorsNamespaces="$(InterceptorsNamespaces)"
          InterceptorsPreviewNamespaces="$(InterceptorsPreviewNamespaces)"
          FileAlignment="$(FileAlignment)"
+         FriendAccessibleAssemblies="@(InternalsVisibleFrom)"
          GeneratedFilesOutputPath="$(CompilerGeneratedFilesOutputPath)"
          GenerateFullPaths="$(GenerateFullPaths)"
          HighEntropyVA="$(HighEntropyVA)"

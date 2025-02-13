@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             foreach (var usingDirective in usings)
             {
-                if (usingDirective.Alias is null)
+                if (usingDirective.Identifier is null)
                     continue;
 
                 if (global != (usingDirective.GlobalKeyword != null))
@@ -92,7 +92,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (usingDirective.NamespaceOrType is not Syntax.InternalSyntax.NameSyntax name)
                     continue;
 
-                var aliasName = usingDirective.Alias.Name.Identifier.ValueText;
+                var aliasName = usingDirective.Identifier.ValueText;
                 var symbolName = GetUnqualifiedName(name).Identifier.ValueText;
                 aliases.Add((aliasName, symbolName));
             }
@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             foreach (var directive in compilationUnit.Usings)
             {
                 if (directive.GlobalKeyword != null &&
-                    directive.Alias != null)
+                    directive.Identifier != null)
                 {
                     return true;
                 }

@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             var analyzer = new CSharpTrackingDiagnosticAnalyzer();
             var options = new AnalyzerOptions(new[] { new TestAdditionalText() }.ToImmutableArray<AdditionalText>());
-            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new[] { analyzer }, options);
+            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, options);
             analyzer.VerifyAllAnalyzerMembersWereCalled();
             analyzer.VerifyAnalyzeSymbolCalledForAllSymbolKinds();
             analyzer.VerifyAnalyzeNodeCalledForAllSyntaxKinds(missingSyntaxKinds);
@@ -60,7 +60,7 @@ public class C
     }
 }
 ";
-            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new[] { new CSharpTrackingDiagnosticAnalyzer() });
+            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new DiagnosticAnalyzer[] { new CSharpTrackingDiagnosticAnalyzer() });
         }
 
         // AllInOne does not include experimental features.
@@ -79,7 +79,7 @@ public class C
     }
 }
 ";
-            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new[] { new CSharpTrackingDiagnosticAnalyzer() });
+            CreateCompilationWithMscorlib461(source).VerifyAnalyzerDiagnostics(new DiagnosticAnalyzer[] { new CSharpTrackingDiagnosticAnalyzer() });
         }
 
         [Fact]
@@ -89,7 +89,7 @@ public class C
 public class C
 {
     public int P => 10;
-}").VerifyAnalyzerDiagnostics(new[] { new CSharpTrackingDiagnosticAnalyzer() });
+}").VerifyAnalyzerDiagnostics(new DiagnosticAnalyzer[] { new CSharpTrackingDiagnosticAnalyzer() });
         }
 
         #endregion
@@ -116,7 +116,7 @@ public class C
 
             var compilation = CreateCompilationWithMscorlib461(TestResource.AllInOneCSharpCode);
             var analyzer = new OptionsDiagnosticAnalyzer<SyntaxKind>(options);
-            compilation.GetAnalyzerDiagnostics(new[] { analyzer }, options);
+            compilation.GetAnalyzerDiagnostics(new DiagnosticAnalyzer[] { analyzer }, options);
             analyzer.VerifyAnalyzerOptions();
         }
     }

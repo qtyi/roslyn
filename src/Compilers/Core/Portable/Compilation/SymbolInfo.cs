@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Roslyn.Utilities;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Symbols;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -30,6 +31,16 @@ namespace Microsoft.CodeAnalysis
         public ISymbol? Symbol { get; }
 
         /// <summary>
+        /// The symbols which annotate <see cref="Symbol"/> to provide additional information, that was referred to by
+        /// the syntax node, if any. Returns empty if the given expression did not bind successfully to a single symbol,
+        /// or there is no additional information.
+        /// Annotation symbol returns not-empty if and only if:
+        ///     1. <see cref="Symbol"/> returns a generic alias symbol - returns its bound target type symbol or, in
+        ///     error case, namespace symbol.
+        /// </summary>
+        public ImmutableArray<ISymbol> AnnotationSymbols { get; }
+
+        /// <summary>
         /// If the expression did not successfully resolve to a symbol, but there were one or more symbols that may have
         /// been considered but discarded, this property returns those symbols. The reason that the symbols did not
         /// successfully resolve to a symbol are available in the <see cref="CandidateReason"/> property. For example,
@@ -46,23 +57,29 @@ namespace Microsoft.CodeAnalysis
         public CandidateReason CandidateReason { get; }
 
         internal SymbolInfo(ISymbol symbol)
-            : this(symbol, ImmutableArray<ISymbol>.Empty, CandidateReason.None)
+            : this(symbol, annotationSymbols: ImmutableArray<ISymbol>.Empty, ImmutableArray<ISymbol>.Empty, CandidateReason.None)
         {
         }
 
         internal SymbolInfo(ISymbol symbol, CandidateReason reason)
-            : this(symbol, ImmutableArray<ISymbol>.Empty, reason)
+            : this(symbol, annotationSymbols: ImmutableArray<ISymbol>.Empty, ImmutableArray<ISymbol>.Empty, reason)
+        {
+        }
+
+        private SymbolInfo(ISymbol symbol, ImmutableArray<ISymbol> annotationSymbols, CandidateReason reason)
+            : this(symbol, annotationSymbols, ImmutableArray<ISymbol>.Empty, reason)
         {
         }
 
         internal SymbolInfo(ImmutableArray<ISymbol> candidateSymbols, CandidateReason candidateReason)
-            : this(symbol: null, candidateSymbols, candidateReason)
+            : this(symbol: null, annotationSymbols: ImmutableArray<ISymbol>.Empty, candidateSymbols, candidateReason)
         {
         }
 
-        private SymbolInfo(ISymbol? symbol, ImmutableArray<ISymbol> candidateSymbols, CandidateReason candidateReason)
+        private SymbolInfo(ISymbol? symbol, ImmutableArray<ISymbol> annotationSymbols, ImmutableArray<ISymbol> candidateSymbols, CandidateReason candidateReason)
         {
             this.Symbol = symbol;
+            this.AnnotationSymbols = annotationSymbols;
             _candidateSymbols = candidateSymbols;
 
 #if DEBUG
@@ -92,5 +109,30 @@ namespace Microsoft.CodeAnalysis
             => Hash.Combine(this.Symbol, Hash.Combine(Hash.CombineValues(this.CandidateSymbols, 4), (int)this.CandidateReason));
 
         internal bool IsEmpty => this.Symbol == null && this.CandidateSymbols.Length == 0;
+
+        internal static SymbolInfo From<TSymbol>(SymbolWithAnnotationSymbols<TSymbol> symbol, CandidateReason reason = CandidateReason.None)
+            where TSymbol : Microsoft.CodeAnalysis.Symbols.ISymbolInternal
+        {
+            Debug.Assert(!symbol.IsDefault);
+            return new SymbolInfo(symbol.Symbol.GetISymbol(), symbol.AnnotationSymbols.SelectAsArray(static s => s.GetISymbol()), reason);
+        }
+
+        internal static SymbolInfo From(AliasInfo aliasInfo)
+        {
+            var alias = aliasInfo.Alias;
+            if (alias is null)
+            {
+                return SymbolInfo.None;
+            }
+            else if (alias.Arity == 0)
+            {
+                return new SymbolInfo(alias);
+            }
+            else
+            {
+                Debug.Assert(aliasInfo.Target is not null);
+                return new SymbolInfo(alias, ImmutableArray.Create<ISymbol>(aliasInfo.Target), CandidateReason.None);
+            }
+        }
     }
 }

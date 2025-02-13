@@ -55,8 +55,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         internal sealed class ReferenceManager : CommonReferenceManager<CSharpCompilation, AssemblySymbol>
         {
-            public ReferenceManager(string simpleAssemblyName, AssemblyIdentityComparer identityComparer, Dictionary<MetadataReference, MetadataOrDiagnostic>? observedMetadata)
-                : base(simpleAssemblyName, identityComparer, observedMetadata)
+            public ReferenceManager(CSharpCompilation compilation, AssemblyIdentityComparer identityComparer, Dictionary<MetadataReference, MetadataOrDiagnostic>? observedMetadata)
+                : base(compilation, identityComparer, observedMetadata)
             {
             }
 
@@ -69,7 +69,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 PEAssembly assembly,
                 WeakList<IAssemblySymbolInternal> cachedSymbols,
                 DocumentationProvider documentationProvider,
-                string sourceAssemblySimpleName,
+                CSharpCompilation compilation,
                 MetadataImportOptions importOptions,
                 bool embedInteropTypes)
             {
@@ -78,7 +78,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     cachedSymbols,
                     embedInteropTypes,
                     documentationProvider,
-                    sourceAssemblySimpleName,
+                    compilation,
                     importOptions);
             }
 
@@ -199,7 +199,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     // NOTE: The CreateSourceAssemblyFullBind is going to replace compilation's reference manager with newManager.
 
-                    var newManager = new ReferenceManager(this.SimpleAssemblyName, this.IdentityComparer, this.ObservedMetadata);
+                    var newManager = new ReferenceManager(this.Compilation, this.IdentityComparer, this.ObservedMetadata);
                     var successful = newManager.CreateAndSetSourceAssemblyFullBind(compilation);
 
                     // The new manager isn't shared with any other compilation so there is no other 
@@ -951,11 +951,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 /// </summary>
                 private readonly MetadataImportOptions _compilationImportOptions;
 
-                // This is the name of the compilation that is being built. 
-                // This should be the assembly name w/o the extension. It is
-                // used to compute whether or not it is possible that this
-                // assembly will give friend access to the compilation.
-                private readonly string _sourceAssemblySimpleName;
+                // This is the compilation that is being built. 
+                private readonly CSharpCompilation _compilation;
 
                 private bool _internalsVisibleComputed;
                 private bool _internalsPotentiallyVisibleToCompilation;
@@ -965,7 +962,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     WeakList<IAssemblySymbolInternal> cachedSymbols,
                     bool embedInteropTypes,
                     DocumentationProvider documentationProvider,
-                    string sourceAssemblySimpleName,
+                    CSharpCompilation compilation,
                     MetadataImportOptions compilationImportOptions)
                     : base(assembly.Identity, assembly.AssemblyReferences, embedInteropTypes)
                 {
@@ -976,7 +973,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     Assembly = assembly;
                     DocumentationProvider = documentationProvider;
                     _compilationImportOptions = compilationImportOptions;
-                    _sourceAssemblySimpleName = sourceAssemblySimpleName;
+                    _compilation = compilation;
                 }
 
                 internal override AssemblySymbol CreateAssemblySymbol()
@@ -990,7 +987,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     {
                         if (!_internalsVisibleComputed)
                         {
-                            _internalsPotentiallyVisibleToCompilation = InternalsMayBeVisibleToAssemblyBeingCompiled(_sourceAssemblySimpleName, Assembly);
+                            _internalsPotentiallyVisibleToCompilation = InternalsMayBeVisibleToAssemblyBeingCompiled(_compilation, Assembly);
                             _internalsVisibleComputed = true;
                         }
 

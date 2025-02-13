@@ -1426,9 +1426,6 @@ class Derived : Base
                 // (23,25): error CS0505: 'Derived.Event()': cannot override because 'Base.Event' is not a function
                 //     public override int Event() { return 1; }
                 Diagnostic(ErrorCode.ERR_CantOverrideNonFunction, "Event").WithArguments("Derived.Event()", "Base.Event"),
-                // (4,16): warning CS0649: Field 'Base.field' is never assigned to, and will always have its default value 0
-                //     public int field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("Base.field", "0"),
                 // (11,27): warning CS0067: The event 'Base.Event' is never used
                 //     public event Delegate Event;
                 Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("Base.Event")
@@ -1490,10 +1487,7 @@ class Derived : Base
                 Diagnostic(ErrorCode.ERR_CantOverrideNonProperty, "Event").WithArguments("Derived.Event", "Base.Event"),
                 // (11,27): warning CS0067: The event 'Base.Event' is never used
                 //     public event Delegate Event;
-                Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("Base.Event"),
-                // (4,16): warning CS0649: Field 'Base.field' is never assigned to, and will always have its default value 0
-                //     public int field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("Base.field", "0")
+                Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("Base.Event")
                 );
         }
 
@@ -1549,10 +1543,7 @@ class Derived : Base
                 Diagnostic(ErrorCode.ERR_CantOverrideNonEvent, "Enum").WithArguments("Derived.Enum", "Base.Enum"),
                 // (23,41): error CS0072: 'Derived.Delegate': cannot override; 'Base.Delegate' is not an event
                 //     public override event System.Action Delegate { add { } remove { } }
-                Diagnostic(ErrorCode.ERR_CantOverrideNonEvent, "Delegate").WithArguments("Derived.Delegate", "Base.Delegate"),
-                // (4,16): warning CS0649: Field 'Base.field' is never assigned to, and will always have its default value 0
-                //     public int field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("Base.field", "0")
+                Diagnostic(ErrorCode.ERR_CantOverrideNonEvent, "Delegate").WithArguments("Derived.Delegate", "Base.Delegate")
                 );
         }
 
@@ -4329,15 +4320,9 @@ class Derived : Base
                 //     public new int Property { get { return 0; } }
                 Diagnostic(ErrorCode.WRN_NewNotRequired, "Property").WithArguments("Derived.Property"),
 
-                // (5,20): warning CS0649: Field 'C.field' is never assigned to, and will always have its default value 0
-                //     public new int field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("C.field", "0"),
                 // (26,31): warning CS0067: The event 'S.Event' is never used
                 //     public new event Delegate Event;
                 Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("S.Event"),
-                // (19,20): warning CS0649: Field 'S.field' is never assigned to, and will always have its default value 0
-                //     public new int field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("S.field", "0"),
                 // (12,31): warning CS0067: The event 'C.Event' is never used
                 //     public new event Delegate Event;
                 Diagnostic(ErrorCode.WRN_UnreferencedEvent, "Event").WithArguments("C.Event")

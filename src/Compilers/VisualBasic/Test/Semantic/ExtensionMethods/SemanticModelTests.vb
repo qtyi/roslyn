@@ -1468,12 +1468,12 @@ End Module
             Dim model = compilation.GetSemanticModel(tree)
 
             Dim node1 = tree.GetRoot().DescendantNodes().OfType(Of IdentifierNameSyntax)().Where(Function(n) n.Identifier.ValueText = "alias1").Single()
-            Dim alias1 = model.GetAliasInfo(node1)
+            Dim alias1 = model.GetAliasInfo(node1).Alias
             Assert.Equal("alias1=System", alias1.ToTestDisplayString())
             Assert.Equal(LocationKind.None, alias1.Locations.Single().Kind)
 
             Dim node2 = tree.GetRoot().DescendantNodes().OfType(Of IdentifierNameSyntax)().Where(Function(n) n.Identifier.ValueText = "alias2").Single()
-            Dim alias2 = model.GetAliasInfo(node2)
+            Dim alias2 = model.GetAliasInfo(node2).Alias
             Assert.Equal("alias2=System", alias2.ToTestDisplayString())
             Assert.Equal(LocationKind.SourceFile, alias2.Locations.Single().Kind)
         End Sub

@@ -523,6 +523,37 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         End Function
 
         <Extension()>
+        Public Function CheckConstraintsForAlias(
+                                        [alias] As AliasSymbol,
+                                        typeArguments As ImmutableArray(Of TypeSymbol),
+                                        languageVersion As LanguageVersion,
+                                        typeArgumentsSyntax As SeparatedSyntaxList(Of TypeSyntax),
+                                        diagnostics As BindingDiagnosticBag,
+                                        template As CompoundUseSiteInfo(Of AssemblySymbol)) As Boolean
+            Debug.Assert(typeArgumentsSyntax.Count = [alias].Arity)
+            If Not RequiresChecking([alias]) Then
+                Return True
+            End If
+
+            Dim diagnosticsBuilder = ArrayBuilder(Of TypeParameterDiagnosticInfo).GetInstance()
+            Dim useSiteDiagnosticsBuilder As ArrayBuilder(Of TypeParameterDiagnosticInfo) = Nothing
+            Dim result = CheckAliasConstraints([alias], typeArguments, languageVersion, diagnosticsBuilder, useSiteDiagnosticsBuilder, template)
+
+            If useSiteDiagnosticsBuilder IsNot Nothing Then
+                diagnosticsBuilder.AddRange(useSiteDiagnosticsBuilder)
+            End If
+
+            For Each diagnostic In diagnosticsBuilder
+                Dim ordinal = diagnostic.TypeParameter.Ordinal
+                Dim location = typeArgumentsSyntax(ordinal).GetLocation()
+                diagnostics.Add(diagnostic.UseSiteInfo, location)
+            Next
+
+            diagnosticsBuilder.Free()
+            Return result
+        End Function
+
+        <Extension()>
         Public Function CheckConstraints(
                                         type As NamedTypeSymbol,
                                         languageVersion As LanguageVersion,
@@ -581,6 +612,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Return CheckMethodConstraints(method, languageVersion, diagnosticsBuilder, useSiteDiagnosticsBuilder, template)
         End Function
 
+        <Extension()>
+        Public Function CheckConstraints(
+                                        [alias] As AliasSymbol,
+                                        typeArguments As ImmutableArray(Of TypeSymbol),
+                                        languageVersion As LanguageVersion,
+                                        diagnosticsBuilder As ArrayBuilder(Of TypeParameterDiagnosticInfo),
+                                        <[In], Out> ByRef useSiteDiagnosticsBuilder As ArrayBuilder(Of TypeParameterDiagnosticInfo),
+                                        template As CompoundUseSiteInfo(Of AssemblySymbol)) As Boolean
+            If Not RequiresChecking([alias]) Then
+                Return True
+            End If
+            Return CheckAliasConstraints([alias], typeArguments, languageVersion, diagnosticsBuilder, useSiteDiagnosticsBuilder, template)
+        End Function
+
         Private Function CheckTypeConstraints(
                                         type As NamedTypeSymbol,
                                         languageVersion As LanguageVersion,
@@ -599,6 +644,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                                         template As CompoundUseSiteInfo(Of AssemblySymbol)) As Boolean
             Dim substitution = DirectCast(method, SubstitutedMethodSymbol).TypeSubstitution
             Return CheckConstraints(method, languageVersion, substitution, method.OriginalDefinition.TypeParameters, method.TypeArguments, diagnosticsBuilder, useSiteDiagnosticsBuilder, template)
+        End Function
+
+        Private Function CheckAliasConstraints(
+                                        [alias] As AliasSymbol,
+                                        typeArguments As ImmutableArray(Of TypeSymbol),
+                                        languageVersion As LanguageVersion,
+                                        diagnosticsBuilder As ArrayBuilder(Of TypeParameterDiagnosticInfo),
+                                        <[In], Out> ByRef useSiteDiagnosticsBuilder As ArrayBuilder(Of TypeParameterDiagnosticInfo),
+                                        template As CompoundUseSiteInfo(Of AssemblySymbol)) As Boolean
+            Dim substitution = TypeSubstitution.Create([alias], [alias].TypeParameters, typeArguments)
+            Return CheckConstraints([alias]， languageVersion, substitution, [alias].TypeParameters, typeArguments, diagnosticsBuilder, useSiteDiagnosticsBuilder, template)
         End Function
 
         ''' <summary>
@@ -1248,6 +1304,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End If
 
             Debug.Assert(method.ConstructedFrom <> method)
+            Return True
+        End Function
+
+        Private Function RequiresChecking([alias] As AliasSymbol) As Boolean
+            If [alias].Arity = 0 Then
+                Return False
+            End If
+
             Return True
         End Function
 

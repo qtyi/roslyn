@@ -1276,7 +1276,7 @@ class Test
             Assert.Equal(0, comp2.GlobalNamespace.GetMembers("X").Length); //Doesn't contain the alias target namespace as a child.
 
             var aliasQualifiedSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<AliasQualifiedNameSyntax>().Single();
-            Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias));
+            Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias).Alias);
 
             comp2.VerifyDiagnostics(
                 // (8,14): warning CS0219: The variable 'c' is assigned but its value is never used
@@ -1309,7 +1309,7 @@ class Test
             Assert.IsType<MissingNamespaceSymbol>(aliasSymbol.Target.GetSymbol());
 
             var aliasQualifiedSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<AliasQualifiedNameSyntax>().Single();
-            Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias));
+            Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias).Alias);
 
             comp.VerifyDiagnostics(
                 // (2,14): error CS0430: The extern alias 'X' was not specified in a /reference option
@@ -1335,7 +1335,7 @@ class Test
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);
 
-            var aliasSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<NameEqualsSyntax>().Single().Name;
+            var aliasSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Single();
             Assert.Equal(SymbolInfo.None, model.GetSymbolInfo(aliasSyntax));
 
             var usingSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Single();
@@ -1732,7 +1732,7 @@ class Q
             Assert.Equal(classQ, aliasSymbol.Target);
             Assert.Equal("var", aliasSymbol.Name);
 
-            var aliasDeclInfo = model.GetSymbolInfo(aliasDecl.Alias.Name);
+            var aliasDeclInfo = model.GetSymbolInfo(aliasDecl);
             Assert.Null(aliasDeclInfo.Symbol);
             Assert.Equal(CandidateReason.None, aliasDeclInfo.CandidateReason);
 
@@ -1747,7 +1747,7 @@ class Q
             Assert.Equal(classQ, fieldTypeInfo.Symbol);
 
             var fieldTypeAliasInfo = model.GetAliasInfo(typeSyntax);
-            Assert.Equal(aliasSymbol, fieldTypeAliasInfo);
+            Assert.Equal(aliasSymbol, fieldTypeAliasInfo.Alias);
         }
 
         [Fact]
@@ -2899,10 +2899,10 @@ class Program
             Assert.True(success);
             Assert.NotNull(speculativeModel);
 
-            var symbol = speculativeModel.GetAliasInfo(speculatedAliasName);
-            Assert.NotNull(symbol);
-            Assert.Equal("A", symbol.ToDisplayString());
-            Assert.Equal("System.ArgumentException", symbol.Target.ToDisplayString());
+            var aliasInfo = speculativeModel.GetAliasInfo(speculatedAliasName);
+            Assert.NotNull(aliasInfo.Alias);
+            Assert.Equal("A", aliasInfo.Alias.ToDisplayString());
+            Assert.Equal("System.ArgumentException", aliasInfo.Target.ToDisplayString());
         }
 
         [Fact]
@@ -4632,11 +4632,11 @@ public partial class C
             var alias1 = getGlobalAlias(CreateCompilation(text));
             var alias2 = getGlobalAlias(CreateCompilation(text));
 
-            Assert.Equal("<global namespace>", alias1.ContainingSymbol.ToTestDisplayString());
-            Assert.Null(alias1.ContainingAssembly);
+            Assert.Equal("<global namespace>", alias1.Alias.ContainingSymbol.ToTestDisplayString());
+            Assert.Null(alias1.Alias.ContainingAssembly);
             Assert.False(alias1.Equals(alias2));
 
-            static IAliasSymbol getGlobalAlias(CSharpCompilation compilation)
+            static AliasInfo getGlobalAlias(CSharpCompilation compilation)
             {
                 var tree = compilation.SyntaxTrees.Single();
                 var node = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Where(ident => ident.Identifier.Text == "global").Single();
@@ -4658,8 +4658,8 @@ public partial class C
             var alias1 = model.GetAliasInfo(nodes[0]);
             var alias2 = model.GetAliasInfo(nodes[1]);
 
-            Assert.Equal("<global namespace>", alias1.ContainingSymbol.ToTestDisplayString());
-            Assert.Null(alias1.ContainingAssembly);
+            Assert.Equal("<global namespace>", alias1.Alias.ContainingSymbol.ToTestDisplayString());
+            Assert.Null(alias1.Alias.ContainingAssembly);
             Assert.True(alias1.Equals(alias2));
         }
 
@@ -4674,7 +4674,7 @@ int[M(out var x)] i = null;
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Theory]
@@ -4691,7 +4691,7 @@ void M({{modifier}} Type[M2(out object y)])
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M2");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact]
@@ -4706,7 +4706,7 @@ Type[M2(out object y)] M()
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M2");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact, WorkItem("https://github.com/dotnet/roslyn/issues/66806")]
@@ -4722,7 +4722,7 @@ bool TryGet(out [NotNullWhen( object x, out object y, out object z)
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "NotNullWhen");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact]
@@ -4738,7 +4738,7 @@ void M<T>() where T : int[M2(out var x)]
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M2");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact]
@@ -4757,7 +4757,7 @@ class C
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M2");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact]
@@ -4773,7 +4773,7 @@ class C(out Type[M2(out object y)])
             var tree = compilation.SyntaxTrees.Single();
             var identifier = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>().Single(i => i.Identifier.Text == "M2");
             var model = compilation.GetSemanticModel(tree);
-            Assert.Null(model.GetAliasInfo(identifier));
+            Assert.Null(model.GetAliasInfo(identifier).Alias);
         }
 
         [Fact]

@@ -196,11 +196,19 @@ class Program
         Console.WriteLine(Invoke(() => CreateStruct2<S>()));
     }
 }";
-            CompileAndVerify(sourceB, references: new[] { refA }, expectedOutput:
+            if (accessibility == "assembly")
+            {
+                var comp = CreateCompilation(sourceB, references: new[] { refA });
+                comp.VerifyDiagnostics();
+            }
+            else if (accessibility == "private")
+            {
+                CompileAndVerify(sourceB, references: new[] { refA }, expectedOutput:
 @"S
 System.MissingMethodException
 System.MissingMethodException
 System.MissingMethodException");
+            }
         }
 
         [InlineData("internal")]
@@ -3077,10 +3085,7 @@ record struct S
             comp.VerifyDiagnostics(
                 // (1,8): error CS8983: A 'struct' with field initializers must include an explicitly declared constructor.
                 // struct S0
-                Diagnostic(ErrorCode.ERR_StructHasInitializersAndNoDeclaredConstructor, "S0").WithLocation(1, 8),
-                // (4,16): warning CS0649: Field 'S0.F' is never assigned to, and will always have its default value 0
-                //     public int F = 1;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("S0.F", "0").WithLocation(4, 16));
+                Diagnostic(ErrorCode.ERR_StructHasInitializersAndNoDeclaredConstructor, "S0").WithLocation(1, 8));
         }
 
         [Fact]
@@ -3938,11 +3943,7 @@ unsafe struct R
 }
 """;
             var comp = CreateCompilation(source, options: TestOptions.UnsafeDebugExe);
-            comp.VerifyDiagnostics(
-                // (7,17): warning CS0649: Field 'R.field' is never assigned to, and will always have its default value
-                //     public int* field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("R.field", "").WithLocation(7, 17)
-                );
+            comp.VerifyDiagnostics();
             var verifier = CompileAndVerify(comp, verify: Verification.Skipped, expectedOutput: "explicit ctor");
             verifier.VerifyIL("R..ctor()", @"
 {

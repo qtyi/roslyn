@@ -1147,7 +1147,7 @@ ALIAS
             group = model.GetMemberGroup(argument)
             Assert.Equal(0, group.Length)
 
-            Assert.Equal("[alias]=System", model.GetAliasInfo(argument).ToTestDisplayString())
+            Assert.Equal("[alias]=System", model.GetAliasInfo(argument).Alias.ToTestDisplayString())
         End Sub
 
         <Fact>

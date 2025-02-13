@@ -1111,7 +1111,7 @@ namespace Microsoft.CodeAnalysis.UnitTests
         private string[] ParseSeparatedStrings(string arg, char[] separators, bool removeEmptyEntries = true)
         {
             var builder = ArrayBuilder<ReadOnlyMemory<char>>.GetInstance();
-            CommandLineParser.ParseSeparatedStrings(arg.AsMemory(), separators, removeEmptyEntries, builder);
+            CommandLineParser.ParseSeparatedStringsEx(arg.AsMemory(), separators, removeEmptyEntries, builder);
             return builder.Select(x => x.ToString()).ToArray();
         }
 

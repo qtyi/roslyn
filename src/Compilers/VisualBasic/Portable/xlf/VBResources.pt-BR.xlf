@@ -172,6 +172,11 @@
         <target state="translated">comentários após a continuação da linha</target>
         <note />
       </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="new">import generic alias</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FEATURE_InitOnlySettersUsage">
         <source>assigning to or passing 'ByRef' properties with init-only setters</source>
         <target state="translated">atribuindo ou passando as propriedades 'ByRef' com setters apenas para inicialização</target>
@@ -3193,6 +3198,11 @@
       <trans-unit id="ERR_InvalidTypeForAliasesImport2">
         <source>'{1}' for the Imports alias to '{0}' does not refer to a Namespace, Class, Structure, Interface, Enum or Module.</source>
         <target state="translated">"{1}" para o alias Imports para "{0}" não se refere a um Namespace, Classe, Estrutura, Interface, Enum ou Módulo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="new">'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_UnsupportedConstant2">

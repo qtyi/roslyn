@@ -889,7 +889,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         Inherits ImportsClauseSyntax
 
         Friend _alias as ImportAliasClauseSyntax
-        Friend _name as NameSyntax
+        Friend _namespaceOrType as TypeSyntax
 
         Friend Sub New(ByVal green As GreenNode, ByVal parent as SyntaxNode, ByVal startLocation As Integer)
             MyBase.New(green, parent, startLocation)
@@ -897,8 +897,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Debug.Assert(startLocation >= 0)
         End Sub
 
-        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), [alias] As ImportAliasClauseSyntax, name As NameSyntax)
-            Me.New(New Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SimpleImportsClauseSyntax(kind, errors, annotations, if([alias] IsNot Nothing, DirectCast([alias].Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax), Nothing), DirectCast(name.Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.NameSyntax)), Nothing, 0)
+        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), [alias] As ImportAliasClauseSyntax, namespaceOrType As TypeSyntax)
+            Me.New(New Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.SimpleImportsClauseSyntax(kind, errors, annotations, if([alias] IsNot Nothing, DirectCast([alias].Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax), Nothing), DirectCast(namespaceOrType.Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.TypeSyntax)), Nothing, 0)
         End Sub
 
         ''' <summary>
@@ -919,24 +919,25 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' value.
         ''' </summary>
         Public Shadows Function WithAlias([alias] as ImportAliasClauseSyntax) As SimpleImportsClauseSyntax
-            return Update([alias], Me.Name)
+            return Update([alias], Me.NamespaceOrType)
         End Function
 
         ''' <summary>
         ''' The namespace or type being imported.
         ''' </summary>
-        Public ReadOnly Property Name As NameSyntax
+        Public ReadOnly Property NamespaceOrType As TypeSyntax
             Get
-                Return GetRed(_name, 1)
+                Return GetRed(_namespaceOrType, 1)
             End Get
         End Property
 
         ''' <summary>
-        ''' Returns a copy of this with the Name property changed to the specified value.
-        ''' Returns this instance if the specified value is the same as the current value.
+        ''' Returns a copy of this with the NamespaceOrType property changed to the
+        ''' specified value. Returns this instance if the specified value is the same as
+        ''' the current value.
         ''' </summary>
-        Public Shadows Function WithName(name as NameSyntax) As SimpleImportsClauseSyntax
-            return Update(Me.Alias, name)
+        Public Shadows Function WithNamespaceOrType(namespaceOrType as TypeSyntax) As SimpleImportsClauseSyntax
+            return Update(Me.Alias, namespaceOrType)
         End Function
 
         Friend Overrides Function GetCachedSlot(i as Integer) as SyntaxNode
@@ -944,7 +945,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Case 0
                     Return Me._alias
                 Case 1
-                    Return Me._name
+                    Return Me._namespaceOrType
                 Case Else
                     Return Nothing
             End Select
@@ -955,7 +956,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Case 0
                     Return Me.[Alias]
                 Case 1
-                    Return Me.Name
+                    Return Me.NamespaceOrType
                 Case Else
                     Return Nothing
             End Select
@@ -977,12 +978,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' <param name="alias">
         ''' The value for the Alias property.
         ''' </param>
-        ''' <param name="name">
-        ''' The value for the Name property.
+        ''' <param name="namespaceOrType">
+        ''' The value for the NamespaceOrType property.
         ''' </param>
-        Public Function Update([alias] As ImportAliasClauseSyntax, name As NameSyntax) As SimpleImportsClauseSyntax
-            If [alias] IsNot Me.[Alias] OrElse name IsNot Me.Name Then
-                Dim newNode = SyntaxFactory.SimpleImportsClause([alias], name)
+        Public Function Update([alias] As ImportAliasClauseSyntax, namespaceOrType As TypeSyntax) As SimpleImportsClauseSyntax
+            If [alias] IsNot Me.[Alias] OrElse namespaceOrType IsNot Me.NamespaceOrType Then
+                Dim newNode = SyntaxFactory.SimpleImportsClause([alias], namespaceOrType)
                 Dim annotations = Me.GetAnnotations()
                 If annotations IsNot Nothing AndAlso annotations.Length > 0
                     return newNode.WithAnnotations(annotations)
@@ -1006,6 +1007,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
     Public NotInheritable Class ImportAliasClauseSyntax
         Inherits VisualBasicSyntaxNode
 
+        Friend _typeParameterList as TypeParameterListSyntax
 
         Friend Sub New(ByVal green As GreenNode, ByVal parent as SyntaxNode, ByVal startLocation As Integer)
             MyBase.New(green, parent, startLocation)
@@ -1013,8 +1015,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Debug.Assert(startLocation >= 0)
         End Sub
 
-        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), identifier As InternalSyntax.IdentifierTokenSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
-            Me.New(New Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax(kind, errors, annotations, identifier, equalsToken), Nothing, 0)
+        Friend Sub New(ByVal kind As SyntaxKind, ByVal errors as DiagnosticInfo(), ByVal annotations as SyntaxAnnotation(), identifier As InternalSyntax.IdentifierTokenSyntax, typeParameterList As TypeParameterListSyntax, equalsToken As InternalSyntax.PunctuationSyntax)
+            Me.New(New Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax(kind, errors, annotations, identifier, if(typeParameterList IsNot Nothing, DirectCast(typeParameterList.Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.TypeParameterListSyntax), Nothing), equalsToken), Nothing, 0)
         End Sub
 
         ''' <summary>
@@ -1032,7 +1034,34 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' value.
         ''' </summary>
         Public Shadows Function WithIdentifier(identifier as SyntaxToken) As ImportAliasClauseSyntax
-            return Update(identifier, Me.EqualsToken)
+            return Update(identifier, Me.TypeParameterList, Me.EqualsToken)
+        End Function
+
+        ''' <summary>
+        ''' If present, a type parameter list with generic parameters for this type alias.
+        ''' If no generic parameters were present, Nothing is returned.
+        ''' </summary>
+        ''' <remarks>
+        ''' This child is optional. If it is not present, then Nothing is returned.
+        ''' </remarks>
+        Public ReadOnly Property TypeParameterList As TypeParameterListSyntax
+            Get
+                Return GetRed(_typeParameterList, 1)
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' Returns a copy of this with the TypeParameterList property changed to the
+        ''' specified value. Returns this instance if the specified value is the same as
+        ''' the current value.
+        ''' </summary>
+        Public Shadows Function WithTypeParameterList(typeParameterList as TypeParameterListSyntax) As ImportAliasClauseSyntax
+            return Update(Me.Identifier, typeParameterList, Me.EqualsToken)
+        End Function
+
+        Public Shadows Function AddTypeParameterListParameters(ParamArray items As TypeParameterSyntax()) As ImportAliasClauseSyntax
+            Dim _child = If(Me.TypeParameterList IsNot Nothing, Me.TypeParameterList, SyntaxFactory.TypeParameterList())
+            Return Me.WithTypeParameterList(_child.AddParameters(items))
         End Function
 
         ''' <summary>
@@ -1040,7 +1069,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' </summary>
         Public ReadOnly Property EqualsToken As SyntaxToken
             Get
-                return new SyntaxToken(Me, DirectCast(Me.Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax)._equalsToken, Me.GetChildPosition(1), Me.GetChildIndex(1))
+                return new SyntaxToken(Me, DirectCast(Me.Green, Microsoft.CodeAnalysis.VisualBasic.Syntax.InternalSyntax.ImportAliasClauseSyntax)._equalsToken, Me.GetChildPosition(2), Me.GetChildIndex(2))
             End Get
         End Property
 
@@ -1050,11 +1079,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' value.
         ''' </summary>
         Public Shadows Function WithEqualsToken(equalsToken as SyntaxToken) As ImportAliasClauseSyntax
-            return Update(Me.Identifier, equalsToken)
+            return Update(Me.Identifier, Me.TypeParameterList, equalsToken)
         End Function
 
         Friend Overrides Function GetCachedSlot(i as Integer) as SyntaxNode
             Select case i
+                Case 1
+                    Return Me._typeParameterList
                 Case Else
                     Return Nothing
             End Select
@@ -1062,6 +1093,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Friend Overrides Function GetNodeSlot(i as Integer) as SyntaxNode
             Select case i
+                Case 1
+                    Return Me.TypeParameterList
                 Case Else
                     Return Nothing
             End Select
@@ -1083,12 +1116,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' <param name="identifier">
         ''' The value for the Identifier property.
         ''' </param>
+        ''' <param name="typeParameterList">
+        ''' The value for the TypeParameterList property.
+        ''' </param>
         ''' <param name="equalsToken">
         ''' The value for the EqualsToken property.
         ''' </param>
-        Public Function Update(identifier As SyntaxToken, equalsToken As SyntaxToken) As ImportAliasClauseSyntax
-            If identifier <> Me.Identifier OrElse equalsToken <> Me.EqualsToken Then
-                Dim newNode = SyntaxFactory.ImportAliasClause(identifier, equalsToken)
+        Public Function Update(identifier As SyntaxToken, typeParameterList As TypeParameterListSyntax, equalsToken As SyntaxToken) As ImportAliasClauseSyntax
+            If identifier <> Me.Identifier OrElse typeParameterList IsNot Me.TypeParameterList OrElse equalsToken <> Me.EqualsToken Then
+                Dim newNode = SyntaxFactory.ImportAliasClause(identifier, typeParameterList, equalsToken)
                 Dim annotations = Me.GetAnnotations()
                 If annotations IsNot Nothing AndAlso annotations.Length > 0
                     return newNode.WithAnnotations(annotations)

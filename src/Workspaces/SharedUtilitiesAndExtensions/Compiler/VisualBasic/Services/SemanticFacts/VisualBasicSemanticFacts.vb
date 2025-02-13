@@ -143,22 +143,26 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return success
         End Function
 
-        Public Function GetAliasNameSet(model As SemanticModel, cancellationToken As CancellationToken) As ImmutableHashSet(Of String) Implements ISemanticFacts.GetAliasNameSet
+        Public Function GetAliasSet(model As SemanticModel, cancellationToken As CancellationToken) As ImmutableHashSet(Of NameWithArity) Implements ISemanticFacts.GetAliasSet
             Dim original = model.GetOriginalSemanticModel()
 
             If Not original.SyntaxTree.HasCompilationUnitRoot Then
-                Return ImmutableHashSet.Create(Of String)()
+                Return ImmutableHashSet.Create(Of NameWithArity)()
             End If
 
             Dim root = original.SyntaxTree.GetCompilationUnitRoot()
 
-            Dim builder = ImmutableHashSet.CreateBuilder(Of String)(StringComparer.OrdinalIgnoreCase)
+            Dim builder = ImmutableHashSet.CreateBuilder(Of NameWithArity)(New NameWithArityComparer(StringComparer.OrdinalIgnoreCase))
             For Each globalImport In original.Compilation.AliasImports
-                globalImport.Name.AppendToAliasNameSet(builder)
+                globalImport.Name.AppendToAliasSet(globalImport.Arity, builder)
             Next
 
             For Each importsClause In root.GetAliasImportsClauses()
-                importsClause.Alias.Identifier.ValueText.AppendToAliasNameSet(builder)
+                importsClause.Alias.Identifier.ValueText.AppendToAliasSet(
+                    If(importsClause.Alias Is Nothing, 0,
+                        If(importsClause.Alias.TypeParameterList Is Nothing, 0,
+                            importsClause.Alias.TypeParameterList.Parameters.Count)),
+                    builder)
             Next
 
             Return builder.ToImmutable()

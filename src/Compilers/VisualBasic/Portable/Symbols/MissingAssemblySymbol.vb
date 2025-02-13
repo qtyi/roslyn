@@ -136,6 +136,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Return SpecializedCollections.EmptyEnumerable(Of String)()
         End Function
 
+        Friend Overrides Function GetFriendAccessibleAssemblyPublicKeys(simpleName As String) As IEnumerable(Of ImmutableArray(Of Byte))
+            Return SpecializedCollections.EmptyEnumerable(Of ImmutableArray(Of Byte))()
+        End Function
+
+        Friend Overrides Function GetFriendAccessibleAssemblyNames() As IEnumerable(Of String)
+            Return SpecializedCollections.EmptyEnumerable(Of String)()
+        End Function
+
         Public Overrides ReadOnly Property TypeNames As ICollection(Of String)
             Get
                 Return SpecializedCollections.EmptyCollection(Of String)()

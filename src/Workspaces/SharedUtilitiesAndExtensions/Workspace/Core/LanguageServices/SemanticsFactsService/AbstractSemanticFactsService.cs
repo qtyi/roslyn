@@ -203,8 +203,8 @@ internal abstract partial class AbstractSemanticFactsService : ISemanticFacts
     public bool TryGetSpeculativeSemanticModel(SemanticModel oldSemanticModel, SyntaxNode oldNode, SyntaxNode newNode, out SemanticModel speculativeModel)
         => SemanticFacts.TryGetSpeculativeSemanticModel(oldSemanticModel, oldNode, newNode, out speculativeModel);
 
-    public ImmutableHashSet<string> GetAliasNameSet(SemanticModel model, CancellationToken cancellationToken)
-        => SemanticFacts.GetAliasNameSet(model, cancellationToken);
+    public ImmutableHashSet<NameWithArity> GetAliasSet(SemanticModel model, CancellationToken cancellationToken)
+        => SemanticFacts.GetAliasSet(model, cancellationToken);
 
     public ForEachSymbols GetForEachSymbols(SemanticModel semanticModel, SyntaxNode forEachStatement)
         => SemanticFacts.GetForEachSymbols(semanticModel, forEachStatement);

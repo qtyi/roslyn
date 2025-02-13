@@ -14,6 +14,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Roslyn.Utilities
 Imports TypeKind = Microsoft.CodeAnalysis.TypeKind
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -68,15 +69,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     ' If currentResult is a namespace that doesn't contain accessible types 
                     ' (including types in child namespaces), ignore the namespace.
                     If Not (currentResult.IsGood AndAlso currentResult.HasSingleSymbol AndAlso
-                            currentResult.SingleSymbol.Kind = SymbolKind.Namespace AndAlso
-                            Not DirectCast(currentResult.SingleSymbol, NamespaceSymbol).ContainsTypesAccessibleFrom(Compilation.Assembly)) Then
+                            currentResult.SingleSymbol.Symbol.Kind = SymbolKind.Namespace AndAlso
+                            Not DirectCast(currentResult.SingleSymbol.Symbol, NamespaceSymbol).ContainsTypesAccessibleFrom(Compilation.Assembly)) Then
 
                         If lookupResult.StopFurtherLookup AndAlso currentResult.StopFurtherLookup Then
                             Debug.Assert(lookupResult.Symbols.Count > 0)  ' How can it stop lookup otherwise?
                             Debug.Assert(currentResult.Symbols.Count > 0) ' How can it stop lookup  otherwise?
 
-                            Dim lookupResultIsNamespace As Boolean = (lookupResult.Symbols(0).Kind = SymbolKind.Namespace)
-                            Dim currentResultIsNamespace As Boolean = (currentResult.Symbols(0).Kind = SymbolKind.Namespace)
+                            Dim lookupResultIsNamespace As Boolean = (lookupResult.Symbols(0).Symbol.Kind = SymbolKind.Namespace)
+                            Dim currentResultIsNamespace As Boolean = (currentResult.Symbols(0).Symbol.Kind = SymbolKind.Namespace)
 
                             ' Non-namespace wins over a namespace
                             If lookupResultIsNamespace AndAlso (Not currentResultIsNamespace) Then
@@ -116,9 +117,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 End If
             Next
 
-            If lookupResult.IsGood AndAlso lookupResult.Symbols.Count > 1 AndAlso lookupResult.Symbols(0).Kind = SymbolKind.Namespace Then
+            If lookupResult.IsGood AndAlso lookupResult.Symbols.Count > 1 AndAlso lookupResult.Symbols(0).Symbol.Kind = SymbolKind.Namespace Then
                 ' Create and return namespace group symbol
-                lookupResult.SetFrom(MergedNamespaceSymbol.CreateNamespaceGroup(lookupResult.Symbols.Cast(Of NamespaceSymbol)))
+                lookupResult.SetFrom(MergedNamespaceSymbol.CreateNamespaceGroup(lookupResult.Symbols.ToImmutable().WithoutAnnotationSymbols().Cast(Of NamespaceSymbol)()).WithDefaultAnnotationSymbols())
             End If
         End Sub
 
@@ -162,12 +163,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Next
         End Sub
 
-        Friend Shared GenerateAmbiguityError As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic) =
-            Function(ambiguousSymbols As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
+        Friend Shared GenerateAmbiguityError As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic) =
+            Function(ambiguousSymbols As ImmutableArray(Of SymbolWithAnnotationSymbols)) As AmbiguousSymbolDiagnostic
                 Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInImports2,
-                                                     ambiguousSymbols,
-                                                     ambiguousSymbols(0).Name,
-                                                     New FormattedSymbolList(ambiguousSymbols.Select(Function(sym) sym.ContainingSymbol)))
+                                                     ambiguousSymbols.WithoutAnnotationSymbols(),
+                                                     ambiguousSymbols(0).Symbol.Name,
+                                                     New FormattedSymbolList(ambiguousSymbols.Select(Function(sym) sym.Symbol.ContainingSymbol)))
             End Function
     End Class
 
