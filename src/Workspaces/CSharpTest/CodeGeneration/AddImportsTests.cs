@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Editing
                             return c;
                         }
 
-                        var symbol = model.GetAliasInfo(o).Target ?? model.GetSymbolInfo(o).Symbol;
+                        var symbol = model.GetAliasInfoWithTarget(o).Target ?? model.GetSymbolInfo(o).Symbol;
                         return symbol != null
                             ? c.WithAdditionalAnnotations(SymbolAnnotation.Create(symbol), Simplifier.Annotation)
                             : c;

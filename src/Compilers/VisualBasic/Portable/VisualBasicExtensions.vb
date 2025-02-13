@@ -1560,6 +1560,26 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Function
 
         ''' <summary>
+        ''' If "nameSyntax" resolves to an alias name, return the AliasSymbol corresponding
+        ''' to A. Otherwise return null.
+        ''' </summary>
+        <Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", True)>
+        <Extension>
+        Public Function GetAliasInfo(semanticModel As SemanticModel, nameSyntax As IdentifierNameSyntax, Optional cancellationToken As CancellationToken = Nothing) As IAliasSymbol
+            Return GetAliasInfo(semanticModel, DirectCast(nameSyntax, SimpleNameSyntax), cancellationToken).Alias
+        End Function
+
+        ''' <summary>
+        ''' Binds the name in the context of the specified location and sees if it resolves to an
+        ''' alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        ''' </summary>
+        <Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", True)>
+        <Extension>
+        Public Function GetSpeculativeAliasInfo(semanticModel As SemanticModel, position As Integer, nameSyntax As IdentifierNameSyntax, bindingOption As SpeculativeBindingOption) As IAliasSymbol
+            Return GetSpeculativeAliasInfo(semanticModel, position, DirectCast(nameSyntax, SimpleNameSyntax), bindingOption).Alias
+        End Function
+
+        ''' <summary>
         ''' If "nameSyntax" resolves to an alias name, return the alias information corresponding
         ''' to A. Otherwise return <see cref="AliasInfo.None"/>.
         ''' </summary>

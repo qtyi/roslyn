@@ -95,6 +95,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case SyntaxKind.ScopedType:
                     // These are just placeholders and are not separately meaningful.
                     return false;
+                case SyntaxKind.IdentifierName:
+                    // The alias identifier of a using directive is a declaration, so there is no semantic info - use GetDeclaredSymbol instead.
+                    if (!isSpeculative && node.Parent != null && node.Parent.Kind() == SyntaxKind.UsingDirective)
+                    {
+                        return false;
+                    }
+
+                    goto default;
 
                 default:
                     // If we are being asked for binding info on a "missing" syntax node

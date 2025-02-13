@@ -1022,6 +1022,25 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>
+        /// If <paramref name="nameSyntax"/> resolves to an alias name, return the AliasSymbol corresponding
+        /// to A. Otherwise return null.
+        /// </summary>
+        [Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", error: true)]
+        public static IAliasSymbol? GetAliasInfo(this SemanticModel? semanticModel, IdentifierNameSyntax nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return GetAliasInfo(semanticModel, (SimpleNameSyntax)nameSyntax, cancellationToken).Alias;
+        }
+
+        /// <summary>
+        /// Binds the name in the context of the specified location and sees if it resolves to an
+        /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        /// </summary>
+        [Obsolete("This method is only used for compatibility. To get alias info, use SimpleNameSyntax overrides instead.", error: true)]
+        public static IAliasSymbol? GetSpeculativeAliasInfo(this SemanticModel? semanticModel, int position, IdentifierNameSyntax nameSyntax, SpeculativeBindingOption bindingOption)
+        {
+            return GetSpeculativeAliasInfo(semanticModel, position, (SimpleNameSyntax)nameSyntax, bindingOption).Alias;
+        }
+        /// <summary>
         /// If <paramref name="nameSyntax"/> resolves to an alias name, return the alias information corresponding
         /// to A. Otherwise return <see cref="AliasInfo.None"/>.
         /// </summary>

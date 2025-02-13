@@ -103,7 +103,7 @@ internal sealed class FindReferenceCache
                 var (semanticModel, cancellationToken) = arg;
 
                 var symbolInfo = semanticModel.GetSymbolInfo(n, cancellationToken);
-                var aliasInfo = semanticModel.GetAliasInfo(n, cancellationToken);
+                var aliasInfo = semanticModel.GetAliasInfoWithTarget(n, cancellationToken);
                 return (symbolInfo, aliasInfo);
             },
             (SemanticModel, cancellationToken));
@@ -119,7 +119,7 @@ internal sealed class FindReferenceCache
         }
 
         if (_aliasSet.Contains(token.ValueText))
-            return SemanticModel.GetAliasInfo(token.GetRequiredParent(), cancellationToken);
+            return SemanticModel.GetAliasInfoWithTarget(token.GetRequiredParent(), cancellationToken);
 
         return default; // AliasInfo.None
     }

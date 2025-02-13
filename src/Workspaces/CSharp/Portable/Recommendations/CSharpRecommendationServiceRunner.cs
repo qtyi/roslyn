@@ -287,7 +287,7 @@ internal partial class CSharpRecommendationService
 
         private RecommendedSymbols GetSymbolsOffOfAlias(IdentifierNameSyntax alias)
         {
-            var aliasInfo = _context.SemanticModel.GetAliasInfo(alias, _cancellationToken);
+            var aliasInfo = _context.SemanticModel.GetAliasInfoWithTarget(alias, _cancellationToken);
             if (aliasInfo.Alias == null)
                 return default;
 

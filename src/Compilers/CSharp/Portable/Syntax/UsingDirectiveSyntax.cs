@@ -33,10 +33,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax
                     return null;
                 }
 
-                return SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName(this.Identifier), this.EqualsToken);
+                var identifierName = SyntaxFactory.IdentifierName(this.Identifier);
+                identifierName._syntaxTree = this.Identifier.SyntaxTree;
+                var nameEquals = SyntaxFactory.NameEquals(identifierName, this.EqualsToken);
+                nameEquals._syntaxTree = this.Identifier.SyntaxTree;
+
+                return nameEquals;
             }
         }
 
+        [System.Obsolete("This method is only used for compatibility. To update alias name, use Identifier overrides instead.", error: true)]
+        public UsingDirectiveSyntax Update(SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name, SyntaxToken semicolonToken)
+            => this.Update(this.GlobalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, alias is null ? default : alias.Name.Identifier, typeParameterList: null, alias is null ? default : alias.EqualsToken, namespaceOrType: name, constraintClauses: default, semicolonToken);
+
+        [System.Obsolete("This method is only used for compatibility. To update alias name, use Identifier overrides instead.", error: true)]
+        public UsingDirectiveSyntax Update(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name, SyntaxToken semicolonToken)
+            => this.Update(globalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, alias is null ? default : alias.Name.Identifier, typeParameterList: null, alias is null ? default : alias.EqualsToken, namespaceOrType: name, constraintClauses: default, semicolonToken);
         public UsingDirectiveSyntax Update(SyntaxToken usingKeyword, SyntaxToken staticKeyword, SyntaxToken identifier, TypeParameterListSyntax typeParameters, SyntaxToken equalsToken, NameSyntax name, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken semicolonToken)
             => this.Update(this.GlobalKeyword, usingKeyword, staticKeyword, this.UnsafeKeyword, identifier, typeParameters, equalsToken, namespaceOrType: name, constraintClauses, semicolonToken);
 
@@ -52,5 +64,18 @@ namespace Microsoft.CodeAnalysis.CSharp
 {
     public partial class SyntaxFactory
     {
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        [System.Obsolete("This method is only used for compatibility. To create with alias name, use Identifier overrides instead.", error: true)]
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name)
+            => UsingDirective(globalKeyword: default, usingKeyword: Token(SyntaxKind.UsingKeyword), staticKeyword, unsafeKeyword: default, alias is null ? default : alias.Name.Identifier, typeParameterList: null, alias is null ? default : alias.EqualsToken, namespaceOrType: name, constraintClauses: default, semicolonToken: Token(SyntaxKind.SemicolonToken));
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        [System.Obsolete("This method is only used for compatibility. To create with alias name, use Identifier overrides instead.", error: true)]
+        public static UsingDirectiveSyntax UsingDirective(SyntaxToken globalKeyword, SyntaxToken usingKeyword, SyntaxToken staticKeyword, NameEqualsSyntax? alias, NameSyntax name, SyntaxToken semicolonToken)
+            => UsingDirective(globalKeyword, usingKeyword, staticKeyword, unsafeKeyword: default, alias is null ? default : alias.Name.Identifier, typeParameterList: null, alias is null ? default : alias.EqualsToken, namespaceOrType: name, constraintClauses: default, semicolonToken);
+
+        /// <summary>Creates a new UsingDirectiveSyntax instance.</summary>
+        public static UsingDirectiveSyntax UsingDirective(NameSyntax name)
+            => UsingDirective(namespaceOrType: name);
     }
 }

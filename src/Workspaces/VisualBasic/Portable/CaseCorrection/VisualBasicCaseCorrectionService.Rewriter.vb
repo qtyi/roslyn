@@ -172,7 +172,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.CaseCorrection
             Private Function GetAliasOrAnySymbol(model As SemanticModel, node As SyntaxNode, cancellationToken As CancellationToken) As ISymbol
                 Dim identifier = TryCast(node, IdentifierNameSyntax)
                 If identifier IsNot Nothing AndAlso Me._aliasSet.Value.Contains(identifier.Identifier.ValueText) Then
-                    Dim [alias] = model.GetAliasInfo(identifier, cancellationToken).Alias
+                    Dim [alias] = model.GetAliasInfoWithTarget(identifier, cancellationToken).Alias
                     If [alias] IsNot Nothing Then
                         Return [alias]
                     End If

@@ -104,7 +104,7 @@ internal static partial class SemanticModelExtensions
         }
         else
         {
-            aliasSymbol = semanticModel.GetAliasInfo(token.Parent!, cancellationToken).Alias;
+            aliasSymbol = semanticModel.GetAliasInfoWithTarget(token.Parent!, cancellationToken).Alias;
             var bindableParent = syntaxFacts.TryGetBindableParent(token);
             var typeInfo = bindableParent != null ? semanticModel.GetTypeInfo(bindableParent, cancellationToken) : default;
             type = typeInfo.Type;

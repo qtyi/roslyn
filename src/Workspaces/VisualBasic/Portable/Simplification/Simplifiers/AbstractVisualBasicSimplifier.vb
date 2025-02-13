@@ -97,7 +97,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Simplification.Simplifiers
             End If
 
             If node.Kind = SyntaxKind.IdentifierName OrElse node.Kind = SyntaxKind.GenericName _
-                AndAlso semanticModel.GetAliasInfo(DirectCast(node, IdentifierNameSyntax)).Alias IsNot Nothing Then
+                AndAlso semanticModel.GetAliasInfoWithTarget(DirectCast(node, IdentifierNameSyntax)).Alias IsNot Nothing Then
                 Return False
             End If
 

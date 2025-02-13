@@ -65,7 +65,7 @@ readonly Microsoft.CodeAnalysis.NameWithArity.Arity -> int
 readonly Microsoft.CodeAnalysis.NameWithArity.Name -> string!
 static Microsoft.CodeAnalysis.GeneratorExtensions.AsIncrementalGenerator(this Microsoft.CodeAnalysis.ISourceGenerator! sourceGenerator) -> Microsoft.CodeAnalysis.IIncrementalGenerator!
 static Microsoft.CodeAnalysis.GeneratorExtensions.GetGeneratorType(this Microsoft.CodeAnalysis.IIncrementalGenerator! generator) -> System.Type!
-static Microsoft.CodeAnalysis.ModelExtensions.GetAliasInfo(this Microsoft.CodeAnalysis.SemanticModel! semanticModel, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.AliasInfo
+static Microsoft.CodeAnalysis.ModelExtensions.GetAliasInfoWithTarget(this Microsoft.CodeAnalysis.SemanticModel! semanticModel, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.AliasInfo
 static Microsoft.CodeAnalysis.ModelExtensions.GetSpeculativeAliasInfo(this Microsoft.CodeAnalysis.SemanticModel! semanticModel, int position, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, Microsoft.CodeAnalysis.SpeculativeBindingOption bindingOption) -> Microsoft.CodeAnalysis.AliasInfo
 static Microsoft.CodeAnalysis.NameWithArity.implicit operator Microsoft.CodeAnalysis.NameWithArity(string? name) -> Microsoft.CodeAnalysis.NameWithArity
 static Microsoft.CodeAnalysis.NameWithArityComparer.Default.get -> Microsoft.CodeAnalysis.NameWithArityComparer!

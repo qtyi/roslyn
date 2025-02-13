@@ -214,7 +214,7 @@ internal class NameSimplifier : AbstractCSharpSimplifier<NameSyntax, TypeSyntax>
                 }
             }
 
-            var aliasInfo = semanticModel.GetAliasInfo(name, cancellationToken);
+            var aliasInfo = semanticModel.GetAliasInfoWithTarget(name, cancellationToken);
             if (nameHasNoAlias && aliasInfo.Alias == null)
             {
                 // Don't simplify to predefined type if name is part of a QualifiedName.
