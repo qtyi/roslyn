@@ -575,6 +575,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.Net.Compilers.Toolset.DevEnv.Framework.Package", "src\NuGet\Qtyi.Net.Compilers.Toolset.DevEnv\Framework\Qtyi.Net.Compilers.Toolset.DevEnv.Framework.Package.csproj", "{6018651A-E5CE-3CF2-7D62-A5807D145204}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qtyi.RoslynCompilers.Package", "src\NuGet\Qtyi.RoslynCompilers.Package\Qtyi.RoslynCompilers.Package.csproj", "{F4BFAA84-EBF8-36CE-502D-8058ABF410EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1417,6 +1419,10 @@ Global
 		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6018651A-E5CE-3CF2-7D62-A5807D145204}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4BFAA84-EBF8-36CE-502D-8058ABF410EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4BFAA84-EBF8-36CE-502D-8058ABF410EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4BFAA84-EBF8-36CE-502D-8058ABF410EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4BFAA84-EBF8-36CE-502D-8058ABF410EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1682,6 +1688,7 @@ Global
 		{81DE95F6-B4FC-0B18-5FE5-D86EE33E937A} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
 		{C7B1DC90-3F06-7D10-BA0A-99F7E21C269B} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
 		{6018651A-E5CE-3CF2-7D62-A5807D145204} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
+		{F4BFAA84-EBF8-36CE-502D-8058ABF410EE} = {C52D8057-43AF-40E6-A01B-6CDBB7301985}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {604E6B91-7BC0-4126-AE07-D4D2FEFC3D29}
