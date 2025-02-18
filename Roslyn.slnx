@@ -37,10 +37,10 @@
     <Project Path="src/NuGet/Microsoft.Net.Compilers.Toolset/AnyCpu/Microsoft.Net.Compilers.Toolset.Package.csproj" />
     <Project Path="src/NuGet/Microsoft.Net.Compilers.Toolset/arm64/Microsoft.Net.Compilers.Toolset.Arm64.Package.csproj" />
     <Project Path="src/NuGet/Microsoft.Net.Compilers.Toolset/Framework/Microsoft.Net.Compilers.Toolset.Framework.Package.csproj" />
+    <Project Path="src/NuGet/Qtyi.Net.Compilers.Toolset.DevEnv.Compilers/Qtyi.Net.Compilers.Toolset.DevEnv.Compilers.csproj" />
     <Project Path="src/NuGet/Qtyi.Net.Compilers.Toolset.DevEnv/AnyCpu/Qtyi.Net.Compilers.Toolset.DevEnv.Package.csproj" />
     <Project Path="src/NuGet/Qtyi.Net.Compilers.Toolset.DevEnv/arm64/Qtyi.Net.Compilers.Toolset.DevEnv.Arm64.Package.csproj" />
     <Project Path="src/NuGet/Qtyi.Net.Compilers.Toolset.DevEnv/Framework/Qtyi.Net.Compilers.Toolset.DevEnv.Framework.Package.csproj" />
-    <Project Path="src/NuGet/Qtyi.RoslynCompilers.Package/Qtyi.RoslynCompilers.Package.csproj" />
   </Folder>
   <Folder Name="/Compilers/Server/">
     <Project Path="src/Compilers/Server/VBCSCompiler/AnyCpu/VBCSCompiler.csproj" />

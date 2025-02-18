@@ -6,7 +6,7 @@
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <PackageId>Qtyi.RoslynCompilers.Package</PackageId>
+    <NuspecPackageId>Qtyi.Net.Compilers.Toolset.DevEnv.Compilers</NuspecPackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageDescription>
       Compiler layer of the .NET Compiler Platform ("Roslyn").

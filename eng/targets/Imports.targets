@@ -11,7 +11,7 @@
   <!--
     Work around $(PrivateRepositoryUrl) ends with unexpected `.git`.
   -->
-  <Target Name="_AdjustifyPrivateRepositoryUrlProperty" 
+  <Target Name="_AdjustPrivateRepositoryUrlProperty" 
           BeforeTargets="_InitializeNuspecRepositoryInformationPropertiesWorkaround;_AddCommitHashAttribute;_AppendCommonPackageDescription" 
           DependsOnTargets="InitializeSourceControlInformation"
           Condition="'$(SourceControlInformationFeatureSupported)' == 'true'">
