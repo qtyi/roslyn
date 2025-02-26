@@ -24,6 +24,9 @@ Microsoft.CodeAnalysis.GeneratorDriver.RunGenerators(Microsoft.CodeAnalysis.Comp
 *REMOVED*Microsoft.CodeAnalysis.GeneratorDriver.RunGenerators(Microsoft.CodeAnalysis.Compilation! compilation, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.GeneratorDriver!
 Microsoft.CodeAnalysis.GeneratorDriverOptions.BaseDirectory.get -> string?
 Microsoft.CodeAnalysis.GeneratorDriverOptions.GeneratorDriverOptions(Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind disabledOutputs = Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None, bool trackIncrementalGeneratorSteps = false, string? baseDirectory = null) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.InsertText(string! filePath, int position, string! newText) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.RemoveText(string! filePath, Microsoft.CodeAnalysis.Text.TextSpan span) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.ReplaceText(string! filePath, Microsoft.CodeAnalysis.Text.TextSpan span, string! newText) -> void
 Microsoft.CodeAnalysis.GeneratorFilterContext
 Microsoft.CodeAnalysis.GeneratorFilterContext.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.CodeAnalysis.GeneratorFilterContext.Generator.get -> Microsoft.CodeAnalysis.ISourceGenerator!
@@ -54,6 +57,9 @@ Microsoft.CodeAnalysis.NameWithArityComparer.GetHashCode(Microsoft.CodeAnalysis.
 Microsoft.CodeAnalysis.NameWithArityComparer.NameWithArityComparer(System.StringComparer! nameComparer) -> void
 Microsoft.CodeAnalysis.NameWithArityComparer.Underlying.get -> System.StringComparer!
 Microsoft.CodeAnalysis.RuntimeCapability.ByRefLikeGenerics = 8 -> Microsoft.CodeAnalysis.RuntimeCapability
+Microsoft.CodeAnalysis.SourceProductionContext.InsertText(string! filePath, int position, string! newText) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.RemoveText(string! filePath, Microsoft.CodeAnalysis.Text.TextSpan span) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.ReplaceText(string! filePath, Microsoft.CodeAnalysis.Text.TextSpan span, string! newText) -> void
 Microsoft.CodeAnalysis.SymbolInfo.AnnotationSymbols.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ISymbol!>
 Microsoft.CodeAnalysis.TypeParameterKind.Alias = 3 -> Microsoft.CodeAnalysis.TypeParameterKind
 override Microsoft.CodeAnalysis.AliasInfo.Equals(object? obj) -> bool

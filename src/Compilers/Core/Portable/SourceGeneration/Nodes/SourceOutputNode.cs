@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
-using TOutput = System.ValueTuple<System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.GeneratedSourceText>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Diagnostic>>;
+using TOutput = System.ValueTuple<System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.GeneratedSourceText>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.ModifiedTexts>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Diagnostic>>;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -62,14 +62,15 @@ namespace Microsoft.CodeAnalysis
                 else if (entry.State != EntryState.Cached || !tableBuilder.TryUseCachedEntries(TimeSpan.Zero, inputs))
                 {
                     var sourcesBuilder = new AdditionalSourcesCollection(_sourceExtension);
+                    var modifiedTextsBuilder = new ModifiedTextsCollection();
                     var diagnostics = DiagnosticBag.GetInstance();
 
-                    SourceProductionContext context = new SourceProductionContext(sourcesBuilder, diagnostics, graphState.Compilation, cancellationToken);
+                    SourceProductionContext context = new SourceProductionContext(sourcesBuilder, modifiedTextsBuilder, diagnostics, graphState.Compilation, cancellationToken);
                     try
                     {
                         var stopwatch = SharedStopwatch.StartNew();
                         _action(context, entry.Item, cancellationToken);
-                        var sourcesAndDiagnostics = (sourcesBuilder.ToImmutable(), diagnostics.ToReadOnly());
+                        var sourcesAndDiagnostics = (sourcesBuilder.ToImmutable(), modifiedTextsBuilder.ToImmutable(), diagnostics.ToReadOnly());
 
                         if (entry.State != EntryState.Modified || !tableBuilder.TryModifyEntry(sourcesAndDiagnostics, stopwatch.Elapsed, inputs, entry.State))
                         {
@@ -91,7 +92,7 @@ namespace Microsoft.CodeAnalysis
 
         IIncrementalGeneratorNode<TOutput> IIncrementalGeneratorNode<TOutput>.WithComparer(IEqualityComparer<TOutput> comparer) => throw ExceptionUtilities.Unreachable();
 
-        public IIncrementalGeneratorNode<(IEnumerable<GeneratedSourceText>, IEnumerable<Diagnostic>)> WithTrackingName(string name) => throw ExceptionUtilities.Unreachable();
+        public IIncrementalGeneratorNode<TOutput> WithTrackingName(string name) => throw ExceptionUtilities.Unreachable();
 
         void IIncrementalGeneratorNode<TOutput>.RegisterOutput(IIncrementalGeneratorOutputNode output) => throw ExceptionUtilities.Unreachable();
 
@@ -102,7 +103,7 @@ namespace Microsoft.CodeAnalysis
             var table = context.TableBuilder.GetLatestStateTableForNode(this);
 
             // add each non-removed entry to the context
-            foreach (var ((sources, diagnostics), state, _, _) in table)
+            foreach (var ((sources, modifiedTexts, diagnostics), state, _, _) in table)
             {
                 if (state != EntryState.Removed)
                 {
@@ -113,6 +114,17 @@ namespace Microsoft.CodeAnalysis
                             context.Sources.Add(text.HintName, text.Text);
                         }
                         catch (ArgumentException e)
+                        {
+                            throw new UserFunctionException(e);
+                        }
+                    }
+                    foreach (var text in modifiedTexts)
+                    {
+                        try
+                        {
+                            context.ModifiedTexts.Add(text);
+                        }
+                        catch (InvalidOperationException e)
                         {
                             throw new UserFunctionException(e);
                         }

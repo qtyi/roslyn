@@ -198,4 +198,61 @@ namespace Roslyn.Test.Utilities.TestGenerators
 
         public void Initialize(IncrementalGeneratorInitializationContext context) => _onInit(context);
     }
+
+    internal class ModifyTextGenerator(
+        IEnumerable<(int position, string newText)>? insertTexts = null,
+        IEnumerable<(TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<TextSpan>? removeTexts = null)
+        : ISourceGenerator
+    {
+        private readonly IEnumerable<(int position, string newText)> _insertTexts = insertTexts ?? [];
+        private readonly IEnumerable<(TextSpan span, string newText)> _replaceTexts = replaceTexts ?? [];
+        private readonly IEnumerable<TextSpan> _removeTexts = removeTexts ?? [];
+
+        public void Initialize(GeneratorInitializationContext context) { }
+
+        public void Execute(GeneratorExecutionContext context)
+        {
+            foreach (var tree in context.Compilation.SyntaxTrees)
+            {
+                Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText);
+            }
+        }
+
+        protected void Modify(
+            SyntaxTree tree,
+            Action<string, int, string> insertAction,
+            Action<string, TextSpan, string> replaceAction,
+            Action<string, TextSpan> removeAction)
+        {
+            foreach (var (position, newText) in _insertTexts)
+            {
+                insertAction(tree.FilePath, position, newText);
+            }
+
+            foreach (var (span, newText) in _replaceTexts)
+            {
+                replaceAction(tree.FilePath, span, newText);
+            }
+
+            foreach (var span in _removeTexts)
+            {
+                removeAction(tree.FilePath, span);
+            }
+        }
+    }
+
+    internal sealed class IncrementalModifyTextGenerator(
+        IEnumerable<(int position, string newText)>? insertTexts = null,
+        IEnumerable<(TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<TextSpan>? removeTexts = null)
+        : ModifyTextGenerator(insertTexts, replaceTexts, removeTexts), IIncrementalGenerator
+    {
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+            => context.RegisterSourceOutput(
+                source: context.SyntaxProvider.CreateSyntaxProvider(
+                    predicate: static (node, cancellationToken) => node == node.SyntaxTree.GetRoot(cancellationToken),
+                    transform: static (context, _) => context.Node.SyntaxTree),
+                action: (context, tree) => Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText));
+    }
 }

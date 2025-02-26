@@ -183,6 +183,11 @@
         <target state="translated">应为方法符号</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="translated">更改的文本范围“{0}”与范围“{1}”重叠</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">模块具有无效属性。</target>

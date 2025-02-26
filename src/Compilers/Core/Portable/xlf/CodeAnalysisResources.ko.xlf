@@ -183,6 +183,11 @@
         <target state="translated">메서드 기호가 필요합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">모듈에 잘못된 특성이 있습니다.</target>

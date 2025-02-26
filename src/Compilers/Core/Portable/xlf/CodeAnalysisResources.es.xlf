@@ -183,6 +183,11 @@
         <target state="translated">Se esperaba un símbolo de método</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">El módulo tiene atributos no válidos.</target>

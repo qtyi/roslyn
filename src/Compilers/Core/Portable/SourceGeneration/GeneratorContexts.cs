@@ -21,6 +21,8 @@ namespace Microsoft.CodeAnalysis
 
         private readonly AdditionalSourcesCollection _additionalSources;
 
+        private readonly ModifiedTextsCollection _modifiedTexts;
+
         internal GeneratorExecutionContext(Compilation compilation, ParseOptions parseOptions, ImmutableArray<AdditionalText> additionalTexts, AnalyzerConfigOptionsProvider optionsProvider, ISyntaxContextReceiver? syntaxReceiver, string sourceExtension, CancellationToken cancellationToken = default)
         {
             Compilation = compilation;
@@ -31,6 +33,7 @@ namespace Microsoft.CodeAnalysis
             SyntaxContextReceiver = (syntaxReceiver is SyntaxContextReceiverAdaptor) ? null : syntaxReceiver;
             CancellationToken = cancellationToken;
             _additionalSources = new AdditionalSourcesCollection(sourceExtension);
+            _modifiedTexts = new ModifiedTextsCollection();
             _diagnostics = new DiagnosticBag();
         }
 
@@ -92,6 +95,29 @@ namespace Microsoft.CodeAnalysis
         public void AddSource(string hintName, SourceText sourceText) => _additionalSources.Add(hintName, sourceText);
 
         /// <summary>
+        /// Insert a new text into the file at the specified position.
+        /// </summary>
+        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="position">Character position to insert the text.</param>
+        /// <param name="newText">Text to insert.</param>
+        public void InsertText(string filePath, int position, string newText) => ReplaceText(filePath, new TextSpan(position, 0), newText);
+
+        /// <summary>
+        /// Replace the text in the file in the specified span.
+        /// </summary>
+        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="span">Character position span of the original text to be replaced.</param>
+        /// <param name="newText">Text to replace.</param>
+        public void ReplaceText(string filePath, TextSpan span, string newText) => _modifiedTexts.Add(filePath, new TextChange(span, newText));
+
+        /// <summary>
+        /// Remove the text in the file in the specified span.
+        /// </summary>
+        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="span">Character position span of the original text to be removed.</param>
+        public void RemoveText(string filePath, TextSpan span) => ReplaceText(filePath, span, string.Empty);
+
+        /// <summary>
         /// Adds a <see cref="Diagnostic"/> to the users compilation 
         /// </summary>
         /// <param name="diagnostic">The diagnostic that should be added to the compilation</param>
@@ -108,18 +134,20 @@ namespace Microsoft.CodeAnalysis
             _diagnostics.Add(diagnostic);
         }
 
-        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<Diagnostic> diagnostics) ToImmutableAndFree()
-            => (_additionalSources.ToImmutableAndFree(), _diagnostics.ToReadOnlyAndFree());
+        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<ModifiedTexts> modifiedTexts, ImmutableArray<Diagnostic> diagnostics) ToImmutableAndFree()
+            => (_additionalSources.ToImmutableAndFree(), _modifiedTexts.ToImmutableAndFree(), _diagnostics.ToReadOnlyAndFree());
 
         internal void Free()
         {
             _additionalSources.Free();
+            _modifiedTexts.Free();
             _diagnostics.Free();
         }
 
         internal void CopyToProductionContext(SourceProductionContext ctx)
         {
             _additionalSources.CopyTo(ctx.Sources);
+            _modifiedTexts.CopyTo(ctx.ModifiedTexts);
             ctx.Diagnostics.AddRange(_diagnostics);
         }
     }
