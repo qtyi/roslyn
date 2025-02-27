@@ -51,6 +51,8 @@ namespace Microsoft.CodeAnalysis
 
         public IncrementalValueProvider<Compilation> CompilationProvider => new IncrementalValueProvider<Compilation>(SharedInputNodes.Compilation.WithRegisterOutput(RegisterOutput).WithTrackingName(WellKnownGeneratorInputs.Compilation), CatchAnalyzerExceptions);
 
+        public IncrementalValuesProvider<SyntaxTree> SyntaxTreesProvider => new IncrementalValuesProvider<SyntaxTree>(SharedInputNodes.SyntaxTrees.WithRegisterOutput(RegisterOutput).WithTrackingName(WellKnownGeneratorInputs.SyntaxTrees), CatchAnalyzerExceptions);
+
         // Use a ReferenceEqualityComparer as we want to rerun this stage whenever the CompilationOptions changes at all
         // (e.g. we don't care if it has the same conceptual value, we're ok rerunning as long as the actual instance
         // changes).
@@ -152,14 +154,16 @@ namespace Microsoft.CodeAnalysis
     {
         internal readonly AdditionalSourcesCollection Sources;
         internal readonly ModifiedTextsCollection ModifiedTexts;
+        internal readonly PooledHashSet<SyntaxTree> ExcludedSources;
         internal readonly DiagnosticBag Diagnostics;
         internal readonly Compilation Compilation;
 
-        internal SourceProductionContext(AdditionalSourcesCollection sources, ModifiedTextsCollection modifiedTexts, DiagnosticBag diagnostics, Compilation compilation, CancellationToken cancellationToken)
+        internal SourceProductionContext(AdditionalSourcesCollection sources, ModifiedTextsCollection modifiedTexts, PooledHashSet<SyntaxTree> excludedSources, DiagnosticBag diagnostics, Compilation compilation, CancellationToken cancellationToken)
         {
             CancellationToken = cancellationToken;
             Sources = sources;
             ModifiedTexts = modifiedTexts;
+            ExcludedSources = excludedSources;
             Diagnostics = diagnostics;
             Compilation = compilation;
         }
@@ -184,27 +188,40 @@ namespace Microsoft.CodeAnalysis
         public void AddSource(string hintName, SourceText sourceText) => Sources.Add(hintName, sourceText);
 
         /// <summary>
+        /// Removes a source from the compilation.
+        /// </summary>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        public void RemoveSource(SyntaxTree tree) => ExcludedSources.Add(tree);
+
+        /// <summary>
         /// Insert a new text into the file at the specified position.
         /// </summary>
-        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
         /// <param name="position">Character position to insert the text.</param>
         /// <param name="newText">Text to insert.</param>
-        public void InsertText(string filePath, int position, string newText) => ReplaceText(filePath, new TextSpan(position, 0), newText);
+        public void InsertText(SyntaxTree tree, int position, string newText) => ReplaceText(tree, new TextSpan(position, 0), newText);
 
         /// <summary>
         /// Replace the text in the file in the specified span.
         /// </summary>
-        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
         /// <param name="span">Character position span of the original text to be replaced.</param>
         /// <param name="newText">Text to replace.</param>
-        public void ReplaceText(string filePath, TextSpan span, string newText) => ModifiedTexts.Add(filePath, new TextChange(span, newText));
+        public void ReplaceText(SyntaxTree tree, TextSpan span, string newText) => ModifiedTexts.Add(tree, new TextChange(span, newText));
+
+        /// <summary>
+        /// Replace the syntax tree of the file with a new syntax tree.
+        /// </summary>
+        /// <param name="oldTree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/> to be replaced with.</param>
+        /// <param name="newTree">The new <see cref="SyntaxTree"/> to replace <paramref name="oldTree"/>.</param>
+        public void ReplaceSource(SyntaxTree oldTree, SyntaxTree newTree) => ModifiedTexts.AddRange(oldTree, newTree.GetChanges(oldTree));
 
         /// <summary>
         /// Remove the text in the file in the specified span.
         /// </summary>
-        /// <param name="filePath">Specified file path of an existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
         /// <param name="span">Character position span of the original text to be removed.</param>
-        public void RemoveText(string filePath, TextSpan span) => ReplaceText(filePath, span, string.Empty);
+        public void RemoveText(SyntaxTree tree, TextSpan span) => ReplaceText(tree, span, string.Empty);
 
         /// <summary>
         /// Adds a <see cref="Diagnostic"/> to the users compilation
@@ -289,28 +306,37 @@ namespace Microsoft.CodeAnalysis
 
         internal readonly ModifiedTextsCollection ModifiedTexts;
 
+        internal readonly PooledHashSet<SyntaxTree> ExcludedSources;
+
         internal readonly DriverStateTable.Builder? TableBuilder;
 
         internal readonly GeneratorRunStateTable.Builder GeneratorRunStateBuilder;
 
         internal readonly ImmutableDictionary<string, object>.Builder HostOutputBuilder;
 
-        public IncrementalExecutionContext(DriverStateTable.Builder? tableBuilder, GeneratorRunStateTable.Builder generatorRunStateBuilder, AdditionalSourcesCollection sources, ModifiedTextsCollection modifiedTexts)
+        public IncrementalExecutionContext(DriverStateTable.Builder? tableBuilder, GeneratorRunStateTable.Builder generatorRunStateBuilder, AdditionalSourcesCollection sources, ModifiedTextsCollection modifiedTexts, PooledHashSet<SyntaxTree> excludedSources)
         {
             TableBuilder = tableBuilder;
             GeneratorRunStateBuilder = generatorRunStateBuilder;
             Sources = sources;
             ModifiedTexts = modifiedTexts;
+            ExcludedSources = excludedSources;
             HostOutputBuilder = ImmutableDictionary.CreateBuilder<string, object>();
             Diagnostics = DiagnosticBag.GetInstance();
         }
 
-        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<ModifiedTexts> modifiedTexts, ImmutableArray<Diagnostic> diagnostics, GeneratorRunStateTable executedSteps, ImmutableDictionary<string, object> hostOutputs) ToImmutableAndFree()
-                => (Sources.ToImmutableAndFree(), ModifiedTexts.ToImmutableAndFree(), Diagnostics.ToReadOnlyAndFree(), GeneratorRunStateBuilder.ToImmutableAndFree(), HostOutputBuilder.ToImmutable());
+        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<ModifiedTexts> modifiedTexts, ImmutableArray<SyntaxTree> excludedSources, ImmutableArray<Diagnostic> diagnostics, GeneratorRunStateTable executedSteps, ImmutableDictionary<string, object> hostOutputs) ToImmutableAndFree()
+        {
+            var result = (Sources.ToImmutableAndFree(), ModifiedTexts.ToImmutableAndFree(), ExcludedSources.ToImmutableArray(), Diagnostics.ToReadOnlyAndFree(), GeneratorRunStateBuilder.ToImmutableAndFree(), HostOutputBuilder.ToImmutable());
+            ExcludedSources.Free();
+            return result;
+        }
 
         internal void Free()
         {
             Sources.Free();
+            ModifiedTexts.Free();
+            ExcludedSources.Free();
             Diagnostics.Free();
         }
     }

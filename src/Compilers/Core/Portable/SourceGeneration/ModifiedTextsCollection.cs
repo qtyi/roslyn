@@ -14,28 +14,24 @@ namespace Microsoft.CodeAnalysis
 {
     internal sealed class ModifiedTextsCollection
     {
-        // global pool, compare file path and ignore case.
-        private static readonly ObjectPool<PooledDictionary<string, ArrayBuilder<TextChange>>> s_poolInstance = PooledDictionary<string, ArrayBuilder<TextChange>>.CreatePool(StringComparer.OrdinalIgnoreCase);
-
-        private readonly PooledDictionary<string, ArrayBuilder<TextChange>> _textsModified;
+        private readonly PooledDictionary<SyntaxTree, ArrayBuilder<TextChange>> _textsModified;
 
         internal ModifiedTextsCollection()
         {
-            _textsModified = s_poolInstance.Allocate();
-            Debug.Assert(_textsModified.Count == 0);
+            _textsModified = PooledDictionary<SyntaxTree, ArrayBuilder<TextChange>>.GetInstance();
         }
 
-        public void Add(string filePath, TextChange textChange)
+        public void Add(SyntaxTree tree, TextChange textChange)
         {
-            var builder = _textsModified.GetOrAdd(filePath, ArrayBuilder<TextChange>.GetInstance);
+            var builder = _textsModified.GetOrAdd(tree, ArrayBuilder<TextChange>.GetInstance);
             AddInternal(builder, textChange);
         }
 
-        public void Add(ModifiedTexts modifiedTexts) => AddRange(modifiedTexts.FilePath, modifiedTexts.TextChanges);
+        public void Add(ModifiedTexts modifiedTexts) => AddRange(modifiedTexts.SyntaxTree, modifiedTexts.TextChanges);
 
-        public void AddRange(string filePath, IEnumerable<TextChange> textChanges)
+        public void AddRange(SyntaxTree tree, IEnumerable<TextChange> textChanges)
         {
-            var builder = _textsModified.GetOrAdd(filePath, ArrayBuilder<TextChange>.GetInstance);
+            var builder = _textsModified.GetOrAdd(tree, ArrayBuilder<TextChange>.GetInstance);
             foreach (var textChange in textChanges)
             {
                 AddInternal(builder, textChange);
@@ -46,7 +42,7 @@ namespace Microsoft.CodeAnalysis
         {
             foreach (var modifiedText in modifiedTexts)
             {
-                AddRange(modifiedText.FilePath, modifiedText.TextChanges);
+                AddRange(modifiedText.SyntaxTree, modifiedText.TextChanges);
             }
         }
 
@@ -81,9 +77,9 @@ namespace Microsoft.CodeAnalysis
 
         public void CopyTo(ModifiedTextsCollection mtc)
         {
-            foreach ((var filePath, var textChanges) in _textsModified)
+            foreach ((var tree, var textChanges) in _textsModified)
             {
-                var builder = mtc._textsModified.GetOrAdd(filePath, ArrayBuilder<TextChange>.GetInstance);
+                var builder = mtc._textsModified.GetOrAdd(tree, ArrayBuilder<TextChange>.GetInstance);
                 // we know the TextChanges are valid, but we do need to check that they
                 // don't collide with any we already have
                 if (builder.Count == 0)
@@ -110,9 +106,9 @@ namespace Microsoft.CodeAnalysis
         internal ImmutableArray<ModifiedTexts> ToImmutable()
         {
             var builder = ArrayBuilder<ModifiedTexts>.GetInstance();
-            foreach ((var filePath, var textChanges) in _textsModified)
+            foreach ((var tree, var textChanges) in _textsModified)
             {
-                builder.Add(new(filePath, textChanges.ToImmutable()));
+                builder.Add(new(tree, textChanges.ToImmutable()));
             }
             return builder.ToImmutableAndFree();
         }

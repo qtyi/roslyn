@@ -200,14 +200,18 @@ namespace Roslyn.Test.Utilities.TestGenerators
     }
 
     internal class ModifyTextGenerator(
-        IEnumerable<(int position, string newText)>? insertTexts = null,
-        IEnumerable<(TextSpan span, string newText)>? replaceTexts = null,
-        IEnumerable<TextSpan>? removeTexts = null)
+        IEnumerable<(SyntaxTree tree, int position, string newText)>? insertTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan)>? removeTexts = null,
+        IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)>? replaceSources = null,
+        IEnumerable<SyntaxTree>? removeSources = null)
         : ISourceGenerator
     {
-        private readonly IEnumerable<(int position, string newText)> _insertTexts = insertTexts ?? [];
-        private readonly IEnumerable<(TextSpan span, string newText)> _replaceTexts = replaceTexts ?? [];
-        private readonly IEnumerable<TextSpan> _removeTexts = removeTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree tree, int position, string newText)> _insertTexts = insertTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree tree, TextSpan span, string newText)> _replaceTexts = replaceTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree tree, TextSpan)> _removeTexts = removeTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)> _replaceSources = replaceSources ?? [];
+        private readonly IEnumerable<SyntaxTree> _removeSources = removeSources ?? [];
 
         public void Initialize(GeneratorInitializationContext context) { }
 
@@ -215,44 +219,73 @@ namespace Roslyn.Test.Utilities.TestGenerators
         {
             foreach (var tree in context.Compilation.SyntaxTrees)
             {
-                Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText);
+                Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText, context.ReplaceSource, context.RemoveSource);
             }
         }
 
         protected void Modify(
             SyntaxTree tree,
-            Action<string, int, string> insertAction,
-            Action<string, TextSpan, string> replaceAction,
-            Action<string, TextSpan> removeAction)
+            Action<SyntaxTree, int, string> insertTextAction,
+            Action<SyntaxTree, TextSpan, string> replaceTextAction,
+            Action<SyntaxTree, TextSpan> removeTextAction,
+            Action<SyntaxTree, SyntaxTree> replaceSourceAction,
+            Action<SyntaxTree> removeSourceAction)
         {
-            foreach (var (position, newText) in _insertTexts)
+            foreach (var (t, position, newText) in _insertTexts)
             {
-                insertAction(tree.FilePath, position, newText);
+                if (ReferenceEquals(tree, t))
+                {
+                    insertTextAction(tree, position, newText);
+                }
             }
 
-            foreach (var (span, newText) in _replaceTexts)
+            foreach (var (t, span, newText) in _replaceTexts)
             {
-                replaceAction(tree.FilePath, span, newText);
+                if (ReferenceEquals(tree, t))
+                {
+                    replaceTextAction(tree, span, newText);
+                }
             }
 
-            foreach (var span in _removeTexts)
+            foreach (var (t, span) in _removeTexts)
             {
-                removeAction(tree.FilePath, span);
+                if (ReferenceEquals(tree, t))
+                {
+                    removeTextAction(tree, span);
+                }
+            }
+
+            foreach (var (t, newTree) in _replaceSources)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    replaceSourceAction(tree, newTree);
+                }
+            }
+
+            foreach (var t in _removeSources)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    removeSourceAction(tree);
+                }
             }
         }
     }
 
     internal sealed class IncrementalModifyTextGenerator(
-        IEnumerable<(int position, string newText)>? insertTexts = null,
-        IEnumerable<(TextSpan span, string newText)>? replaceTexts = null,
-        IEnumerable<TextSpan>? removeTexts = null)
-        : ModifyTextGenerator(insertTexts, replaceTexts, removeTexts), IIncrementalGenerator
+        IEnumerable<(SyntaxTree tree, int position, string newText)>? insertTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan)>? removeTexts = null,
+        IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)>? replaceSources = null,
+        IEnumerable<SyntaxTree>? removeSources = null)
+        : ModifyTextGenerator(insertTexts, replaceTexts, removeTexts, replaceSources, removeSources), IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
             => context.RegisterSourceOutput(
                 source: context.SyntaxProvider.CreateSyntaxProvider(
                     predicate: static (node, cancellationToken) => node == node.SyntaxTree.GetRoot(cancellationToken),
                     transform: static (context, _) => context.Node.SyntaxTree),
-                action: (context, tree) => Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText));
+                action: (context, tree) => Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText, context.ReplaceSource, context.RemoveSource));
     }
 }

@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
-using TOutput = System.ValueTuple<System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.GeneratedSourceText>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.ModifiedTexts>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Diagnostic>>;
+using TOutput = System.ValueTuple<System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.GeneratedSourceText>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.ModifiedTexts>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.SyntaxTree>, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.Diagnostic>>;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -63,14 +63,15 @@ namespace Microsoft.CodeAnalysis
                 {
                     var sourcesBuilder = new AdditionalSourcesCollection(_sourceExtension);
                     var modifiedTextsBuilder = new ModifiedTextsCollection();
+                    var excludeSourcesBuilder = PooledHashSet<SyntaxTree>.GetInstance();
                     var diagnostics = DiagnosticBag.GetInstance();
 
-                    SourceProductionContext context = new SourceProductionContext(sourcesBuilder, modifiedTextsBuilder, diagnostics, graphState.Compilation, cancellationToken);
+                    SourceProductionContext context = new SourceProductionContext(sourcesBuilder, modifiedTextsBuilder, excludeSourcesBuilder, diagnostics, graphState.Compilation, cancellationToken);
                     try
                     {
                         var stopwatch = SharedStopwatch.StartNew();
                         _action(context, entry.Item, cancellationToken);
-                        var sourcesAndDiagnostics = (sourcesBuilder.ToImmutable(), modifiedTextsBuilder.ToImmutable(), diagnostics.ToReadOnly());
+                        var sourcesAndDiagnostics = (sourcesBuilder.ToImmutable(), modifiedTextsBuilder.ToImmutable(), excludeSourcesBuilder.ToImmutableArray(), diagnostics.ToReadOnly());
 
                         if (entry.State != EntryState.Modified || !tableBuilder.TryModifyEntry(sourcesAndDiagnostics, stopwatch.Elapsed, inputs, entry.State))
                         {
@@ -103,7 +104,7 @@ namespace Microsoft.CodeAnalysis
             var table = context.TableBuilder.GetLatestStateTableForNode(this);
 
             // add each non-removed entry to the context
-            foreach (var ((sources, modifiedTexts, diagnostics), state, _, _) in table)
+            foreach (var ((sources, modifiedTexts, excludedSources, diagnostics), state, _, _) in table)
             {
                 if (state != EntryState.Removed)
                 {
@@ -129,6 +130,7 @@ namespace Microsoft.CodeAnalysis
                             throw new UserFunctionException(e);
                         }
                     }
+                    context.ExcludedSources.UnionWith(excludedSources);
                     context.Diagnostics.AddRange(diagnostics);
                 }
             }

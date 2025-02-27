@@ -23,6 +23,7 @@ namespace Microsoft.CodeAnalysis
                                                                          ImmutableArray<IIncrementalGeneratorOutputNode>.Empty,
                                                                          ImmutableArray<GeneratedSyntaxTree>.Empty,
                                                                          ImmutableArray<ModifiedTexts>.Empty,
+                                                                         ImmutableArray<SyntaxTree>.Empty,
                                                                          ImmutableArray<Diagnostic>.Empty,
                                                                          ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
                                                                          ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
@@ -39,6 +40,7 @@ namespace Microsoft.CodeAnalysis
                    outputNodes,
                    ImmutableArray<GeneratedSyntaxTree>.Empty,
                    ImmutableArray<ModifiedTexts>.Empty,
+                   ImmutableArray<SyntaxTree>.Empty,
                    ImmutableArray<Diagnostic>.Empty,
                    ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
                    ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
@@ -54,6 +56,7 @@ namespace Microsoft.CodeAnalysis
             ImmutableArray<IIncrementalGeneratorOutputNode> outputNodes,
             ImmutableArray<GeneratedSyntaxTree> generatedTrees,
             ImmutableArray<ModifiedTexts> modifiedTexts,
+            ImmutableArray<SyntaxTree> excludedTrees,
             ImmutableArray<Diagnostic> diagnostics,
             ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> executedSteps,
             ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> outputSteps,
@@ -67,6 +70,7 @@ namespace Microsoft.CodeAnalysis
             this.OutputNodes = outputNodes;
             this.GeneratedTrees = generatedTrees;
             this.ModifiedTexts = modifiedTexts;
+            this.ExcludedTrees = excludedTrees;
             this.Diagnostics = diagnostics;
             this.ExecutedSteps = executedSteps;
             this.OutputSteps = outputSteps;
@@ -77,6 +81,7 @@ namespace Microsoft.CodeAnalysis
 
         public GeneratorState WithResults(ImmutableArray<GeneratedSyntaxTree> generatedTrees,
                                           ImmutableArray<ModifiedTexts> modifiedTexts,
+                                          ImmutableArray<SyntaxTree> excludedTrees,
                                           ImmutableArray<Diagnostic> diagnostics,
                                           ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> executedSteps,
                                           ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> outputSteps,
@@ -88,6 +93,7 @@ namespace Microsoft.CodeAnalysis
                                       this.OutputNodes,
                                       generatedTrees,
                                       modifiedTexts,
+                                      excludedTrees,
                                       diagnostics,
                                       executedSteps,
                                       outputSteps,
@@ -103,6 +109,7 @@ namespace Microsoft.CodeAnalysis
                                       this.OutputNodes,
                                       ImmutableArray<GeneratedSyntaxTree>.Empty,
                                       ImmutableArray<ModifiedTexts>.Empty,
+                                      ImmutableArray<SyntaxTree>.Empty,
                                       ImmutableArray.Create(error),
                                       ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
                                       ImmutableDictionary<string, ImmutableArray<IncrementalGeneratorRunStep>>.Empty,
@@ -114,6 +121,8 @@ namespace Microsoft.CodeAnalysis
         internal bool Initialized { get; }
 
         internal ImmutableArray<GeneratedSyntaxTree> PostInitTrees { get; }
+
+        internal ImmutableArray<SyntaxTree> ExcludedTrees { get; }
 
         internal ImmutableArray<SyntaxInputNode> InputNodes { get; }
 

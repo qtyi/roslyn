@@ -15,11 +15,11 @@ namespace Microsoft.CodeAnalysis
     {
         public ImmutableArray<TextChange> TextChanges { get; }
 
-        public string FilePath { get; }
+        public SyntaxTree SyntaxTree { get; }
 
-        public ModifiedTexts(string filePath, ImmutableArray<TextChange> textChanges)
+        public ModifiedTexts(SyntaxTree tree, ImmutableArray<TextChange> textChanges)
         {
-            this.FilePath = filePath;
+            this.SyntaxTree = tree;
             this.TextChanges = textChanges;
         }
     }
