@@ -292,7 +292,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <returns>True if the types are equivalent.</returns>
         internal virtual bool Equals(TypeSymbol t2, TypeCompareKind compareKind)
         {
-            return ReferenceEquals(this, t2);
+            return ReferenceEquals(this, t2) || OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, compareKind);
+        }
+
+        public bool OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(TypeSymbol t2, TypeCompareKind compareKind)
+        {
+            if (t2 is null)
+            {
+                return false;
+            }
+
+            if (HasAliasConstructAnnotation || t2.HasAliasConstructAnnotation)
+            {
+                return OriginalTypeSymbolWithNoAliasConstructAnnotation.Equals(t2.OriginalTypeSymbolWithNoAliasConstructAnnotation, compareKind);
+            }
+
+            return false;
         }
 
         public sealed override bool Equals(Symbol other, TypeCompareKind compareKind)

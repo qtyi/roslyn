@@ -747,7 +747,7 @@ End Module
             Assert.Equal("System.String", semantics.GetSymbolInfo(typeOfExpressions(0).Type).Symbol.ToDisplayString(SymbolDisplayFormat.TestFormat))
 
             ' Dim isInteger = TypeOf o Is HRESULT '1
-            Dim aliasSymbol = semantics.GetAliasInfo(CType(typeOfExpressions(1).Type, IdentifierNameSyntax))
+            Dim aliasSymbol = semantics.GetAliasInfo(CType(typeOfExpressions(1).Type, IdentifierNameSyntax)).Alias
             Assert.Equal(SymbolKind.Alias, aliasSymbol.Kind)
             Assert.Equal("HRESULT", aliasSymbol.Name)
             Assert.Equal("System.Int32", semantics.GetSymbolInfo(typeOfExpressions(1).Type).Symbol.ToDisplayString(SymbolDisplayFormat.TestFormat))

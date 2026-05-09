@@ -15,7 +15,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             clause As TypeParameterConstraintClauseSyntax,
             diagnostics As BindingDiagnosticBag
         ) As ImmutableArray(Of TypeParameterConstraint)
-            Debug.Assert((containingSymbol.Kind = SymbolKind.NamedType) OrElse (containingSymbol.Kind = SymbolKind.Method))
+            Debug.Assert((containingSymbol.Kind = SymbolKind.NamedType) OrElse (containingSymbol.Kind = SymbolKind.Method) OrElse (containingSymbol.Kind = SymbolKind.Alias))
 
             If clause Is Nothing Then
                 Return ImmutableArray(Of TypeParameterConstraint).Empty
@@ -45,7 +45,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             constraintsBuilder As ArrayBuilder(Of TypeParameterConstraint),
             diagnostics As BindingDiagnosticBag
         )
-            Debug.Assert((containingSymbol.Kind = SymbolKind.NamedType) OrElse (containingSymbol.Kind = SymbolKind.Method))
+            Debug.Assert((containingSymbol.Kind = SymbolKind.NamedType) OrElse (containingSymbol.Kind = SymbolKind.Method) OrElse (containingSymbol.Kind = SymbolKind.Alias))
 
             Select Case syntax.Kind
                 Case SyntaxKind.NewConstraint
@@ -82,8 +82,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                 Case SyntaxKind.TypeConstraint
                     Dim typeOrAlias = BindTypeOrAliasSyntax(DirectCast(syntax, TypeConstraintSyntax).Type, diagnostics)
-                    Debug.Assert(typeOrAlias IsNot Nothing)
-                    Dim constraintType = TryCast(typeOrAlias.UnwrapAlias(), TypeSymbol)
+                    Debug.Assert(Not typeOrAlias.IsDefault)
+                    Dim constraintType = TryCast(UnwrapAlias(typeOrAlias).Symbol, TypeSymbol)
                     If constraintType Is Nothing Then
                         ReportDiagnostic(diagnostics, syntax, ERRID.ERR_UnrecognizedType)
                     Else

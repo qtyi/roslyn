@@ -75,6 +75,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Serialization
             Dim deterministic = tuple.deterministic
             Dim publicSign = tuple.publicSign
             Dim metadataImportOptions = tuple.metadataImportOptions
+            Dim friendAccessibleAssemblyPublicKeys = tuple.friendAccessibleAssemblyPublicKeys
             Dim xmlReferenceResolver = tuple.xmlReferenceResolver
             Dim sourceReferenceResolver = tuple.sourceReferenceResolver
             Dim metadataReferenceResolver = tuple.metadataReferenceResolver
@@ -99,7 +100,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Serialization
                                                      cryptoKeyContainer, cryptoKeyFile, cryptoPublicKey, delaySign,
                                                      platform, generalDiagnosticOption, specificDiagnosticOptions, concurrentBuild, deterministic,
                                                      xmlReferenceResolver, sourceReferenceResolver, metadataReferenceResolver, assemblyIdentityComparer, strongNameProvider,
-                                                     publicSign, reportSuppressedDiagnostics, metadataImportOptions)
+                                                     publicSign, reportSuppressedDiagnostics, metadataImportOptions, friendAccessibleAssemblyPublicKeys)
         End Function
 
         Public Overrides Function ReadParseOptionsFrom(reader As ObjectReader, cancellationToken As CancellationToken) As ParseOptions

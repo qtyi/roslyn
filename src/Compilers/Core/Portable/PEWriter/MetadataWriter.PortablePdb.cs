@@ -338,8 +338,9 @@ namespace Microsoft.Cci
                 Debug.Assert(import.TargetTypeOpt == null);
 
                 // <import> ::= ImportXmlNamespace <alias> <target-namespace>
+                Debug.Assert(import.AliasOpt.HasValue);
                 writer.WriteByte((byte)ImportDefinitionKind.ImportXmlNamespace);
-                writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt)));
+                writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt.Value.ToString())));
                 writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.TargetXmlNamespaceOpt)));
             }
             else if (import.TargetTypeOpt != null)
@@ -347,11 +348,14 @@ namespace Microsoft.Cci
                 Debug.Assert(import.TargetNamespaceOpt == null);
                 Debug.Assert(import.TargetAssemblyOpt == null);
 
-                if (import.AliasOpt != null)
+                if (import.AliasOpt.HasValue)
                 {
+                    // WORKAROUND(sanmuru): We have already skipped those generic alias imports.
+                    Debug.Assert(import.AliasOpt.Value.Arity == 0);
+
                     // <import> ::= AliasType <alias> <target-type>
                     writer.WriteByte((byte)ImportDefinitionKind.AliasType);
-                    writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt)));
+                    writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt.Value.ToString())));
                 }
                 else
                 {
@@ -365,11 +369,11 @@ namespace Microsoft.Cci
             {
                 if (import.TargetAssemblyOpt != null)
                 {
-                    if (import.AliasOpt != null)
+                    if (import.AliasOpt.HasValue)
                     {
                         // <import> ::= AliasAssemblyNamespace <alias> <target-assembly> <target-namespace>
                         writer.WriteByte((byte)ImportDefinitionKind.AliasAssemblyNamespace);
-                        writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt)));
+                        writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt.Value.ToString())));
                     }
                     else
                     {
@@ -381,11 +385,11 @@ namespace Microsoft.Cci
                 }
                 else
                 {
-                    if (import.AliasOpt != null)
+                    if (import.AliasOpt.HasValue)
                     {
                         // <import> ::= AliasNamespace <alias> <target-namespace>
                         writer.WriteByte((byte)ImportDefinitionKind.AliasNamespace);
-                        writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt)));
+                        writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt.Value.ToString())));
                     }
                     else
                     {
@@ -401,11 +405,11 @@ namespace Microsoft.Cci
             else
             {
                 // <import> ::= ImportReferenceAlias <alias>
-                Debug.Assert(import.AliasOpt != null);
+                Debug.Assert(import.AliasOpt.HasValue);
                 Debug.Assert(import.TargetAssemblyOpt == null);
 
                 writer.WriteByte((byte)ImportDefinitionKind.ImportAssemblyReferenceAlias);
-                writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt)));
+                writer.WriteCompressedInteger(MetadataTokens.GetHeapOffset(_debugMetadataOpt.GetOrAddBlobUTF8(import.AliasOpt.Value.ToString())));
             }
         }
 

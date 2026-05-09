@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             INamespaceOrTypeSymbol symbol,
             ArrayBuilder<SymbolDisplayPart> builder)
         {
-            var alias = GetAliasSymbol(symbol);
+            var alias = GetAliasSymbol(symbol, out var typeArguments);
             if (alias != null)
             {
                 Debug.Assert(IsMinimizing);
@@ -30,14 +30,18 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // first
                 var aliasName = alias.Name;
 
-                var boundSymbols = SemanticModelOpt.LookupNamespacesAndTypes(PositionOpt, name: aliasName);
-
-                if (boundSymbols.Length == 1)
+                var foundSymbols = SemanticModelOpt.LookupNamespacesAndTypes(PositionOpt, name: aliasName).Where(s => s is IAliasSymbol a && a.Arity == alias.Arity);
+                if (foundSymbols.IsSingle())
                 {
-                    var boundAlias = boundSymbols[0] as IAliasSymbol;
-                    if ((object?)boundAlias != null && alias.Target.Equals(symbol))
+                    if (alias.Arity == 0 && alias.Target.Equals(symbol))
                     {
                         builder.Add(CreatePart(SymbolDisplayPartKind.AliasName, alias, aliasName));
+                        return true;
+                    }
+                    else if (alias.Arity != 0 && alias.Construct([.. typeArguments]).Equals(symbol))
+                    {
+                        builder.Add(CreatePart(SymbolDisplayPartKind.AliasName, alias, aliasName));
+                        AddTypeArguments(typeArguments, default);
                         return true;
                     }
                 }
@@ -169,11 +173,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             AddNameAndTypeArgumentsOrParameters(symbol);
         }
 
-        private IDictionary<INamespaceOrTypeSymbol, IAliasSymbol> CreateAliasMap()
+        private AliasMap CreateAliasMap()
         {
             if (!this.IsMinimizing)
             {
-                return SpecializedCollections.EmptyDictionary<INamespaceOrTypeSymbol, IAliasSymbol>();
+                return CodeAnalysis.AliasMap.Empty;
             }
 
             // Walk up the ancestors from the current position. If this is a speculative
@@ -211,7 +215,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             startNode ??= token.Parent;
 
-            var builder = ImmutableDictionary.CreateBuilder<INamespaceOrTypeSymbol, IAliasSymbol>();
+            var builder = ImmutableArray.CreateBuilder<IAliasSymbol>();
             while (startNode != null)
             {
                 var usings = (startNode as BaseNamespaceDeclarationSyntax)?.Usings;
@@ -221,11 +225,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     foreach (var u in usings)
                     {
-                        if (u.Alias != null
-                            && semanticModel.GetDeclaredSymbol(u) is IAliasSymbol aliasSymbol
-                            && !builder.ContainsKey(aliasSymbol.Target))
+                        if (u.Identifier != default
+                            && semanticModel.GetDeclaredSymbol(u) is IAliasSymbol aliasSymbol)
                         {
-                            builder.Add(aliasSymbol.Target, aliasSymbol);
+                            builder.Add(aliasSymbol);
                         }
                     }
                 }
@@ -233,7 +236,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 startNode = startNode.Parent;
             }
 
-            return builder.ToImmutable();
+            return new AliasMap(builder.ToImmutable());
         }
 
         private ITypeSymbol? GetRangeVariableType(IRangeVariableSymbol symbol)
@@ -302,7 +305,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             return symbolName;
         }
 
-        private IDictionary<INamespaceOrTypeSymbol, IAliasSymbol> AliasMap
+        private AliasMap AliasMap
         {
             get
             {
@@ -317,10 +320,10 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
-        private IAliasSymbol? GetAliasSymbol(INamespaceOrTypeSymbol symbol)
+        private IAliasSymbol? GetAliasSymbol(INamespaceOrTypeSymbol symbol, out ImmutableArray<ITypeSymbol> typeArguments)
         {
             IAliasSymbol? result;
-            return AliasMap.TryGetValue(symbol, out result) ? result : null;
+            return AliasMap.TryGetAlias(symbol, out result, out typeArguments, mustResolveAllTypeParameters: false) ? result : null;
         }
     }
 }

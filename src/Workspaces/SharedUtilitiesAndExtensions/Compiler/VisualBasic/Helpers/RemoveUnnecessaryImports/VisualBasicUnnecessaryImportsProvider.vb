@@ -111,7 +111,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.RemoveUnnecessaryImports
                 predicate As Func(Of SyntaxNode, Boolean),
                 cancellationToken As CancellationToken)
 
-            Dim semanticInfo = semanticModel.GetSymbolInfo(clause.Name, cancellationToken)
+            Dim semanticInfo = semanticModel.GetSymbolInfo(clause.NamespaceOrType, cancellationToken)
 
             Dim namespaceOrType = TryCast(semanticInfo.Symbol, INamespaceOrTypeSymbol)
             If namespaceOrType Is Nothing Then
@@ -134,7 +134,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.RemoveUnnecessaryImports
                 predicate As Func(Of SyntaxNode, Boolean),
                 cancellationToken As CancellationToken)
 
-            Dim semanticInfo = semanticModel.GetSymbolInfo(clause.Name, cancellationToken)
+            Dim semanticInfo = semanticModel.GetSymbolInfo(clause.NamespaceOrType, cancellationToken)
 
             Dim namespaceOrType = TryCast(semanticInfo.Symbol, INamespaceOrTypeSymbol)
             If namespaceOrType Is Nothing Then

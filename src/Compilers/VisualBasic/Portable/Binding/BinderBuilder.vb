@@ -417,6 +417,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         CreateBinderForType(moduleSymbol, tree, methodSymbol.ContainingType))
         End Function
 
+        ' Create a binder for the given alias imports clause. Alias type parameters are in scope.
+        Public Shared Function CreateBinderForAliasImportsClause(aliasSymbol As AliasSymbol, containingBinder As Binder) As Binder
+            Debug.Assert(containingBinder.SourceModule Is aliasSymbol.ContainingModule)
+
+            If aliasSymbol.IsGenericAlias Then
+                Return New AliasTypeParametersBinder(containingBinder, aliasSymbol.TypeParameters)
+            Else
+                Return containingBinder
+            End If
+        End Function
+
         Public Shared Function CreateBinderForInitializer(containingBinder As Binder,
                                                           fieldOrProperty As Symbol,
                                                           additionalFieldsOrProperties As ImmutableArray(Of Symbol)) As Binder

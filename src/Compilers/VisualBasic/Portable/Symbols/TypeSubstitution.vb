@@ -567,7 +567,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                          (DirectCast(targetGenericDefinition, MethodSymbol).IsGenericMethod OrElse
                             (targetGenericDefinition.ContainingType.IsOrInGenericType() AndAlso parent IsNot Nothing))) OrElse
                          ((targetGenericDefinition.Kind = SymbolKind.NamedType OrElse targetGenericDefinition.Kind = SymbolKind.ErrorType) AndAlso
-                          DirectCast(targetGenericDefinition, NamedTypeSymbol).IsOrInGenericType()))
+                          DirectCast(targetGenericDefinition, NamedTypeSymbol).IsOrInGenericType()) OrElse
+                         (targetGenericDefinition.Kind = SymbolKind.Alias AndAlso
+                          DirectCast(targetGenericDefinition, AliasSymbol).IsGenericAlias))
             Debug.Assert(parent Is Nothing OrElse targetGenericDefinition.ContainingSymbol Is parent.TargetGenericDefinition)
 
             _pairs = pairs

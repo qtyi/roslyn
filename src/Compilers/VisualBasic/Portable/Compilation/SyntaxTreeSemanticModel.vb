@@ -15,6 +15,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports TypeKind = Microsoft.CodeAnalysis.TypeKind
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -454,12 +455,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
         End Function
 
-        Private Function GetTypeOrNamespaceSymbolNotInMember(expression As TypeSyntax) As Symbol
+        Private Function GetTypeOrNamespaceSymbolNotInMember(expression As TypeSyntax) As SymbolWithAnnotationSymbols
             ' Set up the binding context.
             Dim binder As Binder = GetEnclosingBinder(expression.SpanStart)
 
             ' Attempt to bind the type or namespace
-            Dim resultSymbol As Symbol
+            Dim resultSymbol As SymbolWithAnnotationSymbols
             If SyntaxFacts.IsInTypeOnlyContext(expression) Then
                 resultSymbol = binder.BindTypeOrAliasSyntax(expression, BindingDiagnosticBag.Discarded)
             Else
@@ -473,13 +474,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Get the symbol info of reference from 'cref' or 'name' attribute value
         Private Function GetSymbolInfoForCrefOrNameAttributeReference(node As VisualBasicSyntaxNode, options As SymbolInfoOptions) As SymbolInfo
             Dim typeParameters As ImmutableArray(Of Symbol) = Nothing
-            Dim result As ImmutableArray(Of Symbol) = GetCrefOrNameAttributeReferenceSymbols(node, (options And SymbolInfoOptions.ResolveAliases) = 0, typeParameters)
+            Dim result As ImmutableArray(Of SymbolWithAnnotationSymbols) = GetCrefOrNameAttributeReferenceSymbols(node, (options And SymbolInfoOptions.ResolveAliases) = 0, typeParameters)
 
             If result.IsDefaultOrEmpty Then
                 If typeParameters.IsDefaultOrEmpty Then
                     Return SymbolInfo.None
                 Else
-                    Return SymbolInfoFactory.Create(typeParameters, LookupResultKind.NotReferencable)
+                    Return SymbolInfoFactory.Create(typeParameters.WithDefaultAnnotationSymbols(), LookupResultKind.NotReferencable)
                 End If
             End If
 
@@ -489,12 +490,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Return retValue
                 End If
 
-                result = ImmutableArray(Of Symbol).Empty
+                result = ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
-            Dim symbolsBuilder = ArrayBuilder(Of Symbol).GetInstance()
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
             symbolsBuilder.AddRange(result)
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             symbolsBuilder.Free()
 
             If symbols.Length = 0 Then
@@ -507,10 +508,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Get the type info of reference from 'cref' or 'name' attribute value
         Private Function GetTypeInfoForCrefOrNameAttributeReference(name As TypeSyntax) As VisualBasicTypeInfo
             Dim typeParameters As ImmutableArray(Of Symbol) = Nothing
-            Dim result As ImmutableArray(Of Symbol) = GetCrefOrNameAttributeReferenceSymbols(name, preserveAlias:=False, typeParameters:=typeParameters)
+            Dim result As ImmutableArray(Of SymbolWithAnnotationSymbols) = GetCrefOrNameAttributeReferenceSymbols(name, preserveAlias:=False, typeParameters:=typeParameters)
 
             If result.IsDefaultOrEmpty Then
-                result = typeParameters
+                result = typeParameters.WithDefaultAnnotationSymbols()
                 If result.IsDefaultOrEmpty Then
                     Return VisualBasicTypeInfo.None
                 End If
@@ -520,9 +521,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Return VisualBasicTypeInfo.None
             End If
 
-            Dim resultSymbol As Symbol = result(0)
+            Dim resultSymbol As SymbolWithAnnotationSymbols = result(0)
 
-            Select Case resultSymbol.Kind
+            Select Case resultSymbol.Symbol.Kind
                 Case SymbolKind.ArrayType,
                      SymbolKind.TypeParameter,
                      SymbolKind.NamedType
@@ -542,7 +543,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' <returns>Referenced symbols, less type parameters.</returns>
         Private Function GetCrefOrNameAttributeReferenceSymbols(node As VisualBasicSyntaxNode,
                                                                 preserveAlias As Boolean,
-                                                                <Out> ByRef typeParameters As ImmutableArray(Of Symbol)) As ImmutableArray(Of Symbol)
+                                                                <Out> ByRef typeParameters As ImmutableArray(Of Symbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             typeParameters = ImmutableArray(Of Symbol).Empty
 
             ' We only allow a certain list of node kinds to be processed here
@@ -598,7 +599,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             docCommentBinder = SemanticModelBinder.Mark(docCommentBinder, IgnoresAccessibility)
 
             If isCrefAttribute Then
-                Dim symbols As ImmutableArray(Of Symbol)
+                Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)
                 Dim isTopLevel As Boolean
                 If node.Kind = SyntaxKind.CrefReference Then
                     isTopLevel = True
@@ -609,18 +610,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 End If
 
                 If isTopLevel Then
-                    Dim symbolsBuilder As ArrayBuilder(Of Symbol) = Nothing
+                    Dim symbolsBuilder As ArrayBuilder(Of SymbolWithAnnotationSymbols) = Nothing
                     Dim typeParametersBuilder As ArrayBuilder(Of Symbol) = Nothing
 
                     For i = 0 To symbols.Length - 1
                         Dim symbol = symbols(i)
-                        If symbol.Kind = SymbolKind.TypeParameter Then
+                        If symbol.Symbol.Kind = SymbolKind.TypeParameter Then
                             If symbolsBuilder Is Nothing Then
-                                symbolsBuilder = ArrayBuilder(Of Symbol).GetInstance(i)
+                                symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance(i)
                                 typeParametersBuilder = ArrayBuilder(Of Symbol).GetInstance()
                                 symbolsBuilder.AddRange(symbols, i)
                             End If
-                            typeParametersBuilder.Add(DirectCast(symbol, TypeParameterSymbol))
+                            typeParametersBuilder.Add(DirectCast(symbol.Symbol, TypeParameterSymbol))
                         ElseIf symbolsBuilder IsNot Nothing Then
                             symbolsBuilder.Add(symbol)
                         End If
@@ -640,14 +641,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ' Get the symbol info of type or namespace syntax that is outside a member body
         Private Function GetTypeOrNamespaceSymbolInfoNotInMember(expression As TypeSyntax, options As SymbolInfoOptions) As SymbolInfo
-            Dim resultSymbol As Symbol = GetTypeOrNamespaceSymbolNotInMember(expression)
+            Dim resultSymbol As SymbolWithAnnotationSymbols = GetTypeOrNamespaceSymbolNotInMember(expression)
 
             ' Deal with the case of a namespace group. We may need to bind more in order to see if the ambiguity can be resolved.
-            If resultSymbol.Kind = SymbolKind.Namespace AndAlso
+            If resultSymbol.Symbol.Kind = SymbolKind.Namespace AndAlso
                expression.Parent IsNot Nothing AndAlso
                expression.Parent.Kind = SyntaxKind.QualifiedName AndAlso
                DirectCast(expression.Parent, QualifiedNameSyntax).Left Is expression Then
-                Dim ns = DirectCast(resultSymbol, NamespaceSymbol)
+                Dim ns = DirectCast(resultSymbol.Symbol, NamespaceSymbol)
 
                 If ns.NamespaceKind = NamespaceKindNamespaceGroup Then
                     Dim parentInfo As SymbolInfo = GetTypeOrNamespaceSymbolInfoNotInMember(DirectCast(expression.Parent, QualifiedNameSyntax), Nothing)
@@ -669,7 +670,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         End If
 
                         If namespaces IsNot Nothing AndAlso namespaces.Count < ns.ConstituentNamespaces.Length Then
-                            resultSymbol = DirectCast(ns, MergedNamespaceSymbol).Shrink(namespaces.Keys)
+                            resultSymbol = DirectCast(ns, MergedNamespaceSymbol).Shrink(namespaces.Keys).WithDefaultAnnotationSymbols()
                         End If
                     End If
                 End If
@@ -692,7 +693,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ' Get the symbol info of type or namespace syntax that is outside a member body
         Private Function GetTypeOrNamespaceTypeInfoNotInMember(expression As TypeSyntax) As VisualBasicTypeInfo
-            Dim resultSymbol As Symbol = GetTypeOrNamespaceSymbolNotInMember(expression)
+            Dim resultSymbol As SymbolWithAnnotationSymbols = GetTypeOrNamespaceSymbolNotInMember(expression)
 
             ' Create the result.
             Return GetTypeInfoForSymbol(resultSymbol)
@@ -787,7 +788,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Private Function GetImplementedMemberSymbolInfo(memberName As QualifiedNameSyntax, options As SymbolInfoOptions) As SymbolInfo
             Dim implementedMemberBuilder As ArrayBuilder(Of Symbol) = ArrayBuilder(Of Symbol).GetInstance()
             Dim resultKind As LookupResultKind = GetImplementedMemberAndResultKind(implementedMemberBuilder, memberName)
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(implementedMemberBuilder, options)
+
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+            symbolsBuilder.AddRange(implementedMemberBuilder.ToImmutable().WithDefaultAnnotationSymbols())
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             implementedMemberBuilder.Free()
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
@@ -801,7 +805,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                                                                 propertySymbolBuilder:=Nothing,
                                                                                                 handlesClause:=handlesClause)
 
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(builder, options)
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+            symbolsBuilder.AddRange(builder.ToImmutable().WithDefaultAnnotationSymbols())
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             builder.Free()
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
@@ -815,7 +821,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                                                                 propertySymbolBuilder:=Nothing,
                                                                                                 handlesClause:=handlesClause)
 
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(builder, options)
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+            symbolsBuilder.AddRange(builder.ToImmutable().WithDefaultAnnotationSymbols())
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             builder.Free()
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
@@ -829,7 +837,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                                                                 propertySymbolBuilder:=builder,
                                                                                                 handlesClause:=handlesClause)
 
-            Dim symbols As ImmutableArray(Of Symbol) = RemoveErrorTypesAndDuplicates(builder, options)
+            Dim symbolsBuilder = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+            symbolsBuilder.AddRange(builder.ToImmutable().WithDefaultAnnotationSymbols())
+            Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = RemoveErrorTypesAndDuplicates(symbolsBuilder, options)
             builder.Free()
 
             Return SymbolInfoFactory.Create(symbols, resultKind)
@@ -1316,15 +1326,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
 
             Dim aliasName As String = declarationSyntax.Alias.Identifier.ValueText
+            Dim aliasArity As Integer = If(declarationSyntax.Alias.TypeParameterList Is Nothing, 0, declarationSyntax.Alias.TypeParameterList.Parameters.Count)
 
             If Not String.IsNullOrEmpty(aliasName) Then
                 Dim sourceFile = Me._sourceModule.TryGetSourceFile(Me.SyntaxTree)
                 Debug.Assert(sourceFile IsNot Nothing)
 
-                Dim aliasImports As IReadOnlyDictionary(Of String, AliasAndImportsClausePosition) = sourceFile.AliasImportsOpt
+                Dim aliasImports As IReadOnlyDictionary(Of NameWithArity, AliasAndImportsClausePosition) = sourceFile.AliasImportsOpt
                 Dim symbol As AliasAndImportsClausePosition = Nothing
 
-                If aliasImports IsNot Nothing AndAlso aliasImports.TryGetValue(aliasName, symbol) Then
+                If aliasImports IsNot Nothing AndAlso aliasImports.TryGetValue(New NameWithArity(aliasName, aliasArity), symbol) Then
                     '  make sure the symbol is declared inside declarationSyntax node
                     For Each location In symbol.Alias.Locations
                         If location.IsInSource AndAlso location.SourceTree Is _syntaxTree AndAlso declarationSyntax.Span.Contains(location.SourceSpan) Then
@@ -1335,10 +1346,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     ' If the alias name was in the map but the location didn't match, then the syntax declares a duplicate alias.
                     ' We'll return a new AliasSymbol to improve the API experience.
                     Dim binder As Binder = GetEnclosingBinder(declarationSyntax.SpanStart)
-                    Dim targetSymbol As NamespaceOrTypeSymbol = binder.BindNamespaceOrTypeSyntax(declarationSyntax.Name, BindingDiagnosticBag.Discarded)
-                    If targetSymbol IsNot Nothing Then
-                        Return New AliasSymbol(binder.Compilation, binder.ContainingNamespaceOrType, aliasName, targetSymbol, declarationSyntax.GetLocation())
-                    End If
+                    Return New SourceAliasSymbol(binder, declarationSyntax, isDuplicate:=True)
                 End If
             End If
 

@@ -106,7 +106,7 @@ internal sealed class PropertySymbolReferenceFinder : AbstractMethodOrPropertyOr
 
     protected sealed override async Task DetermineDocumentsToSearchAsync<TData>(
         IPropertySymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

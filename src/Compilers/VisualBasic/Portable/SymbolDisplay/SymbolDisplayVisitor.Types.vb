@@ -279,7 +279,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' Unfortunately, this will only work for VB symbols.  The degraded experience for non-VB symbols seems acceptable for now.
             Dim isMissingMetadataType As Boolean = TypeOf symbol Is MissingMetadataTypeSymbol
 
-            If Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes) Then
+            If Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases) Then
                 If symbol.Arity > 0 Then
                     Dim suffix As String = MetadataHelpers.GetAritySuffix(symbol.Arity)
                     Dim vbNamedType = TryCast(symbol, NamedTypeSymbol)

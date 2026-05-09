@@ -9,6 +9,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Runtime.InteropServices
 Imports System.Threading
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -66,11 +67,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return False
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindInsideCrefAttributeValue(reference As CrefReferenceSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             ' If the node has trailing syntax nodes, it should report error, unless the name 
             ' is a VB intrinsic type (which ensures compatibility with Dev11)
             If HasTrailingSkippedTokensAndShouldReportError(reference) Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             If reference.Signature Is Nothing Then
@@ -81,17 +82,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' such as in [cref="List(Of Action(Of A))"], because these generic arguments actually 
             ' define type parameters to be used in signature part and return value
             If NameSyntaxHasComplexGenericArguments(reference.Name) Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
-            Dim symbols = ArrayBuilder(Of Symbol).GetInstance
+            Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance
 
             ' Bind the name part and collect type parameters
             Dim typeParameters As New Dictionary(Of String, CrefTypeParameterSymbol)(CaseInsensitiveComparison.Comparer)
             CollectCrefNameSymbolsStrict(reference.Name, reference.Signature.ArgumentTypes.Count, typeParameters, symbols, preserveAliases, useSiteInfo)
             If symbols.Count = 0 Then
                 symbols.Free()
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             RemoveOverriddenMethodsAndProperties(symbols)
@@ -110,14 +111,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim goodPointer As Integer = 0
 
             While candidatePointer < symbols.Count
-                Dim candidateSymbol As Symbol = symbols(candidatePointer)
+                Dim candidateSymbol As SymbolWithAnnotationSymbols = symbols(candidatePointer)
 
                 ' NOTE: we do a very simple signature check and 
                 '       avoid using signature comparer
 
-                Select Case candidateSymbol.Kind
+                Select Case candidateSymbol.Symbol.Kind
                     Case SymbolKind.Method
-                        Dim candidateMethod = DirectCast(candidateSymbol, MethodSymbol)
+                        Dim candidateMethod = DirectCast(candidateSymbol.Symbol, MethodSymbol)
 
                         If candidateMethod.ParameterCount <> signatureParameterCount Then
                             ' Signature does not match
@@ -149,7 +150,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         Continue While
 
                     Case SymbolKind.Property
-                        Dim candidateProperty = DirectCast(candidateSymbol, PropertySymbol)
+                        Dim candidateProperty = DirectCast(candidateSymbol.Symbol, PropertySymbol)
                         Dim parameters As ImmutableArray(Of ParameterSymbol) = candidateProperty.Parameters
 
                         If parameters.Length <> signatureParameterCount Then
@@ -195,13 +196,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return symbols.ToImmutableAndFree()
         End Function
 
-        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindInsideCrefAttributeValue(name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             Dim isPartOfSignatureOrReturnType As Boolean = False
             Dim crefReference As CrefReferenceSyntax = GetEnclosingCrefReference(name, isPartOfSignatureOrReturnType)
 
             If crefReference Is Nothing Then
                 Debug.Assert(False, "Speculative binding??")
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             If crefReference.Signature Is Nothing Then
@@ -216,19 +217,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
         End Function
 
-        Private Function BindInsideCrefSignatureOrReturnType(crefReference As CrefReferenceSyntax, name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag) As ImmutableArray(Of Symbol)
+        Private Function BindInsideCrefSignatureOrReturnType(crefReference As CrefReferenceSyntax, name As TypeSyntax, preserveAliases As Boolean, diagnosticBag As BindingDiagnosticBag) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             Dim typeParameterAwareBinder As Binder = Me.GetOrCreateTypeParametersAwareBinder(crefReference)
 
-            Dim result As Symbol = typeParameterAwareBinder.BindNamespaceOrTypeOrAliasSyntax(name, If(diagnosticBag, BindingDiagnosticBag.Discarded))
-            result = typeParameterAwareBinder.BindNamespaceOrTypeOrAliasSyntax(name, If(diagnosticBag, BindingDiagnosticBag.Discarded))
+            Dim result As SymbolWithAnnotationSymbols = typeParameterAwareBinder.BindNamespaceOrTypeOrAliasSyntax(name, If(diagnosticBag, BindingDiagnosticBag.Discarded))
 
-            If result IsNot Nothing AndAlso result.Kind = SymbolKind.Alias AndAlso Not preserveAliases Then
-                result = DirectCast(result, AliasSymbol).Target
+            If Not result.IsDefault AndAlso result.Symbol.Kind = SymbolKind.Alias AndAlso Not preserveAliases Then
+                result = UnwrapAlias(result)
             End If
 
-            Return If(result Is Nothing,
-                      ImmutableArray(Of Symbol).Empty,
-                      ImmutableArray.Create(Of Symbol)(result))
+            Return If(result.IsDefault,
+                      ImmutableArray(Of SymbolWithAnnotationSymbols).Empty,
+                      ImmutableArray.Create(Of SymbolWithAnnotationSymbols)(result))
         End Function
 
         Private Function GetOrCreateTypeParametersAwareBinder(crefReference As CrefReferenceSyntax) As Binder
@@ -300,7 +300,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return GetOrCreateTypeParametersAwareBinder(typeParameters)
         End Function
 
-        Private Function BindInsideCrefReferenceName(name As TypeSyntax, argCount As Integer, preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Private Function BindInsideCrefReferenceName(name As TypeSyntax, argCount As Integer, preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             ' NOTE: in code here and below 'parent' may be Nothing in 
             '       case of speculative binding (which is NYI)
             Dim parent As VisualBasicSyntaxNode = name.Parent
@@ -311,11 +311,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                 If name.Kind = SyntaxKind.IdentifierName Then
                     Dim identifier = DirectCast(name, IdentifierNameSyntax)
-                    Return ImmutableArray.Create(Of Symbol)(New CrefTypeParameterSymbol(ordinal, identifier.Identifier.ValueText, identifier))
+                    Return ImmutableArray.Create(New CrefTypeParameterSymbol(ordinal, identifier.Identifier.ValueText, identifier).WithDefaultAnnotationSymbols())
                 End If
 
                 ' An error case
-                Return ImmutableArray.Create(Of Symbol)(New CrefTypeParameterSymbol(ordinal, StringConstants.NamedSymbolErrorName, name))
+                Return ImmutableArray.Create(New CrefTypeParameterSymbol(ordinal, StringConstants.NamedSymbolErrorName, name).WithDefaultAnnotationSymbols())
             End If
 
             ' Names considered to be checked for color-color case are Identifier or Generic names which 
@@ -365,19 +365,19 @@ lAgain:
                     ' Fall through
 
                 Case SyntaxKind.GlobalName
-                    Return ImmutableArray.Create(Of Symbol)(Me.Compilation.GlobalNamespace)
+                    Return ImmutableArray.Create(Me.Compilation.GlobalNamespace.WithDefaultAnnotationSymbols())
 
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(name.Kind)
             End Select
 
-            Dim symbols = ArrayBuilder(Of Symbol).GetInstance
+            Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance
             CollectCrefNameSymbolsStrict(name, argCount, New Dictionary(Of String, CrefTypeParameterSymbol)(IdentifierComparison.Comparer), symbols, preserveAliases, useSiteInfo)
 
             RemoveOverriddenMethodsAndProperties(symbols)
 
             If symbols.Count = 1 AndAlso checkForColorColor Then
-                Dim symbol As Symbol = symbols(0)
+                Dim symbol As Symbol = symbols(0).Symbol
                 Dim type As TypeSymbol = Nothing
 
                 Select Case symbol.Kind
@@ -405,7 +405,7 @@ lAgain:
                 End If
 
                 If replaceWithType Then
-                    symbols(0) = type
+                    symbols(0) = type.WithDefaultAnnotationSymbols()
                 End If
             End If
 
@@ -479,7 +479,7 @@ lAgain:
         Private Sub CollectCrefNameSymbolsStrict(nameFromCref As TypeSyntax,
                                                  argsCount As Integer,
                                                  typeParameters As Dictionary(Of String, CrefTypeParameterSymbol),
-                                                 symbols As ArrayBuilder(Of Symbol),
+                                                 symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                  preserveAlias As Boolean,
                                                  <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
 
@@ -513,13 +513,13 @@ lAgain:
             End Select
         End Sub
 
-        Private Sub CollectTopLevelOperatorReferenceStrict(reference As CrefOperatorReferenceSyntax, argCount As Integer, symbols As ArrayBuilder(Of Symbol), <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
+        Private Sub CollectTopLevelOperatorReferenceStrict(reference As CrefOperatorReferenceSyntax, argCount As Integer, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols), <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
             CollectOperatorsAndConversionsInType(reference, argCount, Me.ContainingType, symbols, useSiteInfo)
         End Sub
 
         Private Sub CollectSimpleNameSymbolsStrict(node As SimpleNameSyntax,
                                                    typeParameters As Dictionary(Of String, CrefTypeParameterSymbol),
-                                                   symbols As ArrayBuilder(Of Symbol),
+                                                   symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                    preserveAlias As Boolean,
                                                    <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol),
                                                    typeOrNamespaceOnly As Boolean)
@@ -562,7 +562,7 @@ lAgain:
 
         Private Sub CollectQualifiedNameSymbolsStrict(node As QualifiedNameSyntax,
                                                       typeParameters As Dictionary(Of String, CrefTypeParameterSymbol),
-                                                      symbols As ArrayBuilder(Of Symbol),
+                                                      symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                       preserveAlias As Boolean,
                                                       <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
 
@@ -586,7 +586,7 @@ lAgain:
                     allowColorColor = False
 
                 Case SyntaxKind.GlobalName
-                    symbols.Add(Me.Compilation.GlobalNamespace)
+                    symbols.Add(Me.Compilation.GlobalNamespace.WithDefaultAnnotationSymbols())
 
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(left.Kind)
@@ -599,7 +599,7 @@ lAgain:
                 Return
             End If
 
-            Dim singleSymbol As Symbol = symbols(0)
+            Dim singleSymbol As Symbol = symbols(0).Symbol
             symbols.Clear()
 
             ' We found one single symbol, we need to search for the 'right' 
@@ -641,7 +641,7 @@ lAgain:
         Private Sub CollectQualifiedOperatorReferenceSymbolsStrict(node As QualifiedCrefOperatorReferenceSyntax,
                                                                    argCount As Integer,
                                                                    typeParameters As Dictionary(Of String, CrefTypeParameterSymbol),
-                                                                   symbols As ArrayBuilder(Of Symbol),
+                                                                   symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                                    <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
 
             ' Name syntax of Cref should not have diagnostics
@@ -674,17 +674,17 @@ lAgain:
                 Return
             End If
 
-            Dim singleSymbol As Symbol = symbols(0)
+            Dim singleSymbol As SymbolWithAnnotationSymbols = symbols(0)
             symbols.Clear()
 
-            If singleSymbol.Kind = SymbolKind.Alias Then
-                singleSymbol = DirectCast(singleSymbol, AliasSymbol).Target
+            If singleSymbol.Symbol.Kind = SymbolKind.Alias Then
+                singleSymbol = UnwrapAlias(singleSymbol)
             End If
 
-            CollectOperatorsAndConversionsInType(node.Right, argCount, TryCast(singleSymbol, TypeSymbol), symbols, useSiteInfo)
+            CollectOperatorsAndConversionsInType(node.Right, argCount, TryCast(singleSymbol.Symbol, TypeSymbol), symbols, useSiteInfo)
         End Sub
 
-        Private Sub CollectConstructorsSymbolsStrict(symbols As ArrayBuilder(Of Symbol))
+        Private Sub CollectConstructorsSymbolsStrict(symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             Dim containingSymbol As Symbol = Me.ContainingMember
             If containingSymbol Is Nothing Then
                 Return
@@ -696,21 +696,21 @@ lAgain:
 
             Dim type = DirectCast(containingSymbol, NamedTypeSymbol)
             If type IsNot Nothing Then
-                symbols.AddRange(type.InstanceConstructors)
+                symbols.AddRange(type.InstanceConstructors.WithDefaultAnnotationSymbols())
             End If
             Return
         End Sub
 
-        Private Shared Sub CollectConstructorsSymbolsStrict(containingSymbol As Symbol, symbols As ArrayBuilder(Of Symbol))
+        Private Shared Sub CollectConstructorsSymbolsStrict(containingSymbol As Symbol, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             Debug.Assert(symbols.Count = 0)
             If containingSymbol.Kind = SymbolKind.NamedType Then
-                symbols.AddRange(DirectCast(containingSymbol, NamedTypeSymbol).InstanceConstructors)
+                symbols.AddRange(DirectCast(containingSymbol, NamedTypeSymbol).InstanceConstructors.WithDefaultAnnotationSymbols())
             End If
         End Sub
 
         Private Sub CollectSimpleNameSymbolsStrict(name As String,
                                                    arity As Integer,
-                                                   symbols As ArrayBuilder(Of Symbol),
+                                                   symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                    preserveAlias As Boolean,
                                                    <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol),
                                                    typeOrNamespaceOnly As Boolean)
@@ -742,14 +742,14 @@ lAgain:
                                                    allowColorColor As Boolean,
                                                    name As String,
                                                    arity As Integer,
-                                                   symbols As ArrayBuilder(Of Symbol),
+                                                   symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                    preserveAlias As Boolean,
                                                    <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
 
             Debug.Assert(Not String.IsNullOrEmpty(name))
             Debug.Assert(arity >= 0)
 
-            Dim lookupResult As LookupResult = lookupResult.GetInstance()
+            Dim lookupResult As LookupResult = LookupResult.GetInstance()
 
             Dim options As LookupOptions = LookupOptions.UseBaseReferenceAccessibility Or
                                            LookupOptions.MustNotBeReturnValueVariable Or
@@ -818,7 +818,7 @@ lAgain:
         End Sub
 
         Private Shared Sub CreateTypeParameterSymbolsAndConstructSymbols(genericName As GenericNameSyntax,
-                                                                  symbols As ArrayBuilder(Of Symbol),
+                                                                  symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                                   typeParameters As Dictionary(Of String, CrefTypeParameterSymbol))
 
             Dim arguments As SeparatedSyntaxList(Of TypeSyntax) = genericName.TypeArgumentList.Arguments
@@ -844,18 +844,18 @@ lAgain:
             Next
 
             For i = 0 To symbols.Count - 1
-                Dim symbol As Symbol = symbols(i)
+                Dim symbol As Symbol = symbols(i).Symbol
 lAgain:
                 Select Case symbol.Kind
                     Case SymbolKind.Method
                         Dim method = DirectCast(symbol, MethodSymbol)
                         Debug.Assert(method.Arity = genericName.TypeArgumentList.Arguments.Count)
-                        symbols(i) = method.Construct(typeParameterSymbols.AsImmutableOrNull.As(Of TypeSymbol))
+                        symbols(i) = method.Construct(typeParameterSymbols.AsImmutableOrNull.As(Of TypeSymbol)).WithDefaultAnnotationSymbols()
 
                     Case SymbolKind.NamedType, SymbolKind.ErrorType
                         Dim type = DirectCast(symbol, NamedTypeSymbol)
                         Debug.Assert(type.Arity = genericName.TypeArgumentList.Arguments.Count)
-                        symbols(i) = type.Construct(typeParameterSymbols.AsImmutableOrNull.As(Of TypeSymbol))
+                        symbols(i) = type.Construct(typeParameterSymbols.AsImmutableOrNull.As(Of TypeSymbol)).WithDefaultAnnotationSymbols()
 
                     Case SymbolKind.Alias
                         symbol = DirectCast(symbol, AliasSymbol).Target
@@ -864,7 +864,7 @@ lAgain:
             Next
         End Sub
 
-        Private Shared Sub CollectGoodOrAmbiguousFromLookupResult(lookupResult As LookupResult, symbols As ArrayBuilder(Of Symbol), preserveAlias As Boolean)
+        Private Shared Sub CollectGoodOrAmbiguousFromLookupResult(lookupResult As LookupResult, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols), preserveAlias As Boolean)
             Dim di As DiagnosticInfo = lookupResult.Diagnostic
 
             If TypeOf di Is AmbiguousSymbolDiagnostic Then
@@ -876,7 +876,7 @@ lAgain:
                 Debug.Assert(ambiguousSymbols.Length > 1)
 
                 For Each sym In ambiguousSymbols
-                    symbols.Add(If(preserveAlias, sym, UnwrapAlias(sym)))
+                    symbols.Add(If(preserveAlias, sym.WithDefaultAnnotationSymbols(), UnwrapAlias(sym.WithDefaultAnnotationSymbols())))
                 Next
 
             Else
@@ -887,7 +887,7 @@ lAgain:
             End If
         End Sub
 
-        Private Shared Sub CollectOperatorsAndConversionsInType(crefOperator As CrefOperatorReferenceSyntax, argCount As Integer, type As TypeSymbol, symbols As ArrayBuilder(Of Symbol),
+        Private Shared Sub CollectOperatorsAndConversionsInType(crefOperator As CrefOperatorReferenceSyntax, argCount As Integer, type As TypeSymbol, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                          <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
             If type Is Nothing Then
                 Return
@@ -1072,7 +1072,7 @@ lAgain:
         End Sub
 
         Private Shared Sub CollectOperatorsAndConversionsInType(type As TypeSymbol,
-                                                         symbols As ArrayBuilder(Of Symbol),
+                                                         symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                                          kind As MethodKind,
                                                          name1 As String,
                                                          info1 As OverloadResolution.OperatorInfo,
@@ -1082,7 +1082,7 @@ lAgain:
 
             Dim methods = ArrayBuilder(Of MethodSymbol).GetInstance()
             OverloadResolution.CollectUserDefinedOperators(type, Nothing, kind, name1, info1, name2, info2, methods, useSiteInfo)
-            symbols.AddRange(methods)
+            symbols.AddRange(methods.ToImmutable().WithDefaultAnnotationSymbols())
             methods.Free()
         End Sub
 

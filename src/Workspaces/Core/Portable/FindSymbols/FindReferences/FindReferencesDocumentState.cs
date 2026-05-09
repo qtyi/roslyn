@@ -14,12 +14,12 @@ namespace Microsoft.CodeAnalysis.FindSymbols;
 /// </summary>
 internal sealed class FindReferencesDocumentState(
     FindReferenceCache cache,
-    HashSet<string>? globalAliases)
+    HashSet<NameWithArity>? globalAliases)
 {
-    private static readonly HashSet<string> s_empty = [];
+    private static readonly HashSet<NameWithArity> s_empty = [];
 
     public readonly FindReferenceCache Cache = cache;
-    public readonly HashSet<string> GlobalAliases = globalAliases ?? s_empty;
+    public readonly HashSet<NameWithArity> GlobalAliases = globalAliases ?? s_empty;
 
     public Document Document => this.Cache.Document;
     public SyntaxNode Root => this.Cache.Root;

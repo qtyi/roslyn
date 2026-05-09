@@ -7,6 +7,7 @@ Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -92,11 +93,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' the kind of result.
         Friend ReadOnly Kind As LookupResultKind
         ' the symbol or null.
-        Friend ReadOnly Symbol As Symbol
+        Friend ReadOnly Symbol As SymbolWithAnnotationSymbols
         ' the error of the result, if it is Bag or Inaccessible or WrongArityAndStopLookup
         Friend ReadOnly Diagnostic As DiagnosticInfo
 
-        Friend Sub New(kind As LookupResultKind, symbol As Symbol, diagInfo As DiagnosticInfo)
+        Friend Sub New(kind As LookupResultKind, symbol As SymbolWithAnnotationSymbols, diagInfo As DiagnosticInfo)
             Me.Kind = kind
             Me.Symbol = symbol
             Me.Diagnostic = diagInfo
@@ -112,55 +113,55 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Get an empty result.
         Public Shared ReadOnly Empty As New SingleLookupResult(LookupResultKind.Empty, Nothing, Nothing)
 
-        Public Shared Function Good(sym As Symbol) As SingleLookupResult
+        Public Shared Function Good(sym As SymbolWithAnnotationSymbols) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.Good, sym, Nothing)
         End Function
 
         ' 2 or more ambiguous symbols.
-        Public Shared Function Ambiguous(syms As ImmutableArray(Of Symbol),
-                                    generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic)) As SingleLookupResult
+        Public Shared Function Ambiguous(syms As ImmutableArray(Of SymbolWithAnnotationSymbols),
+                                    generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic)) As SingleLookupResult
             Debug.Assert(syms.Length > 1)
             Dim diagInfo As DiagnosticInfo = generateAmbiguityDiagnostic(syms)
             Return New SingleLookupResult(LookupResultKind.Ambiguous, syms.First(), diagInfo)
         End Function
 
-        Public Shared Function WrongArityAndStopLookup(sym As Symbol, err As ERRID) As SingleLookupResult
-            Return New SingleLookupResult(LookupResultKind.WrongArityAndStopLookup, sym, New BadSymbolDiagnostic(sym, err))
+        Public Shared Function WrongArityAndStopLookup(sym As SymbolWithAnnotationSymbols, err As ERRID) As SingleLookupResult
+            Return New SingleLookupResult(LookupResultKind.WrongArityAndStopLookup, sym, New BadSymbolDiagnostic(sym.Symbol, err))
         End Function
 
         Public Shared ReadOnly EmptyAndStopLookup As New SingleLookupResult(LookupResultKind.EmptyAndStopLookup, Nothing, Nothing)
 
-        Public Shared Function WrongArityAndStopLookup(sym As Symbol, diagInfo As DiagnosticInfo) As SingleLookupResult
+        Public Shared Function WrongArityAndStopLookup(sym As SymbolWithAnnotationSymbols, diagInfo As DiagnosticInfo) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.WrongArityAndStopLookup, sym, diagInfo)
         End Function
 
-        Public Shared Function WrongArity(sym As Symbol,
+        Public Shared Function WrongArity(sym As SymbolWithAnnotationSymbols,
                                           diagInfo As DiagnosticInfo) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.WrongArity, sym, diagInfo)
         End Function
 
-        Public Shared Function WrongArity(sym As Symbol,
+        Public Shared Function WrongArity(sym As SymbolWithAnnotationSymbols,
                                           err As ERRID) As SingleLookupResult
-            Return New SingleLookupResult(LookupResultKind.WrongArity, sym, New BadSymbolDiagnostic(sym, err))
+            Return New SingleLookupResult(LookupResultKind.WrongArity, sym, New BadSymbolDiagnostic(sym.Symbol, err))
         End Function
 
         ' Gets a bad result for a symbol that doesn't match static/instance
-        Public Shared Function MustNotBeInstance(sym As Symbol, err As ERRID) As SingleLookupResult
-            Return New SingleLookupResult(LookupResultKind.MustNotBeInstance, sym, New BadSymbolDiagnostic(sym, err, Array.Empty(Of Object)))
+        Public Shared Function MustNotBeInstance(sym As SymbolWithAnnotationSymbols, err As ERRID) As SingleLookupResult
+            Return New SingleLookupResult(LookupResultKind.MustNotBeInstance, sym, New BadSymbolDiagnostic(sym.Symbol, err, Array.Empty(Of Object)))
         End Function
 
         ' Gets a bad result for a symbol that doesn't match static/instance, with no error message (special case for API-access)
-        Public Shared Function MustBeInstance(sym As Symbol) As SingleLookupResult
+        Public Shared Function MustBeInstance(sym As SymbolWithAnnotationSymbols) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.MustBeInstance, sym, Nothing)
         End Function
 
         ' Gets a inaccessible result for a symbol.
-        Public Shared Function Inaccessible(sym As Symbol,
+        Public Shared Function Inaccessible(sym As SymbolWithAnnotationSymbols,
                                             diagInfo As DiagnosticInfo) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.Inaccessible, sym, diagInfo)
         End Function
 
-        Friend Shared Function NotAnAttributeType(sym As Symbol, [error] As DiagnosticInfo) As SingleLookupResult
+        Friend Shared Function NotAnAttributeType(sym As SymbolWithAnnotationSymbols, [error] As DiagnosticInfo) As SingleLookupResult
             Return New SingleLookupResult(LookupResultKind.NotAnAttributeType, sym, [error])
         End Function
 
@@ -237,7 +238,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Private _kind As LookupResultKind
 
         ' The symbol, unless the kind is empty.
-        Private ReadOnly _symList As ArrayBuilder(Of Symbol)
+        Private ReadOnly _symList As ArrayBuilder(Of SymbolWithAnnotationSymbols)
 
         ' The diagnostic. This is always set for NonAccessible and NonViable results. It may be
         ' set for viable results.
@@ -311,13 +312,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End Get
         End Property
 
-        Public ReadOnly Property Symbols As ArrayBuilder(Of Symbol)
+        Public ReadOnly Property Symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols)
             Get
                 Return _symList
             End Get
         End Property
 
-        Public ReadOnly Property SingleSymbol As Symbol
+        Public ReadOnly Property SingleSymbol As SymbolWithAnnotationSymbols
             Get
                 Debug.Assert(HasSingleSymbol)
                 Return _symList(0)
@@ -345,7 +346,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' used by unit tests
         Friend Sub New()
             _kind = LookupResultKind.Empty
-            _symList = New ArrayBuilder(Of Symbol)
+            _symList = New ArrayBuilder(Of SymbolWithAnnotationSymbols)
             _diagInfo = Nothing
         End Sub
 
@@ -372,10 +373,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End Get
         End Property
 
-        Private Sub SetFrom(kind As LookupResultKind, sym As Symbol, diagInfo As DiagnosticInfo)
+        Private Sub SetFrom(kind As LookupResultKind, sym As SymbolWithAnnotationSymbols, diagInfo As DiagnosticInfo)
             _kind = kind
             _symList.Clear()
-            If sym IsNot Nothing Then
+            If Not sym.IsDefault Then
                 _symList.Add(sym)
             End If
             _diagInfo = diagInfo
@@ -403,18 +404,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' </summary>
         ''' <param name="s"></param>
         ''' <remarks></remarks>
-        Public Sub SetFrom(s As Symbol)
+        Public Sub SetFrom(s As SymbolWithAnnotationSymbols)
             SetFrom(SingleLookupResult.Good(s))
         End Sub
 
         ' Get a result for set of symbols. 
         ' If the set is empty, an empty result is created.
         ' If the set has one member, a good (viable) symbol is created.
+        ' If the set has two members, the first is generic alias and the second is namespace or type, a good (viable) symbol is created.
         ' If the set has more than one member, the first member is a good result, but an ambiguity error
         ' is attached with all the ambiguous symbols in it. The supplied delegate is called to generate the
         ' ambiguity error (only if the set has >1 symbol in it).
-        Public Sub SetFrom(syms As ImmutableArray(Of Symbol),
-                           generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic))
+        Public Sub SetFrom(syms As ImmutableArray(Of SymbolWithAnnotationSymbols),
+                           generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic))
             If syms.Length = 0 Then
                 ' no symbols provided. return empty result
                 Clear()
@@ -450,19 +452,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Merge two results, returning the best. If there are
         ' multiple viable results, instead produce an ambiguity between all of them.
         Public Sub MergeAmbiguous(other As LookupResult,
-                                  generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic))
+                                  generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic))
             If Me.IsGoodOrAmbiguous AndAlso other.IsGoodOrAmbiguous Then
                 ' Two viable or ambiguous results. Produce ambiguity.
-                Dim ambiguousResults = ArrayBuilder(Of Symbol).GetInstance()
+                Dim ambiguousResults = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
 
                 If TypeOf Me.Diagnostic Is AmbiguousSymbolDiagnostic Then
-                    ambiguousResults.AddRange(DirectCast(Me.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols)
+                    ambiguousResults.AddRange(DirectCast(Me.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols())
                 Else
                     ambiguousResults.AddRange(Me.Symbols)
                 End If
 
                 If TypeOf other.Diagnostic Is AmbiguousSymbolDiagnostic Then
-                    ambiguousResults.AddRange(DirectCast(other.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols)
+                    ambiguousResults.AddRange(DirectCast(other.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols())
                 Else
                     ambiguousResults.AddRange(other.Symbols)
                 End If
@@ -478,19 +480,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Merge two results, returning the best. If there are
         ' multiple viable results, instead produce an ambiguity between all of them.
         Public Sub MergeAmbiguous(other As SingleLookupResult,
-                                  generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic))
+                                  generateAmbiguityDiagnostic As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic))
             If Me.IsGoodOrAmbiguous AndAlso other.IsGoodOrAmbiguous Then
                 ' Two viable results. Produce ambiguity.
-                Dim ambiguousResults = ArrayBuilder(Of Symbol).GetInstance()
+                Dim ambiguousResults = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
 
                 If TypeOf Me.Diagnostic Is AmbiguousSymbolDiagnostic Then
-                    ambiguousResults.AddRange(DirectCast(Me.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols)
+                    ambiguousResults.AddRange(DirectCast(Me.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols())
                 Else
                     ambiguousResults.AddRange(Me.Symbols)
                 End If
 
                 If TypeOf other.Diagnostic Is AmbiguousSymbolDiagnostic Then
-                    ambiguousResults.AddRange(DirectCast(other.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols)
+                    ambiguousResults.AddRange(DirectCast(other.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols())
                 Else
                     ambiguousResults.Add(other.Symbol)
                 End If
@@ -505,21 +507,21 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ' Determine if two symbols can overload each other.
         ' Two symbols that are both methods or both properties can overload each other.
-        Public Shared Function CanOverload(sym1 As Symbol, sym2 As Symbol) As Boolean
-            Return sym1.Kind = sym2.Kind AndAlso sym1.IsOverloadable AndAlso sym2.IsOverloadable
+        Public Shared Function CanOverload(sym1 As SymbolWithAnnotationSymbols, sym2 As SymbolWithAnnotationSymbols) As Boolean
+            Return sym1.Symbol.Kind = sym2.Symbol.Kind AndAlso sym1.Symbol.IsOverloadable AndAlso sym2.Symbol.IsOverloadable
         End Function
 
         ' Determine if all property or method symbols in the current result have the "Overloads" modifier.
         ' The "Overloads" modifier is the opposite of the "Shadows" modifier.
         Public Function AllSymbolsHaveOverloads() As Boolean
             For Each sym In Symbols
-                Select Case sym.Kind
+                Select Case sym.Symbol.Kind
                     Case SymbolKind.Method
-                        If Not DirectCast(sym, MethodSymbol).IsOverloads Then
+                        If Not DirectCast(sym.Symbol, MethodSymbol).IsOverloads Then
                             Return False
                         End If
                     Case SymbolKind.Property
-                        If Not DirectCast(sym, PropertySymbol).IsOverloads Then
+                        If Not DirectCast(sym.Symbol, PropertySymbol).IsOverloads Then
                             Return False
                         End If
                 End Select
@@ -533,8 +535,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' or use the current one..
         Public Sub MergeOverloadedOrPrioritizedExtensionMethods(other As SingleLookupResult)
             Debug.Assert(Not Me.IsAmbiguous AndAlso Not other.IsAmbiguous)
-            Debug.Assert(other.Symbol.IsReducedExtensionMethod())
-            Debug.Assert(Not Me.HasSymbol OrElse Me.Symbols(0).IsReducedExtensionMethod())
+            Debug.Assert(other.Symbol.Symbol.IsReducedExtensionMethod())
+            Debug.Assert(Not Me.HasSymbol OrElse Me.Symbols(0).Symbol.IsReducedExtensionMethod())
 
             If Me.IsGood AndAlso other.IsGood Then
                 _symList.Add(other.Symbol)
@@ -624,7 +626,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' multiple viable results, either produce a result with both symbols if they can overload each other,
         ' or produce an ambiguity error otherwise.
         Public Sub MergeMembersOfTheSameType(other As SingleLookupResult, imported As Boolean)
-            Debug.Assert(Not Me.HasSymbol OrElse other.Symbol Is Nothing OrElse TypeSymbol.Equals(Me.Symbols(0).ContainingType, other.Symbol.ContainingType, TypeCompareKind.ConsiderEverything))
+            Debug.Assert(Not Me.HasSymbol OrElse other.Symbol.IsDefault OrElse TypeSymbol.Equals(Me.Symbols(0).Symbol.ContainingType, other.Symbol.Symbol.ContainingType, TypeCompareKind.ConsiderEverything))
             Debug.Assert(Not other.IsAmbiguous)
 
             If Me.IsGoodOrAmbiguous AndAlso other.IsGood Then
@@ -637,7 +639,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ElseIf Not CanOverload(Me.Symbols(0), other.Symbol) Then
                 Debug.Assert(Me.Kind = LookupResultKind.Inaccessible)
                 Debug.Assert(Me.Kind = other.Kind)
-                If Me.Symbols.All(Function(candidate, otherSymbol) candidate.DeclaredAccessibility < otherSymbol.DeclaredAccessibility, other.Symbol) Then
+                If Me.Symbols.All(Function(candidate, otherSymbol) candidate.Symbol.DeclaredAccessibility < otherSymbol.Symbol.DeclaredAccessibility, other.Symbol) Then
                     SetFrom(other)
                 End If
             Else
@@ -662,7 +664,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                     Dim i As Integer
                     For i = 0 To _symList.Count - 1
-                        Dim accessibilityCmp As Integer = CompareAccessibilityOfSymbolsConflictingInSameContainer(_symList(i), other.Symbol)
+                        Dim accessibilityCmp As Integer = CompareAccessibilityOfSymbolsConflictingInSameContainer(_symList(i).Symbol, other.Symbol.Symbol)
 
                         If accessibilityCmp = 0 Then
                             ambiguous += 1
@@ -714,7 +716,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' This function guarantees that accessibility of all ambiguous symbols,
                 ' even those dropped from the list by MergeAmbiguous is the same.
                 ' So, it is sufficient to test Accessibility of the only symbol we have. 
-                Dim accessibilityCmp As Integer = CompareAccessibilityOfSymbolsConflictingInSameContainer(_symList(0), other.Symbol)
+                Dim accessibilityCmp As Integer = CompareAccessibilityOfSymbolsConflictingInSameContainer(_symList(0).Symbol, other.Symbol.Symbol)
 
                 If accessibilityCmp < 0 Then
                     SetFrom(other)
@@ -727,7 +729,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 #If DEBUG Then
             If imported Then
                 For i = 0 To _symList.Count - 1
-                    Debug.Assert(_symList(i).DeclaredAccessibility = other.Symbol.DeclaredAccessibility)
+                    Debug.Assert(_symList(i).Symbol.DeclaredAccessibility = other.Symbol.Symbol.DeclaredAccessibility)
                 Next
             End If
 #End If
@@ -735,25 +737,25 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             MergeAmbiguous(other, s_ambiguousInTypeError)
         End Sub
 
-        Private Shared Function AreEquivalentEnumConstants(symbol1 As Symbol, symbol2 As Symbol) As Boolean
-            Debug.Assert(TypeSymbol.Equals(symbol1.ContainingType, symbol2.ContainingType, TypeCompareKind.ConsiderEverything))
-            If symbol1.Kind <> SymbolKind.Field OrElse symbol2.Kind <> SymbolKind.Field OrElse symbol1.ContainingType.TypeKind <> TypeKind.Enum Then
+        Private Shared Function AreEquivalentEnumConstants(symbol1 As SymbolWithAnnotationSymbols, symbol2 As SymbolWithAnnotationSymbols) As Boolean
+            Debug.Assert(TypeSymbol.Equals(symbol1.Symbol.ContainingType, symbol2.Symbol.ContainingType, TypeCompareKind.ConsiderEverything))
+            If symbol1.Symbol.Kind <> SymbolKind.Field OrElse symbol2.Symbol.Kind <> SymbolKind.Field OrElse symbol1.Symbol.ContainingType.TypeKind <> TypeKind.Enum Then
                 Return False
             End If
-            Dim f1 = DirectCast(symbol1, FieldSymbol)
-            Dim f2 = DirectCast(symbol2, FieldSymbol)
+            Dim f1 = DirectCast(symbol1.Symbol, FieldSymbol)
+            Dim f2 = DirectCast(symbol2.Symbol, FieldSymbol)
             Return f1.ConstantValue IsNot Nothing AndAlso f1.ConstantValue.Equals(f2.ConstantValue)
         End Function
 
         ' Create a diagnostic for ambiguous names in the same type. This is typically not possible from source, only 
         ' from metadata.
-        Private Shared ReadOnly s_ambiguousInTypeError As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic) =
-            Function(syms As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
-                Dim name As String = syms(0).Name
-                Dim container As Symbol = syms(0).ContainingSymbol
+        Private Shared ReadOnly s_ambiguousInTypeError As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic) =
+            Function(syms As ImmutableArray(Of SymbolWithAnnotationSymbols)) As AmbiguousSymbolDiagnostic
+                Dim name As String = syms(0).Symbol.Name
+                Dim container As Symbol = syms(0).Symbol.ContainingSymbol
                 Debug.Assert(container IsNot Nothing, "ContainingSymbol property of the first ambiguous symbol cannot be Nothing")
                 Dim containerKindText As String = container.GetKindText()
-                Return New AmbiguousSymbolDiagnostic(ERRID.ERR_MetadataMembersAmbiguous3, syms, name, containerKindText, container)
+                Return New AmbiguousSymbolDiagnostic(ERRID.ERR_MetadataMembersAmbiguous3, syms.WithoutAnnotationSymbols(), name, containerKindText, container)
             End Function
 
         Private Sub CompactSymbols(lost As Integer)
@@ -761,7 +763,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Dim i As Integer
 
                 For i = 0 To _symList.Count - 1
-                    If _symList(i) Is Nothing Then
+                    If _symList(i).IsDefault Then
                         Exit For
                     End If
                 Next
@@ -772,7 +774,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 If left > i Then
                     Dim j As Integer
                     For j = i + 1 To _symList.Count - 1
-                        If _symList(j) IsNot Nothing Then
+                        If Not _symList(j).IsDefault Then
                             _symList(i) = _symList(j)
                             i += 1
 
@@ -783,7 +785,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Next
 #If DEBUG Then
                     For j = j + 1 To _symList.Count - 1
-                        Debug.Assert(_symList(j) Is Nothing)
+                        Debug.Assert(_symList(j).IsDefault)
                     Next
 #End If
                 End If
@@ -792,11 +794,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
         End Sub
 
-        Private Function RemoveAmbiguousSymbols(other As Symbol, ambiguous As Integer) As Integer
+        Private Function RemoveAmbiguousSymbols(other As SymbolWithAnnotationSymbols, ambiguous As Integer) As Integer
             Dim i As Integer
 
             For i = 0 To _symList.Count - 1
-                If _symList(i) IsNot Nothing AndAlso _symList(i).DeclaredAccessibility = other.DeclaredAccessibility Then
+                If Not _symList(i).IsDefault AndAlso _symList(i).Symbol.DeclaredAccessibility = other.Symbol.DeclaredAccessibility Then
                     _symList(i) = Nothing
                     ambiguous -= 1
 
@@ -808,7 +810,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
 #If DEBUG Then
             For i = i + 1 To _symList.Count - 1
-                Debug.Assert(_symList(i) Is Nothing OrElse _symList(i).DeclaredAccessibility <> other.DeclaredAccessibility)
+                Debug.Assert(_symList(i).IsDefault OrElse _symList(i).Symbol.DeclaredAccessibility <> other.Symbol.DeclaredAccessibility)
             Next
 #End If
             Return ambiguous
@@ -870,16 +872,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             FromCorLibrary
         End Enum
 
-        Private Shared Function GetSymbolLocation(sym As Symbol, sourceModule As ModuleSymbol, options As LookupOptions) As SymbolLocation
+        Private Shared Function GetSymbolLocation(sym As SymbolWithAnnotationSymbols, sourceModule As ModuleSymbol, options As LookupOptions) As SymbolLocation
             ' Dev10 pays attention to the fact that the [sym] refers to a namespace
             ' and the namespace has a declaration in source. This needs some special handling for merged namespaces.
-            If sym.Kind = SymbolKind.Namespace Then
-                Return If(DirectCast(sym, NamespaceSymbol).IsDeclaredInSourceModule(sourceModule),
+            If sym.Symbol.Kind = SymbolKind.Namespace Then
+                Return If(DirectCast(sym.Symbol, NamespaceSymbol).IsDeclaredInSourceModule(sourceModule),
                     SymbolLocation.FromSourceModule,
                     SymbolLocation.FromReferencedAssembly)
             End If
 
-            If sym.ContainingModule Is sourceModule Then
+            If sym.Symbol.ContainingModule Is sourceModule Then
                 Return SymbolLocation.FromSourceModule
             End If
 
@@ -887,7 +889,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' Ignore duplicate types from the cor library if necessary.
                 ' (Specifically the framework assemblies loaded at runtime in
                 ' the EE may contain types also available from mscorlib.dll.)
-                Dim containingAssembly = sym.ContainingAssembly
+                Dim containingAssembly = sym.Symbol.ContainingAssembly
                 If containingAssembly Is containingAssembly.CorLibrary Then
                     Return SymbolLocation.FromCorLibrary
                 End If
@@ -917,16 +919,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             If other.IsGood Then
                 If Me.IsGood Then
                     Debug.Assert(Me.HasSingleSymbol)
-                    Debug.Assert(Me.Symbols(0).Kind <> SymbolKind.Namespace OrElse other.Symbol.Kind <> SymbolKind.Namespace) ' namespaces are supposed to be merged
-                    Return ResolveAmbiguityInTheSameNamespace(Me.Symbols(0), other.Symbol, sourceModule)
+                    Debug.Assert(Me.Symbols(0).Symbol.Kind <> SymbolKind.Namespace OrElse other.Symbol.Symbol.Kind <> SymbolKind.Namespace) ' namespaces are supposed to be merged
+                    Return ResolveAmbiguityInTheSameNamespace(Me.Symbols(0).Symbol, other.Symbol.Symbol, sourceModule)
 
                 ElseIf Me.IsAmbiguous Then
                     ' Check to see if all symbols in the ambiguous result are types, which lose to the new symbol.
                     For Each candidate In DirectCast(Me.Diagnostic, AmbiguousSymbolDiagnostic).AmbiguousSymbols
-                        Debug.Assert(candidate.Kind <> SymbolKind.Namespace OrElse other.Symbol.Kind <> SymbolKind.Namespace) ' namespaces are supposed to be merged
+                        Debug.Assert(candidate.Kind <> SymbolKind.Namespace OrElse other.Symbol.Symbol.Kind <> SymbolKind.Namespace) ' namespaces are supposed to be merged
                         If candidate.Kind = SymbolKind.Namespace Then
                             Return 0 ' namespace never loses
-                        ElseIf ResolveAmbiguityInTheSameNamespace(candidate, other.Symbol, sourceModule) >= 0 Then
+                        ElseIf ResolveAmbiguityInTheSameNamespace(candidate, other.Symbol.Symbol, sourceModule) >= 0 Then
                             Return 0
                         End If
                     Next
@@ -1008,22 +1010,22 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Function
 
         ' Create a diagnostic for ambiguous names in a namespace
-        Private Shared ReadOnly s_ambiguousInNSError As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic) =
-            Function(syms As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
-                Dim container As Symbol = syms(0).ContainingSymbol
+        Private Shared ReadOnly s_ambiguousInNSError As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic) =
+            Function(syms As ImmutableArray(Of SymbolWithAnnotationSymbols)) As AmbiguousSymbolDiagnostic
+                Dim container As Symbol = syms(0).Symbol.ContainingSymbol
                 If container.Name.Length > 0 Then
-                    Dim containers = syms.Select(Function(sym) sym.ContainingSymbol).
+                    Dim containers = syms.Select(Function(sym) sym.Symbol.ContainingSymbol).
                                      GroupBy(Function(c) c.ToDisplayString(SymbolDisplayFormat.QualifiedNameOnlyFormat), IdentifierComparison.Comparer).
                                      OrderBy(Function(group) group.Key, IdentifierComparison.Comparer).
                                      Select(Function(group) group.First())
 
                     If containers.Skip(1).Any() Then
-                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInNamespaces2, syms, syms(0).Name, New FormattedSymbolList(containers))
+                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInNamespaces2, syms.WithoutAnnotationSymbols(), syms(0).Symbol.Name, New FormattedSymbolList(containers))
                     Else
-                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInNamespace2, syms, syms(0).Name, container)
+                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInNamespace2, syms.WithoutAnnotationSymbols(), syms(0).Symbol.Name, container)
                     End If
                 Else
-                    Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInUnnamedNamespace1, syms, syms(0).Name)
+                    Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInUnnamedNamespace1, syms.WithoutAnnotationSymbols(), syms(0).Symbol.Name)
                 End If
             End Function
 
@@ -1032,7 +1034,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ''' and diagnostics retained from the current result. Typically used when constructing
         ''' a type from a symbols and type arguments.
         ''' </summary>
-        Public Sub ReplaceSymbol(newSym As Symbol)
+        Public Sub ReplaceSymbol(newSym As SymbolWithAnnotationSymbols)
+            Debug.Assert(Not newSym.IsDefault)
             _symList.Clear()
             _symList.Add(newSym)
         End Sub

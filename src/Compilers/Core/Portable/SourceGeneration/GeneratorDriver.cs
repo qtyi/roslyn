@@ -70,13 +70,43 @@ namespace Microsoft.CodeAnalysis
 
             // build the output compilation
             diagnostics = diagnosticsBag.ToReadOnlyAndFree();
+
+            ArrayBuilder<SyntaxTree> postInitTrees = ArrayBuilder<SyntaxTree>.GetInstance();
+            PooledHashSet<SyntaxTree> excludedTrees = PooledHashSet<SyntaxTree>.GetInstance();
+            ModifiedTextsCollection modifiedTexts = new ModifiedTextsCollection();
             ArrayBuilder<SyntaxTree> trees = ArrayBuilder<SyntaxTree>.GetInstance();
             foreach (var generatorState in state.GeneratorStates)
             {
-                trees.AddRange(generatorState.PostInitTrees.Select(t => t.Tree));
+                postInitTrees.AddRange(generatorState.PostInitTrees.Select(t => t.Tree));
+                excludedTrees.UnionWith(generatorState.ExcludedTrees);
+                modifiedTexts.AddRange(generatorState.ModifiedTexts);
                 trees.AddRange(generatorState.GeneratedTrees.Select(t => t.Tree));
             }
-            outputCompilation = compilation.AddSyntaxTrees(trees);
+
+            // 0) initial
+            outputCompilation = compilation;
+
+            // 1) post-init trees
+            outputCompilation = outputCompilation.AddSyntaxTrees(postInitTrees);
+            postInitTrees.Free();
+
+            // 2) exclude trees
+            outputCompilation = outputCompilation.RemoveSyntaxTrees(excludedTrees);
+            excludedTrees.Free();
+
+            // 3) modified texts
+            foreach (var modifiedText in modifiedTexts.ToImmutableAndFree())
+            {
+                var oldTree = compilation.SyntaxTrees.FirstOrDefault(t => ReferenceEquals(t, modifiedText.SyntaxTree));
+                if (oldTree is null)
+                    continue;
+
+                var newTree = oldTree.WithChangedText(oldTree.GetText(cancellationToken).WithChanges(modifiedText.TextChanges));
+                outputCompilation = outputCompilation.ReplaceSyntaxTree(oldTree, newTree);
+            }
+
+            // 4) additional trees
+            outputCompilation = outputCompilation.AddSyntaxTrees(trees);
             trees.Free();
 
             return FromState(state);
@@ -322,10 +352,10 @@ namespace Microsoft.CodeAnalysis
                 {
                     // We do not support incremental step tracking for v1 generators, as the pipeline is implicitly defined.
                     var context = UpdateOutputs(generatorState.OutputNodes, IncrementalGeneratorOutputKind.Source | IncrementalGeneratorOutputKind.Implementation | IncrementalGeneratorOutputKind.Host, new GeneratorRunStateTable.Builder(state.TrackIncrementalSteps), cancellationToken, driverStateBuilder);
-                    (var sources, var generatorDiagnostics, var generatorRunStateTable, var hostOutputs) = context.ToImmutableAndFree();
+                    (var sources, var modifiedTexts, var excludedSources, var generatorDiagnostics, var generatorRunStateTable, var hostOutputs) = context.ToImmutableAndFree();
                     generatorDiagnostics = FilterDiagnostics(compilation, generatorDiagnostics, driverDiagnostics: diagnosticsBag, cancellationToken);
 
-                    stateBuilder[i] = generatorState.WithResults(ParseAdditionalSources(state.Generators[i], sources, cancellationToken), generatorDiagnostics, generatorRunStateTable.ExecutedSteps, generatorRunStateTable.OutputSteps, hostOutputs, generatorTimer.Elapsed);
+                    stateBuilder[i] = generatorState.WithResults(ParseAdditionalSources(state.Generators[i], sources, cancellationToken), modifiedTexts, excludedSources, generatorDiagnostics, generatorRunStateTable.ExecutedSteps, generatorRunStateTable.OutputSteps, hostOutputs, generatorTimer.Elapsed);
                 }
                 catch (UserFunctionException ufe) when (handleGeneratorException(compilation, MessageProvider, state.Generators[i], ufe.InnerException, isInit: false))
                 {
@@ -354,7 +384,7 @@ namespace Microsoft.CodeAnalysis
         private IncrementalExecutionContext UpdateOutputs(ImmutableArray<IIncrementalGeneratorOutputNode> outputNodes, IncrementalGeneratorOutputKind outputKind, GeneratorRunStateTable.Builder generatorRunStateBuilder, CancellationToken cancellationToken, DriverStateTable.Builder? driverStateBuilder = null)
         {
             Debug.Assert(outputKind != IncrementalGeneratorOutputKind.None);
-            IncrementalExecutionContext context = new IncrementalExecutionContext(driverStateBuilder, generatorRunStateBuilder, new AdditionalSourcesCollection(SourceExtension));
+            IncrementalExecutionContext context = new IncrementalExecutionContext(driverStateBuilder, generatorRunStateBuilder, new AdditionalSourcesCollection(SourceExtension), new ModifiedTextsCollection(), PooledHashSet<SyntaxTree>.GetInstance());
             foreach (var outputNode in outputNodes)
             {
                 // if we're looking for this output kind, and it has not been explicitly disabled

@@ -178,6 +178,11 @@
         <target state="translated">O token especificado deve ser um elemento direto de um SyntaxTokenList (como um modificador em uma lista de modificadores). O token não pode ser um token arbitrário da árvore de sintaxe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">O módulo tem atributos inválidos.</target>

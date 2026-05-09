@@ -90,6 +90,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RemoveAsyncModifier\RemoveAsyncModifierHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveInKeyword\RemoveInKeywordCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveNewModifier\RemoveNewModifierCodeFixProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryAliasTypeParameters\CSharpRemoveUnnecessaryAliasTypeParametersCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnneccessaryUnsafeModifier\CSharpRemoveUnnecessaryUnsafeModifierCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryNullableDirective\CSharpRemoveUnnecessaryNullableDirectiveCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveUnnecessarySuppressions\CSharpRemoveUnnecessaryNullableWarningSuppressionsCodeFixProvider.cs" />
@@ -194,6 +195,7 @@
     <ExpectedCompile Include="$(MSBuildThisFileDirectory)**\*$(DefaultLanguageSourceExtension)" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)RemoveUnnecessaryAliasTypeParameters\" />
     <Folder Include="$(MSBuildThisFileDirectory)RemoveUnnecessarySuppressions\" />
     <Folder Include="$(MSBuildThisFileDirectory)SimplifyLinqExpression\" />
   </ItemGroup>

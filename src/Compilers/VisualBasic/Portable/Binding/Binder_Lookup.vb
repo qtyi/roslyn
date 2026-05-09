@@ -14,6 +14,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports TypeKind = Microsoft.CodeAnalysis.TypeKind
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
     ' Handler the parts of binding for member lookup.
@@ -128,7 +129,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             If (options And LookupOptions.LabelsOnly) <> 0 Then
                 ' If LabelsOnly is set then the symbol must be a label otherwise return empty
                 If options = LookupOptions.LabelsOnly AndAlso sym.Kind = SymbolKind.Label Then
-                    Return SingleLookupResult.Good(sym)
+                    Return SingleLookupResult.Good(sym.WithDefaultAnnotationSymbols())
                 End If
 
                 ' Mixing LabelsOnly with any other flag returns an empty result
@@ -181,21 +182,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Case SymbolKind.NamedType, SymbolKind.ErrorType
                         Dim actualArity As Integer = DirectCast(sym, NamedTypeSymbol).Arity
                         If actualArity <> arity Then
-                            Return SingleLookupResult.WrongArity(sym, WrongArityErrid(actualArity, arity))
+                            Return SingleLookupResult.WrongArity(sym.WithDefaultAnnotationSymbols(), WrongArityErrid(actualArity, arity))
                         End If
 
                     Case SymbolKind.TypeParameter, SymbolKind.Namespace
                         If arity <> 0 Then ' type parameters and namespaces are always arity 0
-                            Return SingleLookupResult.WrongArity(unwrappedSym, WrongArityErrid(0, arity))
+                            Return SingleLookupResult.WrongArity(unwrappedSym.WithDefaultAnnotationSymbols(), WrongArityErrid(0, arity))
                         End If
 
                     Case SymbolKind.Alias
-                        ' Since raw generics cannot be imported, the import aliases would always refer to
-                        ' constructed types when referring to generics. So any other generic arity besides
-                        ' -1 or 0 are invalid.
-                        If arity <> 0 Then ' aliases are always arity 0, but error refers to the target
-                            ' Note, Dev11 doesn't stop lookup in case of arity mismatch for an alias.
-                            Return SingleLookupResult.WrongArity(unwrappedSym, WrongArityErrid(0, arity))
+                        Dim actualArity As Integer = DirectCast(sym, AliasSymbol).Arity
+                        If actualArity <> arity Then
+                            Return SingleLookupResult.WrongArity(sym.WithDefaultAnnotationSymbols(), WrongArityErrid(actualArity, arity))
                         End If
 
                     Case SymbolKind.Method
@@ -207,14 +205,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         Dim actualArity As Integer = DirectCast(sym, MethodSymbol).Arity
                         If actualArity <> arity AndAlso
                            Not ((options And LookupOptions.AllMethodsOfAnyArity) <> 0) Then
-                            Return SingleLookupResult.WrongArityAndStopLookup(sym, WrongArityErrid(actualArity, arity))
+                            Return SingleLookupResult.WrongArityAndStopLookup(sym.WithDefaultAnnotationSymbols(), WrongArityErrid(actualArity, arity))
                         End If
 
                     Case Else
                         ' Unlike types and namespace, we stop looking if we find other symbols with wrong arity.
                         ' All these symbols have arity 0.
                         If arity <> 0 Then
-                            Return SingleLookupResult.WrongArityAndStopLookup(sym, WrongArityErrid(0, arity))
+                            Return SingleLookupResult.WrongArityAndStopLookup(sym.WithDefaultAnnotationSymbols(), WrongArityErrid(0, arity))
                         End If
                 End Select
             End If
@@ -223,17 +221,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Dim accessCheckResult = CheckAccessibility(unwrappedSym, useSiteInfo, If((options And LookupOptions.UseBaseReferenceAccessibility) <> 0, Nothing, accessThroughType))
                 ' Check if we are in 'MyBase' resolving mode and we need to ignore 'accessThroughType' to make protected members accessed
                 If accessCheckResult <> VisualBasic.AccessCheckResult.Accessible Then
-                    Return SingleLookupResult.Inaccessible(sym, GetInaccessibleErrorInfo(sym))
+                    Return SingleLookupResult.Inaccessible(sym.WithDefaultAnnotationSymbols(), GetInaccessibleErrorInfo(sym))
                 End If
             End If
 
             If (options And Global.Microsoft.CodeAnalysis.VisualBasic.LookupOptions.MustNotBeInstance) <> 0 AndAlso sym.IsInstanceMember Then
-                Return Global.Microsoft.CodeAnalysis.VisualBasic.SingleLookupResult.MustNotBeInstance(sym, Global.Microsoft.CodeAnalysis.VisualBasic.ERRID.ERR_ObjectReferenceNotSupplied)
+                Return Global.Microsoft.CodeAnalysis.VisualBasic.SingleLookupResult.MustNotBeInstance(sym.WithDefaultAnnotationSymbols(), Global.Microsoft.CodeAnalysis.VisualBasic.ERRID.ERR_ObjectReferenceNotSupplied)
             ElseIf (options And Global.Microsoft.CodeAnalysis.VisualBasic.LookupOptions.MustBeInstance) <> 0 AndAlso Not sym.IsInstanceMember Then
-                Return Global.Microsoft.CodeAnalysis.VisualBasic.SingleLookupResult.MustBeInstance(sym) ' there is no error message for this 
+                Return Global.Microsoft.CodeAnalysis.VisualBasic.SingleLookupResult.MustBeInstance(sym.WithDefaultAnnotationSymbols()) ' there is no error message for this 
             End If
 
-            Return SingleLookupResult.Good(sym)
+            Return SingleLookupResult.Good(sym.WithDefaultAnnotationSymbols())
         End Function
 
         Friend Function GetInaccessibleErrorInfo(sym As Symbol) As DiagnosticInfo
@@ -340,7 +338,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 If container.IsNamespace Then
                     Lookup(lookupResult, DirectCast(container, NamespaceSymbol), name, arity, options, binder, useSiteInfo)
                 Else
-                    Dim tempResult = lookupResult.GetInstance()
+                    Dim tempResult = LookupResult.GetInstance()
                     Lookup(lookupResult, DirectCast(container, TypeSymbol), name, arity, options, binder, tempResult, useSiteInfo)
                     tempResult.Free()
                 End If
@@ -382,7 +380,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Return
                 End If
 
-                Dim currentResult = lookupResult.GetInstance()
+                Dim currentResult = LookupResult.GetInstance()
 
                 LookupInModules(currentResult, container, name, arity, options, binder, useSiteInfo)
                 lookupResult.MergeAmbiguous(currentResult, s_ambiguousInModuleError)
@@ -416,7 +414,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     If containingNs IsNot Nothing AndAlso containingNs.IsGlobalNamespace AndAlso CaseInsensitiveComparison.Equals(container.Name, MetadataHelpers.SystemString) Then
                         Dim specialType = GetTypeForIntrinsicAlias(name)
 
-                        If specialType <> specialType.None Then
+                        If specialType <> SpecialType.None Then
                             Dim candidate = binder.Compilation.GetSpecialType(specialType)
 
                             ' Intrinsic alias works only if type is available
@@ -489,7 +487,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' NOTE: while looking up the symbol in modules we should ignore base class
                 options = options Or LookupOptions.IgnoreExtensionMethods Or LookupOptions.NoBaseClassLookup
                 Dim currentResult As LookupResult = Nothing
-                Dim tempResult = lookupResult.GetInstance()
+                Dim tempResult = LookupResult.GetInstance()
 
                 ' Next, do a lookup in each contained module and merge the results.
                 For Each containedModule As NamedTypeSymbol In container.GetModuleMembers()
@@ -498,7 +496,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         firstModule = False
                     Else
                         If currentResult Is Nothing Then
-                            currentResult = lookupResult.GetInstance()
+                            currentResult = LookupResult.GetInstance()
                         Else
                             currentResult.Clear()
                         End If
@@ -509,8 +507,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         If currentResult.StopFurtherLookup AndAlso currentResult.Symbols.Count > 0 AndAlso
                            lookupResult.StopFurtherLookup AndAlso lookupResult.Symbols.Count > 0 Then
 
-                            Dim currentFromSource = currentResult.Symbols(0).ContainingModule Is sourceModule
-                            Dim contenderFromSource = lookupResult.Symbols(0).ContainingModule Is sourceModule
+                            Dim currentFromSource = currentResult.Symbols(0).Symbol.ContainingModule Is sourceModule
+                            Dim contenderFromSource = lookupResult.Symbols(0).Symbol.ContainingModule Is sourceModule
 
                             If currentFromSource Then
                                 If Not contenderFromSource Then
@@ -552,12 +550,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End Sub
 
             ' Create a diagnostic for ambiguous names in multiple modules.
-            Private Shared ReadOnly s_ambiguousInModuleError As Func(Of ImmutableArray(Of Symbol), AmbiguousSymbolDiagnostic) =
-                Function(syms As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
-                    Dim name As String = syms(0).Name
-                    Dim deferredFormattedList As New FormattedSymbolList(syms.Select(Function(sym) sym.ContainingType))
+            Private Shared ReadOnly s_ambiguousInModuleError As Func(Of ImmutableArray(Of SymbolWithAnnotationSymbols), AmbiguousSymbolDiagnostic) =
+                Function(syms As ImmutableArray(Of SymbolWithAnnotationSymbols)) As AmbiguousSymbolDiagnostic
+                    Dim name As String = syms(0).Symbol.Name
+                    Dim deferredFormattedList As New FormattedSymbolList(syms.Select(Function(sym) sym.Symbol.ContainingType))
 
-                    Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInModules2, syms, name, deferredFormattedList)
+                    Return New AmbiguousSymbolDiagnostic(ERRID.ERR_AmbiguousInModules2, syms.WithoutAnnotationSymbols(), name, deferredFormattedList)
                 End Function
 
             ''' <summary>
@@ -684,7 +682,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' If we found a non-overloadable symbol, we can stop now. Note that even if we find a method without the Overloads
                         ' modifier, we cannot stop because we need to check for extension methods.
                         If result.HasSymbol Then
-                            If Not result.Symbols.First.IsOverloadable Then
+                            If Not result.Symbols.First.Symbol.IsOverloadable Then
                                 If methodsOnly Then
                                     Exit Do ' Need to look for extension methods.
                                 End If
@@ -757,8 +755,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' with a MemberSignatureComparer
                         ' TODO: Add field support in the C# and VB member comparers and then
                         ' delete this check
-                        If sym.Kind <> SymbolKind.Field Then
-                            allMembers.Add(sym)
+                        If sym.Symbol.Kind <> SymbolKind.Field Then
+                            allMembers.Add(sym.Symbol)
                         End If
                     Next
                 End If
@@ -789,8 +787,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' only add viable members
                         If tmp.IsGood Then
                             For Each sym In tmp.Symbols
-                                If Not allMembers.Add(sym) Then
-                                    conflictingMembers.Add(sym)
+                                If Not allMembers.Add(sym.Symbol) Then
+                                    conflictingMembers.Add(sym.Symbol)
                                 End If
                             Next
                         End If
@@ -801,9 +799,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 tmp.Free()
                 If result.IsGood Then
                     For Each sym In result.Symbols
-                        If sym.Kind <> SymbolKind.Field Then
-                            allMembers.Remove(sym)
-                            conflictingMembers.Remove(sym)
+                        If sym.Symbol.Kind <> SymbolKind.Field Then
+                            allMembers.Remove(sym.Symbol)
+                            conflictingMembers.Remove(sym.Symbol)
                         End If
                     Next
                 End If
@@ -812,7 +810,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     If Not conflictingMembers.Contains(sym) Then
                         ' since we only added viable members, every lookupresult should be viable
                         result.MergeOverloadedOrPrioritized(
-                            New SingleLookupResult(LookupResultKind.Good, sym, Nothing),
+                            SingleLookupResult.Good(sym.WithDefaultAnnotationSymbols()),
                             checkIfCurrentHasOverloads:=False)
                     End If
                 Next
@@ -890,23 +888,23 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         result.MergeOverloadedOrPrioritized(submissionSymbols, checkIfCurrentHasOverloads:=False)
 
                         Dim first = submissionSymbols.Symbols.First
-                        If Not first.IsOverloadable Then
+                        If Not first.Symbol.IsOverloadable Then
                             Exit Do
                         End If
 
                         ' we are now looking for any kind of member regardless of the original binding restrictions:
                         options = options And Not LookupOptions.NamespacesOrTypesOnly
-                        lookingForOverloadsOfKind = first.Kind
+                        lookingForOverloadsOfKind = first.Symbol.Kind
                     Else
                         ' found a member we are not looking for - the overload set is final now
-                        If submissionSymbols.HasSymbol AndAlso submissionSymbols.Symbols.First.Kind <> lookingForOverloadsOfKind.Value Then
+                        If submissionSymbols.HasSymbol AndAlso submissionSymbols.Symbols.First.Symbol.Kind <> lookingForOverloadsOfKind.Value Then
                             Exit Do
                         End If
 
                         ' found a viable overload
                         If submissionSymbols.IsGoodOrAmbiguous Then
                             ' merge overloads
-                            Debug.Assert(result.Symbols.All(Function(s) s.IsOverloadable))
+                            Debug.Assert(result.Symbols.All(Function(s) s.Symbol.IsOverloadable))
 
                             ' always overload (ignore Overloads modifier):
                             result.MergeOverloadedOrPrioritized(submissionSymbols, checkIfCurrentHasOverloads:=False)
@@ -1066,7 +1064,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Dim symbolA = result.Symbols(0)
                     Dim symbolB = tmpResult.Symbols(0)
 
-                    If symbolA.ContainingSymbol <> symbolB.ContainingSymbol Then
+                    If symbolA.Symbol.ContainingSymbol <> symbolB.Symbol.ContainingSymbol Then
                         result.MergeAmbiguous(tmpResult, AddressOf GenerateAmbiguousDefaultPropertyDiagnostic)
                     End If
                 Finally
@@ -1120,19 +1118,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Return result.HasSymbol
             End Function
 
-            Private Shared Function GenerateAmbiguousDefaultPropertyDiagnostic(symbols As ImmutableArray(Of Symbol)) As AmbiguousSymbolDiagnostic
+            Private Shared Function GenerateAmbiguousDefaultPropertyDiagnostic(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)) As AmbiguousSymbolDiagnostic
                 Debug.Assert(symbols.Length > 1)
 
                 Dim symbolA = symbols(0)
-                Dim containingSymbolA = symbolA.ContainingSymbol
+                Dim containingSymbolA = symbolA.Symbol.ContainingSymbol
 
                 For i = 1 To symbols.Length - 1
                     Dim symbolB = symbols(i)
-                    Dim containingSymbolB = symbolB.ContainingSymbol
+                    Dim containingSymbolB = symbolB.Symbol.ContainingSymbol
 
                     If containingSymbolA <> containingSymbolB Then
                         ' "Default property access is ambiguous between the inherited interface members '{0}' of interface '{1}' and '{2}' of interface '{3}'."
-                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_DefaultPropertyAmbiguousAcrossInterfaces4, symbols, symbolA, containingSymbolA, symbolB, containingSymbolB)
+                        Return New AmbiguousSymbolDiagnostic(ERRID.ERR_DefaultPropertyAmbiguousAcrossInterfaces4, symbols.WithoutAnnotationSymbols(), symbolA.Symbol, containingSymbolA, symbolB.Symbol, containingSymbolB)
                     End If
                 Next
 
@@ -1152,7 +1150,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             )
                 If result.IsGood AndAlso
                     ((options And LookupOptions.EagerlyLookupExtensionMethods) = 0 OrElse
-                     result.Symbols(0).Kind <> SymbolKind.Method) Then
+                     result.Symbols(0).Symbol.Kind <> SymbolKind.Method) Then
                     Return
                 End If
 
@@ -1272,7 +1270,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 If symbol Is Nothing Then
                     ' Match the native compiler which reports ERR_XmlFeaturesNotAvailable in this case.
                     Dim useSiteError = ErrorFactory.ErrorInfo(ERRID.ERR_XmlFeaturesNotAvailable)
-                    singleResult = New SingleLookupResult(LookupResultKind.NotReferencable, binder.GetErrorSymbol(name, useSiteError), useSiteError)
+                    singleResult = New SingleLookupResult(LookupResultKind.NotReferencable, Binder.GetErrorSymbol(name, useSiteError).WithDefaultAnnotationSymbols(), useSiteError)
                 Else
                     Dim reduced = New ReducedExtensionPropertySymbol(DirectCast(symbol, PropertySymbol))
                     singleResult = binder.CheckViability(reduced, arity, options, reduced.ContainingType, useSiteInfo)
@@ -1295,7 +1293,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                               binder, useSiteInfo:=CompoundUseSiteInfo(Of AssemblySymbol).Discarded)
 
                     If lookup.IsGood Then
-                        For Each method As MethodSymbol In lookup.Symbols
+                        For Each sym In lookup.Symbols
+                            Dim method = DirectCast(sym.Symbol, MethodSymbol)
                             nameSet.AddSymbol(method, method.Name, method.Arity)
                         Next
                     End If
@@ -1550,10 +1549,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' so we need to check that to be sure.
                 If lookupResult.IsGood Then
                     Dim ambiguityDiagnostics As AmbiguousSymbolDiagnostic = Nothing
-                    Dim symbols As ArrayBuilder(Of Symbol) = lookupResult.Symbols
+                    Dim symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols) = lookupResult.Symbols
 
                     For i As Integer = 0 To symbols.Count - 2
-                        Dim interface1 = DirectCast(symbols(i).ContainingType, NamedTypeSymbol)
+                        Dim interface1 = DirectCast(symbols(i).Symbol.ContainingType, NamedTypeSymbol)
 
                         For j As Integer = i + 1 To symbols.Count - 1
 
@@ -1565,10 +1564,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                 ' Therefore, this symbols are from unrelated interfaces.
                                 ambiguityDiagnostics = New AmbiguousSymbolDiagnostic(
                                             ERRID.ERR_AmbiguousAcrossInterfaces3,
-                                            symbols.ToImmutable,
+                                            symbols.ToImmutable.WithoutAnnotationSymbols(),
                                             name,
-                                            CustomSymbolDisplayFormatter.DefaultErrorFormat(symbols(i).ContainingType),
-                                            CustomSymbolDisplayFormatter.DefaultErrorFormat(symbols(j).ContainingType))
+                                            CustomSymbolDisplayFormatter.DefaultErrorFormat(symbols(i).Symbol.ContainingType),
+                                            CustomSymbolDisplayFormatter.DefaultErrorFormat(symbols(j).Symbol.ContainingType))
 
                                 GoTo ExitForFor
                             End If
@@ -1584,13 +1583,13 @@ ExitForFor:
             Private Shared Sub FilterSymbolsInLookupResult(result As LookupResult, kind As SymbolKind, leaveInsteadOfRemoving As Boolean)
                 Debug.Assert(result.IsGood)
 
-                Dim resultSymbols As ArrayBuilder(Of Symbol) = result.Symbols
+                Dim resultSymbols As ArrayBuilder(Of SymbolWithAnnotationSymbols) = result.Symbols
                 Debug.Assert(resultSymbols.Count > 0)
 
                 Dim i As Integer = 0
                 Dim j As Integer = 0
                 While j < resultSymbols.Count
-                    Dim symbol As Symbol = resultSymbols(j)
+                    Dim symbol As Symbol = resultSymbols(j).Symbol
                     If (symbol.Kind = kind) = leaveInsteadOfRemoving Then
                         resultSymbols(i) = resultSymbols(j)
                         i += 1
@@ -1682,7 +1681,7 @@ ExitForFor:
             Private Shared Sub ClearLookupResultIfNotMethods(methodsOnly As Boolean, lookupResult As LookupResult)
                 If methodsOnly AndAlso
                    lookupResult.HasSymbol AndAlso
-                   lookupResult.Symbols(0).Kind <> SymbolKind.Method Then
+                   lookupResult.Symbols(0).Symbol.Kind <> SymbolKind.Method Then
                     lookupResult.Clear()
                 End If
             End Sub
@@ -1733,41 +1732,41 @@ ExitForFor:
 
                 Debug.Assert(knownResult.Kind = newResult.Kind)
 
-                Dim knownSymbols As ArrayBuilder(Of Symbol) = knownResult.Symbols
-                Dim newSymbols As ArrayBuilder(Of Symbol) = newResult.Symbols
-                Dim newSymbolContainer = newSymbols.First().ContainingType
+                Dim knownSymbols As ArrayBuilder(Of SymbolWithAnnotationSymbols) = knownResult.Symbols
+                Dim newSymbols As ArrayBuilder(Of SymbolWithAnnotationSymbols) = newResult.Symbols
+                Dim newSymbolContainer = newSymbols.First().Symbol.ContainingType
 
                 For i As Integer = 0 To knownSymbols.Count - 1
                     Dim knownSymbol = knownSymbols(i)
 
                     ' Nothing means that the symbol has been eliminated via shadowing
-                    If knownSymbol Is Nothing Then
+                    If knownSymbol.IsDefault Then
                         Continue For
                     End If
 
-                    Dim knownSymbolContainer = knownSymbol.ContainingType
+                    Dim knownSymbolContainer = knownSymbol.Symbol.ContainingType
 
                     For j As Integer = 0 To newSymbols.Count - 1
-                        Dim newSymbol As Symbol = newSymbols(j)
+                        Dim newSymbol = newSymbols(j)
                         ' Nothing means that the symbol has been eliminated via shadowing
-                        If newSymbol Is Nothing Then
+                        If newSymbol.IsDefault Then
                             Continue For
                         End If
 
                         ' Special-case events in case we are inside COM interface
-                        If leaveEventsOnly.HasValue AndAlso (newSymbol.Kind = SymbolKind.Event) <> leaveEventsOnly.Value Then
+                        If leaveEventsOnly.HasValue AndAlso (newSymbol.Symbol.Kind = SymbolKind.Event) <> leaveEventsOnly.Value Then
                             newSymbols(j) = Nothing
                             Continue For
                         End If
 
-                        If knownSymbol = newSymbol Then
+                        If knownSymbol.Equals(newSymbol) Then
                             ' this is the same result as we already have, remove from the new set
                             newSymbols(j) = Nothing
                             Continue For
                         End If
 
                         ' container of the first new symbol should be container of all others
-                        Debug.Assert(TypeSymbol.Equals(newSymbolContainer, newSymbol.ContainingType, TypeCompareKind.ConsiderEverything))
+                        Debug.Assert(TypeSymbol.Equals(newSymbolContainer, newSymbol.Symbol.ContainingType, TypeCompareKind.ConsiderEverything))
 
                         ' Are the known and new symbols of the right kinds to overload?
                         Dim cantOverloadEachOther = Not LookupResult.CanOverload(knownSymbol, newSymbol)
@@ -1779,10 +1778,10 @@ ExitForFor:
 
                             ' if currently known is more derived and shadows the new one
                             ' it shadows all the new ones and we are done
-                            If IsShadows(knownSymbol) OrElse cantOverloadEachOther Then
+                            If IsShadows(knownSymbol.Symbol) OrElse cantOverloadEachOther Then
                                 ' no need to continue with merge. new symbols are all shadowed
                                 ' and they cannot shadow anything in the old set
-                                Debug.Assert(Not knownSymbols.Any(Function(s) s Is Nothing))
+                                Debug.Assert(Not knownSymbols.Any(Function(s) s.IsDefault))
                                 newResult.Clear()
                                 Return
                             End If
@@ -1795,14 +1794,14 @@ ExitForFor:
                             ' if new is more derived and shadows
                             ' the current one should be dropped
                             ' NOTE that we continue iterating as more known symbols may be "shadowed out" by the current.
-                            If IsShadows(newSymbol) OrElse cantOverloadEachOther Then
+                            If IsShadows(newSymbol.Symbol) OrElse cantOverloadEachOther Then
                                 knownSymbols(i) = Nothing
 
                                 ' all following known symbols in the same container are shadowed by the new one
                                 ' we can do a quick check and remove them here
                                 For k = i + 1 To knownSymbols.Count - 1
-                                    Dim otherKnown As Symbol = knownSymbols(k)
-                                    If otherKnown IsNot Nothing AndAlso TypeSymbol.Equals(otherKnown.ContainingType, knownSymbolContainer, TypeCompareKind.ConsiderEverything) Then
+                                    Dim otherKnown = knownSymbols(k)
+                                    If Not otherKnown.IsDefault AndAlso TypeSymbol.Equals(otherKnown.Symbol.ContainingType, knownSymbolContainer, TypeCompareKind.ConsiderEverything) Then
                                         knownSymbols(k) = Nothing
                                     End If
                                 Next
@@ -1822,12 +1821,12 @@ ExitForFor:
             ''' <summary>
             ''' first.Where(t IsNot Nothing).Concat(second.Where(t IsNot Nothing))
             ''' </summary>
-            Private Shared Sub CompactAndAppend(first As ArrayBuilder(Of Symbol), second As ArrayBuilder(Of Symbol))
+            Private Shared Sub CompactAndAppend(first As ArrayBuilder(Of SymbolWithAnnotationSymbols), second As ArrayBuilder(Of SymbolWithAnnotationSymbols))
                 Dim i As Integer = 0
 
                 ' skip non nulls
                 While i < first.Count
-                    If first(i) Is Nothing Then
+                    If first(i).IsDefault Then
                         Exit While
                     End If
 
@@ -1837,9 +1836,9 @@ ExitForFor:
                 ' compact the rest
                 Dim j As Integer = i + 1
                 While j < first.Count
-                    Dim item As Symbol = first(j)
+                    Dim item = first(j)
 
-                    If item IsNot Nothing Then
+                    If Not item.IsDefault Then
                         first(i) = item
                         i += 1
                     End If
@@ -1853,8 +1852,8 @@ ExitForFor:
                 ' append non nulls from second
                 i = 0
                 While i < second.Count
-                    Dim items As Symbol = second(i)
-                    If items IsNot Nothing Then
+                    Dim items = second(i)
+                    If Not items.IsDefault Then
                         first.Add(items)
                     End If
                     i += 1
@@ -1909,8 +1908,8 @@ ExitForFor:
             ''' if any symbol in the list Shadows. This implies that name is not visible through the base.
             ''' </summary>
             Private Shared Function AnyShadows(result As LookupResult) As Boolean
-                For Each sym As Symbol In result.Symbols
-                    If sym.IsShadows Then
+                For Each sym In result.Symbols
+                    If sym.Symbol.IsShadows Then
                         Return True
                     End If
                 Next

@@ -52,6 +52,26 @@ public sealed class WhereKeywordRecommenderTests : KeywordRecommenderTests
 @"global using Goo = $$");
 
     [Fact]
+    public Task TestNotInUsingAliasDeclaration()
+        => VerifyAbsenceAsync(
+@"using Goo = int $$");
+
+    [Fact]
+    public Task TestNotInGlobalUsingAliasDeclaration()
+        => VerifyAbsenceAsync(
+@"global using Goo = int $$");
+
+    [Fact]
+    public Task TestInGenericUsingAliasDeclaration()
+        => VerifyKeywordAsync(
+@"using Goo<T> = T $$");
+
+    [Fact]
+    public Task TestInGlobalGenericUsingAliasDeclaration()
+        => VerifyKeywordAsync(
+@"global using Goo<T> = T $$");
+
+    [Fact]
     public Task TestNotInEmptyStatement()
         => VerifyAbsenceAsync(AddInsideMethod(
 @"$$"));

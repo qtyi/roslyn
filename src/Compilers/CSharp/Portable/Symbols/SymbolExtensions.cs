@@ -8,10 +8,12 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
 using static System.Linq.ImmutableArrayExtensions;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -35,6 +37,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             Debug.Assert(type.TypeParameters.IsEmpty == (typeArguments.Length == 0));
             return type.TypeParameters.IsEmpty ? type : type.Construct(typeArguments, unbound: false);
+        }
+
+        public static TypeSymbol ConstructIfGeneric(this AliasSymbolFromSyntax alias, ImmutableArray<TypeWithAnnotations> typeArguments)
+        {
+            Debug.Assert(alias.TypeParameters.IsEmpty == (typeArguments.Length == 0));
+            Debug.Assert(alias.Target is TypeSymbol);
+            return alias.TypeParameters.IsEmpty ? (TypeSymbol)alias.Target : alias.Construct(typeArguments, unbound: false);
         }
 
         public static bool IsNestedType([NotNullWhen(true)] this Symbol? symbol)
@@ -208,6 +217,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 case SymbolKind.Method:
                     return ((MethodSymbol)symbol).ConstructedFrom;
 
+                case SymbolKind.Alias when symbol.GetArity() > 0:
+                    return symbol;
+
                 default:
                     return symbol;
             }
@@ -338,6 +350,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         return ((NamedTypeSymbol)symbol).Arity;
                     case SymbolKind.Method:
                         return ((MethodSymbol)symbol).Arity;
+                    case SymbolKind.Alias:
+                        return ((AliasSymbol)symbol).Arity;
                 }
             }
 
@@ -844,5 +858,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             symbol.GetAllTypeArgumentsNoUseSiteDiagnostics(builder);
             return builder.ToImmutableAndFree();
         }
+
+        internal static SymbolWithAnnotationSymbols WithAnnotationSymbol<TAliasSymbol, TNamespaceOrTypeSymbol>(this TAliasSymbol aliasSymbol, TNamespaceOrTypeSymbol targetSymbol)
+            where TAliasSymbol : AliasSymbol
+            where TNamespaceOrTypeSymbol : NamespaceOrTypeSymbol
+            => SymbolWithAnnotationSymbols.Create(aliasSymbol, targetSymbol);
+
+        internal static SymbolWithAnnotationSymbols WithDefaultAnnotationSymbols<TSymbol>(this TSymbol symbol)
+            where TSymbol : Symbol
+            => symbol is AliasSymbol alias && alias.IsGenericAlias ?
+                alias.WithAnnotationSymbol(alias.Target) :
+                SymbolWithAnnotationSymbols.Create(symbol);
+
+        internal static OneOrMany<SymbolWithAnnotationSymbols> WithDefaultAnnotationSymbols<TSymbol>(this OneOrMany<TSymbol> symbols)
+            where TSymbol : Symbol
+            => symbols.Select(WithDefaultAnnotationSymbols);
+
+        internal static ImmutableArray<SymbolWithAnnotationSymbols> WithDefaultAnnotationSymbols<TSymbol>(this ImmutableArray<TSymbol> symbols)
+            where TSymbol : Symbol
+            => symbols.SelectAsArray(WithDefaultAnnotationSymbols);
     }
 }

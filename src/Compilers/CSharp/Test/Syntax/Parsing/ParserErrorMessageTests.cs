@@ -1728,10 +1728,7 @@ class C
             CreateCompilation(test).VerifyDiagnostics(
                 // (4,12): error CS1004: Duplicate 'public' modifier
                 //     public public int x;
-                Diagnostic(ErrorCode.ERR_DuplicateModifier, "public").WithArguments("public").WithLocation(4, 12),
-                // (4,23): warning CS0649: Field 'C.x' is never assigned to, and will always have its default value 0
-                //     public public int x;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("C.x", "0").WithLocation(4, 23));
+                Diagnostic(ErrorCode.ERR_DuplicateModifier, "public").WithArguments("public").WithLocation(4, 12));
         }
 
         [Fact]

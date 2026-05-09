@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Semantics
 {
-    public class GenericConstraintsTests : CompilingTestBase
+    public partial class GenericConstraintsTests : CompilingTestBase
     {
         [Fact]
         public void EnumConstraint_Compilation_Alone()

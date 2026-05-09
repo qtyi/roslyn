@@ -178,6 +178,11 @@
         <target state="translated">指定されたトークンは、SyntaxTokenList の直接要素である必要があります (修飾子の一覧の修飾子など)。トークンを構文ツリーの任意のトークンにすることはできません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">モジュールに無効な属性があります。</target>

@@ -262,7 +262,7 @@ internal sealed class MisplacedUsingDirectivesCodeFixProvider() : CodeFixProvide
         // Get the using directives from the namespaces.
         var usingsFromNamespaces = namespaceDeclarationMap.Values.SelectMany(result => result.usingsFromNamespace);
         var usings = ignoringAliases
-            ? usingContainer.Usings.Where(u => u.Alias is null)
+            ? usingContainer.Usings.Where(u => u.Identifier == default)
             : usingContainer.Usings;
         var allUsings = usings.Concat(usingsFromNamespaces).ToImmutableArray();
 
@@ -273,7 +273,7 @@ internal sealed class MisplacedUsingDirectivesCodeFixProvider() : CodeFixProvide
         // Remove usings and fix leading trivia for namespace declaration.
         var namespaceDeclarationWithoutUsings = namespaceDeclarationWithReplacedNamespaces
             .WithUsings(ignoringAliases
-                ? List(namespaceDeclarationWithReplacedNamespaces.Usings.Where(u => u.Alias != null))
+                ? List(namespaceDeclarationWithReplacedNamespaces.Usings.Where(u => u.Identifier != default))
                 : default);
 
         var namespaceDeclarationWithoutBlankLine = namespaceDeclarationWithoutUsings.Usings.Count == 0

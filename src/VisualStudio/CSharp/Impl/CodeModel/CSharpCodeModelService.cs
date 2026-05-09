@@ -247,7 +247,7 @@ internal sealed partial class CSharpCodeModelService : AbstractCodeModelService
 
             case SyntaxKind.UsingDirective:
                 if (scope == EnvDTE.vsCMElement.vsCMElementImportStmt &&
-                    ((UsingDirectiveSyntax)node).Name != null)
+                    ((UsingDirectiveSyntax)node).Identifier != default)
                 {
                     return true;
                 }
@@ -1551,7 +1551,7 @@ internal sealed partial class CSharpCodeModelService : AbstractCodeModelService
     {
         foreach (UsingDirectiveSyntax usingDirective in GetImportNodes(parentNode))
         {
-            if (usingDirective.Name?.ToString() == dottedName)
+            if (usingDirective.Identifier.ValueText == dottedName)
             {
                 importNode = usingDirective;
                 return true;
@@ -1796,8 +1796,8 @@ internal sealed partial class CSharpCodeModelService : AbstractCodeModelService
 
         if (!RoslynString.IsNullOrEmpty(alias))
         {
-            var aliasSyntax = SyntaxFactory.NameEquals(alias);
-            return SyntaxFactory.UsingDirective(aliasSyntax, nameSyntax);
+            var identifier = SyntaxFactory.Identifier(alias);
+            return SyntaxFactory.UsingDirective(identifier, nameSyntax);
         }
         else
         {
@@ -1819,8 +1819,8 @@ internal sealed partial class CSharpCodeModelService : AbstractCodeModelService
     {
         if (importNode is UsingDirectiveSyntax usingDirective)
         {
-            return usingDirective.Alias != null
-                ? usingDirective.Alias.Name.ToString()
+            return usingDirective.Identifier != default
+                ? new NameWithArity(usingDirective.Identifier.ToString(), usingDirective.TypeParameterList == null ? 0 : usingDirective.TypeParameterList.Parameters.Count).ToString()
                 : string.Empty;
         }
 

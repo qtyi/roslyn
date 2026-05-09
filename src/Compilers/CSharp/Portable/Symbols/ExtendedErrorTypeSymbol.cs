@@ -290,6 +290,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+            {
+                return true;
+            }
+
             var other = t2 as ExtendedErrorTypeSymbol;
             if ((object?)other == null || _unreported || other._unreported)
             {

@@ -6,17 +6,32 @@ Imports System.Collections.Immutable
 Imports System.Diagnostics
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Roslyn.Utilities
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
     Friend Class SymbolInfoFactory
-        Friend Shared Function Create(symbols As ImmutableArray(Of Symbol), resultKind As LookupResultKind) As SymbolInfo
-            Return Create(StaticCast(Of ISymbol).From(symbols), resultKind)
+        Friend Shared Function Create(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols), resultKind As LookupResultKind) As SymbolInfo
+            Dim reason = If(resultKind = LookupResultKind.Good, CandidateReason.None, resultKind.ToCandidateReason())
+            Return Create(symbols, reason)
         End Function
 
         Friend Shared Function Create(symbols As ImmutableArray(Of ISymbol), resultKind As LookupResultKind) As SymbolInfo
             Dim reason = If(resultKind = LookupResultKind.Good, CandidateReason.None, resultKind.ToCandidateReason())
             Return Create(symbols, reason)
+        End Function
+
+        Friend Shared Function Create(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols), reason As CandidateReason) As SymbolInfo
+            symbols = symbols.NullToEmpty()
+            If symbols.IsEmpty AndAlso Not (reason = CandidateReason.None OrElse reason = CandidateReason.LateBound) Then
+                reason = CandidateReason.None
+            End If
+
+            If symbols.Length = 1 AndAlso (reason = CandidateReason.None OrElse reason = CandidateReason.LateBound) Then
+                Return SymbolInfo.From(symbols(0), reason)
+            Else
+                Return New SymbolInfo(StaticCast(Of ISymbol).From(symbols.WithoutAnnotationSymbols()), reason)
+            End If
         End Function
 
         Friend Shared Function Create(symbols As ImmutableArray(Of ISymbol), reason As CandidateReason) As SymbolInfo
@@ -26,7 +41,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
 
             If symbols.Length = 1 AndAlso (reason = CandidateReason.None OrElse reason = CandidateReason.LateBound) Then
-                Return New SymbolInfo(symbols(0), reason)
+                Return New SymbolInfo(ImmutableArray.Create(symbols(0)), reason)
             Else
                 Return New SymbolInfo(symbols, reason)
             End If

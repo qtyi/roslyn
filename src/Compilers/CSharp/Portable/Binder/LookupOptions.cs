@@ -111,6 +111,11 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         MustBeOperator = 1 << 17,
 
+        /// <summary>
+        /// Consider aliases of any arity when arity zero is specified.
+        /// </summary>
+        AllAliasOnArityZero = 1 << 18,
+
         // Available 1 << 10,
     }
 

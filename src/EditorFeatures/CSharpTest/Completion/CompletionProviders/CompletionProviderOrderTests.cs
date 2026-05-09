@@ -52,6 +52,7 @@ public sealed class CompletionProviderOrderTests
             typeof(CrefCompletionProvider),
             typeof(SnippetCompletionProvider),
             typeof(ExternAliasCompletionProvider),
+            typeof(GenericAliasTargetCompletionProvider),
             typeof(PreprocessorCompletionProvider),
             typeof(OverrideCompletionProvider),
             typeof(PartialMethodCompletionProvider),

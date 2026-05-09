@@ -114,6 +114,24 @@ public sealed class OrganizeUsingsTests
             """);
 
     [Fact]
+    public Task GenericInAliases()
+        => CheckAsync("""
+            using A<T> = T;
+            using A = B;
+            using C = D;
+            using C<T1, T2> = (T1, T2);
+            using C<T> = (T, T);
+            using E<T1, T2, T3> = (T3, T2, T1);
+            """, """
+            using A = B;
+            using A<T> = T;
+            using C = D;
+            using C<T> = (T, T);
+            using C<T1, T2> = (T1, T2);
+            using E<T1, T2, T3> = (T3, T2, T1);
+            """);
+
+    [Fact]
     public Task NestedStatements()
         => CheckAsync("""
             using B;

@@ -124,7 +124,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // These object are unique (per index).
         internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
         {
-            return ReferenceEquals(this, t2);
+            return ReferenceEquals(this, t2) || OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison);
         }
 
         public override int GetHashCode()

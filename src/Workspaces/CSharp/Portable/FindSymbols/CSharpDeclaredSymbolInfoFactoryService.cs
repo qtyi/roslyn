@@ -106,17 +106,17 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
 
         foreach (var usingDecl in usings)
         {
-            if (usingDecl.Alias != null)
+            if (usingDecl.Identifier != default)
             {
                 var mappedName = GetTypeName(usingDecl.Name);
                 if (mappedName != null)
                 {
                     aliasMap ??= AllocateAliasMap();
 
-                    // If we have:  using X = Goo, then we store a mapping from X -> Goo
-                    // here.  That way if we see a class that inherits from X we also state
-                    // that it inherits from Goo as well.
-                    aliasMap[usingDecl.Alias.Name.Identifier.ValueText] = mappedName;
+                    // If we have:  using X<T> = Goo<T, T>, then we store a mapping from X`1 -> Goo`2
+                    // here.  That way if we see a class that inherits from X<?> we also state
+                    // that it inherits from Goo<?, ?> as well.
+                    aliasMap[new NameWithArity(usingDecl.Identifier.ValueText, usingDecl.TypeParameterList == null ? 0 : usingDecl.TypeParameterList.Parameters.Count).ToString()] = mappedName;
                 }
             }
         }
@@ -600,6 +600,10 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
         {
             return GetSimpleTypeName(aliasName.Name);
         }
+        else if (type is GenericNameSyntax genericName)
+        {
+            return new NameWithArity(genericName.Identifier.ValueText, genericName.Arity).ToString();
+        }
 
         return null;
     }
@@ -617,9 +621,9 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
     protected override bool TryGetAliasesFromUsingDirective(
         UsingDirectiveSyntax usingDirectiveNode, out ImmutableArray<(string aliasName, string name)> aliases)
     {
-        if (usingDirectiveNode.Alias != null)
+        if (usingDirectiveNode.Identifier != default)
         {
-            if (TryGetSimpleTypeName(usingDirectiveNode.Alias.Name, typeParameterNames: null, out var aliasName, out _) &&
+            if (TryGetSimpleTypeName(usingDirectiveNode.Identifier, typeParameterNames: null, out var aliasName, out _) &&
                 TryGetSimpleTypeName(usingDirectiveNode.NamespaceOrType, typeParameterNames: null, out var name, out _))
             {
                 aliases = [(aliasName, name)];
@@ -651,21 +655,23 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
     }
 
     private static bool TryGetSimpleTypeName(
-        SyntaxNode? node, ImmutableArray<string>? typeParameterNames,
+        SyntaxNodeOrToken nodeOrToken, ImmutableArray<string>? typeParameterNames,
         [NotNullWhen(true)] out string? simpleTypeName,
         out bool isArray)
     {
         isArray = false;
 
-        if (node is TypeSyntax typeNode)
+        if (nodeOrToken.IsToken)
+        {
+            return getFromIdentifierToken(nodeOrToken.AsToken(), out simpleTypeName);
+        }
+        if (nodeOrToken.AsNode() is TypeSyntax typeNode)
         {
             switch (typeNode)
             {
                 case IdentifierNameSyntax identifierNameNode:
-                    // We consider it a complex method if the receiver type is a type parameter.
-                    var text = identifierNameNode.Identifier.Text;
-                    simpleTypeName = typeParameterNames?.Contains(text) == true ? null : text;
-                    return simpleTypeName != null;
+                    var identifier = identifierNameNode.Identifier;
+                    return getFromIdentifierToken(identifier, out simpleTypeName);
 
                 case ArrayTypeSyntax arrayTypeNode:
                     isArray = true;
@@ -690,7 +696,7 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
                     return TryGetSimpleTypeName(qualifiedNameNode.Right, typeParameterNames: null, out simpleTypeName, out _);
 
                 case NullableTypeSyntax nullableNode:
-                    // Ignore nullability, becase nullable reference type might not be enabled universally.
+                    // Ignore nullability, because nullable reference type might not be enabled universally.
                     // In the worst case we just include more methods to check in out filter.
                     return TryGetSimpleTypeName(nullableNode.ElementType, typeParameterNames, out simpleTypeName, out isArray);
 
@@ -702,6 +708,22 @@ internal sealed class CSharpDeclaredSymbolInfoFactoryService() : AbstractDeclare
 
         simpleTypeName = null;
         return false;
+
+        bool getFromIdentifierToken(SyntaxToken identifier, [NotNullWhen(true)] out string? simpleTypeName)
+        {
+            // We consider it a complex method if the receiver type is a type parameter.
+            var text = identifier.Text;
+            if (typeParameterNames?.Contains(text) == true)
+            {
+                simpleTypeName = null;
+                return false;
+            }
+            else
+            {
+                simpleTypeName = text;
+                return true;
+            }
+        }
     }
 
     private static string? GetSpecialTypeName(PredefinedTypeSyntax predefinedTypeNode)

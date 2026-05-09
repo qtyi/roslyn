@@ -487,6 +487,91 @@ Derived.Method3([6], [7])",
                 });
         }
 
+        [WorkItem(9229, "DevDiv_Projects/Roslyn")]
+        [Fact]
+        public void TestOverridingWithParamsAndGenericAliasedNames()
+        {
+            // Tests: 
+            // Replace params with non-params in signature of overridden member (and vice-versa)
+            // Use aliased name for type of parameter / return type in overridden member
+
+            var source = @"
+using System;
+using TypeB<T> = T;
+using TypeC = NS.Derived;
+using NSAlias2 = NS;
+using NSAlias = NS;
+
+abstract class Base
+{
+    internal abstract TypeB<int> Method(System.Exception a, TypeB<int> b, params NS.Derived[] c);
+    public virtual void Method2(TypeC c1, NSAlias2.Derived c2, NS.Derived[] c3)
+    {
+        Console.WriteLine(""Base.Method2( , , [{0}])"", c3.Length);
+    }
+    public abstract void Method3(int[] b1, params int[] b2);
+}
+
+namespace NS
+{
+    using TypeA = System.Exception;
+    abstract class Base2 : Base
+    {
+        // Adding additional 'params'
+        public override void Method2(Derived c1, NS.Derived c2, params NSAlias.Derived[] C3)
+        {
+            Console.WriteLine(""Base2.Method2( , , [{0}])"", C3.Length);
+        }
+    }
+
+    class Derived : Base2
+    {
+        // Omitting 'params'
+        internal override TypeB<int> Method(TypeA A, int B, TypeC[] C)
+        {
+            Console.WriteLine(""Derived.Method( , {0}, [{1}])"", B, C.Length);
+            return 0;
+        }
+        // Preserving 'params'
+        public override void Method3(int[] B1, params int[] b2)
+        {
+            Console.WriteLine(""Derived.Method3([{0}], [{1}])"", B1.Length, b2.Length);
+        }
+    }
+}
+
+class Test
+{
+    public static void Main()
+    {
+        TypeC d = new TypeC();
+        Base b = d;
+        d.Method(new System.Exception(), 1, new TypeC[]{d});
+        b.Method(new System.Exception(), 2, d, d);
+        // d.Method2(d, d, d, d, d); Should report error - No overload for Method2 takes 5 arguments
+        b.Method2(d, d, new TypeC[]{d, d, d});
+        d.Method3(new int[4]{1, 2, 3, 4}, new int[5] {6, 7, 8, 9, 10});
+        b.Method3(new int[6]{1, 2, 3, 4, 5, 6}, 8, 9, 10, 11, 12, 13, 14);
+    }
+}";
+            var comp = CompileAndVerify(source,
+                expectedOutput: @"
+Derived.Method( , 1, [1])
+Derived.Method( , 2, [2])
+Base2.Method2( , , [3])
+Derived.Method3([4], [5])
+Derived.Method3([6], [7])",
+                expectedSignatures: new[]
+                {
+                    Signature("Base", "Method", ".method assembly hidebysig newslot strict abstract virtual instance System.Int32 Method(System.Exception a, System.Int32 b, [System.ParamArrayAttribute()] NS.Derived[] c) cil managed"),
+                    Signature("NS.Derived", "Method", ".method assembly hidebysig strict virtual instance System.Int32 Method(System.Exception A, System.Int32 B, [System.ParamArrayAttribute()] NS.Derived[] C) cil managed"),
+                    Signature("Base", "Method2", ".method public hidebysig newslot virtual instance System.Void Method2(NS.Derived c1, NS.Derived c2, NS.Derived[] c3) cil managed"),
+                    Signature("NS.Base2", "Method2", ".method public hidebysig virtual instance System.Void Method2(NS.Derived c1, NS.Derived c2, NS.Derived[] C3) cil managed"),
+                    Signature("Base", "Method3", ".method public hidebysig newslot abstract virtual instance System.Void Method3(System.Int32[] b1, [System.ParamArrayAttribute()] System.Int32[] b2) cil managed"),
+                    Signature("NS.Derived", "Method3", ".method public hidebysig virtual instance System.Void Method3(System.Int32[] B1, [System.ParamArrayAttribute()] System.Int32[] b2) cil managed")
+                });
+        }
+
         [Fact]
         public void TestOverridingVirtualWithAbstract()
         {

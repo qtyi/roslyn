@@ -241,23 +241,24 @@ internal static class StringExtensions
         return line.Length;
     }
 
-    public static void AppendToAliasNameSet(this string? alias, ImmutableHashSet<string>.Builder builder)
+    public static void AppendToAliasSet(this string? name, int arity, ImmutableHashSet<NameWithArity>.Builder builder)
     {
-        if (RoslynString.IsNullOrWhiteSpace(alias))
+        if (RoslynString.IsNullOrWhiteSpace(name))
         {
             return;
         }
 
-        builder.Add(alias);
+        builder.Add(new NameWithArity(name, arity));
 
-        var caseSensitive = builder.KeyComparer == StringComparer.Ordinal;
-        Debug.Assert(builder.KeyComparer == StringComparer.Ordinal || builder.KeyComparer == StringComparer.OrdinalIgnoreCase);
-        if (alias.TryGetWithoutAttributeSuffix(caseSensitive, out var aliasWithoutAttribute))
+        var nameComparer = ((NameWithArityComparer)builder.KeyComparer).Underlying;
+        var caseSensitive = nameComparer == StringComparer.Ordinal;
+        Debug.Assert(nameComparer == StringComparer.Ordinal || nameComparer == StringComparer.OrdinalIgnoreCase);
+        if (name.TryGetWithoutAttributeSuffix(caseSensitive, out var aliasWithoutAttribute))
         {
-            builder.Add(aliasWithoutAttribute);
+            builder.Add(new NameWithArity(aliasWithoutAttribute, arity));
             return;
         }
 
-        builder.Add(alias.GetWithSingleAttributeSuffix(caseSensitive));
+        builder.Add(new NameWithArity(name.GetWithSingleAttributeSuffix(caseSensitive), arity));
     }
 }

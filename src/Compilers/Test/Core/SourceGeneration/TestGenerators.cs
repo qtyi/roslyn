@@ -198,6 +198,96 @@ namespace Roslyn.Test.Utilities.TestGenerators
 
         public void Initialize(IncrementalGeneratorInitializationContext context) => _onInit(context);
     }
+
+    internal class ModifyTextGenerator(
+        IEnumerable<(SyntaxTree tree, int position, string newText)>? insertTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan)>? removeTexts = null,
+        IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)>? replaceSources = null,
+        IEnumerable<SyntaxTree>? removeSources = null)
+        : ISourceGenerator
+    {
+        private readonly IEnumerable<(SyntaxTree tree, int position, string newText)> _insertTexts = insertTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree tree, TextSpan span, string newText)> _replaceTexts = replaceTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree tree, TextSpan)> _removeTexts = removeTexts ?? [];
+        private readonly IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)> _replaceSources = replaceSources ?? [];
+        private readonly IEnumerable<SyntaxTree> _removeSources = removeSources ?? [];
+
+        public void Initialize(GeneratorInitializationContext context) { }
+
+        public void Execute(GeneratorExecutionContext context)
+        {
+            foreach (var tree in context.Compilation.SyntaxTrees)
+            {
+                Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText, context.ReplaceSource, context.RemoveSource);
+            }
+        }
+
+        protected void Modify(
+            SyntaxTree tree,
+            Action<SyntaxTree, int, string> insertTextAction,
+            Action<SyntaxTree, TextSpan, string> replaceTextAction,
+            Action<SyntaxTree, TextSpan> removeTextAction,
+            Action<SyntaxTree, SyntaxTree> replaceSourceAction,
+            Action<SyntaxTree> removeSourceAction)
+        {
+            foreach (var (t, position, newText) in _insertTexts)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    insertTextAction(tree, position, newText);
+                }
+            }
+
+            foreach (var (t, span, newText) in _replaceTexts)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    replaceTextAction(tree, span, newText);
+                }
+            }
+
+            foreach (var (t, span) in _removeTexts)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    removeTextAction(tree, span);
+                }
+            }
+
+            foreach (var (t, newTree) in _replaceSources)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    replaceSourceAction(tree, newTree);
+                }
+            }
+
+            foreach (var t in _removeSources)
+            {
+                if (ReferenceEquals(tree, t))
+                {
+                    removeSourceAction(tree);
+                }
+            }
+        }
+    }
+
+    internal sealed class IncrementalModifyTextGenerator(
+        IEnumerable<(SyntaxTree tree, int position, string newText)>? insertTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan span, string newText)>? replaceTexts = null,
+        IEnumerable<(SyntaxTree tree, TextSpan)>? removeTexts = null,
+        IEnumerable<(SyntaxTree oldTree, SyntaxTree newTree)>? replaceSources = null,
+        IEnumerable<SyntaxTree>? removeSources = null)
+        : ModifyTextGenerator(insertTexts, replaceTexts, removeTexts, replaceSources, removeSources), IIncrementalGenerator
+    {
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+            => context.RegisterSourceOutput(
+                source: context.SyntaxProvider.CreateSyntaxProvider(
+                    predicate: static (node, cancellationToken) => node == node.SyntaxTree.GetRoot(cancellationToken),
+                    transform: static (context, _) => context.Node.SyntaxTree),
+                action: (context, tree) => Modify(tree, context.InsertText, context.ReplaceText, context.RemoveText, context.ReplaceSource, context.RemoveSource));
+    }
 }
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators

@@ -424,4 +424,16 @@
   <data name="Method_can_be_made_synchronous" xml:space="preserve">
     <value>Method can be made synchronous</value>
   </data>
+  <data name="Remove_unused_alias_type_parameters" xml:space="preserve">
+    <value>Remove unused alias type parameters</value>
+  </data>
+  <data name="Remove_unnecessary_alias_type_parameters" xml:space="preserve">
+    <value>Remove unnecessary alias type parameters</value>
+  </data>
+  <data name="Alias_type_parameter_0_is_unused" xml:space="preserve">
+    <value>Alias type parameter "{0}" is unused</value>
+  </data>
+  <data name="Alias_type_parameter_0_is_unnecessary" xml:space="preserve">
+    <value>Alias type parameter "{0}" is unnecessary</value>
+  </data>
 </root>

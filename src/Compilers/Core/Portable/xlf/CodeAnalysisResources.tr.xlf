@@ -178,6 +178,11 @@
         <target state="translated">Belirtilen belirteç, SyntaxTokenList'in doğrudan bir öğesi olmalıdır (örneğin, değiştiriciler listesindeki bir değiştirici gibi). Belirteç, söz dizimi ağacındaki rastgele bir belirteç olmamalıdır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">Modülde geçersiz öznitelikler var.</target>

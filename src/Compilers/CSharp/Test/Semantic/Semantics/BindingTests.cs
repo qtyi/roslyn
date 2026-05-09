@@ -1827,15 +1827,15 @@ class C
     static int TooIndecisive = N.B<int>;
 }";
             CreateCompilation(source).VerifyDiagnostics(
-                // (19,28): error CS0305: Using the generic type 'N.A<T>' requires '1' type arguments
-                // 
-                Diagnostic(ErrorCode.ERR_BadArity, "A<int, int>").WithArguments("N.A<T>", "type", "1"),
-                // (20,27): error CS0305: Using the generic type 'N.A<T>' requires '1' type arguments
-                // 
-                Diagnostic(ErrorCode.ERR_BadArity, "A").WithArguments("N.A<T>", "type", "1"),
-                // (21,34): error CS0305: Using the generic type 'N.B<T1, T2>' requires '2' type arguments
-                // 
-                Diagnostic(ErrorCode.ERR_BadArity, "B<int>").WithArguments("N.B<T1, T2>", "type", "2")
+                // (19,28): error CS0305: Using the generic type 'A<T>' requires 1 type arguments
+                //     static int TooMany = N.A<int, int>.F;
+                Diagnostic(ErrorCode.ERR_BadArity, "A<int, int>").WithArguments("N.A<T>", "type", "1").WithLocation(19, 28),
+                // (20,27): error CS0305: Using the generic type 'A<T>' requires 1 type arguments
+                //     static int TooFew = N.A.F;
+                Diagnostic(ErrorCode.ERR_BadArity, "A").WithArguments("N.A<T>", "type", "1").WithLocation(20, 27),
+                // (21,34): error CS0305: Using the generic type 'B<T1, T2>' requires 2 type arguments
+                //     static int TooIndecisive = N.B<int>;
+                Diagnostic(ErrorCode.ERR_BadArity, "B<int>").WithArguments("N.B<T1, T2>", "type", "2").WithLocation(21, 34)
                 );
         }
 
@@ -3498,10 +3498,7 @@ internal class AnyClass : AnyBaseClass
                 Diagnostic(ErrorCode.ERR_DottedTypeNameNotFoundInAgg, "Val").WithArguments("Val", "MyNamespace.AnyClass.AnyEnum").WithLocation(2, 43),
                 // (6,27): error CS0246: The type or namespace name 'AnyBaseClass' could not be found (are you missing a using directive or an assembly reference?)
                 // internal class AnyClass : AnyBaseClass
-                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "AnyBaseClass").WithArguments("AnyBaseClass").WithLocation(6, 27),
-                // (10,29): warning CS0649: Field 'AnyClass.AnyEnum.Val' is never assigned to, and will always have its default value 0
-                //         static internal int Val;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Val").WithArguments("MyNamespace.AnyClass.AnyEnum.Val", "0").WithLocation(10, 29)
+                Diagnostic(ErrorCode.ERR_SingleTypeNameNotFound, "AnyBaseClass").WithArguments("AnyBaseClass").WithLocation(6, 27)
                 );
         }
 
@@ -4399,6 +4396,85 @@ static class Ext
                 //     extension(Ext)
                 Diagnostic(ErrorCode.ERR_PredefinedTypeNotFound, "Ext").WithArguments("System.Object").WithLocation(4, 15)
                 );
+        }
+
+        [Fact]
+        public void MissingTypeArgumentInGenericAlias()
+        {
+            var source =
+@"
+using X<T> = T;
+using Y<T1, T2> = System.Tuple<T1, T2>;
+
+namespace N;
+
+using Z<T3> = System.Tuple<X<>, Y<T3,T3>>;
+using Z<T4, T5> = System.Tuple<X<T4>, Y<T5, T5>>;
+
+public class Class1
+{
+    public void Test()
+    {
+        X<> x = ""string literal"";
+        Y<,> y1 = new(true, false);
+        Y<string, string> y2 = new(true, false);
+
+        Z<> z1 = new(""string literal"", ""string literal"");
+        Z<string> z2 = new(""string literal"", new(true, false));
+        Z<int, string> z3 = new(1, new(true, false));
+    }
+}
+";
+            var compilation = CreateCompilationWithMscorlib40AndSystemCore(source);
+
+            compilation.VerifyDiagnostics(
+                // (7,28): error CS7003: Unexpected use of an unbound generic name
+                // using Z<T3> = System.Tuple<X<>, Y<T3,T3>>;
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "X<>").WithLocation(7, 28),
+                // (14,9): error CS7003: Unexpected use of an unbound generic name
+                //         X<> x = "string literal";
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "X<>").WithLocation(14, 9),
+                // (15,9): error CS7003: Unexpected use of an unbound generic name
+                //         Y<,> y1 = new(true, false);
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "Y<,>").WithLocation(15, 9),
+                // (15,23): error CS1503: Argument 1: cannot convert from 'bool' to 'T1'
+                //         Y<,> y1 = new(true, false);
+                Diagnostic(ErrorCode.ERR_BadArgType, "true").WithArguments("1", "bool", "T1").WithLocation(15, 23),
+                // (15,29): error CS1503: Argument 2: cannot convert from 'bool' to 'T2'
+                //         Y<,> y1 = new(true, false);
+                Diagnostic(ErrorCode.ERR_BadArgType, "false").WithArguments("2", "bool", "T2").WithLocation(15, 29),
+                // (16,36): error CS1503: Argument 1: cannot convert from 'bool' to 'string'
+                //         Y<string, string> y2 = new(true, false);
+                Diagnostic(ErrorCode.ERR_BadArgType, "true").WithArguments("1", "bool", "string").WithLocation(16, 36),
+                // (16,42): error CS1503: Argument 2: cannot convert from 'bool' to 'string'
+                //         Y<string, string> y2 = new(true, false);
+                Diagnostic(ErrorCode.ERR_BadArgType, "false").WithArguments("2", "bool", "string").WithLocation(16, 42),
+                // (18,9): error CS7003: Unexpected use of an unbound generic name
+                //         Z<> z1 = new("string literal", "string literal")
+                Diagnostic(ErrorCode.ERR_UnexpectedUnboundGenericName, "Z<>").WithLocation(18, 9),
+                // (18,22): error CS1503: Argument 1: cannot convert from 'string' to 'T'
+                //         Z<> z1 = new("string literal", "string literal")
+                Diagnostic(ErrorCode.ERR_BadArgType, @"""string literal""").WithArguments("1", "string", "T").WithLocation(18, 22),
+                // (18,40): error CS1503: Argument 2: cannot convert from 'string' to 'System.Tuple<T3, T3>'
+                //         Z<> z1 = new("string literal", "string literal")
+                Diagnostic(ErrorCode.ERR_BadArgType, @"""string literal""").WithArguments("2", "string", "System.Tuple<T3, T3>").WithLocation(18, 40),
+                // (19,28): error CS1503: Argument 1: cannot convert from 'string' to 'T'
+                //         Z<string> z2 = new("string literal", new(true, false))
+                Diagnostic(ErrorCode.ERR_BadArgType, @"""string literal""").WithArguments("1", "string", "T").WithLocation(19, 28),
+                /* Distinguished by SymbolDistinguisher
+                 * // (19,52): error CS1503: Argument 1: cannot convert from 'bool' to 'string'
+                 * //         Z<string> z2 = new("string literal", new(true, false))
+                 * Diagnostic(ErrorCode.ERR_BadArgType, "true").WithArguments("1", "bool", "string").WithLocation(19, 52),
+                 * // (19,58): error CS1503: Argument 2: cannot convert from 'bool' to 'string'
+                 * //         Z<string> z2 = new("string literal", new(true, false))
+                 * Diagnostic(ErrorCode.ERR_BadArgType, "false").WithArguments("2", "bool", "string").WithLocation(19, 58),
+                 */
+                // (20,40): error CS1503: Argument 1: cannot convert from 'bool' to 'string'
+                //         Z<int, string> z3 = new(1, new(true, false))
+                Diagnostic(ErrorCode.ERR_BadArgType, "true").WithArguments("1", "bool", "string").WithLocation(20, 40),
+                // (20,46): error CS1503: Argument 2: cannot convert from 'bool' to 'string'
+                //         Z<int, string> z3 = new(1, new(true, false))
+                Diagnostic(ErrorCode.ERR_BadArgType, "false").WithArguments("2", "bool", "string").WithLocation(20, 46));
         }
     }
 }

@@ -5,6 +5,7 @@
 #nullable disable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,20 @@ public sealed class AddImportsTests
             root = root.ReplaceNodes(root.DescendantNodesAndSelf().OfType<TypeSyntax>(),
                 (o, c) =>
                 {
-                    var symbol = model.GetSymbolInfo(o).Symbol;
+                    // We cannot annotate any type that is / contains alias type parameter.
+                    if (
+                        // In using-directive with type parameter list.
+                        o.Ancestors().OfType<UsingDirectiveSyntax>().SingleOrDefault() is UsingDirectiveSyntax { TypeParameterList: not null } &&
+                        // Targets type that contains alias type parameter.
+                        o.DescendantNodesAndSelf().OfType<TypeSyntax>()
+                            .Select(typeSyntax => model.GetSymbolInfo(typeSyntax).Symbol)
+                            .Any(static symbol => symbol is ITypeParameterSymbol { TypeParameterKind: TypeParameterKind.Alias })
+                    )
+                    {
+                        return c;
+                    }
+
+                    var symbol = model.GetAliasInfoWithTarget(o).Target ?? model.GetSymbolInfo(o).Symbol;
                     return symbol != null
                         ? c.WithAdditionalAnnotations(SymbolAnnotation.Create(symbol), Simplifier.Annotation)
                         : c;
@@ -66,9 +80,9 @@ public sealed class AddImportsTests
     }
 
     private static async Task TestAsync(
-        string initialText,
-        string importsAddedText,
-        string simplifiedText,
+        [StringSyntax(PredefinedEmbeddedLanguageNames.CSharpTest)] string initialText,
+        [StringSyntax(PredefinedEmbeddedLanguageNames.CSharpTest)] string importsAddedText,
+        [StringSyntax(PredefinedEmbeddedLanguageNames.CSharpTest)] string simplifiedText,
         bool useSymbolAnnotations,
         bool placeSystemNamespaceFirst = true,
         bool placeImportsInsideNamespaces = false,
@@ -785,6 +799,46 @@ public sealed class AddImportsTests
                 class C
                 {
                     private List F;
+                }
+            }
+            """, useSymbolAnnotations);
+
+    [Theory, MemberData(nameof(TestAllData))]
+    public Task TestUnnecessaryImportAddedAndRemoved2(bool useSymbolAnnotations)
+        => TestAsync(
+            """
+            using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+            namespace System
+            {
+                class C
+                {
+                    private StringDictionary<int> F;
+                }
+            }
+            """,
+
+            """
+            using System.Collections.Generic;
+            using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+            namespace System
+            {
+                class C
+                {
+                    private StringDictionary<int> F;
+                }
+            }
+            """,
+
+            """
+            using StringDictionary<T> = System.Collections.Generic.Dictionary<string, T>;
+
+            namespace System
+            {
+                class C
+                {
+                    private StringDictionary<int> F;
                 }
             }
             """, useSymbolAnnotations);

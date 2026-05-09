@@ -178,6 +178,11 @@
         <target state="translated">指定的标记必须是 SyntaxTokenList 的直接元素(例如修饰符列表中的修饰符)。该令牌不能是语法树中的任意令牌。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="translated">更改的文本范围“{0}”与范围“{1}”重叠</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">模块具有无效属性。</target>

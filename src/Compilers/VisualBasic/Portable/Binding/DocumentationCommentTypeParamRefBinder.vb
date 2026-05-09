@@ -7,6 +7,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Runtime.InteropServices
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -21,8 +22,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             MyBase.New(containingBinder, commentedSymbol)
         End Sub
 
-        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
-            Dim result As ImmutableArray(Of Symbol) = MyBase.BindXmlNameAttributeValue(identifier, useSiteInfo)
+        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Dim result As ImmutableArray(Of SymbolWithAnnotationSymbols) = MyBase.BindXmlNameAttributeValue(identifier, useSiteInfo)
             If Not result.IsEmpty Then
                 Return result
             End If
@@ -33,7 +34,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     LookupOptions.IgnoreExtensionMethods Or
                     LookupOptions.MustNotBeLocalOrParameter
 
-            Dim lookupResult As LookupResult = lookupResult.GetInstance()
+            Dim lookupResult As LookupResult = LookupResult.GetInstance()
             Me.Lookup(lookupResult, identifier.Identifier.ValueText, 0, options, useSiteInfo)
 
             If Not lookupResult.HasSingleSymbol Then
@@ -41,14 +42,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Return Nothing
             End If
 
-            Dim symbol As Symbol = lookupResult.SingleSymbol
+            Dim symbol As SymbolWithAnnotationSymbols = lookupResult.SingleSymbol
             lookupResult.Free()
 
-            If symbol.Kind = SymbolKind.TypeParameter Then
-                Return ImmutableArray.Create(Of Symbol)(symbol)
+            If symbol.Symbol.Kind = SymbolKind.TypeParameter Then
+                Return ImmutableArray.Create(symbol)
             End If
 
-            Return ImmutableArray(Of Symbol).Empty
+            Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
         End Function
 
     End Class

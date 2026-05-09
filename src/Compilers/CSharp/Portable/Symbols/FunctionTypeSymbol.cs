@@ -209,6 +209,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
+            if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, compareKind))
+            {
+                return true;
+            }
+
             if (t2 is FunctionTypeSymbol otherType)
             {
                 var thisDelegateType = GetInternalDelegateType();

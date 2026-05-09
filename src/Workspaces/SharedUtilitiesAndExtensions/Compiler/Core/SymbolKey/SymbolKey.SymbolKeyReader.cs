@@ -329,6 +329,7 @@ internal partial struct SymbolKey
         public SymbolEquivalenceComparer Comparer { get; private set; }
 
         private readonly List<IMethodSymbol?> _methodSymbolStack = [];
+        private readonly List<IAliasSymbol?> _aliasSymbolStack = [];
         private readonly Stack<ISymbol?> _contextualSymbolStack = new();
 
         public SymbolKeyReader()
@@ -347,6 +348,7 @@ internal partial struct SymbolKey
             IgnoreAssemblyKey = false;
             Comparer = null!;
             _methodSymbolStack.Clear();
+            _aliasSymbolStack.Clear();
             _contextualSymbolStack.Clear();
 
             // Place us back in the pool for future use.
@@ -422,6 +424,22 @@ internal partial struct SymbolKey
         public IMethodSymbol? ResolveMethod(int index)
             => _methodSymbolStack[index];
 
+        public AliasPopper PushAlias(IAliasSymbol? alias)
+        {
+            _aliasSymbolStack.Add(alias);
+            return new AliasPopper(this, alias);
+        }
+
+        private void PopAlias(IAliasSymbol? alias)
+        {
+            Contract.ThrowIfTrue(_aliasSymbolStack.Count == 0);
+            Contract.ThrowIfFalse(Equals(alias, _aliasSymbolStack[^1]));
+            _aliasSymbolStack.RemoveAt(_aliasSymbolStack.Count - 1);
+        }
+
+        public IAliasSymbol? ResolveAlias(int index)
+            => _aliasSymbolStack[index];
+
         public ContextualSymbolPopper PushContextualSymbol(ISymbol? contextualSymbol)
         {
             _contextualSymbolStack.Push(contextualSymbol);
@@ -442,6 +460,12 @@ internal partial struct SymbolKey
         {
             public void Dispose()
                 => reader.PopMethod(method);
+        }
+
+        public readonly ref struct AliasPopper(SymbolKeyReader reader, IAliasSymbol? alias)
+        {
+            public void Dispose()
+                => reader.PopAlias(alias);
         }
 
         public readonly ref struct ContextualSymbolPopper(SymbolKeyReader reader, ISymbol? contextualSymbol)

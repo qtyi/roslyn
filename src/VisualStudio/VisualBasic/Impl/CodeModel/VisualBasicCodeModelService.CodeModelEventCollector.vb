@@ -178,7 +178,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic.CodeModel
 
             Private Function CompareImportsClauses(oldImportsClause As ImportsClauseSyntax, newImportsClause As ImportsClauseSyntax, newNodeParent As SyntaxNode, eventQueue As CodeModelEventQueue) As Boolean
                 ' Note: Only namespaces are compared and aliases are ignored.
-                If Not CompareNames(oldImportsClause.GetName(), newImportsClause.GetName()) Then
+                If Not CompareTypeNames(oldImportsClause.GetTypeName(), newImportsClause.GetTypeName()) Then
                     EnqueueChangeEvent(newImportsClause, newNodeParent, CodeModelEventType.Rename, eventQueue)
                     Return False
                 End If

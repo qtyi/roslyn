@@ -4769,7 +4769,7 @@ class C
                               // Code size       11 (0xb)
                               .maxstack  1
                               IL_0000:  nop
-                              IL_0001:  ldstr      0x70000155
+                              IL_0001:  ldstr      0x70000069
                               IL_0006:  stloc.0
                               IL_0007:  br.s       IL_0009
                               IL_0009:  ldloc.0
@@ -4923,7 +4923,7 @@ class C
                               // Code size       11 (0xb)
                               .maxstack  1
                               IL_0000:  nop
-                              IL_0001:  ldstr      0x70000155
+                              IL_0001:  ldstr      0x70000069
                               IL_0006:  stloc.0
                               IL_0007:  br.s       IL_0009
                               IL_0009:  ldloc.0
@@ -5432,7 +5432,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000007
                               IL_000c:  throw
@@ -5690,7 +5690,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000007
                               IL_000c:  throw
@@ -5989,7 +5989,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw
@@ -6821,7 +6821,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000007
                               IL_000c:  throw
@@ -17370,7 +17370,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw
@@ -17466,7 +17466,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw
@@ -17558,38 +17558,38 @@ class C
                     validator: g =>
                     {
                         g.VerifySynthesizedMembers();
-                        g.VerifyTypeDefNames("<PrivateImplementationDetails>#1", "__StaticArrayInitTypeSize=163", "<S>A70F5C822D3106BF474269B4991AB592");
+                        g.VerifyTypeDefNames("<PrivateImplementationDetails>#1", "__StaticArrayInitTypeSize=138", "<S>8B02752A0812C539D6838DA601133FA6");
                         g.VerifyTypeRefNames("Object", "CompilerGeneratedAttribute", "ValueType", "Encoding");
 
                         g.VerifyIL("""
                         F1
                         {
-                            // Code size       13 (0xd)
-                            .maxstack  8
-                            IL_0000:  ldsfld     0x04000002
-                            IL_0005:  ldc.i4.s   -2
-                            IL_0007:  newobj     0x06000004
-                            IL_000c:  throw
+                          // Code size       13 (0xd)
+                          .maxstack  8
+                          IL_0000:  ldsfld     0x04000002
+                          IL_0005:  ldc.i4.s   -2
+                          IL_0007:  newobj     0x06000004
+                          IL_000c:  throw
                         }
                         BytesToString
                         {
-                            // Code size       13 (0xd)
-                            .maxstack  8
-                            IL_0000:  call       0x0A000008
-                            IL_0005:  ldarg.0
-                            IL_0006:  ldarg.1
-                            IL_0007:  callvirt   0x0A000009
-                            IL_000c:  ret
+                          // Code size       13 (0xd)
+                          .maxstack  8
+                          IL_0000:  call       0x0A000008
+                          IL_0005:  ldarg.0
+                          IL_0006:  ldarg.1
+                          IL_0007:  callvirt   0x0A000009
+                          IL_000c:  ret
                         }
                         .cctor
                         {
-                            // Code size       21 (0x15)
-                            .maxstack  8
-                            IL_0000:  ldsflda    0x04000001
-                            IL_0005:  ldc.i4     0xa3
-                            IL_000a:  call       0x06000005
-                            IL_000f:  stsfld     0x04000002
-                            IL_0014:  ret
+                          // Code size       21 (0x15)
+                          .maxstack  8
+                          IL_0000:  ldsflda    0x04000001
+                          IL_0005:  ldc.i4     0x8a
+                          IL_000a:  call       0x06000005
+                          IL_000f:  stsfld     0x04000002
+                          IL_0014:  ret
                         }
                         """);
                     },
@@ -18513,7 +18513,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x7000014E
+                              IL_0000:  ldstr      0x70000063
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x06000006
                               IL_000b:  throw
@@ -18661,7 +18661,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000299
+                              IL_0000:  ldstr      0x700000E1
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000006
                               IL_000c:  throw
@@ -18670,7 +18670,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x700003E2
+                              IL_0000:  ldstr      0x7000013F
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x06000006
                               IL_000b:  throw
@@ -18786,7 +18786,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000152
+                              IL_0000:  ldstr      0x70000067
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x06000006
                               IL_000b:  throw
@@ -18980,7 +18980,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000156
+                              IL_0000:  ldstr      0x7000006B
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x0600000C
                               IL_000b:  throw
@@ -19128,7 +19128,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x700002A1
+                              IL_0000:  ldstr      0x700000E9
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x0600000C
                               IL_000c:  throw
@@ -19137,7 +19137,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x700003EA
+                              IL_0000:  ldstr      0x70000147
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x0600000C
                               IL_000b:  throw
@@ -19296,7 +19296,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000152
+                              IL_0000:  ldstr      0x70000067
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x0600000A
                               IL_000b:  throw
@@ -19472,7 +19472,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x7000029D
+                              IL_0000:  ldstr      0x700000E5
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x0600000A
                               IL_000c:  throw
@@ -19481,7 +19481,7 @@ class C
                             {
                               // Code size       12 (0xc)
                               .maxstack  8
-                              IL_0000:  ldstr      0x700003E6
+                              IL_0000:  ldstr      0x70000143
                               IL_0005:  ldc.i4.m1
                               IL_0006:  newobj     0x0600000A
                               IL_000b:  throw
@@ -19711,7 +19711,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw
@@ -19883,7 +19883,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw
@@ -20050,7 +20050,7 @@ class C
                             {
                               // Code size       13 (0xd)
                               .maxstack  8
-                              IL_0000:  ldstr      0x70000151
+                              IL_0000:  ldstr      0x70000065
                               IL_0005:  ldc.i4.s   -2
                               IL_0007:  newobj     0x06000004
                               IL_000c:  throw

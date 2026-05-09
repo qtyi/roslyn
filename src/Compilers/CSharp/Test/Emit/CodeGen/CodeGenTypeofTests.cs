@@ -660,6 +660,34 @@ public class mem178
             CompileAndVerify(source, expectedOutput: @"TestClass`1+TestEnum[System.String]");
         }
 
+        [WorkItem(541600, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541600")]
+        [Fact]
+        public void TestTypeOfGenericAlias4TypeMemberOfGeneric()
+        {
+            var source = @"
+using System;
+using MyTestClass<T> = TestClass<T>;
+
+public class TestClass<T>
+{
+    public enum TestEnum
+    {
+        First = 0,
+    }
+}
+
+public class mem178
+{
+    public static int Main()
+    {
+        Console.Write(typeof(MyTestClass<string>.TestEnum));
+        return 0;
+    }
+}
+";
+            CompileAndVerify(source, expectedOutput: @"TestClass`1+TestEnum[System.String]");
+        }
+
         [WorkItem(541618, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541618")]
         [Fact]
         public void TestTypeOfAlias5TypeMemberOfGeneric()
@@ -681,6 +709,33 @@ public class Program
 ";
             // NOTE: this is the Dev10 output.  Change to false if we decide to take a breaking change.
             CompileAndVerify(source, expectedOutput: @"True");
+        }
+
+        [WorkItem(541618, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/541618")]
+        [Fact]
+        public void TestTypeOfGenericAlias5TypeMemberOfGeneric()
+        {
+            var source = @"
+using OuterOf<T> = Outer<T>;
+using InnerOfOuterOfString<T> = Outer<string>.Inner<T>;
+using InnerOfOuterOfInt<T> = Outer<int>.Inner<T>;
+using InnerOf<TOuter, TInner> = Outer<TOuter>.Inner<TInner>;
+public class Outer<T>
+{
+    public class Inner<U> { }
+}
+public class Program
+{
+    public static void Main()
+    {
+        System.Console.WriteLine(
+            typeof(OuterOf<>.Inner<>) == typeof(Outer<>.Inner<>) &&
+            typeof(InnerOfOuterOfString<>) == typeof(InnerOfOuterOfInt<>) &&
+            typeof(InnerOf<,>) == typeof(Outer<>.Inner<>));
+    }
+}
+";
+            CompileAndVerify(source, expectedOutput: @"True", parseOptions: TestOptions.RegularPreview);
         }
     }
 }

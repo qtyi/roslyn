@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.ExpressionEvaluator.UnitTests
         {
             return
                 record.TargetKind + ":" +
-                (record.Alias != null ? $" alias='{record.Alias}'" : "") +
+                (!record.Alias.IsDefault ? $" alias='{record.Alias}'" : "") +
                 (record.TargetAssembly != null ? $" assembly='{record.TargetAssembly}'" : "") +
                 (record.TargetAssemblyAlias != null ? $" assembly-alias='{record.TargetAssemblyAlias}'" : "") +
                 (record.TargetType != null ? $" type='{record.TargetType}'" : "") +

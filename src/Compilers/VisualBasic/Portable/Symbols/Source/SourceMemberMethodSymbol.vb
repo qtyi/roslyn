@@ -865,14 +865,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             binder.LookupMember(witheventsLookup, containingType, name, 0, options, useSiteInfo)
 
             If candidateEventSymbols IsNot Nothing Then
-                candidateEventSymbols.AddRange(witheventsLookup.Symbols)
+                candidateEventSymbols.AddRange(witheventsLookup.Symbols.ToImmutable().WithoutAnnotationSymbols())
                 resultKind = witheventsLookup.Kind
             End If
 
             Dim result As PropertySymbol = Nothing
             If witheventsLookup.IsGood Then
                 If witheventsLookup.HasSingleSymbol Then
-                    Dim prop = TryCast(witheventsLookup.SingleSymbol, PropertySymbol)
+                    Dim prop = TryCast(witheventsLookup.SingleSymbol.Symbol, PropertySymbol)
 
                     If prop IsNot Nothing AndAlso prop.IsWithEvents Then
                         result = prop
@@ -906,14 +906,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             binder.LookupMember(eventLookup, containingType, name, 0, options, useSiteInfo)
 
             If candidateEventSymbols IsNot Nothing Then
-                candidateEventSymbols.AddRange(eventLookup.Symbols)
+                candidateEventSymbols.AddRange(eventLookup.Symbols.ToImmutable().WithoutAnnotationSymbols())
                 resultKind = eventLookup.Kind
             End If
 
             Dim result As EventSymbol = Nothing
             If eventLookup.IsGood Then
                 If eventLookup.HasSingleSymbol Then
-                    result = TryCast(eventLookup.SingleSymbol, EventSymbol)
+                    result = TryCast(eventLookup.SingleSymbol.Symbol, EventSymbol)
                     If result Is Nothing Then
                         resultKind = LookupResultKind.NotAnEvent
                     End If
@@ -947,7 +947,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             binder.LookupMember(propertyLookup, containingType, name, 0, options, useSiteInfo)
 
             If candidatePropertySymbols IsNot Nothing Then
-                candidatePropertySymbols.AddRange(propertyLookup.Symbols)
+                candidatePropertySymbols.AddRange(propertyLookup.Symbols.ToImmutable().WithoutAnnotationSymbols())
                 resultKind = propertyLookup.Kind
             End If
 
@@ -957,7 +957,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Dim symbols = propertyLookup.Symbols
 
                 For Each symbol In symbols
-                    If symbol.Kind = SymbolKind.Property Then
+                    If symbol.Symbol.Kind = SymbolKind.Property Then
 
                         'Function ValidEventSourceProperty( _
                         '    ByVal [Property] As BCSym.[Property] _
@@ -973,7 +973,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                         '            IsClassOrInterface([Property]._GetType())
                         '    End Function
 
-                        Dim prop = DirectCast(symbol, PropertySymbol)
+                        Dim prop = DirectCast(symbol.Symbol, PropertySymbol)
                         If prop.Parameters.Any Then
                             Continue For
                         End If

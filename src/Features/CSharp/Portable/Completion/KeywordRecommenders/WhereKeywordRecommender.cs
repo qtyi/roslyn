@@ -32,6 +32,7 @@ internal sealed class WhereKeywordRecommender() : AbstractSyntacticSingleKeyword
         //   void Goo<T>() where T : IGoo |
         //   extension<T>(T value) |
         //   extension<T>(T value) where T : IGoo |
+        //   using A<T> = type |
 
         var token = context.TargetToken;
 
@@ -97,8 +98,21 @@ internal sealed class WhereKeywordRecommender() : AbstractSyntacticSingleKeyword
             }
         }
 
+        //   using A<T> = type |
+        var directive = token.GetAncestor<TypeSyntax>(syntax => syntax.IsParentKind(SyntaxKind.UsingDirective))?.Parent as UsingDirectiveSyntax;
+        // Is generic alias declaration
+        if (directive != null && directive.TypeParameterList != null)
+        {
+            // At the last token of generic alias target TypeSyntax
+            if (token == directive.NamespaceOrType.GetLastToken())
+            {
+                return true;
+            }
+        }
+
         // class C<T> where T : IGoo |
         // delegate void D<T> where T : IGoo |
+        // using A<T> where T : IGoo |
         if (token.IsLastTokenOfNode<TypeParameterConstraintSyntax>())
         {
             return true;

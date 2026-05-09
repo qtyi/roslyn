@@ -178,6 +178,11 @@
         <target state="translated">Zadaný token musí být přímým elementem seznamu SyntaxTokenList (například modifikátor v seznamu modifikátorů). Token nemůže být libovolný token ze stromu syntaxe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">Modul zahrnuje neplatné atributy.</target>

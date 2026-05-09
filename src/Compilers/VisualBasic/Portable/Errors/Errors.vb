@@ -1795,7 +1795,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERR_AttributeCannotBeAppliedManually = 37338
         ERR_EncUpdateRequiresEmittingExplicitInterfaceImplementationNotSupportedByTheRuntime = 37339
 
-        ERR_NextAvailable = 37340
+        ERR_InvalidTypeForAliasesImport3 = 37340
+
+        ERR_NextAvailable = 37341
 
         '// WARNINGS BEGIN HERE
         WRN_UseOfObsoleteSymbol2 = 40000
@@ -2098,5 +2100,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         FEATURE_CallerArgumentExpression
         FEATURE_UnmanagedConstraint
         FEATURE_OverloadResolutionPriority
+        FEATURE_ImportGenericAlias
     End Enum
 End Namespace

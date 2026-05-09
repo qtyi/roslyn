@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         private readonly ObjectPool<SymbolDisplayVisitor> _pool;
 
         private bool _escapeKeywordIdentifiers;
-        private IDictionary<INamespaceOrTypeSymbol, IAliasSymbol>? _lazyAliasMap;
+        private AliasMap? _lazyAliasMap;
 
         private SymbolDisplayVisitor(ObjectPool<SymbolDisplayVisitor> pool)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             SemanticModel? semanticModelOpt,
             int positionOpt,
             bool escapeKeywordIdentifiers,
-            IDictionary<INamespaceOrTypeSymbol, IAliasSymbol>? aliasMap,
+            AliasMap? aliasMap,
             bool isFirstSymbolVisited,
             bool inNamespaceOrType = false)
         {
@@ -332,6 +332,20 @@ namespace Microsoft.CodeAnalysis.CSharp
         public override void VisitAlias(IAliasSymbol symbol)
         {
             Builder.Add(CreatePart(SymbolDisplayPartKind.AliasName, symbol, symbol.Name));
+
+            if (symbol.Arity > 0)
+            {
+                if (Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases))
+                {
+                    Builder.Add(CreatePart(InternalSymbolDisplayPartKind.Arity, null,
+                        MetadataHelpers.GetAritySuffix(symbol.Arity)));
+                }
+                else if (Format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))
+                {
+                    AddTypeArguments(symbol, default);
+                    AddTypeParameterConstraints(StaticCast<ITypeSymbol>.From(symbol.TypeParameters));
+                }
+            }
 
             if (Format.LocalOptions.IncludesOption(SymbolDisplayLocalOptions.IncludeType))
             {

@@ -734,4 +734,7 @@
   <data name="ExceptionMessage_FileMayBeLockedBy" xml:space="preserve">
     <value>{0}; file may be locked by {1}</value>
   </data>
+  <data name="ModifiedTextSpansOverlap" xml:space="preserve">
+    <value>Span '{0}' of modified text overlaps with span '{1}'</value>
+  </data>
 </root>

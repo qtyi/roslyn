@@ -67,33 +67,58 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
                 return true;
             }
 
-            var myKeys = UnderlyingAssemblySymbol.GetInternalsVisibleToPublicKeys(assemblyWantingAccess.Name);
-
-            if (myKeys.Any())
+            // NOTE: Check if any [InternalsVisibleTo] attribute in this assembly matches wantingAssembly.
             {
-                // We have an easy out here. Suppose the assembly wanting access is 
-                // being compiled as a module. You can only strong-name an assembly. So we are going to optimistically 
-                // assume that it is going to be compiled into an assembly with a matching strong name, if necessary.
-                if (assemblyWantingAccess.IsNetModule())
+                var myKeys = UnderlyingAssemblySymbol.GetInternalsVisibleToPublicKeys(assemblyWantingAccess.Name);
+
+                if (myKeys.Any())
                 {
-                    return true;
-                }
-
-                AssemblyIdentity identity = UnderlyingAssemblySymbol.Identity;
-
-                // Avoid using the identity to obtain the public key if possible to avoid the allocations associated
-                // with identity creation
-                ImmutableArray<byte> publicKey = (assemblyWantingAccess is AssemblySymbol assemblyWantingAccessAssemblySymbol)
-                    ? assemblyWantingAccessAssemblySymbol.UnderlyingAssemblySymbol.PublicKey.NullToEmpty()
-                    : assemblyWantingAccess.Identity.PublicKey;
-
-                foreach (var key in myKeys)
-                {
-                    IVTConclusion conclusion = identity.PerformIVTCheck(publicKey, key);
-                    Debug.Assert(conclusion != IVTConclusion.NoRelationshipClaimed);
-                    if (conclusion == IVTConclusion.Match || conclusion == IVTConclusion.OneSignedOneNot)
+                    // We have an easy out here. Suppose the assembly wanting access is 
+                    // being compiled as a module. You can only strong-name an assembly. So we are going to optimistically 
+                    // assume that it is going to be compiled into an assembly with a matching strong name, if necessary.
+                    if (assemblyWantingAccess.IsNetModule())
                     {
                         return true;
+                    }
+
+                    AssemblyIdentity identity = UnderlyingAssemblySymbol.Identity;
+
+                    // Avoid using the identity to obtain the public key if possible to avoid the allocations associated
+                    // with identity creation
+                    ImmutableArray<byte> publicKey = (assemblyWantingAccess is AssemblySymbol assemblyWantingAccessAssemblySymbol)
+                        ? assemblyWantingAccessAssemblySymbol.UnderlyingAssemblySymbol.PublicKey.NullToEmpty()
+                        : assemblyWantingAccess.Identity.PublicKey;
+
+                    foreach (var key in myKeys)
+                    {
+                        IVTConclusion conclusion = identity.PerformIVTCheck(publicKey, key);
+                        Debug.Assert(conclusion != IVTConclusion.NoRelationshipClaimed);
+                        if (conclusion == IVTConclusion.Match || conclusion == IVTConclusion.OneSignedOneNot)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // NOTE: Check if any friend accessible assembly, if wantingAssembly is a source assembly, matches this assembly.
+            if (assemblyWantingAccess is AssemblySymbol)
+            {
+                var assemblyWantingAccessAssemblySymbol = (AssemblySymbol)assemblyWantingAccess;
+                var keys = assemblyWantingAccessAssemblySymbol.UnderlyingAssemblySymbol.GetFriendAccessibleAssemblyPublicKeys(UnderlyingAssemblySymbol.Name);
+
+                if (keys.Any())
+                {
+                    AssemblyIdentity identity = UnderlyingAssemblySymbol.Identity;
+
+                    foreach (var key in keys)
+                    {
+                        IVTConclusion conclusion = identity.PerformIVFCheck(assemblyWantingAccessAssemblySymbol.UnderlyingAssemblySymbol.PublicKey.NullToEmpty(), key);
+                        Debug.Assert(conclusion != IVTConclusion.NoRelationshipClaimed);
+                        if (conclusion == IVTConclusion.Match || conclusion == IVTConclusion.OneSignedOneNot)
+                        {
+                            return true;
+                        }
                     }
                 }
             }

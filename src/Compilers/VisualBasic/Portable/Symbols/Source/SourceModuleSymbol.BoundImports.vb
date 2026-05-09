@@ -17,7 +17,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Public ReadOnly MemberImportsInfo As ImmutableArray(Of GlobalImportInfo)
 
             ' can be Nothing if no alias imports
-            Public ReadOnly AliasImportsMap As Dictionary(Of String, AliasAndImportsClausePosition)
+            Public ReadOnly AliasImportsMap As Dictionary(Of NameWithArity, AliasAndImportsClausePosition)
             Public ReadOnly AliasImports As ImmutableArray(Of AliasAndImportsClausePosition)
             Public ReadOnly AliasImportsInfo As ImmutableArray(Of GlobalImportInfo)
 
@@ -28,7 +28,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
 
             Public Sub New(memberImports As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition),
                            memberImportsInfo As ImmutableArray(Of GlobalImportInfo),
-                           aliasImportsMap As Dictionary(Of String, AliasAndImportsClausePosition),
+                           aliasImportsMap As Dictionary(Of NameWithArity, AliasAndImportsClausePosition),
                            aliasImports As ImmutableArray(Of AliasAndImportsClausePosition),
                            aliasImportsInfo As ImmutableArray(Of GlobalImportInfo),
                            xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition),

@@ -18,6 +18,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Private Shared s_embeddedSyntax As SyntaxTree = Nothing
         Private Shared s_vbCoreSyntax As SyntaxTree = Nothing
         Private Shared s_internalXmlHelperSyntax As SyntaxTree = Nothing
+        Private Shared s_ignoresAccessChecksToAttributeSyntax As SyntaxTree = Nothing
 
         Private Shared Function ParseResourceText(text As String) As SyntaxTree
             Return VisualBasicSyntaxTree.ParseText(SourceText.From(text, Encoding.UTF8, SourceHashAlgorithms.Default))
@@ -33,6 +34,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                 Return EmbeddedSymbolKind.VbCore
             ElseIf tree Is s_internalXmlHelperSyntax Then
                 Return EmbeddedSymbolKind.XmlHelper
+            ElseIf tree Is s_ignoresAccessChecksToAttributeSyntax Then
+                Return EmbeddedSymbolKind.IgnoresAccessChecksToAttribute
             Else
                 Return EmbeddedSymbolKind.None
             End If
@@ -46,6 +49,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                     Return VbCoreSyntaxTree
                 Case EmbeddedSymbolKind.XmlHelper
                     Return InternalXmlHelperSyntax
+                Case EmbeddedSymbolKind.IgnoresAccessChecksToAttribute
+                    Return IgnoresAccessChecksToAttributeSyntax
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(kind)
             End Select
@@ -87,6 +92,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                     End If
                 End If
                 Return s_internalXmlHelperSyntax
+            End Get
+        End Property
+
+        Public Shared ReadOnly Property IgnoresAccessChecksToAttributeSyntax As SyntaxTree
+            Get
+                If s_ignoresAccessChecksToAttributeSyntax Is Nothing Then
+                    Interlocked.CompareExchange(s_ignoresAccessChecksToAttributeSyntax, ParseResourceText(EmbeddedResources.IgnoresAccessChecksToAttribute), Nothing)
+                    If s_ignoresAccessChecksToAttributeSyntax.GetDiagnostics().Any() Then
+                        Throw ExceptionUtilities.Unreachable
+                    End If
+                End If
+                Return s_ignoresAccessChecksToAttributeSyntax
             End Get
         End Property
 

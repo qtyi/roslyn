@@ -408,6 +408,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             AssemblyIdentityComparer assemblyIdentityComparer = AssemblyIdentityComparer.Default;           // Currently uses reference equality
             StrongNameProvider strongNameProvider = new DesktopStrongNameProvider();
             MetadataImportOptions metadataImportOptions = 0;
+            IEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>> friendAccessibleAssemblyPublicKeys = null;
             bool referencesSupersedeLowerVersions = false;
             bool reportSuppressedDiagnostics = false;
             var topLevelBinderFlags = BinderFlags.None;
@@ -421,7 +422,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 specificDiagnosticOptions, concurrentBuild, deterministic, currentLocalTime,
                 debugPlusMode, xmlReferenceResolver, sourceReferenceResolver,
                 syntaxTreeOptionsProvider, metadataReferenceResolver, assemblyIdentityComparer,
-                strongNameProvider, metadataImportOptions, referencesSupersedeLowerVersions,
+                strongNameProvider, metadataImportOptions, friendAccessibleAssemblyPublicKeys, referencesSupersedeLowerVersions,
                 publicSign, topLevelBinderFlags, nullableContextOptions);
         }
 

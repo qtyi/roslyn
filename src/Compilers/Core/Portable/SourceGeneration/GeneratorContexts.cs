@@ -21,6 +21,10 @@ namespace Microsoft.CodeAnalysis
 
         private readonly AdditionalSourcesCollection _additionalSources;
 
+        private readonly ModifiedTextsCollection _modifiedTexts;
+
+        private readonly PooledHashSet<SyntaxTree> _excludedSources;
+
         private readonly SourceHashAlgorithm _checksumAlgorithm;
 
         internal GeneratorExecutionContext(Compilation compilation, ParseOptions parseOptions, ImmutableArray<AdditionalText> additionalTexts, AnalyzerConfigOptionsProvider optionsProvider, ISyntaxContextReceiver? syntaxReceiver, string sourceExtension, SourceHashAlgorithm checksumAlgorithm, CancellationToken cancellationToken = default)
@@ -33,6 +37,8 @@ namespace Microsoft.CodeAnalysis
             SyntaxContextReceiver = (syntaxReceiver is SyntaxContextReceiverAdaptor) ? null : syntaxReceiver;
             CancellationToken = cancellationToken;
             _additionalSources = new AdditionalSourcesCollection(sourceExtension);
+            _modifiedTexts = new ModifiedTextsCollection();
+            _excludedSources = PooledHashSet<SyntaxTree>.GetInstance();
             _checksumAlgorithm = checksumAlgorithm;
             _diagnostics = new DiagnosticBag();
         }
@@ -95,6 +101,42 @@ namespace Microsoft.CodeAnalysis
         public void AddSource(string hintName, SourceText sourceText) => _additionalSources.Add(hintName, sourceText.WithChecksumAlgorithm(_checksumAlgorithm));
 
         /// <summary>
+        /// Removes a source from the compilation.
+        /// </summary>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        public void RemoveSource(SyntaxTree tree) => _excludedSources.Add(tree);
+
+        /// <summary>
+        /// Insert a new text into the file at the specified position.
+        /// </summary>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="position">Character position to insert the text.</param>
+        /// <param name="newText">Text to insert.</param>
+        public void InsertText(SyntaxTree tree, int position, string newText) => ReplaceText(tree, new TextSpan(position, 0), newText);
+
+        /// <summary>
+        /// Replace the text in the file in the specified span.
+        /// </summary>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="span">Character position span of the original text to be replaced.</param>
+        /// <param name="newText">Text to replace.</param>
+        public void ReplaceText(SyntaxTree tree, TextSpan span, string newText) => _modifiedTexts.Add(tree, new TextChange(span, newText));
+
+        /// <summary>
+        /// Replace the syntax tree of the file with a new syntax tree.
+        /// </summary>
+        /// <param name="oldTree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/> to be replaced with.</param>
+        /// <param name="newTree">The new <see cref="SyntaxTree"/> to replace <paramref name="oldTree"/>.</param>
+        public void ReplaceSource(SyntaxTree oldTree, SyntaxTree newTree) => _modifiedTexts.AddRange(oldTree, newTree.GetChanges(oldTree));
+
+        /// <summary>
+        /// Remove the text in the file in the specified span.
+        /// </summary>
+        /// <param name="tree">An existing <see cref="SyntaxTree"/> in <see cref="Compilation"/>.</param>
+        /// <param name="span">Character position span of the original text to be removed.</param>
+        public void RemoveText(SyntaxTree tree, TextSpan span) => ReplaceText(tree, span, string.Empty);
+
+        /// <summary>
         /// Adds a <see cref="Diagnostic"/> to the users compilation 
         /// </summary>
         /// <param name="diagnostic">The diagnostic that should be added to the compilation</param>
@@ -111,18 +153,26 @@ namespace Microsoft.CodeAnalysis
             _diagnostics.Add(diagnostic);
         }
 
-        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<Diagnostic> diagnostics) ToImmutableAndFree()
-            => (_additionalSources.ToImmutableAndFree(), _diagnostics.ToReadOnlyAndFree());
+        internal (ImmutableArray<GeneratedSourceText> sources, ImmutableArray<ModifiedTexts> modifiedTexts, ImmutableArray<SyntaxTree> excludedSources, ImmutableArray<Diagnostic> diagnostics) ToImmutableAndFree()
+        {
+            var result = (_additionalSources.ToImmutableAndFree(), _modifiedTexts.ToImmutableAndFree(), _excludedSources.ToImmutableArray(), _diagnostics.ToReadOnlyAndFree());
+            _excludedSources.Free();
+            return result;
+        }
 
         internal void Free()
         {
             _additionalSources.Free();
+            _modifiedTexts.Free();
+            _excludedSources.Free();
             _diagnostics.Free();
         }
 
         internal void CopyToProductionContext(SourceProductionContext ctx)
         {
             _additionalSources.CopyTo(ctx.Sources);
+            _modifiedTexts.CopyTo(ctx.ModifiedTexts);
+            ctx.ExcludedSources.UnionWith(_excludedSources);
             ctx.Diagnostics.AddRange(_diagnostics);
         }
     }

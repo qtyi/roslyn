@@ -92,12 +92,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            ImmutableDictionary<string, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
+            ImmutableDictionary<NameWithArity, AliasAndUsingDirective> aliasSymbols = Imports.UsingAliases;
             if (!aliasSymbols.IsEmpty)
             {
-                var aliases = ArrayBuilder<string>.GetInstance(aliasSymbols.Count);
+                var aliases = ArrayBuilder<NameWithArity>.GetInstance(aliasSymbols.Count);
                 aliases.AddRange(aliasSymbols.Keys);
-                aliases.Sort(StringComparer.Ordinal); // Actual order doesn't matter - just want to be deterministic.
+                aliases.Sort(NameWithArityComparer.Default); // Actual order doesn't matter - just want to be deterministic.
 
                 foreach (var alias in aliases)
                 {
@@ -109,9 +109,15 @@ namespace Microsoft.CodeAnalysis.CSharp
                     NamespaceOrTypeSymbol target = symbol.Target;
                     if (target.Kind == SymbolKind.Namespace)
                     {
+                        Debug.Assert(alias.Arity == 0);
                         var ns = (NamespaceSymbol)target;
                         var assemblyRef = TryGetAssemblyScope(ns, moduleBuilder, diagnostics);
                         usedNamespaces.Add(Cci.UsedNamespaceOrType.CreateNamespace(ns.GetCciAdapter(), assemblyRef, alias));
+                    }
+                    else if (alias.Arity != 0)
+                    {
+                        // WORKAROUND(sanmuru): We skip generic alias now.
+                        continue;
                     }
                     else if (target is NamedTypeSymbol { ContainingAssembly.IsLinked: false } or not NamedTypeSymbol)
                     {

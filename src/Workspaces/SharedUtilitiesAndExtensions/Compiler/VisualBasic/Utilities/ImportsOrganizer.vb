@@ -58,8 +58,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Utilities
 
                 If Not isAlias1 AndAlso Not isAlias2 Then
                     ' named imports
-                    Dim name1 = simpleClause1.Name.GetFirstToken().ValueText
-                    Dim name2 = simpleClause2.Name.GetFirstToken().ValueText
+                    Dim name1 = simpleClause1.NamespaceOrType.GetFirstToken().ValueText
+                    Dim name2 = simpleClause2.NamespaceOrType.GetFirstToken().ValueText
 
                     Return Not VisualBasicSyntaxFacts.Instance.StringComparer.Equals(name1, name2)
                 End If

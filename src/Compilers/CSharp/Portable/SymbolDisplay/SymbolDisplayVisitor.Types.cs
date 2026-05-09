@@ -401,7 +401,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            if (Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes))
+            if (Format.CompilerInternalOptions.IncludesOption(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases))
             {
                 if (symbol.Arity > 0)
                 {
@@ -821,20 +821,32 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
-        //returns true if there are constraints
         private void AddTypeArguments(ISymbol owner, ImmutableArray<ImmutableArray<CustomModifier>> modifiers)
         {
             ImmutableArray<ITypeSymbol> typeArguments;
 
-            if (owner.Kind == SymbolKind.Method)
+            switch (owner.Kind)
             {
-                typeArguments = ((IMethodSymbol)owner).TypeArguments;
-            }
-            else
-            {
-                typeArguments = ((INamedTypeSymbol)owner).TypeArguments;
+                case SymbolKind.Method:
+                    typeArguments = ((IMethodSymbol)owner).TypeArguments;
+                    break;
+                case SymbolKind.NamedType:
+                case SymbolKind.ErrorType:
+                    typeArguments = ((INamedTypeSymbol)owner).TypeArguments;
+                    break;
+                case SymbolKind.Alias:
+                    typeArguments = StaticCast<ITypeSymbol>.From(((IAliasSymbol)owner).TypeParameters);
+                    break;
+
+                default:
+                    throw ExceptionUtilities.UnexpectedValue(owner.Kind);
             }
 
+            AddTypeArguments(typeArguments, modifiers);
+        }
+
+        private void AddTypeArguments(ImmutableArray<ITypeSymbol> typeArguments, ImmutableArray<ImmutableArray<CustomModifier>> modifiers)
+        {
             if (typeArguments.Length > 0 && Format.GenericsOptions.IncludesOption(SymbolDisplayGenericsOptions.IncludeTypeParameters))
             {
                 AddPunctuation(SyntaxKind.LessThanToken);

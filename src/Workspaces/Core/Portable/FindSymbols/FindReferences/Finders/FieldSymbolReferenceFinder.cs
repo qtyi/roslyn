@@ -28,7 +28,7 @@ internal sealed class FieldSymbolReferenceFinder : AbstractReferenceFinder<IFiel
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         IFieldSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

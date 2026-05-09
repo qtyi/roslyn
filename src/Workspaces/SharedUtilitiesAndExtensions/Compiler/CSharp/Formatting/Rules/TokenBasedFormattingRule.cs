@@ -295,7 +295,7 @@ internal sealed class TokenBasedFormattingRule : BaseFormattingRule
         // Get a unique identifier for the group this using belongs to
         // NOTE: Stay in sync with UsingsAndExternAliasesOrganizer.NeedsGrouping
 
-        if (usingDirective.Alias != null)
+        if (usingDirective.Identifier != default)
             return "alias";
 
         if (usingDirective.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))

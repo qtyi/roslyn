@@ -113,10 +113,7 @@ class C
                 Diagnostic(ErrorCode.ERR_BadSKunknown, "N.D").WithArguments("N.D", "type").WithLocation(9, 18),
                 // (5,16): warning CS0169: The field 'C.x' is never used
                 //     static int x;
-                Diagnostic(ErrorCode.WRN_UnreferencedField, "x").WithArguments("C.x").WithLocation(5, 16),
-                // (2,43): warning CS0649: Field 'D.x' is never assigned to, and will always have its default value 0
-                // namespace N { class D { public static int x; } } 
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "x").WithArguments("N.D.x", "0").WithLocation(2, 43));
+                Diagnostic(ErrorCode.WRN_UnreferencedField, "x").WithArguments("C.x").WithLocation(5, 16));
         }
 
         [Fact]

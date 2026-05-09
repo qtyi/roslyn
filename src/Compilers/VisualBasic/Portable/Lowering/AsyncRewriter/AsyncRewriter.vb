@@ -551,10 +551,10 @@ lCaptureRValue:
             If result.IsGood Then
                 Debug.Assert(result.Symbols.Count > 0)
                 Dim symbol0 = result.Symbols(0)
-                If result.Symbols(0).Kind = SymbolKind.Method Then
+                If result.Symbols(0).Symbol.Kind = SymbolKind.Method Then
                     group = New BoundMethodGroup(Me.F.Syntax,
                                                  Me.F.TypeArguments(typeArgs),
-                                                 result.Symbols.ToDowncastedImmutable(Of MethodSymbol),
+                                                 result.Symbols.ToImmutable().WithoutAnnotationSymbols(Of MethodSymbol),
                                                  result.Kind,
                                                  receiver,
                                                  QualificationKind.QualifiedViaValue)
@@ -610,9 +610,9 @@ lCaptureRValue:
             If result.IsGood Then
                 Debug.Assert(result.Symbols.Count > 0)
                 Dim symbol0 = result.Symbols(0)
-                If result.Symbols(0).Kind = SymbolKind.Property Then
+                If result.Symbols(0).Symbol.Kind = SymbolKind.Property Then
                     group = New BoundPropertyGroup(Me.F.Syntax,
-                                                   result.Symbols.ToDowncastedImmutable(Of PropertySymbol),
+                                                   result.Symbols.ToImmutable().WithoutAnnotationSymbols(Of PropertySymbol),
                                                    result.Kind,
                                                    receiver,
                                                    QualificationKind.QualifiedViaValue)

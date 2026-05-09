@@ -370,6 +370,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     return true;
                 }
 
+                if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
+                {
+                    return true;
+                }
+
                 // if ignoring dynamic, then treat dynamic the same as the type 'object'
                 if ((comparison & TypeCompareKind.IgnoreDynamic) != 0 &&
                     (object)t2 != null &&
@@ -455,6 +460,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
             {
                 if (ReferenceEquals(this, t2))
+                {
+                    return true;
+                }
+
+                if (OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison))
                 {
                     return true;
                 }

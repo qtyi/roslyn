@@ -178,6 +178,11 @@
         <target state="translated">지정한 토큰은 SyntaxTokenList의 직접 요소여야 합니다(예: 한정자 목록에 있는 한정자). 토큰은 구문 트리에서 임의로 선택된 토큰일 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">모듈에 잘못된 특성이 있습니다.</target>

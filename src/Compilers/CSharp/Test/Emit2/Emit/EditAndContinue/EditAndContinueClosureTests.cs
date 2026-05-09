@@ -5559,7 +5559,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000007
                           IL_000b:  throw
@@ -6723,7 +6723,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F5
+                          IL_0000:  ldstr      0x700000B5
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000005
                           IL_000b:  throw
@@ -6868,7 +6868,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000007
                           IL_000b:  throw
@@ -9200,7 +9200,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x0600000A
                           IL_000b:  throw
@@ -9884,7 +9884,7 @@ class C
                         {
                           // Code size       12 (0xc)
                           .maxstack  8
-                          IL_0000:  ldstr      0x700001F4
+                          IL_0000:  ldstr      0x700000B4
                           IL_0005:  ldc.i4.m1
                           IL_0006:  newobj     0x06000008
                           IL_000b:  throw
@@ -10478,7 +10478,7 @@ class C
                         {
                           // Code size       16 (0x10)
                           .maxstack  8
-                          IL_0000:  ldstr      0x7000010D
+                          IL_0000:  ldstr      0x70000081
                           IL_0005:  ldc.i4     0x123
                           IL_000a:  newobj     0x06000006
                           IL_000f:  throw

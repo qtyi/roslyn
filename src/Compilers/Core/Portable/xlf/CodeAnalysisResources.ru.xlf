@@ -178,6 +178,11 @@
         <target state="translated">Указанный токен должен быть непосредственным элементом SyntaxTokenList (например, модификатором в списке модификаторов). Токен не может быть произвольным токеном из дерева синтаксиса.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">Модуль содержит недопустимые атрибуты.</target>

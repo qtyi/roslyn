@@ -19,6 +19,7 @@ using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using Xunit;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 {
@@ -931,7 +932,7 @@ internal static class Extensions
         AddDiagnosticInfos(ref useSiteDiagnostics, useSiteInfo);
     }
 
-    public static ImmutableArray<Symbol> BindCref(this Microsoft.CodeAnalysis.CSharp.Binder binder, CrefSyntax syntax, out Symbol ambiguityWinner, DiagnosticBag diagnostics)
+    public static ImmutableArray<SymbolWithAnnotationSymbols> BindCref(this Microsoft.CodeAnalysis.CSharp.Binder binder, CrefSyntax syntax, out SymbolWithAnnotationSymbols ambiguityWinner, DiagnosticBag diagnostics)
     {
         var bindingDiagnostics = Microsoft.CodeAnalysis.CSharp.BindingDiagnosticBag.GetInstance(withDiagnostics: true, withDependencies: false);
         var result = binder.BindCref(syntax, out ambiguityWinner, bindingDiagnostics);

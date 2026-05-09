@@ -382,6 +382,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         End Function
 
         ''' <summary>
+        ''' Returns true if the node is in a position where an unbound alias
+        ''' such as (A(of)) is allowed.
+        ''' </summary>
+        Public Overridable Function IsUnboundAliasAllowed(syntax As GenericNameSyntax, symbol As AliasSymbol) As Boolean
+            Return m_containingBinder.IsUnboundAliasAllowed(syntax, symbol)
+        End Function
+
+        ''' <summary>
         ''' The type containing the binding context
         ''' </summary>
         Public Overridable ReadOnly Property ContainingType As NamedTypeSymbol

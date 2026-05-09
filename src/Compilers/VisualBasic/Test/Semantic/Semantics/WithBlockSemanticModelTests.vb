@@ -36,7 +36,7 @@ End Module
             Dim model = compilation.GetSemanticModel(tree)
             Dim withExpression = DirectCast(tree.GetCompilationUnitRoot().DescendantNodes().Where(Function(n) n.Kind = SyntaxKind.SimpleMemberAccessExpression).First(), MemberAccessExpressionSyntax)
 
-            Assert.Equal("Alias1", model.GetAliasInfo(DirectCast(withExpression.Expression, IdentifierNameSyntax)).ToDisplayString())
+            Assert.Equal("Alias1", model.GetAliasInfo(DirectCast(withExpression.Expression, IdentifierNameSyntax)).Alias.ToDisplayString())
             Assert.False(model.GetConstantValue(withExpression).HasValue)
             Dim typeInfo = model.GetTypeInfo(withExpression)
             Assert.Equal("String", typeInfo.Type.ToDisplayString())

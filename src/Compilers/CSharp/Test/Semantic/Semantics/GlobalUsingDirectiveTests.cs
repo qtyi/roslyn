@@ -4243,7 +4243,7 @@ namespace NS
             var node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             var model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { usings1 + source, globalUsings1 }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(expected2);
@@ -4251,7 +4251,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { externAlias1 + globalUsings1 + usings1 + source }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.ERR_DuplicateAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(expected1);
@@ -4279,7 +4279,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { globalUsings1 + source, globalUsings2 }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(expected3);
@@ -4287,7 +4287,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { source, globalUsings1 + globalUsings2 }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(expected3);
@@ -4295,7 +4295,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { source, globalUsings1, globalUsings2 }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(expected3);
@@ -4303,7 +4303,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C1", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
 
             comp = CreateCompilation(new[] { usings1 + usings2 + source }, parseOptions: TestOptions.RegularPreview);
             comp.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_BadExternAlias or (int)ErrorCode.HDN_UnusedUsingDirective)).Verify(
@@ -4315,7 +4315,7 @@ namespace NS
             node = tree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
             model = comp.GetSemanticModel(tree);
             Assert.Equal("C3", model.GetTypeInfo(node).Type.ToTestDisplayString());
-            Assert.Equal("alias1=C3", model.GetAliasInfo(node.Type).ToTestDisplayString());
+            Assert.Equal("alias1=C3", model.GetAliasInfo(node.Type).Alias.ToTestDisplayString());
         }
 
         [Fact]
@@ -4976,13 +4976,13 @@ class C2 {}
 
             var tree = comp.SyntaxTrees[0];
             var model = comp.GetSemanticModel(tree);
-            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsExpression).ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsTypeOrNamespace).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsExpression).Alias.ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsTypeOrNamespace).Alias.ToTestDisplayString());
 
             tree = comp.SyntaxTrees[1];
             model = comp.GetSemanticModel(tree);
-            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsExpression).ToTestDisplayString());
-            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsTypeOrNamespace).ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsExpression).Alias.ToTestDisplayString());
+            Assert.Equal("alias1=C1", model.GetSpeculativeAliasInfo(tree.GetRoot().Span.End, alias1, SpeculativeBindingOption.BindAsTypeOrNamespace).Alias.ToTestDisplayString());
         }
 
         [Fact]

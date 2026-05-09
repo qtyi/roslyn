@@ -23,7 +23,7 @@ internal sealed class TypeParameterSymbolReferenceFinder : AbstractTypeParameter
 
     protected override Task DetermineDocumentsToSearchAsync<TData>(
         ITypeParameterSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

@@ -178,6 +178,11 @@
         <target state="translated">指定的權杖必須是 SyntaxTokenList 的直接元素 (例如修飾元清單中的修飾元)。該權杖不能是語法樹中的任意權杖。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">模組有無效的屬性。</target>

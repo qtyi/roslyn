@@ -110,7 +110,7 @@ internal abstract class AbstractObsoleteSymbolService(int? dimKeywordKind) : IOb
         {
             if (syntaxFacts.IsUsingAliasDirective(node))
             {
-                syntaxFacts.GetPartsOfUsingAliasDirective(node, out _, out var aliasToken, out var name);
+                syntaxFacts.GetPartsOfUsingAliasDirective(node, out _, out var aliasToken, out _, out var name);
                 if (!aliasToken.Span.IsEmpty)
                 {
                     // Use 'name.Parent' because VB can't resolve the declared symbol directly from 'node'

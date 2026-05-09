@@ -70,6 +70,7 @@
          ErrorReport="$(ErrorReport)"
          Features="$(Features)"
          FileAlignment="$(FileAlignment)"
+         FriendAccessibleAssemblies="@(InternalsVisibleFrom)"
          GenerateDocumentation="$(GenerateDocumentation)"
          GeneratedFilesOutputPath="$(CompilerGeneratedFilesOutputPath)"
          HighEntropyVA="$(HighEntropyVA)"

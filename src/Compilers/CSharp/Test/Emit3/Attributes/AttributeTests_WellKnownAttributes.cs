@@ -7443,6 +7443,57 @@ namespace N
                 Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "X").WithArguments("N.A", "Do not use").WithLocation(15, 16));
         }
 
+        [Fact]
+        public void TestObsoleteTypeParameterInGenericAlias()
+        {
+            var source =
+@"using System;
+public class List<T> { }
+namespace N
+{
+    using X<T> = T;
+    using Y<T> = List<T>;
+    using Z<T> = List<T[]>;
+    [Obsolete(""Do not use"", true)]
+    public class A { }
+    public class B : X<A> { }
+    public class C : Y<A> { }
+    public class E : Z<A> { }
+    public class D : List<Y<A>>
+    {
+        public X<A> x;
+        public Y<A> y1;
+        public List<Y<A>> y2;
+        public Z<A> z;
+    }
+}";
+            CreateCompilation(source).VerifyDiagnostics(
+                // (11,24): error CS0619: 'A' is obsolete: 'Do not use'
+                //     public class C : Y<A> { }
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(11, 24),
+                // (12,24): error CS0619: 'A' is obsolete: 'Do not use'
+                //     public class E : Z<A> { }
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(12, 24),
+                // (10,24): error CS0619: 'A' is obsolete: 'Do not use'
+                //     public class B : X<A> { }
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(10, 24),
+                // (13,29): error CS0619: 'A' is obsolete: 'Do not use'
+                //     public class D : List<Y<A>>
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(13, 29),
+                // (16,18): error CS0619: 'A' is obsolete: 'Do not use'
+                //         public Y<A> y1;
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(16, 18),
+                // (17,23): error CS0619: 'A' is obsolete: 'Do not use'
+                //         public List<Y<A>> y2;
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(17, 23),
+                // (18,18): error CS0619: 'A' is obsolete: 'Do not use'
+                //         public Z<A> z;
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(18, 18),
+                // (15,18): error CS0619: 'A' is obsolete: 'Do not use'
+                //         public X<A> x;
+                Diagnostic(ErrorCode.ERR_DeprecatedSymbolStr, "A").WithArguments("N.A", "Do not use").WithLocation(15, 18));
+        }
+
         [ConditionalFact(typeof(IsEnglishLocal), Reason = "https://github.com/dotnet/roslyn/issues/28328")]
         [WorkItem(580832, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/580832")]
         public void ObsoleteOnVirtual_OnBase()

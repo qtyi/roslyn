@@ -77,7 +77,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool Equals(TypeSymbol t2, TypeCompareKind comparison)
         {
-            return ReferenceEquals(this, t2);
+            return ReferenceEquals(this, t2) || OriginalTypeSymbolWithNoAliasConstructAnnotationEquals(t2, comparison);
         }
     }
 }

@@ -31,6 +31,7 @@ using Microsoft.Metadata.Tools;
 using Roslyn.Test.Utilities;
 using Roslyn.Utilities;
 using Xunit;
+using SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols<Microsoft.CodeAnalysis.CSharp.Symbol>;
 
 namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
 {
@@ -2418,17 +2419,17 @@ class ExpressionPrinter : System.Linq.Expressions.ExpressionVisitor
             });
         }
 
-        internal static Symbol? GetReferencedSymbol(CrefSyntax crefSyntax, CSharpCompilation compilation, params DiagnosticDescription[] expectedDiagnostics)
+        internal static SymbolWithAnnotationSymbols GetReferencedSymbol(CrefSyntax crefSyntax, CSharpCompilation compilation, params DiagnosticDescription[] expectedDiagnostics)
         {
-            Symbol ambiguityWinner;
+            SymbolWithAnnotationSymbols ambiguityWinner;
             var references = GetReferencedSymbols(crefSyntax, compilation, out ambiguityWinner, expectedDiagnostics);
-            Assert.Null(ambiguityWinner);
+            Assert.True(ambiguityWinner.IsDefault);
             Assert.InRange(references.Length, 0, 1); //Otherwise, call GetReferencedSymbols
 
             return references.FirstOrDefault();
         }
 
-        internal static ImmutableArray<Symbol> GetReferencedSymbols(CrefSyntax crefSyntax, CSharpCompilation compilation, out Symbol ambiguityWinner, params DiagnosticDescription[] expectedDiagnostics)
+        internal static ImmutableArray<SymbolWithAnnotationSymbols> GetReferencedSymbols(CrefSyntax crefSyntax, CSharpCompilation compilation, out SymbolWithAnnotationSymbols ambiguityWinner, params DiagnosticDescription[] expectedDiagnostics)
         {
             var binderFactory = compilation.GetBinderFactory(crefSyntax.SyntaxTree);
             var binder = binderFactory.GetBinder(crefSyntax);

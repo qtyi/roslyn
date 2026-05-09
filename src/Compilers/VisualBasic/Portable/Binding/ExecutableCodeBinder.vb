@@ -127,7 +127,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' Not found
 
                     Case 1
-                        lookupResult.SetFrom(SingleLookupResult.Good(labels.Single()))
+                        lookupResult.SetFrom(SingleLookupResult.Good(labels.Single().WithDefaultAnnotationSymbols()))
 
                     Case Else
                         ' There are several labels with the same name, so we are going through the list 
@@ -143,7 +143,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             End If
                         Next
 
-                        lookupResult.SetFrom(SingleLookupResult.Good(bestSymbol))
+                        lookupResult.SetFrom(SingleLookupResult.Good(bestSymbol.WithDefaultAnnotationSymbols()))
                 End Select
             End If
         End Sub

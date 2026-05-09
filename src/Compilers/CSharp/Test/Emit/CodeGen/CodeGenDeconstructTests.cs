@@ -3752,7 +3752,7 @@ class C
                 var x1Type = GetTypeSyntax(x1);
                 Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x1Type).Symbol.Kind);
                 Assert.Equal("int", model.GetSymbolInfo(x1Type).Symbol.ToDisplayString());
-                Assert.Null(model.GetAliasInfo(x1Type));
+                Assert.Null(model.GetAliasInfo(x1Type).Alias);
 
                 var x34Var = (DeclarationExpressionSyntax)x3.Parent.Parent;
                 Assert.Equal("var", x34Var.Type.ToString());
@@ -3809,7 +3809,60 @@ class D
                 var x2Type = GetTypeSyntax(x2);
                 Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x2Type).Symbol.Kind);
                 Assert.Equal("int", model.GetSymbolInfo(x2Type).Symbol.ToDisplayString());
-                Assert.Null(model.GetAliasInfo(x2Type));
+                Assert.Null(model.GetAliasInfo(x2Type).Alias);
+            };
+
+            var comp = CompileAndVerify(source, expectedOutput: "var 2", sourceSymbolValidator: validator);
+            comp.VerifyDiagnostics();
+        }
+
+        [Fact]
+        public void DeclarationWithGenericAliasedVarType()
+        {
+            string source = @"
+using @var<T> = T;
+class C
+{
+    static void Main()
+    {
+        (var<D> x1, int x2) = (new var<D>(), 2);
+        System.Console.WriteLine(x1 + "" "" + x2);
+    }
+}
+class D
+{
+    public override string ToString() { return ""var""; }
+}
+";
+
+            Action<ModuleSymbol> validator = (ModuleSymbol module) =>
+            {
+                var sourceModule = (SourceModuleSymbol)module;
+                var compilation = sourceModule.DeclaringCompilation;
+                var tree = compilation.SyntaxTrees.First();
+                var model = compilation.GetSemanticModel(tree);
+
+                var x1 = GetDeconstructionVariable(tree, "x1");
+                var x1Ref = GetReference(tree, "x1");
+                VerifyModelForDeconstructionLocal(model, x1, x1Ref);
+
+                var x2 = GetDeconstructionVariable(tree, "x2");
+                var x2Ref = GetReference(tree, "x2");
+                VerifyModelForDeconstructionLocal(model, x2, x2Ref);
+
+                // extra checks on x1
+                var x1Type = GetTypeSyntax(x1);
+                Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x1Type).Symbol.Kind);
+                Assert.Equal("D", model.GetSymbolInfo(x1Type).Symbol.ToDisplayString());
+                var x1Alias = model.GetAliasInfo(x1Type);
+                Assert.Equal(SymbolKind.NamedType, x1Alias.Target.Kind);
+                Assert.Equal("D", x1Alias.Target.ToDisplayString());
+
+                // extra checks on x2
+                var x2Type = GetTypeSyntax(x2);
+                Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x2Type).Symbol.Kind);
+                Assert.Equal("int", model.GetSymbolInfo(x2Type).Symbol.ToDisplayString());
+                Assert.Null(model.GetAliasInfo(x2Type).Alias);
             };
 
             var comp = CompileAndVerify(source, expectedOutput: "var 2", sourceSymbolValidator: validator);
@@ -5034,13 +5087,13 @@ System.Console.Write($""{x} {y}"");
                 var xType = GetTypeSyntax(x);
                 Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(xType).Symbol.Kind);
                 Assert.Equal("string", model.GetSymbolInfo(xType).Symbol.ToDisplayString());
-                Assert.Null(model.GetAliasInfo(xType));
+                Assert.Null(model.GetAliasInfo(xType).Alias);
 
                 // extra checks on y
                 var yType = GetTypeSyntax(y);
                 Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(yType).Symbol.Kind);
                 Assert.Equal("int", model.GetSymbolInfo(yType).Symbol.ToDisplayString());
-                Assert.Equal("alias=System.Int32", model.GetAliasInfo(yType).ToTestDisplayString());
+                Assert.Equal("alias=System.Int32", model.GetAliasInfo(yType).Alias.ToTestDisplayString());
             };
 
             var comp = CreateCompilationWithMscorlib461(source, parseOptions: TestOptions.Script, options: TestOptions.DebugExe, references: s_valueTupleRefs);
@@ -5186,7 +5239,7 @@ System.Console.Write($""{x1} {x2} {x3}"");
                 var x1Type = GetTypeSyntax(x1);
                 Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x1Type).Symbol.Kind);
                 Assert.Equal("string", model.GetSymbolInfo(x1Type).Symbol.ToDisplayString());
-                Assert.Null(model.GetAliasInfo(x1Type));
+                Assert.Null(model.GetAliasInfo(x1Type).Alias);
 
                 // extra check on x2 and x3's var
                 var x23Var = (DeclarationExpressionSyntax)x2.Parent.Parent;
@@ -5831,6 +5884,52 @@ System.Console.Write($""{x1} {x2} {x3}"");
         }
 
         [Fact]
+        public void VarGenericAliasInTypedDeconstructionInScript()
+        {
+            var source =
+@"
+using @var<T> = T;
+(var<System.Byte> x1, (var<System.Byte> x2, var<System.Byte> x3)) = (1, (2, 3));
+System.Console.Write($""{x1} {x2} {x3}"");
+";
+
+            var comp = CreateCompilationWithMscorlib461(source, parseOptions: TestOptions.Script.WithLanguageVersion(LanguageVersion.Preview), options: TestOptions.DebugExe, references: s_valueTupleRefs);
+            comp.VerifyDiagnostics();
+            CompileAndVerify(comp, expectedOutput: "1 2 3");
+
+            var tree = comp.SyntaxTrees.First();
+            var model = comp.GetSemanticModel(tree);
+
+            var x1 = GetDeconstructionVariable(tree, "x1");
+            var x1Symbol = model.GetDeclaredSymbol(x1);
+            var x1Ref = GetReference(tree, "x1");
+            Assert.Equal("System.Byte Script.x1", x1Symbol.ToTestDisplayString());
+            VerifyModelForDeconstructionField(model, x1, x1Ref);
+
+            var x3 = GetDeconstructionVariable(tree, "x3");
+            var x3Symbol = model.GetDeclaredSymbol(x3);
+            var x3Ref = GetReference(tree, "x3");
+            Assert.Equal("System.Byte Script.x3", x3Symbol.ToTestDisplayString());
+            VerifyModelForDeconstructionField(model, x3, x3Ref);
+
+            // extra checks on x1's var
+            var x1Type = GetTypeSyntax(x1);
+            Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x1Type).Symbol.Kind);
+            Assert.Equal("byte", model.GetSymbolInfo(x1Type).Symbol.ToDisplayString());
+            var x1Alias = model.GetAliasInfo(x1Type);
+            Assert.Equal(SymbolKind.NamedType, x1Alias.Target.Kind);
+            Assert.Equal("byte", x1Alias.Target.ToDisplayString());
+
+            // extra checks on x3's var
+            var x3Type = GetTypeSyntax(x3);
+            Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x3Type).Symbol.Kind);
+            Assert.Equal("byte", model.GetSymbolInfo(x3Type).Symbol.ToDisplayString());
+            var x3Alias = model.GetAliasInfo(x3Type);
+            Assert.Equal(SymbolKind.NamedType, x3Alias.Target.Kind);
+            Assert.Equal("byte", x3Alias.Target.ToDisplayString());
+        }
+
+        [Fact]
         public void VarTypeInTypedDeconstructionInScript()
         {
             var source =
@@ -5869,13 +5968,13 @@ System.Console.Write($""{x1} {x2} {x3}"");
             var x1Type = GetTypeSyntax(x1);
             Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x1Type).Symbol.Kind);
             Assert.Equal("var", model.GetSymbolInfo(x1Type).Symbol.ToDisplayString());
-            Assert.Null(model.GetAliasInfo(x1Type));
+            Assert.Null(model.GetAliasInfo(x1Type).Alias);
 
             // extra checks on x3's var
             var x3Type = GetTypeSyntax(x3);
             Assert.Equal(SymbolKind.NamedType, model.GetSymbolInfo(x3Type).Symbol.Kind);
             Assert.Equal("var", model.GetSymbolInfo(x3Type).Symbol.ToDisplayString());
-            Assert.Null(model.GetAliasInfo(x3Type));
+            Assert.Null(model.GetAliasInfo(x3Type).Alias);
         }
 
         [Fact]
@@ -8917,9 +9016,6 @@ namespace System
     }
 }";
             var expected = new[] {
-                // (12,19): warning CS0649: Field '(T1, T2).Item1' is never assigned to, and will always have its default value 
-                //         public T1 Item1;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Item1").WithArguments("(T1, T2).Item1", "").WithLocation(12, 19),
                 // (13,20): warning CS0169: The field '(T1, T2).Item2' is never used
                 //         private T2 Item2;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "Item2").WithArguments("(T1, T2).Item2").WithLocation(13, 20)

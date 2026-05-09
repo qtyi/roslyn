@@ -10,6 +10,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.VisualBasic.SyntaxFacts
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -597,19 +598,25 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         Public Function BindNamespaceOrTypeExpression(node As TypeSyntax, diagnostics As BindingDiagnosticBag) As BoundExpression
             Dim symbol = Me.BindNamespaceOrTypeOrAliasSyntax(node, diagnostics)
 
-            Dim [alias] = TryCast(symbol, AliasSymbol)
+            Dim result As Symbol = symbol.Symbol
+            Dim [alias] = TryCast(result, AliasSymbol)
             If [alias] IsNot Nothing Then
-                symbol = [alias].Target
+                If [alias].IsGenericAlias Then
+                    Debug.Assert(symbol.AnnotationSymbols.Length = 1 AndAlso TypeOf symbol.AnnotationSymbols(0) Is NamespaceOrTypeSymbol)
+                    result = symbol.AnnotationSymbols(0)
+                Else
+                    result = [alias].Target
+                End If
 
                 '  check for use site errors
-                ReportUseSite(diagnostics, node, symbol)
+                ReportUseSite(diagnostics, node, result)
             End If
 
-            Dim [type] = TryCast(symbol, TypeSymbol)
+            Dim [type] = TryCast(result, TypeSymbol)
             If [type] IsNot Nothing Then
                 Return New BoundTypeExpression(node, Nothing, [alias], [type])
             End If
-            Dim ns = TryCast(symbol, NamespaceSymbol)
+            Dim ns = TryCast(result, NamespaceSymbol)
             If ns IsNot Nothing Then
                 Return New BoundNamespaceExpression(node, Nothing, [alias], ns)
             End If
@@ -633,7 +640,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     If namespaceExpr.NamespaceSymbol.NamespaceKind = NamespaceKindNamespaceGroup Then
                         Dim boundParent As BoundExpression = BindNamespaceOrTypeOrExpressionSyntaxForSemanticModel(DirectCast(node.Parent, QualifiedNameSyntax), BindingDiagnosticBag.Discarded)
 
-                        Dim symbols = ArrayBuilder(Of Symbol).GetInstance()
+                        Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
 
                         BindNamespaceOrTypeSyntaxForSemanticModelGetExpressionSymbols(boundParent, symbols)
 
@@ -654,11 +661,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End If
         End Function
 
-        Private Shared Sub BindNamespaceOrTypeSyntaxForSemanticModelGetExpressionSymbols(expression As BoundExpression, symbols As ArrayBuilder(Of Symbol))
+        Private Shared Sub BindNamespaceOrTypeSyntaxForSemanticModelGetExpressionSymbols(expression As BoundExpression, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
             expression.GetExpressionSymbols(symbols)
 
-            If symbols.Count = 1 AndAlso symbols(0).Kind = SymbolKind.ErrorType Then
-                Dim errorType = DirectCast(symbols(0), ErrorTypeSymbol)
+            If symbols.Count = 1 AndAlso symbols(0).Symbol.Kind = SymbolKind.ErrorType Then
+                Dim errorType = DirectCast(symbols(0).Symbol, ErrorTypeSymbol)
                 symbols.Clear()
                 Dim diagnosticInfo = TryCast(errorType.ErrorInfo, IDiagnosticInfoWithSymbols)
 
@@ -683,10 +690,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' for example it allows modules, System.Void or open generic types.
 
             'returns either a type, an alias that refers to a type, or an error type
-            Dim typeOrAlias As Symbol = TypeBinder.BindTypeOrAliasSyntax(node.Type, getTypeBinder, diagnostics,
+            Dim typeOrAlias As SymbolWithAnnotationSymbols = TypeBinder.BindTypeOrAliasSyntax(node.Type, getTypeBinder, diagnostics,
                                                                          suppressUseSiteError:=False, inGetTypeContext:=True, resolvingBaseType:=False)
-            Dim aliasSym As AliasSymbol = TryCast(typeOrAlias, AliasSymbol)
-            Dim typeSym As TypeSymbol = DirectCast(If(aliasSym IsNot Nothing, aliasSym.Target, typeOrAlias), TypeSymbol)
+            Dim aliasSym As AliasSymbol = TryCast(typeOrAlias.Symbol, AliasSymbol)
+            Dim typeSym As TypeSymbol = DirectCast(UnwrapAlias(typeOrAlias).Symbol, TypeSymbol)
             Dim typeExpression = New BoundTypeExpression(node.Type, Nothing, aliasSym, typeSym, typeSym.IsErrorType())
 
             ' System.Void() is not allowed for VB.
@@ -772,8 +779,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             Dim operatorIsIsNot = (node.Kind = SyntaxKind.TypeOfIsNotExpression)
 
-            Dim targetSymbol As Symbol = BindTypeOrAliasSyntax(node.Type, diagnostics)
-            Dim targetType = DirectCast(If(TryCast(targetSymbol, TypeSymbol), DirectCast(targetSymbol, AliasSymbol).Target), TypeSymbol)
+            Dim targetSymbol As SymbolWithAnnotationSymbols = BindTypeOrAliasSyntax(node.Type, diagnostics)
+            Dim targetType = DirectCast(UnwrapAlias(targetSymbol).Symbol, TypeSymbol)
 
             Dim resultType As TypeSymbol = GetSpecialType(SpecialType.System_Boolean, node, diagnostics)
 
@@ -2497,7 +2504,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                CanBeImplicitVariableDeclaration(node) Then
                 ' Declare an implicit local variable.
                 Dim implicitLocal As LocalSymbol = DeclareImplicitLocalVariable(DirectCast(node, IdentifierNameSyntax), diagnostics)
-                result.SetFrom(implicitLocal)
+                result.SetFrom(implicitLocal.WithDefaultAnnotationSymbols())
             End If
 
             If Not result.HasSymbol Then
@@ -2558,7 +2565,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             If containingType IsNot Nothing Then
                 If containingType.IsScriptClass Then
-                    Dim memberDeclaringType = result.Symbols(0).ContainingType
+                    Dim memberDeclaringType = result.Symbols(0).Symbol.ContainingType
                     If memberDeclaringType IsNot Nothing Then
                         receiver = TryBindInteractiveReceiver(node, Me.ContainingMember, containingType, memberDeclaringType)
                     End If
@@ -2567,7 +2574,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 If receiver Is Nothing Then
                     Dim symbol = result.Symbols(0)
 
-                    If symbol.IsReducedExtensionMethod() OrElse BindSimpleNameIsMemberOfType(symbol, containingType) Then
+                    If symbol.Symbol.IsReducedExtensionMethod() OrElse BindSimpleNameIsMemberOfType(symbol.Symbol, containingType) Then
                         receiver = CreateMeReference(node, isSynthetic:=True)
                     End If
                 End If
@@ -3089,7 +3096,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim resultKind As LookupResultKind = lookupResult.Kind
 
             If lookupResult.HasDiagnostic AndAlso
-               ((lookupResult.Symbols(0).Kind <> SymbolKind.Method AndAlso lookupResult.Symbols(0).Kind <> SymbolKind.Property) OrElse
+               ((lookupResult.Symbols(0).Symbol.Kind <> SymbolKind.Method AndAlso lookupResult.Symbols(0).Symbol.Kind <> SymbolKind.Property) OrElse
                     resultKind <> LookupResultKind.Inaccessible) Then
                 Debug.Assert(resultKind <> LookupResultKind.Good)
 
@@ -3119,23 +3126,23 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 ' For property/method, we create a BoundMethodGroup/PropertyGroup so that we continue to do overload 
                 ' resolution.
 
-                Dim symbols As ImmutableArray(Of Symbol)
+                Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)
                 If TypeOf di Is AmbiguousSymbolDiagnostic Then
                     ' Lookup had an ambiguity between Imports or Modules.  
                     Debug.Assert(lookupResult.Kind = LookupResultKind.Ambiguous)
-                    symbols = DirectCast(di, AmbiguousSymbolDiagnostic).AmbiguousSymbols
+                    symbols = DirectCast(di, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols()
                 Else
                     symbols = lookupResult.Symbols.ToImmutable()
                 End If
 
                 Return New BoundBadExpression(node,
                                               lookupResult.Kind,
-                                              symbols,
+                                              symbols.WithoutAnnotationSymbols(),
                                               If(receiver IsNot Nothing, ImmutableArray.Create(receiver), ImmutableArray(Of BoundExpression).Empty),
                                               GetCommonExpressionTypeForErrorRecovery(node, symbols, ConstantFieldsInProgress), hasErrors:=True)
             End If
 
-            Select Case lookupResult.Symbols(0).Kind ' all symbols in a lookupResult must be of the same kind.
+            Select Case lookupResult.Symbols(0).Symbol.Kind ' all symbols in a lookupResult must be of the same kind.
                 Case SymbolKind.Method
                     'TODO: Deal with errors reported by BindTypeArguments. Should we adjust hasError?
 
@@ -3155,14 +3162,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Debug.Assert(lookupResult.Kind = LookupResultKind.Good OrElse lookupResult.Kind = LookupResultKind.Inaccessible)
                     Return New BoundPropertyGroup(
                         node,
-                        lookupResult.Symbols.ToDowncastedImmutable(Of PropertySymbol),
+                        lookupResult.Symbols.ToImmutable().WithoutAnnotationSymbols(Of PropertySymbol)(),
                         lookupResult.Kind,
                         receiver,
                         qualKind,
                         hasErrors:=hasError)
 
                 Case SymbolKind.Event
-                    Dim eventSymbol = DirectCast(lookupResult.SingleSymbol, EventSymbol)
+                    Dim eventSymbol = DirectCast(lookupResult.SingleSymbol.Symbol, EventSymbol)
                     If eventSymbol.IsShared And qualKind = QualificationKind.Unqualified Then
                         receiver = Nothing
                     End If
@@ -3195,7 +3202,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         hasErrors:=hasError)
 
                 Case SymbolKind.Field
-                    Dim fieldSymbol As FieldSymbol = DirectCast(lookupResult.SingleSymbol, FieldSymbol)
+                    Dim fieldSymbol As FieldSymbol = DirectCast(lookupResult.SingleSymbol.Symbol, FieldSymbol)
 
                     If fieldSymbol.IsShared And qualKind = QualificationKind.Unqualified Then
                         receiver = Nothing
@@ -3242,7 +3249,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                                                 hasErrors:=hasError OrElse fieldAccessType.IsErrorType)
 
                 Case SymbolKind.Local
-                    Dim localSymbol = DirectCast(lookupResult.SingleSymbol, LocalSymbol)
+                    Dim localSymbol = DirectCast(lookupResult.SingleSymbol.Symbol, LocalSymbol)
 
                     If localSymbol.IsFunctionValue AndAlso Not IsNameOfArgument(node) Then
                         Dim method = DirectCast(localSymbol.ContainingSymbol, MethodSymbol)
@@ -3279,12 +3286,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     Return New BoundLocal(node, localSymbol, localAccessType, hasErrors:=hasError)
 
                 Case SymbolKind.RangeVariable
-                    Dim rangeVariable = DirectCast(lookupResult.SingleSymbol, RangeVariableSymbol)
+                    Dim rangeVariable = DirectCast(lookupResult.SingleSymbol.Symbol, RangeVariableSymbol)
                     Debug.Assert(rangeVariable.GetUseSiteInfo().IsEmpty)
                     Return New BoundRangeVariable(node, rangeVariable, rangeVariable.Type, hasErrors:=hasError)
 
                 Case SymbolKind.Parameter
-                    Dim parameterSymbol = DirectCast(lookupResult.SingleSymbol, ParameterSymbol)
+                    Dim parameterSymbol = DirectCast(lookupResult.SingleSymbol.Symbol, ParameterSymbol)
 
                     Dim parameterType = parameterSymbol.Type
                     Dim asSimpleName = TryCast(node, SimpleNameSyntax)
@@ -3306,14 +3313,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
                     ' If I identifies a type, then the result is that type constructed with the given type arguments.
                     ' Construct the type if it is generic! See ConstructAndValidateConstraints().
-                    Dim typeSymbol = TryCast(lookupResult.SingleSymbol, NamedTypeSymbol)
+                    Dim typeSymbol = TryCast(lookupResult.SingleSymbol.Symbol, NamedTypeSymbol)
                     If typeSymbol IsNot Nothing AndAlso typeArguments IsNot Nothing Then
                         ' Construct the type and validate constraints.
                         Dim constructedType = ConstructAndValidateConstraints(
                             typeSymbol, typeArguments.Arguments, node, typeArgumentsOpt.Arguments, diagnostics)
 
                         ' Put the constructed type in. Note that this preserves any error associated with the lookupResult.
-                        lookupResult.ReplaceSymbol(constructedType)
+                        lookupResult.ReplaceSymbol(constructedType.WithDefaultAnnotationSymbols())
                     End If
 
                     ReportDiagnosticsIfObsoleteOrNotSupported(diagnostics, typeSymbol, node)
@@ -3324,10 +3331,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     End If
 
                     If Not reportedLookupError Then
-                        ReportUseSite(diagnostics, node, If(typeSymbol, lookupResult.SingleSymbol))
+                        ReportUseSite(diagnostics, node, If(typeSymbol, lookupResult.SingleSymbol.Symbol))
                     End If
 
-                    Dim type As TypeSymbol = DirectCast(lookupResult.SingleSymbol, TypeSymbol)
+                    Dim type As TypeSymbol = DirectCast(lookupResult.SingleSymbol.Symbol, TypeSymbol)
 
                     Dim asSimpleName = TryCast(node, SimpleNameSyntax)
                     If asSimpleName IsNot Nothing AndAlso Not type.IsErrorType() Then
@@ -3339,17 +3346,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Case SymbolKind.TypeParameter
                     ' Note: arity already checked by lookup process.
 
-                    Debug.Assert(lookupResult.SingleSymbol.GetUseSiteInfo().IsEmpty)
-                    Return New BoundTypeExpression(node, DirectCast(lookupResult.SingleSymbol, TypeSymbol), hasErrors:=hasError)
+                    Debug.Assert(lookupResult.SingleSymbol.Symbol.GetUseSiteInfo().IsEmpty)
+                    Return New BoundTypeExpression(node, DirectCast(lookupResult.SingleSymbol.Symbol, TypeSymbol), hasErrors:=hasError)
 
                 Case SymbolKind.Namespace
                     ' Note: arity already checked by lookup process.
 
-                    Debug.Assert(lookupResult.SingleSymbol.GetUseSiteInfo().IsEmpty)
-                    Return New BoundNamespaceExpression(node, receiver, DirectCast(lookupResult.SingleSymbol, NamespaceSymbol), hasErrors:=hasError)
+                    Debug.Assert(lookupResult.SingleSymbol.Symbol.GetUseSiteInfo().IsEmpty)
+                    Return New BoundNamespaceExpression(node, receiver, DirectCast(lookupResult.SingleSymbol.Symbol, NamespaceSymbol), hasErrors:=hasError)
 
                 Case SymbolKind.Alias
-                    Dim [alias] = DirectCast(lookupResult.SingleSymbol, AliasSymbol)
+                    Dim [alias] = DirectCast(lookupResult.SingleSymbol.Symbol, AliasSymbol)
 
                     Debug.Assert([alias].GetUseSiteInfo().IsEmpty)
                     Dim symbol = [alias].Target
@@ -3369,7 +3376,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     End Select
 
                 Case Else
-                    Throw ExceptionUtilities.UnexpectedValue(lookupResult.Symbols(0).Kind)
+                    Throw ExceptionUtilities.UnexpectedValue(lookupResult.Symbols(0).Symbol.Kind)
             End Select
         End Function
 
@@ -3377,7 +3384,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             If receiver.Kind = BoundKind.NamespaceExpression Then
                 Dim namespaceReceiver = DirectCast(receiver, BoundNamespaceExpression)
                 If namespaceReceiver.NamespaceSymbol.NamespaceKind = NamespaceKindNamespaceGroup Then
-                    Dim symbols As ArrayBuilder(Of Symbol) = lookupResult.Symbols
+                    Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+                    symbols.AddRange(lookupResult.Symbols)
 
                     If lookupResult.HasDiagnostic Then
                         Dim di As DiagnosticInfo = lookupResult.Diagnostic
@@ -3385,28 +3393,26 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             ' Lookup had an ambiguity 
                             Debug.Assert(lookupResult.Kind = LookupResultKind.Ambiguous)
                             Dim ambiguous As ImmutableArray(Of Symbol) = DirectCast(di, AmbiguousSymbolDiagnostic).AmbiguousSymbols
-                            symbols = ArrayBuilder(Of Symbol).GetInstance()
-                            symbols.AddRange(ambiguous)
+                            symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
+                            symbols.AddRange(ambiguous.WithDefaultAnnotationSymbols())
                         End If
                     End If
 
                     receiver = AdjustReceiverNamespace(namespaceReceiver, symbols)
 
-                    If symbols IsNot lookupResult.Symbols Then
-                        symbols.Free()
-                    End If
+                    symbols.Free()
                 End If
             End If
 
             Return receiver
         End Function
 
-        Private Function AdjustReceiverNamespace(namespaceReceiver As BoundNamespaceExpression, symbols As ArrayBuilder(Of Symbol)) As BoundNamespaceExpression
+        Private Function AdjustReceiverNamespace(namespaceReceiver As BoundNamespaceExpression, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols)) As BoundNamespaceExpression
             If symbols.Count > 0 Then
                 Dim namespaces = New SmallDictionary(Of NamespaceSymbol, Boolean)()
 
                 For Each candidate In symbols
-                    If Not AddReceiverNamespaces(namespaces, candidate, Me.Compilation) Then
+                    If Not AddReceiverNamespaces(namespaces, candidate.Symbol, Me.Compilation) Then
                         namespaces = Nothing
                         Exit For
                     End If
@@ -3580,7 +3586,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Dim symbol As LabelSymbol = Nothing
             Dim hasErrors As Boolean = False
             If result.IsGood AndAlso result.HasSingleSymbol Then
-                symbol = DirectCast(result.Symbols.First(), LabelSymbol)
+                symbol = DirectCast(result.Symbols.First().Symbol, LabelSymbol)
             Else
                 If result.HasDiagnostic Then
                     ReportDiagnostic(diagnostics, node, result.Diagnostic)
@@ -3955,7 +3961,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' that name is used as the type of the error type (useful in ambiguous type lookup situations)
         Private Function GetCommonExpressionTypeForErrorRecovery(
             symbolReference As VisualBasicSyntaxNode,
-            symbols As ImmutableArray(Of Symbol),
+            symbols As ImmutableArray(Of SymbolWithAnnotationSymbols),
             constantFieldsInProgress As ConstantFieldsInProgress
         ) As TypeSymbol
             Dim commonType As TypeSymbol = Nothing
@@ -3998,27 +4004,27 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' Get the "expression type" of a symbol when used in an expression.
         Private Function GetExpressionType(
             symbolReference As VisualBasicSyntaxNode,
-            s As Symbol,
+            s As SymbolWithAnnotationSymbols,
             constantFieldsInProgress As ConstantFieldsInProgress,
             diagnostics As BindingDiagnosticBag
         ) As TypeSymbol
-            Select Case s.Kind
+            Select Case s.Symbol.Kind
                 Case SymbolKind.Method
-                    Return DirectCast(s, MethodSymbol).ReturnType
+                    Return DirectCast(s.Symbol, MethodSymbol).ReturnType
                 Case SymbolKind.Field
                     ' const fields may need to determine the type because it's inferred
                     ' This is why using .Type was replaced by .GetInferredType to detect cycles.
-                    Return DirectCast(s, FieldSymbol).GetInferredType(constantFieldsInProgress)
+                    Return DirectCast(s.Symbol, FieldSymbol).GetInferredType(constantFieldsInProgress)
                 Case SymbolKind.Property
-                    Return DirectCast(s, PropertySymbol).Type
+                    Return DirectCast(s.Symbol, PropertySymbol).Type
                 Case SymbolKind.Parameter
-                    Return DirectCast(s, ParameterSymbol).Type
+                    Return DirectCast(s.Symbol, ParameterSymbol).Type
                 Case SymbolKind.Local
-                    Return GetLocalSymbolType(DirectCast(s, LocalSymbol), symbolReference, diagnostics)
+                    Return GetLocalSymbolType(DirectCast(s.Symbol, LocalSymbol), symbolReference, diagnostics)
                 Case SymbolKind.RangeVariable
-                    Return DirectCast(s, RangeVariableSymbol).Type
+                    Return DirectCast(s.Symbol, RangeVariableSymbol).Type
                 Case Else
-                    Dim type = TryCast(s, TypeSymbol)
+                    Dim type = TryCast(s.Symbol, TypeSymbol)
                     If type IsNot Nothing Then
                         Return type
                     End If
@@ -4737,7 +4743,7 @@ lElseClause:
 
                 Dim methodGroup As BoundMethodGroup = Nothing
 
-                If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Kind = SymbolKind.Method Then
+                If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Symbol.Kind = SymbolKind.Method Then
                     methodGroup = CreateBoundMethodGroup(
                                 node,
                                 lookupResult,
@@ -4789,9 +4795,9 @@ lElseClause:
                     LookupMember(lookupResult, awaiterInstancePlaceholder.Type, WellKnownMemberNames.IsCompleted, 0,
                                  LookupOptions.AllMethodsOfAnyArity Or LookupOptions.IgnoreExtensionMethods, useSiteInfo)
 
-                    If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Kind = SymbolKind.Property Then
+                    If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Symbol.Kind = SymbolKind.Property Then
                         Dim propertyGroup = New BoundPropertyGroup(node,
-                                                                   lookupResult.Symbols.ToDowncastedImmutable(Of PropertySymbol),
+                                                                   lookupResult.Symbols.ToImmutable().WithoutAnnotationSymbols(Of PropertySymbol)(),
                                                                    lookupResult.Kind,
                                                                    awaiterInstancePlaceholder,
                                                                    QualificationKind.QualifiedViaValue).MakeCompilerGenerated()
@@ -4835,7 +4841,7 @@ lElseClause:
                     LookupMember(lookupResult, awaiterInstancePlaceholder.Type, WellKnownMemberNames.GetResult, 0,
                                  LookupOptions.AllMethodsOfAnyArity Or LookupOptions.IgnoreExtensionMethods, useSiteInfo)
 
-                    If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Kind = SymbolKind.Method Then
+                    If lookupResult.Kind = LookupResultKind.Good AndAlso lookupResult.Symbols(0).Symbol.Kind = SymbolKind.Method Then
                         methodGroup = CreateBoundMethodGroup(
                                     node,
                                     lookupResult,

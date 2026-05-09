@@ -7,6 +7,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Runtime.InteropServices
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -50,17 +51,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End Get
         End Property
 
-        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Friend Overrides Function BindXmlNameAttributeValue(identifier As IdentifierNameSyntax, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             If Me.CommentedSymbol Is Nothing Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             Dim name As String = identifier.Identifier.ValueText
             If String.IsNullOrEmpty(name) Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
-            Return FindSymbolInSymbolArray(name, Me.Parameters)
+            Return FindSymbolInSymbolArray(name, Me.Parameters).WithDefaultAnnotationSymbols()
         End Function
 
         Private Const s_invalidLookupOptions As LookupOptions =

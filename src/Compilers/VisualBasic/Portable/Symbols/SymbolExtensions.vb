@@ -5,6 +5,7 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
     Friend Module SymbolExtensions
@@ -307,6 +308,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                     Return (DirectCast(symbol, MethodSymbol)).Arity
                 Case SymbolKind.NamedType, SymbolKind.ErrorType
                     Return (DirectCast(symbol, NamedTypeSymbol)).Arity
+                Case SymbolKind.Alias
+                    Return (DirectCast(symbol, AliasSymbol)).Arity
                 Case Else
                     Return 0
             End Select
@@ -360,12 +363,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Next
 
             Return minAritySymbol
-        End Function
-
-        <Extension()>
-        Friend Function UnwrapAlias(symbol As Symbol) As Symbol
-            Dim aliasSym = TryCast(symbol, AliasSymbol)
-            Return If(aliasSym Is Nothing, symbol, aliasSym.Target)
         End Function
 
         ''' <summary>
@@ -487,6 +484,34 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Return If(TryCast(member, PropertySymbol)?.IsRequired,
                       If(TryCast(member, FieldSymbol)?.IsRequired,
                          False))
+        End Function
+
+        <Extension>
+        Friend Function WithAnnotationSymbol(Of TAliasSymbol As AliasSymbol, TNamespaceOrTypeSymbol As NamespaceOrTypeSymbol)(aliasSymbol As TAliasSymbol, targetSymbol As TNamespaceOrTypeSymbol) As SymbolWithAnnotationSymbols
+            Return SymbolWithAnnotationSymbols.Create(aliasSymbol, targetSymbol)
+        End Function
+
+        <Extension>
+        Friend Function WithDefaultAnnotationSymbols(Of TSymbol As Symbol)(symbol As TSymbol) As SymbolWithAnnotationSymbols
+            Dim [alias] = TryCast(symbol, AliasSymbol)
+            Return If([alias] IsNot Nothing AndAlso [alias].IsGenericAlias,
+                      [alias].WithAnnotationSymbol([alias].Target),
+                      SymbolWithAnnotationSymbols.Create(symbol))
+        End Function
+
+        <Extension>
+        Friend Function WithDefaultAnnotationSymbols(Of TSymbol As Symbol)(symbols As ImmutableArray(Of TSymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
+            Return symbols.SelectAsArray(Function(s) s.WithDefaultAnnotationSymbols())
+        End Function
+
+        <Extension>
+        Friend Function WithoutAnnotationSymbols(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)) As ImmutableArray(Of Symbol)
+            Return symbols.SelectAsArray(Function(s) s.Symbol)
+        End Function
+
+        <Extension>
+        Friend Function WithoutAnnotationSymbols(Of TSymbol As Symbol)(symbols As ImmutableArray(Of SymbolWithAnnotationSymbols)) As ImmutableArray(Of TSymbol)
+            Return symbols.SelectAsArray(Function(s) DirectCast(s.Symbol, TSymbol))
         End Function
     End Module
 End Namespace

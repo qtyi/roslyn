@@ -216,25 +216,25 @@ namespace Microsoft.CodeAnalysis
         protected abstract TypeInfo GetTypeInfoCore(SyntaxNode node, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// If "nameSyntax" resolves to an alias name, return the IAliasSymbol corresponding
-        /// to A. Otherwise return null.
+        /// If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
-        internal IAliasSymbol? GetAliasInfo(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
+        internal AliasInfo GetAliasInfo(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken))
         {
             return GetAliasInfoCore(nameSyntax, cancellationToken);
         }
 
         /// <summary>
-        /// If "nameSyntax" resolves to an alias name, return the IAliasSymbol corresponding
-        /// to A. Otherwise return null.
+        /// If "nameSyntax" resolves to an alias name, return the alias information corresponding
+        /// to A. Otherwise return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="nameSyntax">Name to get alias info for.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the
         /// process of obtaining the alias information.</param>
-        protected abstract IAliasSymbol? GetAliasInfoCore(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken));
+        protected abstract AliasInfo GetAliasInfoCore(SyntaxNode nameSyntax, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns true if this is a speculative semantic model created with any of the TryGetSpeculativeSemanticModel methods.
@@ -283,7 +283,7 @@ namespace Microsoft.CodeAnalysis
 
         /// <summary>
         /// Binds the name in the context of the specified location and sees if it resolves to an
-        /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="position">A character position used to identify a declaration scope and
         /// accessibility. This character position must be within the FullSpan of the Root syntax
@@ -297,14 +297,14 @@ namespace Microsoft.CodeAnalysis
         /// expression should derive from TypeSyntax.</param>
         /// <remarks>The passed in name is interpreted as a stand-alone name, as if it
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
-        internal IAliasSymbol? GetSpeculativeAliasInfo(int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
+        internal AliasInfo GetSpeculativeAliasInfo(int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption)
         {
             return GetSpeculativeAliasInfoCore(position, nameSyntax, bindingOption);
         }
 
         /// <summary>
         /// Binds the name in the context of the specified location and sees if it resolves to an
-        /// alias name. If it does, return the AliasSymbol corresponding to it. Otherwise, return null.
+        /// alias name. If it does, return the alias information corresponding to it. Otherwise, return <see cref="AliasInfo.None"/>.
         /// </summary>
         /// <param name="position">A character position used to identify a declaration scope and
         /// accessibility. This character position must be within the FullSpan of the Root syntax
@@ -318,7 +318,7 @@ namespace Microsoft.CodeAnalysis
         /// expression should derive from TypeSyntax.</param>
         /// <remarks>The passed in name is interpreted as a stand-alone name, as if it
         /// appeared by itself somewhere within the scope that encloses "position".</remarks>
-        protected abstract IAliasSymbol? GetSpeculativeAliasInfoCore(int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption);
+        protected abstract AliasInfo GetSpeculativeAliasInfoCore(int position, SyntaxNode nameSyntax, SpeculativeBindingOption bindingOption);
 
         /// <summary>
         /// Get all of the syntax errors within the syntax tree associated with this

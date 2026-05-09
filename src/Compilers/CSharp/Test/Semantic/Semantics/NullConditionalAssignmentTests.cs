@@ -951,9 +951,6 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 """;
             var comp = CreateCompilation(source, options: TestOptions.UnsafeDebugDll);
             comp.VerifyEmitDiagnostics(
-                // (4,16): warning CS0649: Field 'S.F' is never assigned to, and will always have its default value 0
-                //     public int F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("S.F", "0").WithLocation(4, 16),
                 // (8,9): error CS0201: Only assignment, call, increment, decrement, await, and new object expressions can be used as a statement
                 //         *x?.F = 1;
                 Diagnostic(ErrorCode.ERR_IllegalStatement, "*x?.F = 1").WithLocation(8, 9),

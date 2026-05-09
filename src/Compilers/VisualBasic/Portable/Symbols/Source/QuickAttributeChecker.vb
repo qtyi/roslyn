@@ -61,7 +61,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             Debug.Assert(Not _sealed)
             Debug.Assert(aliasSyntax.Alias IsNot Nothing)
 
-            Dim finalName = GetFinalName(aliasSyntax.Name)
+            Dim finalName = GetFinalName(aliasSyntax.NamespaceOrType)
 
             If finalName IsNot Nothing Then
                 Dim current As QuickAttributes = QuickAttributes.None

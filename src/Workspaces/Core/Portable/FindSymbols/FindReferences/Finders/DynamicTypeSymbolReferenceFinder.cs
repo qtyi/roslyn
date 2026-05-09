@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.LanguageService;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 
 namespace Microsoft.CodeAnalysis.FindSymbols.Finders;
 
-internal sealed class DynamicTypeSymbolReferenceFinder : AbstractReferenceFinder<IDynamicTypeSymbol>
+internal sealed class DynamicTypeSymbolReferenceFinder : WithAliasSymbolReferenceFinder<IDynamicTypeSymbol>
 {
     private const string DynamicIdentifier = "dynamic";
     public static readonly DynamicTypeSymbolReferenceFinder Instance = new();
@@ -22,9 +25,9 @@ internal sealed class DynamicTypeSymbolReferenceFinder : AbstractReferenceFinder
     protected override bool CanFind(IDynamicTypeSymbol symbol)
         => true;
 
-    protected override Task DetermineDocumentsToSearchAsync<TData>(
+    protected override async Task DetermineDocumentsToSearchAsync<TData>(
         IDynamicTypeSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,
@@ -32,11 +35,30 @@ internal sealed class DynamicTypeSymbolReferenceFinder : AbstractReferenceFinder
         FindReferencesSearchOptions options,
         CancellationToken cancellationToken)
     {
-        // For now, we're just looking for 'dynamic' itself, not an aliases to it.
-        return FindDocumentsAsync(project, documents, processResult, processResultData, cancellationToken, DynamicIdentifier);
+        await FindDocumentsAsync(project, documents, processResult, processResultData, cancellationToken, symbol.Name).ConfigureAwait(false);
+
+        if (globalAliases != null)
+        {
+            foreach (var globalAlias in globalAliases)
+                await FindDocumentsAsync(project, documents, processResult, processResultData, cancellationToken, globalAlias.Name).ConfigureAwait(false);
+        }
     }
 
-    protected override void FindReferencesInDocument<TData>(
+    protected override async Task<ImmutableArray<NameWithArity>> DetermineGlobalAliasesAsync(IDynamicTypeSymbol symbol, Project project, CancellationToken cancellationToken)
+    {
+        using var result = TemporaryArray<NameWithArity>.Empty;
+
+        await foreach (var document in project.GetAllRegularAndSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var index = await SyntaxTreeIndex.GetRequiredIndexAsync(document, cancellationToken).ConfigureAwait(false);
+            var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();
+            result.AddRange(index.GetGlobalAliases(SyntaxTreeIndex.FilterAliasesByDynamic(syntaxFacts)));
+        }
+
+        return result.ToImmutableAndClear();
+    }
+
+    protected override void FindAllNonLocalAliasReferences<TData>(
         IDynamicTypeSymbol symbol,
         FindReferencesDocumentState state,
         Action<FinderLocation, TData> processResult,
@@ -44,6 +66,11 @@ internal sealed class DynamicTypeSymbolReferenceFinder : AbstractReferenceFinder
         FindReferencesSearchOptions options,
         CancellationToken cancellationToken)
     {
-        FindReferencesInDocumentUsingIdentifier(symbol, DynamicIdentifier, state, processResult, processResultData, cancellationToken);
+        FindReferencesInDocumentUsingSymbolName(symbol, state, processResult, processResultData, cancellationToken);
+
+        foreach (var globalAlias in state.GlobalAliases)
+        {
+            FindReferencesInDocumentUsingIdentifier(symbol, globalAlias.Name, globalAlias.Arity, state, processResult, processResultData, cancellationToken);
+        }
     }
 }

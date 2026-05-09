@@ -1578,7 +1578,7 @@ end class
 
             Dim format = New SymbolDisplayFormat(
             memberOptions:=SymbolDisplayMemberOptions.IncludeType,
-            compilerInternalOptions:=SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes)
+            compilerInternalOptions:=SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases)
 
             TestSymbolDescription(
                 text,
@@ -6163,7 +6163,7 @@ class C<T2>
 }
 "
             Dim format = SymbolDisplayFormat.VisualBasicErrorMessageFormat.
-                WithCompilerInternalOptions(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes)
+                WithCompilerInternalOptions(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases)
 
             Dim comp As Compilation
             If useMetadata Then
@@ -6198,7 +6198,7 @@ Class C(Of T2)
 End Class
 "
             Dim format = SymbolDisplayFormat.VisualBasicErrorMessageFormat.
-                WithCompilerInternalOptions(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypes)
+                WithCompilerInternalOptions(SymbolDisplayCompilerInternalOptions.UseArityForGenericTypesAndAliases)
 
             Dim comp As Compilation
             If useMetadata Then

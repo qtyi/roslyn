@@ -381,7 +381,7 @@ internal readonly struct NameDeclarationInfo(
             GetAccessibility(modifiers),
             declarationModifiers,
             type,
-            semanticModel.GetAliasInfo(typeSyntax, cancellationToken));
+            semanticModel.GetAliasInfoWithTarget(typeSyntax, cancellationToken).Alias);
     }
 
     private static bool IsFieldDeclaration(SyntaxToken token, SemanticModel semanticModel,
@@ -448,7 +448,7 @@ internal readonly struct NameDeclarationInfo(
 
             if (symbolInfo.GetAnySymbol() is ITypeSymbol type)
             {
-                var alias = semanticModel.GetAliasInfo(conditionalExpressionSyntax.Condition, cancellationToken);
+                var alias = semanticModel.GetAliasInfoWithTarget(conditionalExpressionSyntax.Condition, cancellationToken).Alias;
 
                 result = new NameDeclarationInfo(
                     possibleDeclarationComputer(default),

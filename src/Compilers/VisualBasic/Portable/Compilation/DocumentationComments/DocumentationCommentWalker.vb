@@ -15,6 +15,7 @@ Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
     Partial Public Class VisualBasicCompilation
@@ -150,7 +151,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         Dim crefBinder = CreateDocumentationCommentBinderForSymbol(Me.Module, Me._symbol, Me._syntaxTree, DocumentationCommentBinder.BinderType.Cref)
                         Dim useSiteInfo = crefBinder.GetNewCompoundUseSiteInfo(_diagnostics)
                         Dim diagnostics = BindingDiagnosticBag.GetInstance(withDiagnostics:=True, _diagnostics.AccumulatesDependencies)
-                        Dim result As ImmutableArray(Of Symbol) = crefBinder.BindInsideCrefAttributeValue(reference, preserveAliases:=False, diagnosticBag:=diagnostics, useSiteInfo:=useSiteInfo)
+                        Dim result As ImmutableArray(Of SymbolWithAnnotationSymbols) = crefBinder.BindInsideCrefAttributeValue(reference, preserveAliases:=False, diagnosticBag:=diagnostics, useSiteInfo:=useSiteInfo)
                         _diagnostics.AddDependencies(diagnostics)
                         _diagnostics.AddDependencies(useSiteInfo)
 
@@ -186,16 +187,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                             Dim errid As ERRID = ERRID.WRN_XMLDocCrefAttributeNotFound1
 
                             For Each symbol In result
-                                If symbol.Kind = SymbolKind.TypeParameter Then
+                                If symbol.Symbol.Kind = SymbolKind.TypeParameter Then
                                     errid = ERRID.WRN_XMLDocCrefToTypeParameter
                                     Continue For
                                 End If
 
-                                Dim candidateId As String = symbol.OriginalDefinition.GetDocumentationCommentId()
+                                Dim candidateId As String = symbol.Symbol.OriginalDefinition.GetDocumentationCommentId()
 
                                 If candidateId IsNot Nothing AndAlso (smallestSymbolCommentId Is Nothing OrElse String.CompareOrdinal(smallestSymbolCommentId, candidateId) > 0) Then
                                     smallestSymbolCommentId = candidateId
-                                    smallestSymbol = symbol
+                                    smallestSymbol = symbol.Symbol
                                 End If
                             Next
 

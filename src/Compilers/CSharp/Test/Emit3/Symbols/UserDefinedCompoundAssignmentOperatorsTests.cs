@@ -6131,7 +6131,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"()", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"()", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6173,7 +6173,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6206,7 +6206,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6240,7 +6240,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6274,7 +6274,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6308,7 +6308,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6350,7 +6350,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6393,7 +6393,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6438,7 +6438,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6472,7 +6472,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"()", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"()", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6508,7 +6508,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"()", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"()", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6551,7 +6551,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6585,7 +6585,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6622,7 +6622,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6659,7 +6659,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6695,7 +6695,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(C1)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -6739,7 +6739,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6782,7 +6782,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6829,7 +6829,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -6864,7 +6864,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"()", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"()", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -17797,7 +17797,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -17830,7 +17830,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -17874,10 +17874,10 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbols = GetReferencedSymbols(crefSyntax, compilation, out var ambiguityWinner, expected[count]);
-                AssertEx.Equal("C1.operator " + op + @"(int)", ambiguityWinner.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(int)", ambiguityWinner.Symbol.ToDisplayString());
                 Assert.Equal(2, actualSymbols.Length);
-                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbols[0].ToDisplayString());
-                AssertEx.Equal("C1.operator " + op + @"(long)", actualSymbols[1].ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbols[0].Symbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(long)", actualSymbols[1].Symbol.ToDisplayString());
                 count++;
             }
 
@@ -17911,7 +17911,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -17954,7 +17954,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -17997,7 +17997,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -18031,7 +18031,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1." + CompoundAssignmentOperatorName(op, isChecked: false) + @"(int, long)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1." + CompoundAssignmentOperatorName(op, isChecked: false) + @"(int, long)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18065,7 +18065,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18111,7 +18111,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -18145,7 +18145,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18188,7 +18188,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -18235,10 +18235,10 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbols = GetReferencedSymbols(crefSyntax, compilation, out var ambiguityWinner, expected[count]);
-                AssertEx.Equal("C1.operator checked " + op + @"(int)", ambiguityWinner.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(int)", ambiguityWinner.Symbol.ToDisplayString());
                 Assert.Equal(2, actualSymbols.Length);
-                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbols[0].ToDisplayString());
-                AssertEx.Equal("C1.operator checked " + op + @"(long)", actualSymbols[1].ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbols[0].Symbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(long)", actualSymbols[1].Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18274,7 +18274,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18320,7 +18320,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -18366,7 +18366,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation, expected[count]);
-                Assert.Null(actualSymbol);
+                Assert.True(actualSymbol.IsDefault);
                 count++;
             }
 
@@ -18400,7 +18400,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1." + CompoundAssignmentOperatorName(op, isChecked: true) + @"(int, long)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1." + CompoundAssignmentOperatorName(op, isChecked: true) + @"(int, long)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 
@@ -18435,7 +18435,7 @@ class C2
             foreach (var crefSyntax in GetCrefSyntaxes(compilation))
             {
                 var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
-                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.ToDisplayString());
+                AssertEx.Equal("C1.operator checked " + op + @"(int)", actualSymbol.Symbol.ToDisplayString());
                 count++;
             }
 

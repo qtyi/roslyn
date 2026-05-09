@@ -155,6 +155,32 @@ using unsafe S = System.Collections.Generic.List<delegate*<void>[]>;";
         }
 
         [Fact]
+        public void UsingGenericAliasTest_ReturnType()
+        {
+            var src = @"
+using unsafe S<T> = delegate*<T>;";
+
+            var comp = CreateCompilationWithFunctionPointers(src, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);
+            comp.VerifyDiagnostics(
+                // (2,1): hidden CS8019: Unnecessary using directive.
+                // using unsafe S<T> = delegate*<T>;
+                Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe S<T> = delegate*<T>;").WithLocation(2, 1));
+        }
+
+        [Fact]
+        public void UsingGenericAliasTest_ParameterType()
+        {
+            var src = @"
+using unsafe S<T> = delegate*<T, void>;";
+
+            var comp = CreateCompilationWithFunctionPointers(src, options: TestOptions.UnsafeDebugDll, parseOptions: TestOptions.RegularPreview);
+            comp.VerifyDiagnostics(
+                // (2,1): hidden CS8019: Unnecessary using directive.
+                // using unsafe S<T> = delegate*<T, void>;
+                Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using unsafe S<T> = delegate*<T, void>;").WithLocation(2, 1));
+        }
+
+        [Fact]
         public void ImplicitConversionToVoid()
         {
             var comp = CreateCompilationWithFunctionPointers(@"

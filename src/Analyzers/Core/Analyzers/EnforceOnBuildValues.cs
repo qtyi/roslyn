@@ -29,6 +29,8 @@ internal static class EnforceOnBuildValues
     public const EnforceOnBuild UseBlockScopedNamespace = /*IDE0160*/ EnforceOnBuild.HighlyRecommended;
     public const EnforceOnBuild UseFileScopedNamespace = /*IDE0161*/ EnforceOnBuild.HighlyRecommended;
     public const EnforceOnBuild UseTupleSwap = /*IDE0180*/ EnforceOnBuild.HighlyRecommended;
+    public const EnforceOnBuild RemoveUnusedAliasTypeParameters = /*IDE0901*/ EnforceOnBuild.HighlyRecommended;
+    public const EnforceOnBuild RemoveUnnecessaryAliasTypeParameters = /*IDE0902*/ EnforceOnBuild.HighlyRecommended;
 
     /* EnforceOnBuild.Recommended */
     public const EnforceOnBuild UseThrowExpression = /*IDE0016*/ EnforceOnBuild.Recommended;

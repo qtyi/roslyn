@@ -26,7 +26,7 @@ internal sealed class CrefTypeParameterSymbolReferenceFinder : AbstractReference
 
     protected override async Task DetermineDocumentsToSearchAsync<TData>(
         ITypeParameterSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

@@ -9394,6 +9394,16 @@
         <target state="translated">VB 中不支持属性</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_InvalidTypeForAliasesImport3">
+        <source>'{1}' for the Imports generic alias to '{0}' does not refer to a Class, Structure, Interface, Enum or Module.</source>
+        <target state="translated">“{0}”的 Imports 泛型别名的“{1}”不引用类、结构、接口、枚举或模块。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FEATURE_ImportGenericAlias">
+        <source>import generic alias</source>
+        <target state="translated">导入泛型别名</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

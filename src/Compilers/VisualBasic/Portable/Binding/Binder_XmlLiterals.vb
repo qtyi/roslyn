@@ -981,17 +981,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             If result.IsGood Then
                 Debug.Assert(result.Symbols.Count > 0)
                 Dim symbol0 = result.Symbols(0)
-                Select Case result.Symbols(0).Kind
+                Select Case result.Symbols(0).Symbol.Kind
                     Case SymbolKind.Method
                         group = New BoundMethodGroup(syntax,
                                                     Nothing,
-                                                    result.Symbols.ToDowncastedImmutable(Of MethodSymbol),
+                                                    result.Symbols.ToImmutable().WithoutAnnotationSymbols(Of MethodSymbol),
                                                     result.Kind,
                                                     receiverOpt,
                                                     QualificationKind.QualifiedViaValue)
                     Case SymbolKind.Property
                         group = New BoundPropertyGroup(syntax,
-                                                    result.Symbols.ToDowncastedImmutable(Of PropertySymbol),
+                                                    result.Symbols.ToImmutable().WithoutAnnotationSymbols(Of PropertySymbol),
                                                     result.Kind,
                                                     receiverOpt,
                                                     QualificationKind.QualifiedViaValue)

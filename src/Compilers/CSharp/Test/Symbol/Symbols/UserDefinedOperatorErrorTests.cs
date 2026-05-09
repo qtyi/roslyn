@@ -128,13 +128,7 @@ class H
                 Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "op_Implicit").WithArguments("G", "op_Implicit"),
                 // (71,37): error CS0102: The type 'H' already contains a definition for 'op_Implicit'
                 //     public static implicit operator string(H h) { return null; }
-                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "string").WithArguments("H", "op_Implicit"),
-                // (13,16): warning CS0649: Field 'C.op_Subtraction' is never assigned to, and will always have its default value 0
-                //     public int op_Subtraction;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "op_Subtraction").WithArguments("C.op_Subtraction", "0"),
-                // (16,16): warning CS0649: Field 'C.op_Division' is never assigned to, and will always have its default value 0
-                //     public int op_Division;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "op_Division").WithArguments("C.op_Division", "0")
+                Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "string").WithArguments("H", "op_Implicit")
                 );
         }
 

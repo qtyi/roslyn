@@ -8,6 +8,7 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports System.Runtime.InteropServices
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -27,12 +28,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             End Select
         End Function
 
-        Private Function BindNameInsideCrefReferenceInLegacyMode(nameFromCref As TypeSyntax, preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of Symbol)
+        Private Function BindNameInsideCrefReferenceInLegacyMode(nameFromCref As TypeSyntax, preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol)) As ImmutableArray(Of SymbolWithAnnotationSymbols)
             ' This binding mode is used for cref-references without signatures and 
             ' emulate Dev11 behavior
 
             If Not CrefReferenceIsLegalForLegacyMode(nameFromCref) Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
             ' The name which is either an upper-level (parent is the cref attribute)
@@ -43,10 +44,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             While name IsNot Nothing And name.Kind <> SyntaxKind.CrefReference
                 If name.Kind <> SyntaxKind.QualifiedName Then
                     ' Not a top-level name or a top-level qualified name part
-                    Dim result As Symbol = If(preserveAliases,
+                    Dim result As SymbolWithAnnotationSymbols = If(preserveAliases,
                                               BindTypeOrAliasSyntax(nameFromCref, BindingDiagnosticBag.Discarded),
-                                              BindTypeSyntax(nameFromCref, BindingDiagnosticBag.Discarded))
-                    Return ImmutableArray.Create(Of Symbol)(result)
+                                              BindTypeSyntax(nameFromCref, BindingDiagnosticBag.Discarded).WithDefaultAnnotationSymbols())
+                    Return ImmutableArray.Create(result)
                 End If
 
                 name = name.Parent
@@ -57,10 +58,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' This is an upper-level name, we check is it has any 
             ' diagnostics and if it does we return empty symbol set
             If nameFromCref.ContainsDiagnostics() Then
-                Return ImmutableArray(Of Symbol).Empty
+                Return ImmutableArray(Of SymbolWithAnnotationSymbols).Empty
             End If
 
-            Dim symbols = ArrayBuilder(Of Symbol).GetInstance()
+            Dim symbols = ArrayBuilder(Of SymbolWithAnnotationSymbols).GetInstance()
 
             Select Case nameFromCref.Kind
                 Case SyntaxKind.IdentifierName,
@@ -82,7 +83,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             Return symbols.ToImmutableAndFree()
         End Function
 
-        Private Sub BindQualifiedNameForCref(node As QualifiedNameSyntax, symbols As ArrayBuilder(Of Symbol), preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
+        Private Sub BindQualifiedNameForCref(node As QualifiedNameSyntax, symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols), preserveAliases As Boolean, <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol))
             Dim allowColorColor As Boolean = True
 
             Dim left As NameSyntax = node.Left
@@ -96,7 +97,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     allowColorColor = False
 
                 Case SyntaxKind.GlobalName
-                    symbols.Add(Me.Compilation.GlobalNamespace)
+                    symbols.Add(Me.Compilation.GlobalNamespace.WithDefaultAnnotationSymbols())
 
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(left.Kind)
@@ -109,7 +110,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                 Return
             End If
 
-            Dim singleSymbol As Symbol = symbols(0)
+            Dim singleSymbol As Symbol = symbols(0).Symbol
             symbols.Clear()
 
             ' We found one single symbol, we need to search for the 'right' 
@@ -132,7 +133,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     ' there is ambiguity
                     Return
                 End If
-                symbols(0) = ConstructGenericSymbolWithTypeArgumentsForCref(symbols(0), genericName)
+                symbols(0) = ConstructGenericSymbolWithTypeArgumentsForCref(symbols(0), genericName).WithDefaultAnnotationSymbols()
 
             Else
                 ' Simple identifier name
@@ -228,7 +229,7 @@ lAgain:
 
         Private Sub BindSimpleNameForCref(name As String,
                                           arity As Integer,
-                                          symbols As ArrayBuilder(Of Symbol),
+                                          symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                           preserveAliases As Boolean,
                                           <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol),
                                           Optional containingSymbol As Symbol = Nothing,
@@ -281,7 +282,7 @@ lAgain:
         End Sub
 
         Private Sub BindSimpleNameForCref(node As SimpleNameSyntax,
-                                          symbols As ArrayBuilder(Of Symbol),
+                                          symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols),
                                           preserveAliases As Boolean,
                                           <[In], Out> ByRef useSiteInfo As CompoundUseSiteInfo(Of AssemblySymbol),
                                           typeOrNamespaceOnly As Boolean)
@@ -308,7 +309,7 @@ lAgain:
                     Return
                 End If
 
-                symbols(0) = ConstructGenericSymbolWithTypeArgumentsForCref(symbols(0), genericName)
+                symbols(0) = ConstructGenericSymbolWithTypeArgumentsForCref(symbols(0), genericName).WithDefaultAnnotationSymbols()
 
             Else
                 ' Simple identifier name
@@ -340,7 +341,7 @@ lAgain:
         End Sub
 
         Private Sub BindPredefinedTypeForCref(node As PredefinedTypeSyntax,
-                                              symbols As ArrayBuilder(Of Symbol))
+                                              symbols As ArrayBuilder(Of SymbolWithAnnotationSymbols))
 
             ' Name syntax of Cref should not have diagnostics
             If node.ContainsDiagnostics Then
@@ -387,27 +388,27 @@ lAgain:
             End Select
 
             ' We discard diagnostics in case 
-            symbols.Add(Me.GetSpecialType(type, node, BindingDiagnosticBag.Discarded))
+            symbols.Add(Me.GetSpecialType(type, node, BindingDiagnosticBag.Discarded).WithDefaultAnnotationSymbols())
         End Sub
 
-        Private Function ConstructGenericSymbolWithTypeArgumentsForCref(genericSymbol As Symbol, genericName As GenericNameSyntax) As Symbol
-            Select Case genericSymbol.Kind
+        Private Function ConstructGenericSymbolWithTypeArgumentsForCref(genericSymbol As SymbolWithAnnotationSymbols, genericName As GenericNameSyntax) As Symbol
+            Select Case genericSymbol.Symbol.Kind
                 Case SymbolKind.Method
-                    Dim method = DirectCast(genericSymbol, MethodSymbol)
+                    Dim method = DirectCast(genericSymbol.Symbol, MethodSymbol)
                     Debug.Assert(method.Arity = genericName.TypeArgumentList.Arguments.Count)
                     Return method.Construct(BingTypeArgumentsForCref(genericName.TypeArgumentList.Arguments))
 
                 Case SymbolKind.NamedType, SymbolKind.ErrorType
-                    Dim type = DirectCast(genericSymbol, NamedTypeSymbol)
+                    Dim type = DirectCast(genericSymbol.Symbol, NamedTypeSymbol)
                     Debug.Assert(type.Arity = genericName.TypeArgumentList.Arguments.Count)
                     Return type.Construct(BingTypeArgumentsForCref(genericName.TypeArgumentList.Arguments))
 
                 Case SymbolKind.Alias
-                    Dim [alias] = DirectCast(genericSymbol, AliasSymbol)
-                    Return ConstructGenericSymbolWithTypeArgumentsForCref([alias].Target, genericName)
+                    Dim [alias] = DirectCast(genericSymbol.Symbol, AliasSymbol)
+                    Return [alias].Construct(BingTypeArgumentsForCref(genericName.TypeArgumentList.Arguments))
 
                 Case Else
-                    Throw ExceptionUtilities.UnexpectedValue(genericSymbol.Kind)
+                    Throw ExceptionUtilities.UnexpectedValue(genericSymbol.Symbol.Kind)
             End Select
         End Function
 
@@ -419,7 +420,7 @@ lAgain:
             Return result.AsImmutableOrNull()
         End Function
 
-        Private Shared Sub CreateGoodOrAmbiguousFromLookupResultAndFree(lookupResult As LookupResult, result As ArrayBuilder(Of Symbol), preserveAliases As Boolean)
+        Private Shared Sub CreateGoodOrAmbiguousFromLookupResultAndFree(lookupResult As LookupResult, result As ArrayBuilder(Of SymbolWithAnnotationSymbols), preserveAliases As Boolean)
             Dim di As DiagnosticInfo = lookupResult.Diagnostic
 
             If TypeOf di Is AmbiguousSymbolDiagnostic Then
@@ -427,7 +428,7 @@ lAgain:
                 Debug.Assert(lookupResult.Kind = LookupResultKind.Ambiguous)
                 Debug.Assert(lookupResult.Symbols.Count = 1)
 
-                Dim symbols As ImmutableArray(Of Symbol) = DirectCast(di, AmbiguousSymbolDiagnostic).AmbiguousSymbols
+                Dim symbols As ImmutableArray(Of SymbolWithAnnotationSymbols) = DirectCast(di, AmbiguousSymbolDiagnostic).AmbiguousSymbols.WithDefaultAnnotationSymbols()
                 Debug.Assert(symbols.Length > 1)
 
                 If preserveAliases Then
@@ -443,7 +444,7 @@ lAgain:
                     result.AddRange(lookupResult.Symbols)
                 Else
                     For Each sym In lookupResult.Symbols
-                        result.Add(sym.UnwrapAlias())
+                        result.Add(UnwrapAlias(sym))
                     Next
                 End If
             End If

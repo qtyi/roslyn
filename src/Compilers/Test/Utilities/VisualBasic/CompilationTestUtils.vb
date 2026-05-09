@@ -565,8 +565,8 @@ Friend Module CompilationUtils
         summary.CandidateSymbols = symbolInfo.CandidateSymbols
         summary.AllSymbols = symbolInfo.GetAllSymbols()
 
-        If TypeOf node Is IdentifierNameSyntax Then
-            summary.Alias = semanticModel.GetAliasInfo(DirectCast(node, IdentifierNameSyntax))
+        If TypeOf node Is SimpleNameSyntax Then
+            summary.Alias = semanticModel.GetAliasInfo(DirectCast(node, SimpleNameSyntax)).Alias
         End If
 
         Return summary
@@ -594,8 +594,8 @@ Friend Module CompilationUtils
         summary.CandidateSymbols = symbolInfo.CandidateSymbols
         summary.AllSymbols = symbolInfo.GetAllSymbols()
 
-        If TypeOf expression Is IdentifierNameSyntax Then
-            summary.Alias = semanticModel.GetSpeculativeAliasInfo(position, DirectCast(expression, IdentifierNameSyntax), bindingOption)
+        If TypeOf expression Is SimpleNameSyntax Then
+            summary.Alias = semanticModel.GetSpeculativeAliasInfo(position, DirectCast(expression, SimpleNameSyntax), bindingOption).Alias
         End If
 
         Return summary

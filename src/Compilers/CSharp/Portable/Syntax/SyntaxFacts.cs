@@ -87,6 +87,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 switch (parent.Kind())
                 {
+                    case UsingDirective:
+                        return ((UsingDirectiveSyntax)parent).TypeParameterList?.Parameters.Count > 0;
+
                     case Attribute:
                         return ((AttributeSyntax)parent).Name == node;
 

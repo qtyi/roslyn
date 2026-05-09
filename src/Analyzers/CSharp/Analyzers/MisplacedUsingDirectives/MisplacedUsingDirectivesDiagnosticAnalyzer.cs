@@ -70,7 +70,7 @@ internal sealed class MisplacedUsingDirectivesDiagnosticAnalyzer : AbstractBuilt
             // Move all usings outside of the namespace.  Ignore using-aliases if the user has set the option saying
             // that they're ok with them inside a namespace.
             option.Value is AddImportPlacement.OutsideNamespaceIgnoringAliases
-                ? namespaceDeclaration.Usings.Where(u => u.Alias is null)
+                ? namespaceDeclaration.Usings.Where(u => u.Identifier == default)
                 : namespaceDeclaration.Usings,
             option);
     }

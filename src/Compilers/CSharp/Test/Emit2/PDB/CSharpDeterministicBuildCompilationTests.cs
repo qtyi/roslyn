@@ -332,6 +332,7 @@ public struct StructWithValue
                 assemblyIdentityComparer: null,
                 strongNameProvider: null,
                 metadataImportOptions: MetadataImportOptions.Public,
+                friendAccessibleAssemblyPublicKeys: null,
                 referencesSupersedeLowerVersions: false,
                 publicSign: false,
                 topLevelBinderFlags: BinderFlags.None,

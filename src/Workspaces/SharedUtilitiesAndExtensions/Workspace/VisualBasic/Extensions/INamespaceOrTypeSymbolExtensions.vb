@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
@@ -16,7 +17,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Extensions
         End Function
 
         <Extension>
-        Public Function GetAliasForSymbol(symbol As INamespaceOrTypeSymbol, node As SyntaxNode, semanticModel As SemanticModel) As IAliasSymbol
+        Public Function GetAliasForSymbol(symbol As INamespaceOrTypeSymbol, node As SyntaxNode, semanticModel As SemanticModel) As (IAliasSymbol, ImmutableArray(Of ITypeSymbol))
             ' NOTE(cyrusn): If we're in an imports clause, we can't use aliases.
             Dim clause = node.AncestorsAndSelf().OfType(Of ImportsClauseSyntax).FirstOrDefault()
             If clause IsNot Nothing Then
@@ -29,15 +30,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Extensions
             End If
 
             Dim aliasSymbol As IAliasSymbol = Nothing
-            If Not AliasSymbolCache.TryGetAliasSymbol(originalSemanticModel, 0, symbol, aliasSymbol) Then
+            Dim aliasTypeArguments As ImmutableArray(Of ITypeSymbol) = Nothing
+            If Not AliasSymbolCache.TryGetAliasSymbol(originalSemanticModel, 0, symbol, aliasSymbol, aliasTypeArguments) Then
                 ' build cache first
                 AliasSymbolCache.AddAliasSymbols(originalSemanticModel, 0, originalSemanticModel.GetAliasSymbols())
 
                 ' retry
-                AliasSymbolCache.TryGetAliasSymbol(originalSemanticModel, 0, symbol, aliasSymbol)
+                AliasSymbolCache.TryGetAliasSymbol(originalSemanticModel, 0, symbol, aliasSymbol, aliasTypeArguments)
             End If
 
-            Return aliasSymbol
+            Return (aliasSymbol, aliasTypeArguments)
         End Function
     End Module
 

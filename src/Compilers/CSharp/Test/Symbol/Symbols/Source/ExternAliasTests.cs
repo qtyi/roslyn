@@ -361,8 +361,8 @@ class A : Bar::NS.Goo {}
 
             var alias1 = model.GetAliasInfo(qualifier);
 
-            Assert.NotNull(alias1);
-            Assert.Equal(SymbolKind.Alias, alias1.Kind);
+            Assert.NotNull(alias1.Alias);
+            Assert.Equal(SymbolKind.Alias, alias1.Alias.Kind);
         }
 
         [WorkItem(546729, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/546729")]

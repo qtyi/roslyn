@@ -178,6 +178,11 @@
         <target state="translated">Le jeton spécifié doit être un élément direct d’une SyntaxTokenList (tel qu’un modificateur dans une liste de modificateurs). Le jeton ne peut pas être un jeton arbitraire de l’arborescence syntaxique.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ModifiedTextSpansOverlap">
+        <source>Span '{0}' of modified text overlaps with span '{1}'</source>
+        <target state="new">Span '{0}' of modified text overlaps with span '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleHasInvalidAttributes">
         <source>Module has invalid attributes.</source>
         <target state="translated">Le module a des attributs non valides.</target>

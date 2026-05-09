@@ -752,12 +752,13 @@ End Sub",
             CompareAssemblies(sourceTemplate,
 "Friend Sub M()
 End Sub",
-"", Match.RefOut)
+"Friend Sub M()
+End Sub", Match.BothMetadataAndRefOut)
 
             CompareAssemblies(sourceTemplate,
 "Private Protected Sub M()
 End Sub",
-"", Match.RefOut)
+"", Match.Different)
 
             CompareAssemblies(sourceTemplate,
 "Private Sub M()
@@ -790,7 +791,7 @@ End Property",
 
             CompareAssemblies(sourceTemplate,
 "Friend Property P As Integer",
-"", Match.RefOut)
+"", Match.Different)
 
             CompareAssemblies(sourceTemplate,
 "Private Event DoSomething()",
@@ -1549,10 +1550,13 @@ End Class"
             AssertEx.SetEqual(
                 {"Sub PublicClass..ctor()", "Sub PublicClass.PublicMethod()",
                     "Sub PublicClass.ProtectedMethod()",
+                    "Sub PublicClass.InternalMethod()",
+                    "Sub PublicClass.PrivateProtectedMethod()",
                     "Sub PublicClass.ProtectedFriendMethod()",
                     "Sub PublicClass.AbstractMethod()",
                     "Sub PublicClass.add_PublicEvent(obj As System.Action)", "Sub PublicClass.remove_PublicEvent(obj As System.Action)",
-                    "Event PublicClass.PublicEvent As System.Action"},
+                    "Sub PublicClass.add_InternalEvent(obj As System.Action)", "Sub PublicClass.remove_InternalEvent(obj As System.Action)",
+                    "Event PublicClass.PublicEvent As System.Action", "Event PublicClass.InternalEvent As System.Action"},
                 compWithRef.GetMember(Of NamedTypeSymbol)("PublicClass").GetMembers().
                     Select(Function(m) m.ToTestDisplayString()))
 
@@ -1746,7 +1750,9 @@ End Structure"
                 refAssembly.GlobalNamespace.GetMembers().Select(Function(m) m.ToDisplayString()))
 
             AssertEx.SetEqual(
-                {"Sub InternalStruct..ctor()", "InternalStruct._P As System.Int32"},
+                {"Sub InternalStruct..ctor()", "InternalStruct._P As System.Int32",
+                    "Function InternalStruct.get_P() As System.Int32", "Sub InternalStruct.set_P(AutoPropertyValue As System.Int32)",
+                    "Property InternalStruct.P As System.Int32"},
                 compWithRef.GetMember(Of NamedTypeSymbol)("InternalStruct").GetMembers().
                     Select(Function(m) m.ToTestDisplayString()))
         End Sub

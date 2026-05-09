@@ -31,10 +31,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         public void UsingDirective()
         {
             var someValidName = SyntaxFactory.ParseName("System.String");
-            var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.Token(SyntaxKind.StaticKeyword), null, someValidName);
+            var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.Token(SyntaxKind.UsingKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword), someValidName);
             Assert.NotNull(usingDirective);
             Assert.Equal(SyntaxKind.StaticKeyword, usingDirective.StaticKeyword.Kind());
-            Assert.Null(usingDirective.Alias);
+            Assert.Equal(default, usingDirective.Identifier);
             Assert.Equal("System.String", usingDirective.Name.ToFullString());
             Assert.Equal(SyntaxKind.SemicolonToken, usingDirective.SemicolonToken.Kind());
         }

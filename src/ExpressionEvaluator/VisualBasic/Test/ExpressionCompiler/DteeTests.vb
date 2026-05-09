@@ -128,7 +128,7 @@ End Namespace
                     Dim rootNamespace As NamespaceSymbol = Nothing
                     Dim currentNamespace As NamespaceSymbol = Nothing
                     Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-                    Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+                    Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
                     Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
                     ImportsDebugInfoTests.GetImports(compContext, rootNamespace, currentNamespace, typesAndNamespaces, aliases, xmlNamespaces)
 
@@ -389,7 +389,7 @@ End Namespace
             Dim rootNamespace As NamespaceSymbol = Nothing
             Dim currentNamespace As NamespaceSymbol = Nothing
             Dim typesAndNamespaces As ImmutableArray(Of NamespaceOrTypeAndImportsClausePosition) = Nothing
-            Dim aliases As Dictionary(Of String, AliasAndImportsClausePosition) = Nothing
+            Dim aliases As Dictionary(Of NameWithArity, AliasAndImportsClausePosition) = Nothing
             Dim xmlNamespaces As Dictionary(Of String, XmlNamespaceAndImportsClausePosition) = Nothing
             ImportsDebugInfoTests.GetImports(compContext, rootNamespace, currentNamespace, typesAndNamespaces, aliases, xmlNamespaces)
 
@@ -424,7 +424,7 @@ End Namespace
 
             AssertEx.All(projectLevelImportRecords, Function(record) record.TargetAssemblyAlias Is Nothing)
             AssertEx.All(projectLevelImportRecords, Function(record) record.TargetKind = ImportTargetKind.Namespace)
-            AssertEx.All(projectLevelImportRecords, Function(record) record.Alias Is Nothing)
+            AssertEx.All(projectLevelImportRecords, Function(record) record.Alias.IsDefault)
             AssertEx.SetEqual(projectLevelImportRecords.Select(Function(record) record.TargetString), namespaceNames)
         End Sub
     End Class

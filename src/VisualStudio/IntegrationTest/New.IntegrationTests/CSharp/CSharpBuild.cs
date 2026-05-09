@@ -64,7 +64,7 @@ public class CSharpBuild : AbstractIntegrationTest
         File.Delete(logFileName);
 
         var commandLine = $"""
-            "{pathToSolution}" /Rebuild Debug /Out "{logFileName}" /rootsuffix RoslynDev /log
+            "{pathToSolution}" /Rebuild Debug /Out "{logFileName}" /rootsuffix Qtyi /log
             """;
 
         var process = Process.Start(pathToDevenv, commandLine);

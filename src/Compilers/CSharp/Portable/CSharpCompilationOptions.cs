@@ -72,6 +72,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             StrongNameProvider? strongNameProvider = null,
             bool publicSign = false,
             MetadataImportOptions metadataImportOptions = MetadataImportOptions.Public,
+            IEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>>? friendAccessibleAssemblyPublicKeys = null,
             NullableContextOptions nullableContextOptions = NullableContextOptions.Disable)
             : this(outputKind, reportSuppressedDiagnostics, moduleName, mainTypeName, scriptClassName,
                    usings, optimizationLevel, checkOverflow, allowUnsafe,
@@ -87,6 +88,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                    assemblyIdentityComparer: assemblyIdentityComparer,
                    strongNameProvider: strongNameProvider,
                    metadataImportOptions: metadataImportOptions,
+                   friendAccessibleAssemblyPublicKeys: friendAccessibleAssemblyPublicKeys,
                    referencesSupersedeLowerVersions: false,
                    publicSign: publicSign,
                    topLevelBinderFlags: BinderFlags.None,
@@ -211,6 +213,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             AssemblyIdentityComparer? assemblyIdentityComparer,
             StrongNameProvider? strongNameProvider,
             MetadataImportOptions metadataImportOptions,
+            IEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>>? friendAccessibleAssemblyPublicKeys,
             bool referencesSupersedeLowerVersions,
             bool publicSign,
             BinderFlags topLevelBinderFlags,
@@ -220,7 +223,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                    platform, generalDiagnosticOption, warningLevel, specificDiagnosticOptions.ToImmutableDictionaryOrEmpty(),
                    concurrentBuild, deterministic, currentLocalTime, debugPlusMode, xmlReferenceResolver,
                    sourceReferenceResolver, syntaxTreeOptionsProvider, metadataReferenceResolver,
-                   assemblyIdentityComparer, strongNameProvider, metadataImportOptions, referencesSupersedeLowerVersions)
+                   assemblyIdentityComparer, strongNameProvider, metadataImportOptions, friendAccessibleAssemblyPublicKeys.ToImmutableDictionaryOrEmpty(), referencesSupersedeLowerVersions)
         {
             this.Usings = usings.AsImmutableOrEmpty();
             this.AllowUnsafe = allowUnsafe;
@@ -256,6 +259,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             assemblyIdentityComparer: other.AssemblyIdentityComparer,
             strongNameProvider: other.StrongNameProvider,
             metadataImportOptions: other.MetadataImportOptions,
+            friendAccessibleAssemblyPublicKeys: other.FriendAccessibleAssemblyPublicKeys,
             referencesSupersedeLowerVersions: other.ReferencesSupersedeLowerVersions,
             reportSuppressedDiagnostics: other.ReportSuppressedDiagnostics,
             publicSign: other.PublicSign,
@@ -548,6 +552,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             return new CSharpCompilationOptions(this) { MetadataImportOptions = value };
         }
+
+        internal CSharpCompilationOptions WithFriendAccessibleAssemblyPublicKeys(IEnumerable<KeyValuePair<string, ImmutableHashSet<ImmutableArray<byte>>>> value) =>
+            new CSharpCompilationOptions(this) { FriendAccessibleAssemblyPublicKeys = value.ToImmutableDictionaryOrEmpty() };
 
         internal CSharpCompilationOptions WithReferencesSupersedeLowerVersions(bool value)
         {
@@ -933,6 +940,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                    assemblyIdentityComparer: assemblyIdentityComparer,
                    strongNameProvider: strongNameProvider,
                    metadataImportOptions: MetadataImportOptions.Public,
+                   friendAccessibleAssemblyPublicKeys: null,
                    referencesSupersedeLowerVersions: false,
                    publicSign: false,
                    topLevelBinderFlags: BinderFlags.None,

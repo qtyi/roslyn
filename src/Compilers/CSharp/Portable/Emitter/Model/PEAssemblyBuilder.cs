@@ -46,6 +46,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
         private SynthesizedEmbeddedScopedRefAttributeSymbol _lazyScopedRefAttribute;
         private SynthesizedEmbeddedRefSafetyRulesAttributeSymbol _lazyRefSafetyRulesAttribute;
         private SynthesizedEmbeddedExtensionMarkerAttributeSymbol _lazyExtensionMarkerAttribute;
+        private SynthesizedEmbeddedIgnoresAccessChecksToAttributeSymbol _lazyIgnoresAccessChecksToAttribute;
 
         /// <summary>
         /// The behavior of the C# command-line compiler is as follows:
@@ -113,6 +114,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             builder.AddIfNotNull(_lazyScopedRefAttribute);
             builder.AddIfNotNull(_lazyRefSafetyRulesAttribute);
             builder.AddIfNotNull(_lazyExtensionMarkerAttribute);
+            builder.AddIfNotNull(_lazyIgnoresAccessChecksToAttribute);
 
             return builder.ToImmutableAndFree();
         }
@@ -297,6 +299,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             return base.SynthesizeRefSafetyRulesAttribute(arguments);
         }
 
+        internal override SynthesizedAttributeData SynthesizeIgnoresAccessChecksToAttribute(ImmutableArray<TypedConstant> arguments)
+        {
+            if ((object)_lazyIgnoresAccessChecksToAttribute != null)
+            {
+                return SynthesizedAttributeData.Create(
+                    Compilation,
+                    _lazyIgnoresAccessChecksToAttribute.Constructors[0],
+                    arguments,
+                    ImmutableArray<KeyValuePair<string, TypedConstant>>.Empty);
+            }
+
+            return base.SynthesizeIgnoresAccessChecksToAttribute(arguments);
+        }
+
         protected override SynthesizedAttributeData TrySynthesizeIsReadOnlyAttribute()
         {
             if ((object)_lazyIsReadOnlyAttribute != null)
@@ -400,6 +416,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                 Compilation.CheckIfAttributeShouldBeEmbedded(EmbeddableAttributes.RefSafetyRulesAttribute, diagnostics, Location.None))
             {
                 needsAttributes |= EmbeddableAttributes.RefSafetyRulesAttribute;
+            }
+
+            if (ShouldEmitIgnoresAccessChecksToAttribute() && Compilation.CheckIfAttributeShouldBeEmbedded(EmbeddableAttributes.IgnoresAccessChecksToAttribute, diagnostics, Location.None))
+            {
+                needsAttributes |= EmbeddableAttributes.IgnoresAccessChecksToAttribute;
             }
 
             if (needsAttributes == 0)
@@ -524,6 +545,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                     AttributeDescription.ExtensionMarkerAttribute,
                     CreateExtensionMarkerAttributeSymbol);
             }
+
+            if ((needsAttributes & EmbeddableAttributes.IgnoresAccessChecksToAttribute) != 0)
+            {
+                CreateAttributeIfNeeded(
+                    ref _lazyIgnoresAccessChecksToAttribute,
+                    diagnostics,
+                    AttributeDescription.IgnoresAccessChecksToAttribute,
+                    CreateIgnoresAccessChecksToAttributeSymbol);
+            }
         }
 
         private SynthesizedEmbeddedAttributeSymbol CreateParameterlessEmbeddedAttributeSymbol(string name, NamespaceSymbol containingNamespace, BindingDiagnosticBag diagnostics)
@@ -582,6 +612,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
 
         private SynthesizedEmbeddedExtensionMarkerAttributeSymbol CreateExtensionMarkerAttributeSymbol(string name, NamespaceSymbol containingNamespace, BindingDiagnosticBag diagnostics)
             => new SynthesizedEmbeddedExtensionMarkerAttributeSymbol(
+                    name,
+                    containingNamespace,
+                    SourceModule,
+                    GetWellKnownType(WellKnownType.System_Attribute, diagnostics),
+                    GetSpecialType(SpecialType.System_String, diagnostics));
+
+        private SynthesizedEmbeddedIgnoresAccessChecksToAttributeSymbol CreateIgnoresAccessChecksToAttributeSymbol(string name, NamespaceSymbol containingNamespace, BindingDiagnosticBag diagnostics)
+            => new SynthesizedEmbeddedIgnoresAccessChecksToAttributeSymbol(
                     name,
                     containingNamespace,
                     SourceModule,

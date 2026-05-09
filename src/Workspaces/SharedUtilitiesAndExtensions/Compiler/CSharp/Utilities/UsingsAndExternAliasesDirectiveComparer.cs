@@ -55,7 +55,7 @@ internal sealed class UsingsAndExternAliasesDirectiveComparer : IComparer<Syntax
 
         if (usingDirective.GlobalKeyword != default)
         {
-            if (usingDirective.Alias != null)
+            if (usingDirective.Identifier != default)
                 return UsingKind.GlobalAlias;
 
             if (usingDirective.StaticKeyword != default)
@@ -65,7 +65,7 @@ internal sealed class UsingsAndExternAliasesDirectiveComparer : IComparer<Syntax
         }
         else
         {
-            if (usingDirective.Alias != null)
+            if (usingDirective.Identifier != default)
                 return UsingKind.Alias;
 
             if (usingDirective.StaticKeyword != default)
@@ -120,12 +120,19 @@ internal sealed class UsingsAndExternAliasesDirectiveComparer : IComparer<Syntax
 
             case UsingKind.Alias:
             case UsingKind.GlobalAlias:
-                var aliasComparisonResult = _tokenComparer.Compare(using1!.Alias!.Name.Identifier, using2!.Alias!.Name.Identifier);
+                var aliasComparisonResult = _tokenComparer.Compare(using1!.Identifier, using2!.Identifier);
 
                 if (aliasComparisonResult == 0 && using1.Name != null && using2.Name != null)
                 {
                     // They both use the same alias, so compare the names.
-                    return _nameComparer.Compare(using1.Name, using2.Name);
+                    aliasComparisonResult = _nameComparer.Compare(using1.Name, using2.Name);
+                }
+
+                if (aliasComparisonResult == 0)
+                {
+                    var count1 = using1.TypeParameterList is null ? 0 : using1.TypeParameterList.Parameters.Count;
+                    var count2 = using2.TypeParameterList is null ? 0 : using2.TypeParameterList.Parameters.Count;
+                    return count1.CompareTo(count2);
                 }
 
                 return aliasComparisonResult;

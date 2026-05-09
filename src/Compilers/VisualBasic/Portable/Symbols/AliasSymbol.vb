@@ -7,6 +7,8 @@ Imports System.Collections.Immutable
 Imports System.Diagnostics
 Imports System.Linq
 Imports System.Threading
+Imports Microsoft.CodeAnalysis.PooledObjects
+Imports Microsoft.CodeAnalysis.Symbols
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -49,21 +51,21 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
     '''                                  Optional results As List(Of Symbol) = Nothing) As IList(Of Symbol)
     ''' </pre>
     ''' </summary>
-    Friend NotInheritable Class AliasSymbol
+    Friend Class AliasSymbol
         Inherits Symbol
-        Implements IAliasSymbol
+        Implements IAliasSymbol, IAliasSymbolInternal
 
-        Private ReadOnly _aliasTarget As NamespaceOrTypeSymbol
-        Private ReadOnly _aliasName As String
-        Private ReadOnly _aliasLocations As ImmutableArray(Of Location)
-        Private ReadOnly _aliasContainer As Symbol
+        Protected ReadOnly _aliasContainer As Symbol
+        Protected _aliasName As String
+        Protected _aliasArity As Integer
+        Protected _aliasLocations As ImmutableArray(Of Location)
+        Protected _aliasTypeParameters As ImmutableArray(Of TypeParameterSymbol)
 
-        Friend Sub New(compilation As VisualBasicCompilation,
-                       aliasContainer As Symbol,
-                       aliasName As String,
-                       aliasTarget As NamespaceOrTypeSymbol,
-                       aliasLocation As Location)
+        Protected _aliasTarget As NamespaceOrTypeSymbol
+        Protected _aliasTargetDiagnostics As BindingDiagnosticBag
 
+        Protected Sub New(compilation As VisualBasicCompilation,
+                          aliasContainer As Symbol)
             Dim merged = TryCast(aliasContainer, MergedNamespaceSymbol)
             Dim sourceNs As NamespaceSymbol = Nothing
             If merged IsNot Nothing Then
@@ -71,10 +73,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End If
 
             Me._aliasContainer = If(sourceNs, aliasContainer)
+        End Sub
+
+        Friend Sub New(compilation As VisualBasicCompilation,
+                       aliasContainer As Symbol,
+                       aliasName As String,
+                       aliasTarget As NamespaceOrTypeSymbol)
+            Me.New(compilation, aliasContainer)
 
             Me._aliasTarget = aliasTarget
             Me._aliasName = aliasName
-            Me._aliasLocations = ImmutableArray.Create(aliasLocation)
+            Me._aliasArity = 0
+            Me._aliasLocations = ImmutableArray.Create(NoLocation.Singleton)
+            Me._aliasTypeParameters = ImmutableArray(Of TypeParameterSymbol).Empty
         End Sub
 
         ''' <summary>
@@ -83,6 +94,21 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Public Overrides ReadOnly Property Name As String
             Get
                 Return _aliasName
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' The alias arity.
+        ''' </summary>
+        Public ReadOnly Property Arity As Integer
+            Get
+                Return _aliasArity
+            End Get
+        End Property
+
+        Public ReadOnly Property IsGenericAlias As Boolean
+            Get
+                Return Me.Arity <> 0
             End Get
         End Property
 
@@ -100,15 +126,19 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         ''' Gets the <see cref="NamespaceOrTypeSymbol"/> for the
         ''' namespace or type referenced by the alias.
         ''' </summary>
-        Public ReadOnly Property Target As NamespaceOrTypeSymbol
+        Public Overridable ReadOnly Property Target As NamespaceOrTypeSymbol
             Get
                 Return Me._aliasTarget
             End Get
         End Property
 
-        Private ReadOnly Property IAliasSymbol_Target As INamespaceOrTypeSymbol Implements IAliasSymbol.Target
+        Public Overridable ReadOnly Property TargetDiagnostics As BindingDiagnosticBag
             Get
-                Return Target
+                If _aliasTargetDiagnostics Is Nothing Then
+                    Interlocked.CompareExchange(_aliasTargetDiagnostics, BindingDiagnosticBag.GetInstance(), Nothing)
+                End If
+
+                Return _aliasTargetDiagnostics
             End Get
         End Property
 
@@ -226,6 +256,18 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
             End Get
         End Property
 
+        Public Overridable ReadOnly Property TypeParameters As ImmutableArray(Of TypeParameterSymbol)
+            Get
+                Throw New NotImplementedException()
+            End Get
+        End Property
+
+        Private ReadOnly Property IAliasSymbol_TypeParameters As ImmutableArray(Of ITypeParameterSymbol) Implements IAliasSymbol.TypeParameters
+            Get
+                Return StaticCast(Of ITypeParameterSymbol).From(TypeParameters)
+            End Get
+        End Property
+
         ''' <summary>
         ''' Determines whether the specified object is equal to the current object.
         ''' </summary>
@@ -276,5 +318,87 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         Public Overrides Function Accept(Of TResult)(visitor As VisualBasicSymbolVisitor(Of TResult)) As TResult
             Return visitor.VisitAlias(Me)
         End Function
+
+        ''' <summary>
+        ''' Returns a constructed type given its type arguments.
+        ''' </summary>
+        Public Function Construct(ParamArray typeArguments() As TypeSymbol) As TypeSymbol
+            Return Construct(typeArguments.AsImmutableOrNull())
+        End Function
+
+        ''' <summary>
+        ''' Returns a constructed type given its type arguments.
+        ''' </summary>
+        Public Function Construct(typeArguments As IEnumerable(Of TypeSymbol)) As TypeSymbol
+            Return Construct(typeArguments.AsImmutableOrNull())
+        End Function
+
+        ''' <summary>
+        ''' Construct a new type from this generic alias, substituting the given type arguments
+        ''' for the  type parameters.
+        ''' </summary>
+        ''' <param name="typeArguments">A set of type arguments to be applied. Must have the same length
+        ''' as the number of type parameters that this generic alias has.</param>
+        Public Overridable Function Construct(typeArguments As ImmutableArray(Of TypeSymbol)) As TypeSymbol
+            ' Check type arguments
+            typeArguments.CheckTypeArguments(Me.Arity)
+            Debug.Assert(Me.Target.IsType)
+
+            Dim substitution = TypeSubstitution.Create(Me, Me.TypeParameters, typeArguments, allowAlphaRenamedTypeParametersAsArguments:=True)
+            Return DirectCast(Me.Target, TypeSymbol).InternalSubstituteTypeParameters(substitution).AsTypeSymbolOnly()
+        End Function
+
+#Region "IAliasSymbol"
+
+        Private ReadOnly Property IAliasSymbol_Arity As Integer Implements IAliasSymbol.Arity
+            Get
+                Return Me.Arity
+            End Get
+        End Property
+
+        Private ReadOnly Property IAliasSymbol_IsGenericAlias As Boolean Implements IAliasSymbol.IsGenericAlias
+            Get
+                Return Me.IsGenericAlias
+            End Get
+        End Property
+
+        Private ReadOnly Property IAliasSymbol_Target As INamespaceOrTypeSymbol Implements IAliasSymbol.Target
+            Get
+                Return Target
+            End Get
+        End Property
+
+        Private Function INamedTypeSymbol_Construct(ParamArray typeArguments() As ITypeSymbol) As ITypeSymbol Implements IAliasSymbol.Construct
+            Return Construct(ConstructTypeArguments(typeArguments))
+        End Function
+
+        Private Function INamedTypeSymbol_Construct(typeArguments As ImmutableArray(Of ITypeSymbol), typeArgumentNullableAnnotations As ImmutableArray(Of CodeAnalysis.NullableAnnotation)) As ITypeSymbol Implements IAliasSymbol.Construct
+            Return Construct(ConstructTypeArguments(typeArguments, typeArgumentNullableAnnotations))
+        End Function
+
+#End Region
+
+#Region "IAliasSymbolInternal"
+
+        Private ReadOnly Property IAliasSymbolInternal_Arity As Integer Implements IAliasSymbolInternal.Arity
+            Get
+                Return Me.Arity
+            End Get
+        End Property
+
+        Private ReadOnly Property IAliasSymbolInternal_IsGenericAlias As Boolean Implements IAliasSymbolInternal.IsGenericAlias
+            Get
+                Return Me.IsGenericAlias
+            End Get
+        End Property
+
+        Private ReadOnly Property IAliasSymbolInternal_Target As INamespaceOrTypeSymbolInternal Implements IAliasSymbolInternal.Target
+            Get
+                Return Target
+            End Get
+        End Property
+
+#End Region
+
     End Class
 End Namespace

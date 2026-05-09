@@ -120,8 +120,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if ((options & SymbolInfoOptions.PreserveAliases) != 0)
             {
-                var aliasSymbol = _parentSemanticModel.GetSpeculativeAliasInfo(_position, expression, this.GetSpeculativeBindingOption(expression));
-                return new SymbolInfo(aliasSymbol);
+                var aliasInfo = _parentSemanticModel.GetSpeculativeAliasInfo(_position, expression, this.GetSpeculativeBindingOption(expression));
+                return SymbolInfo.From(aliasInfo);
             }
 
             return _parentSemanticModel.GetSpeculativeSymbolInfo(_position, expression, this.GetSpeculativeBindingOption(expression));

@@ -69,6 +69,7 @@ internal sealed partial class CSharpMetadataAsSourceService : AbstractMetadataAs
 
     protected override ImmutableArray<AbstractReducer> GetReducers()
         => [
+            new CSharpTypeReducer(),
             new CSharpNameReducer(),
             new CSharpEscapingReducer(),
             new CSharpParenthesizedExpressionReducer(),

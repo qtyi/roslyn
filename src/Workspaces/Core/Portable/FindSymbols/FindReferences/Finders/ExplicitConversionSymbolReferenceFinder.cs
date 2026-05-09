@@ -25,7 +25,7 @@ internal sealed partial class ExplicitConversionSymbolReferenceFinder : Abstract
 
     protected sealed override async Task DetermineDocumentsToSearchAsync<TData>(
         IMethodSymbol symbol,
-        HashSet<string>? globalAliases,
+        HashSet<NameWithArity>? globalAliases,
         Project project,
         IImmutableSet<Document>? documents,
         Action<Document, TData> processResult,

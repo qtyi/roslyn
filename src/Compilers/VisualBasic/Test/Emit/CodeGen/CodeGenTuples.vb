@@ -6662,7 +6662,7 @@ End Class
 
         End Sub
 
-        <Fact>
+        <Fact(Skip:=NameOf(TupleSupportedInUsingStatement))>
         Public Sub TupleUnsupportedInUsingStatement()
             Dim comp = CreateCompilationWithMscorlib40AndVBRuntime(
 <compilation>
@@ -6683,6 +6683,19 @@ BC32093: 'Of' required when specifying type arguments for a generic type or meth
 Imports VT2 = (Integer, Integer)
                ~
 </errors>)
+
+        End Sub
+
+        <Fact>
+        Public Sub TupleSupportedInUsingStatement()
+            Dim comp = CreateCompilationWithMscorlib40AndVBRuntime(
+<compilation>
+    <file name="a.vb"><![CDATA[
+Imports VT2 = (Integer, Integer)
+]]></file>
+</compilation>, additionalRefs:={ValueTupleRef})
+
+            comp.AssertNoDiagnostics()
 
         End Sub
 
@@ -6711,6 +6724,39 @@ End Namespace
             Dim tree = comp.SyntaxTrees.First()
             Dim model = comp.GetSemanticModel(tree, ignoreAccessibility:=False)
             Dim nodes = model.LookupStaticMembers(234)
+
+            For i As Integer = 0 To tree.GetText().Length
+                model.LookupStaticMembers(i)
+            Next
+            ' Didn't crash
+
+        End Sub
+
+        <Fact>
+        Public Sub MissingTypeInGenericAlias()
+
+            Dim comp = CreateCompilationWithMscorlib40AndVBRuntime(
+<compilation>
+    <file name="a.vb"><![CDATA[
+Imports System
+Imports GVT2(Of T) = System.ValueTuple(Of T, T) ' ValueTuple is referenced but does not exist
+Namespace System
+    Public Class Bogus
+    End Class
+End Namespace
+Namespace TuplesCrash2
+    Class C
+        Shared Sub Main()
+
+        End Sub
+    End Class
+End Namespace
+]]></file>
+</compilation>)
+
+            Dim tree = comp.SyntaxTrees.First()
+            Dim model = comp.GetSemanticModel(tree, ignoreAccessibility:=False)
+            Dim nodes = model.LookupStaticMembers(229)
 
             For i As Integer = 0 To tree.GetText().Length
                 model.LookupStaticMembers(i)

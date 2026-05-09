@@ -33,14 +33,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
             ' instance method. So, if the first symbol we have is not a reduced extension
             ' method, we might need to look for extension methods later, on demand.
             Debug.Assert((lookupOptionsUsed And LookupOptions.EagerlyLookupExtensionMethods) = 0)
-            If lookupResult.IsGood AndAlso Not lookupResult.Symbols(0).IsReducedExtensionMethod() Then
+            If lookupResult.IsGood AndAlso Not lookupResult.Symbols(0).Symbol.IsReducedExtensionMethod() Then
                 pendingExtensionMethods = New ExtensionMethodGroup(Me, lookupOptionsUsed, withDependencies)
             End If
 
             Return New BoundMethodGroup(
                 node,
                 typeArgumentsOpt,
-                lookupResult.Symbols.ToDowncastedImmutable(Of MethodSymbol),
+                lookupResult.Symbols.ToImmutable().WithoutAnnotationSymbols(Of MethodSymbol)(),
                 pendingExtensionMethods,
                 lookupResult.Kind,
                 receiver,
@@ -549,7 +549,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     LookupMember(result, target.Type, StringConstants.ElementAtMethod, 0, options, useSiteInfo)
 
                     If result.IsGood Then
-                        Dim kind As SymbolKind = result.Symbols(0).Kind
+                        Dim kind As SymbolKind = result.Symbols(0).Symbol.Kind
 
                         If kind = SymbolKind.Method OrElse kind = SymbolKind.Property Then
                             diagnostics.AddRange(tempDiagnostics)

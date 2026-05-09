@@ -6,6 +6,7 @@ Imports System.Collections.Immutable
 Imports Microsoft.CodeAnalysis.PooledObjects
 Imports Microsoft.CodeAnalysis.VisualBasic.Symbols
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports SymbolWithAnnotationSymbols = Microsoft.CodeAnalysis.SymbolWithAnnotationSymbols(Of Microsoft.CodeAnalysis.VisualBasic.Symbol)
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -894,8 +895,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
             GetMemberIfMatchesRequirements(WellKnownMemberNames.CollectionInitializerAddMethodName,
                                            collectionType,
-                                           Function(y As Symbol) As Boolean
-                                               Return y.Kind = SymbolKind.Method
+                                           Function(y As SymbolWithAnnotationSymbols) As Boolean
+                                               Return y.Symbol.Kind = SymbolKind.Method
                                            End Function,
                                            result,
                                            collectionInitializerSyntax,

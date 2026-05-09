@@ -93,7 +93,7 @@ internal abstract class AbstractAddImportCodeRefactoringProvider<
         // has already qualified in the way they want.
         var namespaceReference = syntaxFacts.GetLeftSideOfDot(qualifiedTypeReference);
         Contract.ThrowIfNull(namespaceReference);
-        if (namespaceReference.DescendantNodesAndSelf().Any(n => semanticModel.GetAliasInfo(n, cancellationToken) is { Target: not INamespaceSymbol { IsGlobalNamespace: true } }))
+        if (namespaceReference.DescendantNodesAndSelf().Any(n => semanticModel.GetAliasInfoWithTarget(n, cancellationToken) is { Alias: not null, Target: not INamespaceSymbol { IsGlobalNamespace: true } }))
             return;
 
         // Check if there's already a using directive for this namespace

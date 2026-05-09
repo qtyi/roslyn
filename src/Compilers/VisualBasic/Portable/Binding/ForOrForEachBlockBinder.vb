@@ -85,8 +85,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                         ' The only exception is if all symbols (should be one only, or the result is not good) are type symbols.
                         ' It's perfectly legal to create a local named with the same name as the enclosing type.
                         If Not (result.IsGoodOrAmbiguous AndAlso
-                            result.Symbols(0).Kind <> SymbolKind.NamedType AndAlso
-                            result.Symbols(0).Kind <> SymbolKind.TypeParameter) Then
+                            result.Symbols(0).Symbol.Kind <> SymbolKind.NamedType AndAlso
+                            result.Symbols(0).Symbol.Kind <> SymbolKind.TypeParameter) Then
 
                             localVar = CreateLocalSymbol(identifier)
                         End If

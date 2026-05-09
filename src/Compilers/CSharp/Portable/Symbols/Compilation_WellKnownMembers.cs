@@ -582,6 +582,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             EnsureEmbeddableAttributeExists(EmbeddableAttributes.ExtensionMarkerAttribute, diagnostics, location, modifyCompilation);
         }
 
+        internal void EnsureIgnoresAccessChecksToAttributeExists(BindingDiagnosticBag? diagnostics, Location location, bool modifyCompilation)
+        {
+            EnsureEmbeddableAttributeExists(EmbeddableAttributes.IgnoresAccessChecksToAttribute, diagnostics, location, modifyCompilation);
+        }
+
         internal bool CheckIfAttributeShouldBeEmbedded(EmbeddableAttributes attribute, BindingDiagnosticBag? diagnosticsOpt, Location locationOpt)
         {
             switch (attribute)
@@ -674,6 +679,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                         locationOpt,
                         WellKnownType.System_Runtime_CompilerServices_ExtensionMarkerAttribute,
                         WellKnownMember.System_Runtime_CompilerServices_ExtensionMarkerAttribute__ctor);
+
+                case EmbeddableAttributes.IgnoresAccessChecksToAttribute:
+                    return CheckIfAttributeShouldBeEmbedded(
+                        diagnosticsOpt,
+                        locationOpt,
+                        WellKnownType.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute,
+                        WellKnownMember.System_Runtime_CompilerServices_IgnoresAccessChecksToAttribute__ctor);
 
                 default:
                     throw ExceptionUtilities.UnexpectedValue(attribute);
