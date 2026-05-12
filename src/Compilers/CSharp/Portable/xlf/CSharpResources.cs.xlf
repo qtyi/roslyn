@@ -1042,6 +1042,11 @@
         <target state="translated">Příkaz foreach nejde použít pro proměnné typu {0}, protože {0} neobsahuje veřejnou definici instance nebo rozšíření pro {1}. Měli jste v úmyslu await foreach místo foreach?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">Pro {0} se nedá vytvořit ukazatel na funkci, protože to není statická metoda.</target>

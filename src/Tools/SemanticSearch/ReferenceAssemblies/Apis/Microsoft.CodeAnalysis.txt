@@ -339,6 +339,7 @@ Microsoft.CodeAnalysis.CompilationOptions.get_DelaySign
 Microsoft.CodeAnalysis.CompilationOptions.get_Deterministic
 Microsoft.CodeAnalysis.CompilationOptions.get_Errors
 Microsoft.CodeAnalysis.CompilationOptions.get_Features
+Microsoft.CodeAnalysis.CompilationOptions.get_FriendAccessibleAssemblyPublicKeys
 Microsoft.CodeAnalysis.CompilationOptions.get_GeneralDiagnosticOption
 Microsoft.CodeAnalysis.CompilationOptions.get_Language
 Microsoft.CodeAnalysis.CompilationOptions.get_MainTypeName
@@ -369,6 +370,7 @@ Microsoft.CodeAnalysis.CompilationOptions.set_CryptoPublicKey(System.Collections
 Microsoft.CodeAnalysis.CompilationOptions.set_DelaySign(System.Nullable{System.Boolean})
 Microsoft.CodeAnalysis.CompilationOptions.set_Deterministic(System.Boolean)
 Microsoft.CodeAnalysis.CompilationOptions.set_Features(System.Collections.Immutable.ImmutableArray{System.String})
+Microsoft.CodeAnalysis.CompilationOptions.set_FriendAccessibleAssemblyPublicKeys(System.Collections.Immutable.ImmutableDictionary{System.String,System.Collections.Immutable.ImmutableHashSet{System.Collections.Immutable.ImmutableArray{System.Byte}}})
 Microsoft.CodeAnalysis.CompilationOptions.set_GeneralDiagnosticOption(Microsoft.CodeAnalysis.ReportDiagnostic)
 Microsoft.CodeAnalysis.CompilationOptions.set_MainTypeName(System.String)
 Microsoft.CodeAnalysis.CompilationOptions.set_MetadataImportOptions(Microsoft.CodeAnalysis.MetadataImportOptions)
@@ -4031,6 +4033,7 @@ Microsoft.CodeAnalysis.WellKnownGeneratorInputs.AnalyzerConfigOptions
 Microsoft.CodeAnalysis.WellKnownGeneratorInputs.Compilation
 Microsoft.CodeAnalysis.WellKnownGeneratorInputs.MetadataReferences
 Microsoft.CodeAnalysis.WellKnownGeneratorInputs.ParseOptions
+Microsoft.CodeAnalysis.WellKnownGeneratorInputs.SyntaxTrees
 Microsoft.CodeAnalysis.WellKnownGeneratorOutputs
 Microsoft.CodeAnalysis.WellKnownGeneratorOutputs.ImplementationSourceOutput
 Microsoft.CodeAnalysis.WellKnownGeneratorOutputs.SourceOutput

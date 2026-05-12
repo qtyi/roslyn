@@ -1,0 +1,69 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+#nullable disable
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.CodeAnalysis.PooledObjects;
+
+namespace Microsoft.CodeAnalysis.CSharp.Symbols
+{
+    internal sealed class SynthesizedEmbeddedIgnoresAccessChecksToAttributeSymbol : SynthesizedEmbeddedAttributeSymbolBase
+    {
+        private readonly SynthesizedFieldSymbol _field;
+        private readonly ImmutableArray<MethodSymbol> _constructors;
+
+        public SynthesizedEmbeddedIgnoresAccessChecksToAttributeSymbol(
+            string name,
+            NamespaceSymbol containingNamespace,
+            ModuleSymbol containingModule,
+            NamedTypeSymbol systemAttributeType,
+            TypeSymbol systemStringType)
+            : base(name, containingNamespace, containingModule, baseType: systemAttributeType)
+        {
+            _field = new SynthesizedFieldSymbol(
+                    this,
+                    systemStringType,
+                    "AssemblyName",
+                    DeclarationModifiers.Public,
+                    isReadOnly: true,
+                    isStatic: false);
+
+            _constructors = ImmutableArray.Create<MethodSymbol>(
+                new SynthesizedEmbeddedAttributeConstructorWithBodySymbol(
+                    this,
+                    m => ImmutableArray.Create(SynthesizedParameterSymbol.Create(m, TypeWithAnnotations.Create(systemStringType), 0, RefKind.None)),
+                    GenerateConstructorBody));
+
+            // Ensure we never get out of sync with the description
+            Debug.Assert(_constructors.Length == AttributeDescription.IgnoresAccessChecksToAttribute.Signatures.Length);
+        }
+
+        internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => [_field];
+
+        public override ImmutableArray<MethodSymbol> Constructors => _constructors;
+
+        internal override AttributeUsageInfo GetAttributeUsageInfo()
+        {
+            return new AttributeUsageInfo(AttributeTargets.Assembly, allowMultiple: true, inherited: false);
+        }
+
+        private void GenerateConstructorBody(SyntheticBoundNodeFactory factory, ArrayBuilder<BoundStatement> statements, ImmutableArray<ParameterSymbol> parameters)
+        {
+            statements.Add(
+                factory.ExpressionStatement(
+                    factory.AssignmentExpression(
+                        factory.Field(factory.This(), _field),
+                        factory.Parameter(parameters.Single())
+                    )
+                )
+            );
+        }
+    }
+}
+

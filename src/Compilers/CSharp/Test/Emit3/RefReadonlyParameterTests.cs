@@ -8691,10 +8691,7 @@ public partial class RefReadonlyParameterTests : CSharpTestBase
                 public static int F;
             }
             """;
-        CreateCompilation(source).VerifyDiagnostics(
-            // (9,23): warning CS0649: Field 'C.F' is never assigned to, and will always have its default value 0
-            //     public static int F;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("C.F", "0").WithLocation(9, 23));
+        CreateCompilation(source).VerifyDiagnostics();
     }
 
     [Theory, CombinatorialData, WorkItem("https://github.com/dotnet/roslyn/issues/77528")]
@@ -8715,9 +8712,6 @@ public partial class RefReadonlyParameterTests : CSharpTestBase
                 public static int F2;
             }
             """;
-        CreateCompilation(source).VerifyDiagnostics(
-            // (10,23): warning CS0649: Field 'C.F2' is never assigned to, and will always have its default value 0
-            //     public static int F2;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F2").WithArguments("C.F2", "0").WithLocation(10, 23));
+        CreateCompilation(source).VerifyDiagnostics();
     }
 }

@@ -67,6 +67,11 @@
         <target state="translated">更新需要輸出明確介面實作，除非重新啟動應用程式，否則執行階段不支援此功能。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidExperimentalDiagID">
         <source>The diagnosticId argument to the 'Experimental' attribute must be a valid identifier</source>
         <target state="translated">'Experimental' 屬性的 diagnosticId 引數必須是有效的識別碼</target>

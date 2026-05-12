@@ -195,6 +195,52 @@ namespace BuildBoss
                 (@"tasks\netcore", GetProjectPublishDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net10.0")),
                 (@"tasks\netcore\binfx", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis.Sdk", "net472")));
 
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv.Arm64"),
+                (@"tasks\net472", GetProjectOutputDirectory("csc-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("vbc-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("csi", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("VBCSCompiler-arm64", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net472"))); ;
+
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv.Framework"),
+                (@"tasks\net472", GetProjectOutputDirectory("csc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("vbc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("csi", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("VBCSCompiler", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net472"))); ;
+
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv"),
+                excludeFunc: relativeFileName =>
+                    relativeFileName.StartsWith(@"tasks\netcore\bincore\Microsoft.DiaSymReader.Native", PathComparison) ||
+                    relativeFileName.StartsWith(@"tasks\netcore\bincore\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll", PathComparison) ||
+                    (relativeFileName.StartsWith(@"tasks\netcore\binfx\", PathComparison) && relativeFileName.EndsWith(".targets", PathComparison)) ||
+                    relativeFileName.Equals(@"tasks\netcore\bincore\csc.exe", PathComparison) ||
+                    relativeFileName.Equals(@"tasks\netcore\bincore\vbc.exe", PathComparison) ||
+                    relativeFileName.Equals(@"tasks\netcore\bincore\VBCSCompiler.exe", PathComparison),
+                (@"tasks\net472", GetProjectOutputDirectory("csc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("vbc", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("csi", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("VBCSCompiler", "net472")),
+                (@"tasks\net472", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net472")),
+                (@"tasks\netcore\bincore", GetProjectPublishDirectory("csc", "net10.0")),
+                (@"tasks\netcore\bincore", GetProjectPublishDirectory("vbc", "net10.0")),
+                (@"tasks\netcore\bincore", GetProjectPublishDirectory("VBCSCompiler", "net10.0")),
+                (@"tasks\netcore", GetProjectPublishDirectory("Microsoft.Build.Tasks.CodeAnalysis", "net10.0")),
+                (@"tasks\netcore\binfx", GetProjectOutputDirectory("Microsoft.Build.Tasks.CodeAnalysis.Sdk", "net472")));
+
+            allGood &= VerifyPackageCore(
+                textWriter,
+                FindNuGetPackage(Path.Combine(ArtifactsDirectory, "packages", Configuration, "Shipping"), "Qtyi.Net.Compilers.Toolset.DevEnv.Compilers"),
+                (@"lib\netstandard2.0", GetProjectOutputDirectory("Microsoft.CodeAnalysis", "netstandard2.0")),
+                (@"lib\netstandard2.0", GetProjectOutputDirectory("Microsoft.CodeAnalysis.CSharp", "netstandard2.0")),
+                (@"lib\netstandard2.0", GetProjectOutputDirectory("Microsoft.CodeAnalysis.VisualBasic", "netstandard2.0")));
+
             foreach (var arch in new[] { "x86", "x64", "arm64" })
             {
                 var suffix = arch == "arm64" ? "-arm64" : "";

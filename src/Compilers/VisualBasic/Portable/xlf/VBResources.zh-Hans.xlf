@@ -67,6 +67,11 @@
         <target state="translated">更新需要发出显式接口实现，如果不重启应用程序，运行时将不支持此实现。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="translated">友元访问权限由“{0}”授予，但是授予程序集('{1}')的公钥与通过 /friendaccessto 命令行参数指定的公钥不匹配。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidExperimentalDiagID">
         <source>The diagnosticId argument to the 'Experimental' attribute must be a valid identifier</source>
         <target state="translated">“Experimental” 属性的 diagnosticId 参数必须是有效的标识符</target>

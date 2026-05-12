@@ -1585,6 +1585,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERR_ResumablesCannotContainOnError = 36956
         ERR_FriendRefNotEqualToThis = 36957
         ERR_FriendRefSigningMismatch = 36958
+        ERR_FriendRefNotEqualToOrigin = 36959
         ERR_FailureSigningAssembly = 36960
         ERR_SignButNoPrivateKey = 36961
         ERR_InvalidVersionFormat = 36962

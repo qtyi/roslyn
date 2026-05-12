@@ -67,6 +67,11 @@
         <target state="translated">업데이트하려면 명시적 인터페이스 구현을 내보내야 합니다. 이 기능은 애플리케이션을 다시 시작하지 않고는 런타임에서 지원되지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidExperimentalDiagID">
         <source>The diagnosticId argument to the 'Experimental' attribute must be a valid identifier</source>
         <target state="translated">'Experimental' 특성에 대한 diagnosticId 인수는 유효한 식별자여야 합니다.</target>

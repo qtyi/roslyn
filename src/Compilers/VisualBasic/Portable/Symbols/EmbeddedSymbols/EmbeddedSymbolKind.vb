@@ -16,9 +16,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
         EmbeddedAttribute = 2
         VbCore = 4
         XmlHelper = 8
-        All = (EmbeddedAttribute Or VbCore Or XmlHelper)
+        IgnoresAccessChecksToAttribute = 16
+        All = (EmbeddedAttribute Or VbCore Or XmlHelper Or IgnoresAccessChecksToAttribute)
 
-        LastValue = XmlHelper
+        LastValue = IgnoresAccessChecksToAttribute
     End Enum
 
 End Namespace

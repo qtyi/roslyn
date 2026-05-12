@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -1535,9 +1536,21 @@ symIsHidden:;
                 {
                     diagInfo = new CSDiagnosticInfo(ErrorCode.ERR_BadProtectedAccess, unwrappedSymbol, accessThroughType, this.ContainingType);
                 }
-                else if (IsBadIvtSpecification())
+                else if (IsBadIvtSpecification(out var conclusion))
                 {
-                    diagInfo = new CSDiagnosticInfo(ErrorCode.ERR_FriendRefNotEqualToThis, unwrappedSymbol.ContainingAssembly.Identity.ToString(), AssemblyIdentity.PublicKeyToString(this.Compilation.Assembly.PublicKey));
+                    Debug.Assert(conclusion is IVTConclusion.WantingPublicKeyDoesntMatch or IVTConclusion.GrantingPublicKeyDoesntMatch);
+                    if (conclusion == IVTConclusion.WantingPublicKeyDoesntMatch)
+                    {
+                        diagInfo = new CSDiagnosticInfo(ErrorCode.ERR_FriendRefNotEqualToThis, unwrappedSymbol.ContainingAssembly.Identity.ToString(), AssemblyIdentity.PublicKeyToString(this.Compilation.Assembly.PublicKey));
+                    }
+                    else if (conclusion == IVTConclusion.GrantingPublicKeyDoesntMatch)
+                    {
+                        diagInfo = new CSDiagnosticInfo(ErrorCode.ERR_FriendRefNotEqualToOrigin, unwrappedSymbol.ContainingAssembly.Identity.ToString(), AssemblyIdentity.PublicKeyToString(unwrappedSymbol.ContainingAssembly.PublicKey));
+                    }
+                    else
+                    {
+                        throw ExceptionUtilities.UnexpectedValue(conclusion);
+                    }
                 }
                 else
                 {
@@ -1576,8 +1589,10 @@ symIsHidden:;
                 return LookupResult.Good(symbol);
             }
 
-            bool IsBadIvtSpecification()
+            bool IsBadIvtSpecification(out IVTConclusion conclusion)
             {
+                conclusion = IVTConclusion.Match;
+
                 // Ensures that during binding we don't ask for public key which results in attribute binding and stack overflow.
                 // If looking up attributes, don't ask for public key.
                 if ((unwrappedSymbol.DeclaredAccessibility == Accessibility.Internal ||
@@ -1585,32 +1600,78 @@ symIsHidden:;
                     unwrappedSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
                     && !options.IsAttributeTypeLookup())
                 {
-                    var assemblyName = this.Compilation.AssemblyName;
-                    if (assemblyName == null)
+                    // NOTE: Check if any [InternalsVisibleTo] attribute in the containing assembly of unwrappedSymbol matches this assembly.
                     {
-                        return false;
-                    }
-                    var keys = unwrappedSymbol.ContainingAssembly.GetInternalsVisibleToPublicKeys(assemblyName);
-                    if (!keys.Any())
-                    {
-                        return false;
-                    }
-
-                    ImmutableArray<byte> publicKey = this.Compilation.Assembly.PublicKey;
-
-                    if (!publicKey.IsDefault)
-                    {
-                        foreach (ImmutableArray<byte> key in keys)
+                        var assemblyName = this.Compilation.AssemblyName;
+                        if (assemblyName == null)
                         {
-                            if (key.SequenceEqual(publicKey))
+                            conclusion = IVTConclusion.NoRelationshipClaimed;
+                        }
+                        else
+                        {
+                            var keys = unwrappedSymbol.ContainingAssembly.GetInternalsVisibleToPublicKeys(assemblyName);
+                            if (!keys.Any())
                             {
-                                return false;
+                                conclusion = IVTConclusion.NoRelationshipClaimed;
+                            }
+                            else
+                            {
+                                ImmutableArray<byte> publicKey = this.Compilation.Assembly.PublicKey;
+
+                                if (!publicKey.IsDefault)
+                                {
+                                    foreach (ImmutableArray<byte> key in keys)
+                                    {
+                                        if (key.SequenceEqual(publicKey))
+                                        {
+                                            conclusion = IVTConclusion.Match;
+                                            return false;
+                                        }
+                                    }
+
+                                    conclusion = IVTConclusion.WantingPublicKeyDoesntMatch;
+                                    return true;
+                                }
+
+                                // Maybe this compilation is under signing.
+                                conclusion = IVTConclusion.WantingPublicKeyDoesntMatch;
                             }
                         }
                     }
 
-                    return true;
+                    // NOTE: Check if any friend accessible assembly matches the containing assembly of unwrappedSymbol.
+                    {
+                        var assemblyName = unwrappedSymbol.ContainingAssembly.Name;
+                        var keys = this.Compilation.SourceAssembly.GetFriendAccessibleAssemblyPublicKeys(assemblyName);
+                        if (keys.Any())
+                        {
+                            ImmutableArray<byte> publicKey = unwrappedSymbol.ContainingAssembly.PublicKey;
+
+                            if (!publicKey.IsDefault)
+                            {
+                                foreach (ImmutableArray<byte> key in keys)
+                                {
+                                    if (key.SequenceEqual(publicKey))
+                                    {
+                                        conclusion = IVTConclusion.Match;
+                                        return false;
+                                    }
+                                }
+
+                                conclusion = IVTConclusion.GrantingPublicKeyDoesntMatch;
+                                return true;
+                            }
+
+                            if (conclusion != IVTConclusion.WantingPublicKeyDoesntMatch)
+                            {
+                                conclusion = IVTConclusion.GrantingPublicKeyDoesntMatch;
+                            }
+                        }
+                    }
+
+                    return conclusion is IVTConclusion.WantingPublicKeyDoesntMatch or IVTConclusion.GrantingPublicKeyDoesntMatch;
                 }
+
                 return false;
             }
         }

@@ -33,7 +33,14 @@ namespace Microsoft.CodeAnalysis
         /// friend access to a strong-named assembly, and either this assembly is weak-named, or
         /// it is strong-named and the names don't match.
         /// </summary>
-        PublicKeyDoesntMatch,
+        WantingPublicKeyDoesntMatch,
+
+        /// <summary>
+        /// This indicates that friend access should not be granted because this assembly wants to be
+        /// granted friend access by the other assembly, and either the other assembly is weak-named, or
+        /// it is strong-named and the names don't match.
+        /// </summary>
+        GrantingPublicKeyDoesntMatch,
 
         /// <summary>
         /// This indicates that friend access should not be granted because the other assembly 

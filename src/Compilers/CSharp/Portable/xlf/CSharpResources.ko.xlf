@@ -1042,6 +1042,11 @@
         <target state="translated">'{0}' 형식 변수에서 foreach 문을 수행할 수 없습니다. '{0}'에는 '{1}'의 공개 인스턴스 또는 확장 정의가 없기 때문입니다. 'foreach' 대신 'await foreach'를 사용하시겠습니까?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">'{0}'은(는) 정적 메서드가 아니므로 이에 대한 함수 포인터는 만들 수 없습니다.</target>

@@ -2982,9 +2982,6 @@ class C
             var compilation = CreateCompilation(source, options: TestOptions.DebugDll);
             compilation.GetDiagnostics();
             compilation.VerifyDiagnostics(
-                // (3,17): warning CS0649: Field 'S.This' is never assigned to, and will always have its default value false
-                //     public bool This[int t] { get { return false; } }
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "This").WithArguments("S.This", "false").WithLocation(3, 17),
                 // (3,21): error CS0650: Bad array declarator: To declare a managed array the rank specifier precedes the variable's identifier. To declare a fixed size buffer field, use the fixed keyword before the field type.
                 //     public bool This[int t] { get { return false; } }
                 Diagnostic(ErrorCode.ERR_CStyleArray, "[int t]").WithLocation(3, 21),

@@ -1042,6 +1042,11 @@
         <target state="translated">“{0}”不包含“{1}”的公共实例或扩展定义，因此 foreach 语句不能作用于“{0}”类型的变量。是否希望使用 "await foreach" 而非 "foreach"?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="translated">友元访问权限由“{0}”授予，但是授予程序集('{1}')的公钥与通过 /friendaccessto 命令行参数指定的公钥不匹配。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">无法为“{0}”创建函数指针，因为它不是静态方法</target>

@@ -1042,6 +1042,11 @@
         <target state="translated">Eine foreach-Anweisung kann nicht für Variablen vom Typ "{0}" verwendet werden, weil "{0}" keine öffentliche Instanz- oder Erweiterungsdefinition für "{1}" enthält. Meinten Sie "await foreach" statt "foreach"?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">Ein Funktionszeiger für "{0}" kann nicht erstellt werden, weil es sich nicht um eine statische Methode handelt.</target>

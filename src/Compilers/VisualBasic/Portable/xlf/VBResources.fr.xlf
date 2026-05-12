@@ -67,6 +67,11 @@
         <target state="translated">La mise à jour nécessite l’émission d’une implémentation explicite d’interface, ce que le runtime ne prend pas en charge sans redémarrer l’application.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidExperimentalDiagID">
         <source>The diagnosticId argument to the 'Experimental' attribute must be a valid identifier</source>
         <target state="translated">L’argument diagnosticId de l’attribut « Experimental » doit être un identificateur valide</target>

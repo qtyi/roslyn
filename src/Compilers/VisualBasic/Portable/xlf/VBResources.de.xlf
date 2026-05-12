@@ -67,6 +67,11 @@
         <target state="translated">Das Update erfordert die Ausgabe einer expliziten Schnittstellenimplementierung, die von der Laufzeit nicht unterstützt wird, ohne die Anwendung neu zu starten.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidExperimentalDiagID">
         <source>The diagnosticId argument to the 'Experimental' attribute must be a valid identifier</source>
         <target state="translated">Das diagnosticId-Argument für das Experimental-Attribut muss ein gültiger Bezeichner sein.</target>

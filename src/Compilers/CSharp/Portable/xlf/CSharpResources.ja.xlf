@@ -1042,6 +1042,11 @@
         <target state="translated">'{0}' は '{1}' のパブリック インスタンスまたは拡張機能の定義を含んでいないため、型 '{0}' の変数に対して foreach ステートメントを使用することはできません。'foreach' ではなく 'await foreach' ですか?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">'{0}' は静的メソッドではないため、関数ポインターを作成できません</target>

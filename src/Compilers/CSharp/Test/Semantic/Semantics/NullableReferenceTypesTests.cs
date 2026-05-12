@@ -3218,9 +3218,6 @@ class C<T>
         public void RefAssignment_Foreach_Nested()
         {
             verify(fieldType: "string?",
-                // (4,20): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value null
-                //     public string? Field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "null").WithLocation(4, 20),
                 // (9,13): warning CS8602: Dereference of a possibly null reference.
                 //             item.Field.ToString();
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "item.Field").WithLocation(9, 13));
@@ -3228,10 +3225,7 @@ class C<T>
             verify(fieldType: "string",
                 // (4,19): warning CS8618: Non-nullable field 'Field' is uninitialized. Consider declaring the field as nullable.
                 //     public string Field;
-                Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "Field").WithArguments("field", "Field").WithLocation(4, 19),
-                // (4,19): warning CS0649: Field 'C.Field' is never assigned to, and will always have its default value null
-                //     public string Field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field").WithArguments("C.Field", "null").WithLocation(4, 19)
+                Diagnostic(ErrorCode.WRN_UninitializedNonNullableField, "Field").WithArguments("field", "Field").WithLocation(4, 19)
                 );
 
             void verify(string fieldType, params DiagnosticDescription[] expected)
@@ -82881,10 +82875,8 @@ struct S
                 Diagnostic(ErrorCode.WRN_ConvertingNullableToNonNullable, "s.F").WithLocation(7, 13),
                 // (8,9): warning CS8602: Dereference of a possibly null reference.
                 //         s.F.ToString();
-                Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "s.F").WithLocation(8, 9),
+                Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "s.F").WithLocation(8, 9)
                 // (13,17): warning CS0649: Field 'S.F' is never assigned to, and will always have its default value null
-                //     internal C? F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("S.F", "null").WithLocation(13, 17)
                 );
         }
 
@@ -134695,9 +134687,6 @@ class Program
 }";
             var comp = CreateCompilation(source, options: WithNullableEnable());
             comp.VerifyDiagnostics(
-                // (3,21): warning CS0649: Field 'S.F' is never assigned to, and will always have its default value null
-                //     internal object F;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "F").WithArguments("S.F", "null").WithLocation(3, 21),
                 // (13,9): warning CS8602: Dereference of a possibly null reference.
                 //         y.Value.F.ToString(); // 1
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "y.Value.F").WithLocation(13, 9),
@@ -156237,9 +156226,6 @@ class C
                 targetFramework: TargetFramework.NetCoreApp,
                 parseOptions: TestOptions.Regular9);
             comp.VerifyDiagnostics(
-                // (5,20): warning CS0649: Field 'C.field' is never assigned to, and will always have its default value null
-                //     public string? field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("C.field", "null").WithLocation(5, 20),
                 // (15,9): warning CS8602: Dereference of a possibly null reference.
                 //         field.ToString();
                 Diagnostic(ErrorCode.WRN_NullReferenceReceiver, "field").WithLocation(15, 9));
@@ -156268,9 +156254,6 @@ class C
 }";
             var comp = CreateCompilation([source], options: WithNullableEnable(), targetFramework: TargetFramework.NetCoreApp);
             comp.VerifyDiagnostics(
-                // (5,27): warning CS0649: Field 'C.field' is never assigned to, and will always have its default value null
-                //     public static string? field;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("C.field", "null").WithLocation(5, 27),
                 // (10,5): warning CS8774: Member 'field' must have a non-null value when exiting.
                 //     }
                 Diagnostic(ErrorCode.WRN_MemberNotNull, "}").WithArguments("field").WithLocation(10, 5));
@@ -160898,10 +160881,7 @@ struct D<T>
             comp.VerifyDiagnostics(
                 // (7,11): error CS0208: Cannot take the address of, get the size of, or declare a pointer to a managed type ('D<object>')
                 // 		var a = stackalloc[] { M(o) };
-                Diagnostic(ErrorCode.ERR_ManagedAddr, "stackalloc[] { M(o) }").WithArguments("D<object>").WithLocation(7, 11),
-                // (15,14): warning CS0649: Field 'D<T>.Item' is never assigned to, and will always have its default value 
-                //     public T Item;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Item").WithArguments("D<T>.Item", "").WithLocation(15, 14)
+                Diagnostic(ErrorCode.ERR_ManagedAddr, "stackalloc[] { M(o) }").WithArguments("D<object>").WithLocation(7, 11)
                 );
         }
 

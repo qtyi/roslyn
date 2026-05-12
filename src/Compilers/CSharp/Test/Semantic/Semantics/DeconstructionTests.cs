@@ -671,10 +671,7 @@ IDeconstructionAssignmentOperation (OperationKind.DeconstructionAssignment, Type
                 Diagnostic(ErrorCode.ERR_DuplicateNameInClass, "Deconstruct").WithArguments("C", "Deconstruct").WithLocation(16, 17),
                 // CS1913: Member 'Deconstruct' cannot be initialized. It is not a field or property.
                 //         /*<bind>*/(x, y) = new C() { Deconstruct = DeconstructMethod }/*</bind>*/;
-                Diagnostic(ErrorCode.ERR_MemberCannotBeInitialized, "Deconstruct").WithArguments("Deconstruct").WithLocation(11, 38),
-                // CS0649: Field 'C.Deconstruct' is never assigned to, and will always have its default value null
-                //     public D1 Deconstruct;
-                Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Deconstruct").WithArguments("C.Deconstruct", "null").WithLocation(6, 15)
+                Diagnostic(ErrorCode.ERR_MemberCannotBeInitialized, "Deconstruct").WithArguments("Deconstruct").WithLocation(11, 38)
             };
 
             VerifyOperationTreeAndDiagnosticsForTest<AssignmentExpressionSyntax>(source, expectedOperationTree, expectedDiagnostics);

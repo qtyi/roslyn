@@ -241,9 +241,10 @@ namespace Microsoft.CodeAnalysis.CSharp
         WRN_PatternIsAmbiguous = 278,
         WRN_PatternNotPublicOrNotInstance = 279,
         WRN_PatternBadSignature = 280,
-        ERR_FriendRefNotEqualToThis = 281,
+        ERR_FriendRefNotEqualToThis = 281, // For IVT
         WRN_SequentialOnPartialClass = 282,
         ERR_BadConstType = 283,
+        ERR_FriendRefNotEqualToOrigin = 284, // For IVF
         ERR_NoNewTyvar = 304,
         ERR_BadArity = 305,
         ERR_BadTypeArgument = 306,

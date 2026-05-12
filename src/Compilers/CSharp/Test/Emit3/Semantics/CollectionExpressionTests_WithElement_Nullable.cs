@@ -2993,12 +2993,6 @@ public sealed class CollectionExpressionTests_WithElement_Nullable : CSharpTestB
         // https://github.com/dotnet/roslyn/issues/82029 tracks determining if this is even a bug, or is the
         // expected behavior.
         var verifier = CompileAndVerify(source, targetFramework: TargetFramework.Net100, verify: Verification.FailsPEVerify).VerifyDiagnostics(
-            // (14,27): warning CS0649: Field 'MyBuilder.Singleton' is never assigned to, and will always have its default value null
-            //     public static string? Singleton;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Singleton").WithArguments("MyBuilder.Singleton", "null").WithLocation(14, 27),
-            // (22,27): warning CS0649: Field 'Other.Singleton' is never assigned to, and will always have its default value null
-            //     public static string? Singleton;
-            Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Singleton").WithArguments("Other.Singleton", "null").WithLocation(22, 27),
             // (36,13): warning CS8604: Possible null reference argument for parameter 's' in 'void C.Goo(string s)'.
             //         Goo(MyBuilder.Singleton);
             Diagnostic(ErrorCode.WRN_NullReferenceArgument, "MyBuilder.Singleton").WithArguments("s", "void C.Goo(string s)").WithLocation(36, 13));

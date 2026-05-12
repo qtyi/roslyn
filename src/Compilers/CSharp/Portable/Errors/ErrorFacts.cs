@@ -853,6 +853,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 or ErrorCode.ERR_FriendRefNotEqualToThis
                 or ErrorCode.WRN_SequentialOnPartialClass
                 or ErrorCode.ERR_BadConstType
+                or ErrorCode.ERR_FriendRefNotEqualToOrigin
                 or ErrorCode.ERR_NoNewTyvar
                 or ErrorCode.ERR_BadArity
                 or ErrorCode.ERR_BadTypeArgument

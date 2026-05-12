@@ -1,9 +1,73 @@
+abstract Microsoft.CodeAnalysis.SemanticModel.GetAliasInfoCore(Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.AliasInfo
+abstract Microsoft.CodeAnalysis.SemanticModel.GetSpeculativeAliasInfoCore(int position, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, Microsoft.CodeAnalysis.SpeculativeBindingOption bindingOption) -> Microsoft.CodeAnalysis.AliasInfo
+const Microsoft.CodeAnalysis.WellKnownGeneratorInputs.SyntaxTrees = "SyntaxTrees" -> string!
+Microsoft.CodeAnalysis.AliasInfo
+Microsoft.CodeAnalysis.AliasInfo.Alias.get -> Microsoft.CodeAnalysis.IAliasSymbol?
+Microsoft.CodeAnalysis.AliasInfo.AliasInfo() -> void
+Microsoft.CodeAnalysis.AliasInfo.Equals(Microsoft.CodeAnalysis.AliasInfo other) -> bool
+Microsoft.CodeAnalysis.AliasInfo.Target.get -> Microsoft.CodeAnalysis.INamespaceOrTypeSymbol?
+Microsoft.CodeAnalysis.AliasMap
+Microsoft.CodeAnalysis.AliasMap.AliasMap(System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.IAliasSymbol!> aliasSymbols) -> void
+Microsoft.CodeAnalysis.AliasMap.TryGetAlias(Microsoft.CodeAnalysis.INamespaceOrTypeSymbol! symbol, out Microsoft.CodeAnalysis.IAliasSymbol? aliasSymbol, out System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ITypeSymbol!> typeArguments, bool mustResolveAllTypeParameters = true, bool skipTargetAliasTypeParameter = true) -> bool
+Microsoft.CodeAnalysis.CommandLineArguments.FriendAccessibleAssemblies.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.CommandLineAssemblyIdentity>
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.CommandLineAssemblyIdentity() -> void
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.CommandLineAssemblyIdentity(string! name, System.Collections.Immutable.ImmutableArray<byte> publicKey) -> void
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.Equals(Microsoft.CodeAnalysis.CommandLineAssemblyIdentity other) -> bool
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.Name.get -> string!
+Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.PublicKey.get -> System.Collections.Immutable.ImmutableArray<byte>
+Microsoft.CodeAnalysis.CompilationOptions.FriendAccessibleAssemblyPublicKeys.get -> System.Collections.Immutable.ImmutableDictionary<string!, System.Collections.Immutable.ImmutableHashSet<System.Collections.Immutable.ImmutableArray<byte>>!>!
 Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.MethodImplEntriesSupported.get -> bool
 Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.MethodImplEntriesSupported.init -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.InsertText(Microsoft.CodeAnalysis.SyntaxTree! tree, int position, string! newText) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.RemoveSource(Microsoft.CodeAnalysis.SyntaxTree! tree) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.RemoveText(Microsoft.CodeAnalysis.SyntaxTree! tree, Microsoft.CodeAnalysis.Text.TextSpan span) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.ReplaceSource(Microsoft.CodeAnalysis.SyntaxTree! oldTree, Microsoft.CodeAnalysis.SyntaxTree! newTree) -> void
+Microsoft.CodeAnalysis.GeneratorExecutionContext.ReplaceText(Microsoft.CodeAnalysis.SyntaxTree! tree, Microsoft.CodeAnalysis.Text.TextSpan span, string! newText) -> void
+Microsoft.CodeAnalysis.IAliasSymbol.Arity.get -> int
+Microsoft.CodeAnalysis.IAliasSymbol.Construct(params Microsoft.CodeAnalysis.ITypeSymbol![]! typeArguments) -> Microsoft.CodeAnalysis.ITypeSymbol!
+Microsoft.CodeAnalysis.IAliasSymbol.Construct(System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ITypeSymbol!> typeArguments, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.NullableAnnotation> typeArgumentNullableAnnotations) -> Microsoft.CodeAnalysis.ITypeSymbol!
+Microsoft.CodeAnalysis.IAliasSymbol.IsGenericAlias.get -> bool
+Microsoft.CodeAnalysis.IAliasSymbol.TypeParameters.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ITypeParameterSymbol!>
 Microsoft.CodeAnalysis.IMethodSymbol.ReduceExtensionMember(Microsoft.CodeAnalysis.ITypeSymbol! receiverType) -> Microsoft.CodeAnalysis.IMethodSymbol?
+Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.SyntaxTreesProvider.get -> Microsoft.CodeAnalysis.IncrementalValuesProvider<Microsoft.CodeAnalysis.SyntaxTree!>
 Microsoft.CodeAnalysis.IPropertySymbol.ReduceExtensionMember(Microsoft.CodeAnalysis.ITypeSymbol! receiverType) -> Microsoft.CodeAnalysis.IPropertySymbol?
+Microsoft.CodeAnalysis.ITypeParameterSymbol.DeclaringAlias.get -> Microsoft.CodeAnalysis.IAliasSymbol?
+Microsoft.CodeAnalysis.NameWithArity
+Microsoft.CodeAnalysis.NameWithArity.HasArity.get -> bool
+Microsoft.CodeAnalysis.NameWithArity.IsDefault.get -> bool
+Microsoft.CodeAnalysis.NameWithArity.NameWithArity() -> void
+Microsoft.CodeAnalysis.NameWithArity.NameWithArity(string! name, int arity) -> void
+Microsoft.CodeAnalysis.NameWithArityComparer
+Microsoft.CodeAnalysis.NameWithArityComparer.Compare(Microsoft.CodeAnalysis.NameWithArity x, Microsoft.CodeAnalysis.NameWithArity y) -> int
+Microsoft.CodeAnalysis.NameWithArityComparer.Equals(Microsoft.CodeAnalysis.NameWithArity x, Microsoft.CodeAnalysis.NameWithArity y) -> bool
+Microsoft.CodeAnalysis.NameWithArityComparer.GetHashCode(Microsoft.CodeAnalysis.NameWithArity obj) -> int
+Microsoft.CodeAnalysis.NameWithArityComparer.NameWithArityComparer(System.StringComparer! nameComparer) -> void
+Microsoft.CodeAnalysis.NameWithArityComparer.Underlying.get -> System.StringComparer!
 Microsoft.CodeAnalysis.OperationKind.CollectionExpressionElementsPlaceholder = 129 -> Microsoft.CodeAnalysis.OperationKind
 Microsoft.CodeAnalysis.Operations.ICollectionExpressionElementsPlaceholderOperation
 Microsoft.CodeAnalysis.Operations.ICollectionExpressionOperation.ConstructArguments.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.IOperation!>
+Microsoft.CodeAnalysis.SourceProductionContext.InsertText(Microsoft.CodeAnalysis.SyntaxTree! tree, int position, string! newText) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.RemoveSource(Microsoft.CodeAnalysis.SyntaxTree! tree) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.RemoveText(Microsoft.CodeAnalysis.SyntaxTree! tree, Microsoft.CodeAnalysis.Text.TextSpan span) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.ReplaceSource(Microsoft.CodeAnalysis.SyntaxTree! oldTree, Microsoft.CodeAnalysis.SyntaxTree! newTree) -> void
+Microsoft.CodeAnalysis.SourceProductionContext.ReplaceText(Microsoft.CodeAnalysis.SyntaxTree! tree, Microsoft.CodeAnalysis.Text.TextSpan span, string! newText) -> void
+Microsoft.CodeAnalysis.SymbolInfo.AnnotationSymbols.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ISymbol!>
+Microsoft.CodeAnalysis.TypeParameterKind.Alias = 3 -> Microsoft.CodeAnalysis.TypeParameterKind
+override Microsoft.CodeAnalysis.AliasInfo.Equals(object? obj) -> bool
+override Microsoft.CodeAnalysis.AliasInfo.GetHashCode() -> int
+override Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.Equals(object? obj) -> bool
+override Microsoft.CodeAnalysis.CommandLineAssemblyIdentity.GetHashCode() -> int
+override Microsoft.CodeAnalysis.NameWithArity.GetHashCode() -> int
+override Microsoft.CodeAnalysis.NameWithArity.ToString() -> string!
+readonly Microsoft.CodeAnalysis.NameWithArity.Arity -> int
+readonly Microsoft.CodeAnalysis.NameWithArity.Name -> string!
+static Microsoft.CodeAnalysis.ModelExtensions.GetAliasInfoWithTarget(this Microsoft.CodeAnalysis.SemanticModel! semanticModel, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Microsoft.CodeAnalysis.AliasInfo
+static Microsoft.CodeAnalysis.ModelExtensions.GetSpeculativeAliasInfoWithTarget(this Microsoft.CodeAnalysis.SemanticModel! semanticModel, int position, Microsoft.CodeAnalysis.SyntaxNode! nameSyntax, Microsoft.CodeAnalysis.SpeculativeBindingOption bindingOption) -> Microsoft.CodeAnalysis.AliasInfo
+static Microsoft.CodeAnalysis.NameWithArity.implicit operator Microsoft.CodeAnalysis.NameWithArity(string? name) -> Microsoft.CodeAnalysis.NameWithArity
+static Microsoft.CodeAnalysis.NameWithArity.Parse(string! str) -> Microsoft.CodeAnalysis.NameWithArity
+static Microsoft.CodeAnalysis.NameWithArityComparer.Default.get -> Microsoft.CodeAnalysis.NameWithArityComparer!
+static Microsoft.CodeAnalysis.NameWithArityComparer.IgnoreCase.get -> Microsoft.CodeAnalysis.NameWithArityComparer!
+static readonly Microsoft.CodeAnalysis.AliasMap.Empty -> Microsoft.CodeAnalysis.AliasMap!
 virtual Microsoft.CodeAnalysis.Operations.OperationVisitor.VisitCollectionExpressionElementsPlaceholder(Microsoft.CodeAnalysis.Operations.ICollectionExpressionElementsPlaceholderOperation! operation) -> void
 virtual Microsoft.CodeAnalysis.Operations.OperationVisitor<TArgument, TResult>.VisitCollectionExpressionElementsPlaceholder(Microsoft.CodeAnalysis.Operations.ICollectionExpressionElementsPlaceholderOperation! operation, TArgument argument) -> TResult?

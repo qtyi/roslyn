@@ -1216,6 +1216,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                      ERRID.ERR_ResumablesCannotContainOnError,
                      ERRID.ERR_FriendRefNotEqualToThis,
                      ERRID.ERR_FriendRefSigningMismatch,
+                     ERRID.ERR_FriendRefNotEqualToOrigin,
                      ERRID.ERR_FailureSigningAssembly,
                      ERRID.ERR_SignButNoPrivateKey,
                      ERRID.ERR_InvalidVersionFormat,

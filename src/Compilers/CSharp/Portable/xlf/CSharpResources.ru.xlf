@@ -1042,6 +1042,11 @@
         <target state="translated">Оператор foreach не работает с переменными типа "{0}", так как "{0}" не содержит открытое определение экземпляра или расширения для "{1}" Возможно, вы имели в виду "await foreach", а не "foreach"?</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_FriendRefNotEqualToOrigin">
+        <source>Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</source>
+        <target state="new">Friend access was granted by '{0}', but the public key of the granting assembly ('{1}') does not match that specified by the /friendaccessto command-line argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_FuncPtrMethMustBeStatic">
         <source>Cannot create a function pointer for '{0}' because it is not a static method</source>
         <target state="translated">Не удается создать указатель на функцию для "{0}", поскольку эта функция не является статическим методом.</target>
